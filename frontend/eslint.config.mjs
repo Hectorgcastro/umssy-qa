@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import checkFile from "eslint-plugin-check-file";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -14,8 +15,11 @@ const eslintConfig = defineConfig([
   ]),
   {
     files: ["src/**/*.{ts,tsx}"],
+    plugins: {
+      "check-file": checkFile,
+    },
     rules: {
-      // 2.2 Archivos y carpetas en kebab-case
+      // 2.2 Archivos y directorios en kebab-case (y rutas de Next.js como (public) o [id])
       "check-file/filename-naming-convention": [
         "error",
         {
@@ -31,6 +35,7 @@ const eslintConfig = defineConfig([
           "src/**/!(__tests__)": "NEXT_JS_APP_ROUTER_CASE",
         },
       ],
+
       // 2.2 Convenciones de Formato (camelCase, PascalCase, UPPER_SNAKE_CASE)
       "@typescript-eslint/naming-convention": [
         "error",
