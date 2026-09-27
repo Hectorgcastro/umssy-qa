@@ -2,22 +2,14 @@ name: "Tarea de Frontend"
 description: "Plantilla oficial para crear issues o reportar errores de Frontend"
 title: "Frontend: "
 labels: ["frontend"]
+
 body:
   - type: input
     id: epic-hu
     attributes:
-      label: "Epic e Historia de Usuario (HU)"
-      description: "Indica a que Epic y codigo de Historia de Usuario pertenece esta tarea."
-      placeholder: "Ej: Epic #8 - HU-01 (Inicio de sesion)"
-    validations:
-      required: true
-
-  - type: input
-    id: team-leader
-    attributes:
-      label: "Equipo y Lider"
-      description: "Nombre del grupo desarrollador y del lider responsable."
-      placeholder: "Ej: Grupo 2 - Lider: Juan Perez"
+      label: "Epic e Historia de Usuario"
+      description: "Indica a que Epic y codigo de Historia de Usuario pertenece esta tarea (Debe iniciar con Epic #N)."
+      placeholder: "Ej: Epic #8 - Historia de Usuario 01 (Inicio de sesion)"
     validations:
       required: true
 
@@ -51,9 +43,9 @@ body:
   - type: input
     id: estimate
     attributes:
-      label: "Estimacion (Puntos / Horas)"
+      label: "Estimacion en horas"
       description: "Esfuerzo estimado para completar la tarea."
-      placeholder: "Ej: 3 puntos"
+      placeholder: "Ej: 3 horas"
     validations:
       required: true
 
@@ -81,7 +73,7 @@ body:
     id: dependencies
     attributes:
       label: "Dependencias (Opcional)"
-      description: "Indica si esta tarea requiere que otra issue este terminada antes."
+      description: "Indica si esta tarea requiere que otra HU este terminada antes."
       placeholder: "Ej: Depende de #15"
     validations:
       required: false
