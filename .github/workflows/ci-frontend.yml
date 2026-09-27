@@ -2,7 +2,7 @@ name: CI Frontend
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [ develop, main ]
     paths:
       - 'frontend/**'
       - '.github/workflows/ci-frontend.yml'
@@ -15,29 +15,27 @@ jobs:
         working-directory: ./frontend
 
     steps:
-      - name: Descargar código
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Instalar pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          package_json_file: 'frontend/package.json'
 
-      - name: Configurar Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Instalar dependencias
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 1. Validar Linter
+      - name: Run linter
         run: pnpm lint
 
-      - name: 2. Verificar Build
-        run: pnpm build
-
-      - name: 3. Tests Unitarios y Coverage (80%)
+      - name: Run unit tests and coverage
         run: pnpm test:coverage
+
+      - name: Build application
+        run: pnpm build
