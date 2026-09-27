@@ -19,7 +19,6 @@ const eslintConfig = defineConfig([
       "check-file": checkFile,
     },
     rules: {
-      // 2.2 Archivos y directorios en kebab-case (y rutas de Next.js como (public) o [id])
       "check-file/filename-naming-convention": [
         "error",
         {
@@ -36,7 +35,6 @@ const eslintConfig = defineConfig([
         },
       ],
 
-      // 2.2 Convenciones de Formato (camelCase, PascalCase, UPPER_SNAKE_CASE)
       "@typescript-eslint/naming-convention": [
         "error",
         {
@@ -54,32 +52,30 @@ const eslintConfig = defineConfig([
         },
       ],
 
-      // 2.1 Prohibición de emojis en UI y cadenas de texto
       "no-restricted-syntax": [
         "error",
         {
           selector:
             "Literal[value=/[\\u2600-\\u27BF\\uD83C-\\uDBFF\\uDC00-\\uDFFF]/]",
           message:
-            "Estándar 2.1: No se permiten emojis en el código ni en la interfaz de usuario (UI).",
+            "Standard 2.1: Emojis are not allowed in code or the user interface.",
         },
         {
           selector:
             "JSXText[value=/[\\u2600-\\u27BF\\uD83C-\\uDBFF\\uDC00-\\uDFFF]/]",
           message:
-            "Estándar 2.1: No se permiten emojis en la interfaz de usuario (UI).",
+            "Standard 2.1: Emojis are not allowed in the user interface.",
         },
         {
           selector:
             "TemplateElement[value.raw=/[\\u2600-\\u27BF\\uD83C-\\uDBFF\\uDC00-\\uDFFF]/]",
           message:
-            "Estándar 2.1: No se permiten emojis en plantillas de texto.",
+            "Standard 2.1: Emojis are not allowed in text templates.",
         },
       ],
     },
   },
   {
-    // 2.4 Patrón de Acceso "Barril" (index.ts / index.tsx solo re-exportan)
     files: ["src/**/index.{ts,tsx}"],
     rules: {
       "no-restricted-syntax": [
@@ -88,7 +84,7 @@ const eslintConfig = defineConfig([
           selector:
             ":matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, VariableDeclaration, ClassDeclaration, JSXElement, JSXFragment)",
           message:
-            "Estándar 2.4: Los archivos index.ts solo pueden actuar como puentes de re-exportación. Prohibido incluir lógica o UI.",
+            "Standard 2.4: Index files can only act as re-exporting hubs. Including logic or UI is prohibited.",
         },
       ],
     },
