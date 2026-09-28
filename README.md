@@ -1,3 +1,9 @@
+This repository is organized as a monorepo. For specific setup instructions, scripts, and architecture details, please refer to the documentation for each workspace:
+
+**[Frontend Documentation](./frontend/README.md)** – Next.js application, UI components, and client-side setup.
+
+**[Backend Documentation](./backend/README.md)** – NestJS API, Prisma ORM, database migrations, and testing setup.
+
 # Setup
 
 ## Prerequisites
