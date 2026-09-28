@@ -80,11 +80,13 @@ pnpm run test:cov
 ```
 ## Testing
 
-Antes de correr los tests, crea un archivo `.env.test` (copiando `.env.test.example`) con tus credenciales reales de la base de datos, agregando la variable `DB_SCHEMA=test` para usar un schema separado y no afectar tus datos locales.
+   Antes de correr los tests, levanta la base de datos local con `docker compose up -d postgres` y aplica las migraciones a `.env` con `pnpm migrate:apply`.
 
-- `pnpm test` — corre los tests unitarios
-- `pnpm test:e2e` — corre los tests e2e usando `.env.test`
-- `pnpm test:all` — corre ambos en paralelo
+   Luego crea un archivo `.env.test` copiando `.env.test.example`. Usa las mismas credenciales de tu `.env` (`DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_HOST`, `DB_PORT`) y deja `DB_SCHEMA=test`, para que los tests usen un schema separado y no afecten tus datos de desarrollo.
+
+   Aplica las migraciones al schema de pruebas (solo la primera vez o cuando haya migraciones nuevas):
+
+   pnpm exec dotenv run -f .env.test -- pnpm migrate:apply
 
 ## Resources
 
