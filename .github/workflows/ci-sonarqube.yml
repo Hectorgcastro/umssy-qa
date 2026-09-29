@@ -50,7 +50,7 @@ jobs:
 
       - name: Test Backend (Coverage)
         working-directory: ./backend
-        run: pnpm test:coverage
+        run: pnpm test:cov
 
       - name: SonarQube Scan Fullstack
         uses: SonarSource/sonarqube-scan-action@v4
