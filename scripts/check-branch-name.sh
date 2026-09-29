@@ -1,11 +1,11 @@
-
+#!/usr/bin/env bash
 branch="$1"
 
 GROUP='^(feature|fix|hotfix|refactor|docs|test)/grupo-[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$'
 DEVOPS='^(chore|ci|feature|fix|hotfix|refactor|docs|test)/devops-[a-z0-9]+(-[a-z0-9]+)*$'
 EPIC='^epic/grupo-?[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$'
 
-if [[ "$branch" == "dev" || "$branch" == "main" \
+if [[ "$branch" == "develop" || "$branch" == "main" \
    || "$branch" =~ $GROUP || "$branch" =~ $DEVOPS || "$branch" =~ $EPIC ]]; then
   exit 0
 fi
