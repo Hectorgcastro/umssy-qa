@@ -74,13 +74,25 @@ pnpm run test
 # End-to-end (E2E) tests
 pnpm run test:e2e
 
+# Run unit and E2E tests in parallel
+pnpm run test:all
+
 # Test coverage report
 pnpm run test:cov
+```
+## Testing
 
+Before running the tests, start the local database with `docker compose up -d postgres` and apply the migrations to `.env` with `pnpm migrate:apply`.
+
+Then create a `.env.test` file by copying `.env.test.example`. Use the same credentials as your `.env` (`DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_HOST`, `DB_PORT`) and keep `DB_SCHEMA=test`, so tests use a separate schema and don't affect your development data.
+
+   Apply the migrations to the test schema (only the first time, or when new migrations are added):
+
+```bash
+   pnpm migrate:test:apply
 ```
 
-## Resources
-
+   ## Resources
 - [NestJS Documentation](https://docs.nestjs.com?utm_source=gemini) — Learn more about the framework.
 - [NestJS Courses](https://courses.nestjs.com/?utm_source=gemini) — Official video courses for hands-on experience.
 - [Prisma v7 Documentation](https://www.prisma.io/docs/orm/v7?utm_source=gemini) — Official ORM documentation.
