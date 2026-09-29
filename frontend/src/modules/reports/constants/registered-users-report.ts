@@ -1,4 +1,5 @@
 import type { BreadcrumbItem } from "@/shared/types/breadcrumb.types";
+import type { SelectOption } from "@/shared/types/select-option.types";
 
 export const REGISTERED_USERS_BREADCRUMB: BreadcrumbItem[] = [
   { label: "Inicio", href: "/admin" },
@@ -6,7 +7,7 @@ export const REGISTERED_USERS_BREADCRUMB: BreadcrumbItem[] = [
   { label: "Reporte de usuarios registrados" },
 ];
 
-export const USER_TYPE_OPTIONS = [
+export const USER_TYPE_OPTIONS: SelectOption[] = [
   { value: "all", label: "Todos" },
   { value: "graduate", label: "Titulado" },
   { value: "alumni", label: "Egresado" },

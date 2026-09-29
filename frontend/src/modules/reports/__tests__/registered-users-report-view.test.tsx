@@ -1,4 +1,10 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { RegisteredUsersReportView } from '../index'
 
@@ -36,11 +42,11 @@ describe('RegisteredUsersReportView', () => {
   it('muestra el filtro por tipo de usuario con "Todos" seleccionado', () => {
     render(<RegisteredUsersReportView />)
 
-    const select = screen.getByRole('combobox', {
-      name: 'Tipo de usuario',
-    }) as HTMLSelectElement
-    expect(select.value).toBe('all')
-    expect(within(select).getAllByRole('option')).toHaveLength(5)
+    const select = screen.getByRole('combobox', { name: 'Tipo de usuario' })
+    expect(select.textContent).toContain('Todos')
+
+    fireEvent.click(select)
+    expect(screen.getAllByRole('option')).toHaveLength(5)
   })
 
   it('muestra los botones de acciones', () => {
