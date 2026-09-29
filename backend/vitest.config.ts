@@ -19,6 +19,7 @@ export default defineConfig({
         'src/**/*.interface.ts',
         'src/**/*.dto.ts',
         'src/**/*.entity.ts',
+        'src/prisma/*',
       ],
       thresholds: {
         lines: 80,
