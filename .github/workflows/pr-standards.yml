@@ -1,0 +1,103 @@
+name: Git Standards
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches: [dev, main, "epic/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  branch-rules:
+    name: Git standard revision
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate branch name
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: bash scripts/check-branch-name.sh "$HEAD_REF"
+
+      - name: Validate integration flow
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+
+          DEV_SOURCES='^(epic/|hotfix/|[a-z]+/devops-)'
+          EPIC_SOURCE='^epic/'
+
+          echo "Source branch: $HEAD_REF | Target branch: $BASE_REF"
+
+          case "$BASE_REF" in
+            main)
+              [[ "$HEAD_REF" == "dev" ]] \
+                || fail "Merge to main is only allowed from dev, at the end of the sprint."
+              ;;
+            dev)
+              [[ "$HEAD_REF" =~ $DEV_SOURCES ]] \
+                || fail "Merge to dev is only allowed from epic/* (or hotfix and devops branches from leads and DevOps)."
+              ;;
+            epic/*)
+              [[ ! "$HEAD_REF" =~ $EPIC_SOURCE ]] \
+                || fail "Direct merges between epic/* branches are forbidden. Merge to dev and pull from dev."
+              ;;
+          esac
+
+          echo "Integration flow is correct."
+
+  commit-format:
+    name: Commit format
+    runs-on: ubuntu-latest
+    if: github.head_ref != 'dev'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate PR commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          npx --yes @commitlint/cli \
+            --config .github/commitlint.config.mjs \
+            --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
+  repo-guards:
+    name: CI Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Block CI changes outside DevOps branches
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          DEVOPS_BRANCH='^[a-z]+/devops-'
+          if [[ "$HEAD_REF" == "dev" || "$HEAD_REF" =~ $DEVOPS_BRANCH ]]; then
+            echo "DevOps branch or sprint release: skipping this check."
+            exit 0
+          fi
+
+          changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA" -- .github/ scripts/)
+          if [[ -n "$changed" ]]; then
+            echo "::error::Only DevOps branches can modify CI and scripts."
+            echo "$changed"
+            exit 1
+          fi

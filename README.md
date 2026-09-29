@@ -1,3 +1,9 @@
+This repository is organized as a monorepo. For specific setup instructions, scripts, and architecture details, please refer to the documentation for each workspace:
+
+**[Frontend Documentation](./frontend/README.md)** – Next.js application, UI components, and client-side setup.
+
+**[Backend Documentation](./backend/README.md)** – NestJS API, Prisma ORM, database migrations, and testing setup.
+
 # Setup
 
 ## Prerequisites
@@ -33,3 +39,9 @@ if you on in linux systems you can read here [CLI command installation](https://
 
 if you need GUI or have windows [Docker desktop](https://www.docker.com/products/docker-desktop/)
 
+### 5. To run Husky
+
+if you first time, you need to run:
+```bash
+pnpm install
+```

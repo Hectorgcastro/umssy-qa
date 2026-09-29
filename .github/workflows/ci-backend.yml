@@ -2,13 +2,14 @@ name: CI Backend
 
 on:
   pull_request:
-    branches: [ develop, main ]
+    branches: [develop, main, "epic/**"]
     paths:
-      - 'backend/**'
-      - '.github/workflows/ci-backend.yml'
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
 
 jobs:
   build-and-test:
+    name: Lint, unit tests and build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,18 +27,24 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
           cache-dependency-path: backend/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Generate Prisma client
         run: pnpm generate
 
       - name: Run linter
         run: pnpm lint
+
+      - name: Run standards linter (naming, index files, exceptions)
+        run: pnpm lint:standards
 
       - name: Run unit tests and coverage
         run: pnpm test:cov
