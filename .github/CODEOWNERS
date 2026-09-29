@@ -1,2 +1,5 @@
 /backend/prisma/ @umssy/DevOps
 README.md @umssy/DevOps
+.github/ @umssy/DevOps
+.husky/ @umssy/DevOps
+scripts/ @umssy/DevOps

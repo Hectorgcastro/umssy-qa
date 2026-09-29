@@ -1,4 +1,3 @@
-# scripts/check-branch-name.sh
 branch="$1"
 GROUP='^(feature|fix|hotfix|refactor|docs|test)/grupo-[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$'
 DEVOPS='^(chore|ci|feature|fix|hotfix|refactor|docs|test)/devops-[a-z0-9]+(-[a-z0-9]+)*$'
