@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { apiClient } from '@/shared/services/api-client'
 import Home from './page'
 
 describe('Home Page', () => {
@@ -7,10 +8,10 @@ describe('Home Page', () => {
     vi.restoreAllMocks()
   })
 
-  it('renderiza el título principal y muestra la respuesta GET del backend', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      text: () => Promise.resolve('Hello World!'),
-    } as Response)
+  it('renderiza el título principal y muestra la respuesta GET del backend via Axios', async () => {
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+      data: 'Hello World!',
+    })
 
     render(<Home />)
     expect(screen.getByText(/To get started, edit the/i)).toBeDefined()
@@ -20,8 +21,8 @@ describe('Home Page', () => {
     })
   })
 
-  it('muestra mensaje de error si falla la conexión con el backend', async () => {
-    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Network error'))
+  it('muestra mensaje de error si falla la petición con Axios', async () => {
+    vi.spyOn(apiClient, 'get').mockRejectedValueOnce(new Error('Network error'))
 
     render(<Home />)
 
