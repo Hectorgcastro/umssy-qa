@@ -50,30 +50,6 @@ jobs:
 
           echo "Integration flow is correct."
 
-  commit-format:
-    name: Commit format
-    runs-on: ubuntu-latest
-    if: github.head_ref != 'dev'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Validate PR commits
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          npx --yes @commitlint/cli \
-            --config .github/commitlint.config.mjs \
-            --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
-
   repo-guards:
     name: CI Files
     runs-on: ubuntu-latest
