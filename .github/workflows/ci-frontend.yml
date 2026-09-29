@@ -2,10 +2,10 @@ name: CI Frontend
 
 on:
   pull_request:
-    branches: [ develop, main ]
+    branches: [develop, main, "epic/**"]
     paths:
-      - 'frontend/**'
-      - '.github/workflows/ci-frontend.yml'
+      - "frontend/**"
+      - ".github/workflows/ci-frontend.yml"
 
 jobs:
   build-and-test:
@@ -26,8 +26,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install dependencies
