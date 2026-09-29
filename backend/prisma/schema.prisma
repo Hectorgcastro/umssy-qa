@@ -7,55 +7,102 @@ datasource db {
   provider = "postgresql"
 }
 
-enum AppointmentStatus {
-  PENDING
-  COUNTER_PROPOSED
-  ACCEPTED
-  REJECTED
-  CANCELLED
-  EXPIRED
-  COMPLETED
+model AppointmentStatus {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("appointment_status")
+  appointments                 Appointment[]
+  previousAppointmentHistories AppointmentHistory[] @relation("PreviousAppointmentStatus")
+  newAppointmentHistories      AppointmentHistory[] @relation("NewAppointmentStatus")
+
+  @@map("appointment_statuses")
 }
 
-enum ProposalStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
+model ProposalStatus {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("proposal_status")
+  proposals TimeProposal[]
+
+  @@map("proposal_statuses")
 }
 
-enum EventModality {
-  presencial
-  virtual
+model EventModality {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("event_modality")
+  events Event[]
+
+  @@map("event_modalities")
 }
 
-enum EventOrigin {
-  admin
-  comunidad
+model EventOrigin {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("event_origin")
+  events Event[]
+
+  @@map("event_origins")
 }
 
-enum EventStatus {
-  borrador
-  en_votacion
-  publicado
-  vencida
-  cancelado
+model EventStatus {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("event_status")
+  events Event[]
+
+  @@map("event_statuses")
 }
 
-enum RegistrationStatus {
-  confirmada
-  cancelada
+model RegistrationStatus {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@map("registration_status")
+  eventRegistrations EventRegistration[]
+
+  @@map("registration_statuses")
+}
+
+model City {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  users User[]
+
+  @@map("cities")
+}
+
+model Company {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  workExperiences WorkExperience[]
+
+  @@map("companies")
 }
 
 model User {
@@ -64,14 +111,17 @@ model User {
   lastName      String   @map("last_name") @db.VarChar(100)
   email         String   @unique @db.VarChar(150)
   isActive      Boolean  @default(true) @map("is_active")
-  photoUrl      String?  @map("photo_url")
-  city          String?
+  photoUrl      Bytes?   @map("photo_url")
+  cityId        String?  @map("city_id") @db.Uuid
   phone         String?
   personalEmail String?  @map("personal_email")
   headline      String?
   aboutMe       String?  @map("about_me")
-  cvPdfUrl      String?  @map("cv_pdf_url")
+  cvPdfUrl      Bytes?   @map("cv_pdf_url")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  city City? @relation(fields: [cityId], references: [id], onDelete: SetNull)
 
   roles           UserRole[]
   educations      Education[]
@@ -94,12 +144,15 @@ model User {
   eventRegistrations   EventRegistration[]
   checkedInAttendances EventAttendance[]
 
+  @@index([cityId])
   @@map("users")
 }
 
 model Role {
-  id   String @id @default(uuid()) @db.Uuid
-  name String @unique @db.VarChar(50)
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   userRoles UserRole[]
 
@@ -107,16 +160,20 @@ model Role {
 }
 
 model UserRole {
+  id        String    @id @default(uuid()) @db.Uuid
   userId    String    @map("user_id") @db.Uuid
   roleId    String    @map("role_id") @db.Uuid
   startAt   DateTime  @default(now()) @map("start_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   role Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
-  @@id([userId, roleId, startAt])
+  @@unique([userId, roleId, startAt])
   @@index([roleId])
+  @@index([userId])
   @@map("user_roles")
 }
 
@@ -140,7 +197,7 @@ model Education {
 model WorkExperience {
   id          String    @id @default(uuid()) @db.Uuid
   userId      String    @map("user_id") @db.Uuid
-  company     String
+  companyId   String    @map("company_id") @db.Uuid
   position    String
   startDate   DateTime  @map("start_date") @db.Date
   endDate     DateTime? @map("end_date") @db.Date
@@ -149,9 +206,11 @@ model WorkExperience {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
 
   @@index([userId])
+  @@index([companyId])
   @@map("work_experiences")
 }
 
@@ -188,7 +247,7 @@ model Certification {
   name                String
   issuingOrganization String   @map("issuing_organization")
   issueDate           DateTime @map("issue_date") @db.Date
-  documentUrl         String?  @map("document_url")
+  documentUrl         Bytes?   @map("document_url")
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -199,9 +258,11 @@ model Certification {
 }
 
 model TechnicalArea {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique @db.VarChar(80)
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(80)
   description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   mentors MentorTechnicalArea[]
 
@@ -209,10 +270,12 @@ model TechnicalArea {
 }
 
 model OrientationType {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique @db.VarChar(60)
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(60)
   description String?
-  isActive    Boolean @default(true) @map("is_active")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   mentors      MentorOrientationType[]
   appointments Appointment[]
@@ -221,25 +284,31 @@ model OrientationType {
 }
 
 model MentorTechnicalArea {
-  mentorId        String @map("mentor_id") @db.Uuid
-  technicalAreaId Int    @map("technical_area_id")
+  id              String   @id @default(uuid()) @db.Uuid
+  mentorId        String   @map("mentor_id") @db.Uuid
+  technicalAreaId String   @map("technical_area_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   mentor        User          @relation(fields: [mentorId], references: [id], onDelete: Cascade)
   technicalArea TechnicalArea @relation(fields: [technicalAreaId], references: [id], onDelete: Restrict)
 
-  @@id([mentorId, technicalAreaId])
+  @@unique([mentorId, technicalAreaId])
   @@index([technicalAreaId])
   @@map("mentor_technical_areas")
 }
 
 model MentorOrientationType {
-  mentorId          String @map("mentor_id") @db.Uuid
-  orientationTypeId Int    @map("orientation_type_id")
+  id                String   @id @default(uuid()) @db.Uuid
+  mentorId          String   @map("mentor_id") @db.Uuid
+  orientationTypeId String   @map("orientation_type_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   mentor          User            @relation(fields: [mentorId], references: [id], onDelete: Cascade)
   orientationType OrientationType @relation(fields: [orientationTypeId], references: [id], onDelete: Restrict)
 
-  @@id([mentorId, orientationTypeId])
+  @@unique([mentorId, orientationTypeId])
   @@index([orientationTypeId])
   @@map("mentor_orientation_types")
 }
@@ -269,6 +338,7 @@ model BlockedDate {
   blockedOn DateTime @map("blocked_on") @db.Date
   reason    String?  @db.VarChar(100)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   mentor User @relation(fields: [mentorId], references: [id], onDelete: Cascade)
 
@@ -277,25 +347,27 @@ model BlockedDate {
 }
 
 model Appointment {
-  id                String            @id @default(uuid()) @db.Uuid
-  blockId           String?           @map("block_id") @db.Uuid
-  mentorId          String            @map("mentor_id") @db.Uuid
-  studentId         String            @map("student_id") @db.Uuid
-  startAt           DateTime          @map("start_at") @db.Timestamptz(6)
-  endAt             DateTime          @map("end_at") @db.Timestamptz(6)
-  status            AppointmentStatus @default(PENDING)
-  orientationTypeId Int?              @map("orientation_type_id")
-  message           String?           @db.VarChar(300)
-  rejectionReason   String?           @map("rejection_reason") @db.VarChar(300)
-  meetingUrl        String?           @map("meeting_url") @db.VarChar(255)
-  cancelledById     String?           @map("cancelled_by") @db.Uuid
-  requestedAt       DateTime          @default(now()) @map("requested_at") @db.Timestamptz(6)
-  respondedAt       DateTime?         @map("responded_at") @db.Timestamptz(6)
-  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                String    @id @default(uuid()) @db.Uuid
+  blockId           String?   @map("block_id") @db.Uuid
+  mentorId          String    @map("mentor_id") @db.Uuid
+  studentId         String    @map("student_id") @db.Uuid
+  startAt           DateTime  @map("start_at") @db.Timestamptz(6)
+  endAt             DateTime  @map("end_at") @db.Timestamptz(6)
+  statusId          String    @map("status_id") @db.Uuid
+  orientationTypeId String?   @map("orientation_type_id") @db.Uuid
+  message           String?   @db.VarChar(300)
+  rejectionReason   String?   @map("rejection_reason") @db.VarChar(300)
+  meetingUrl        String?   @map("meeting_url") @db.VarChar(255)
+  cancelledById     String?   @map("cancelled_by") @db.Uuid
+  requestedAt       DateTime  @default(now()) @map("requested_at") @db.Timestamptz(6)
+  respondedAt       DateTime? @map("responded_at") @db.Timestamptz(6)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   block           AvailabilityBlock? @relation(fields: [blockId], references: [id], onDelete: SetNull)
   mentor          User               @relation("AppointmentMentor", fields: [mentorId], references: [id], onDelete: Restrict)
   student         User               @relation("AppointmentStudent", fields: [studentId], references: [id], onDelete: Restrict)
+  status          AppointmentStatus  @relation(fields: [statusId], references: [id], onDelete: Restrict)
   orientationType OrientationType?   @relation(fields: [orientationTypeId], references: [id], onDelete: SetNull)
   cancelledBy     User?              @relation("AppointmentCancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
 
@@ -304,48 +376,58 @@ model Appointment {
 
   @@index([mentorId, startAt])
   @@index([studentId, startAt])
-  @@index([status])
+  @@index([statusId])
   @@index([blockId])
   @@map("appointments")
 }
 
 model TimeProposal {
-  id              String         @id @default(uuid()) @db.Uuid
-  appointmentId   String         @map("appointment_id") @db.Uuid
-  proposedBlockId String         @map("proposed_block_id") @db.Uuid
-  message         String?        @db.VarChar(300)
-  status          ProposalStatus @default(PENDING)
-  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  respondedAt     DateTime?      @map("responded_at") @db.Timestamptz(6)
+  id              String    @id @default(uuid()) @db.Uuid
+  appointmentId   String    @map("appointment_id") @db.Uuid
+  proposedBlockId String    @map("proposed_block_id") @db.Uuid
+  message         String?   @db.VarChar(300)
+  statusId        String    @map("status_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  respondedAt     DateTime? @map("responded_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   appointment   Appointment       @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   proposedBlock AvailabilityBlock @relation(fields: [proposedBlockId], references: [id], onDelete: Cascade)
+  status        ProposalStatus    @relation(fields: [statusId], references: [id], onDelete: Restrict)
 
   @@index([appointmentId])
   @@index([proposedBlockId])
+  @@index([statusId])
   @@map("time_proposals")
 }
 
 model AppointmentHistory {
-  id             String             @id @default(uuid()) @db.Uuid
-  appointmentId  String             @map("appointment_id") @db.Uuid
-  previousStatus AppointmentStatus? @map("previous_status")
-  newStatus      AppointmentStatus  @map("new_status")
-  changedById    String?            @map("changed_by") @db.Uuid
-  changedAt      DateTime           @default(now()) @map("changed_at") @db.Timestamptz(6)
-  note           String?            @db.VarChar(300)
+  id               String   @id @default(uuid()) @db.Uuid
+  appointmentId    String   @map("appointment_id") @db.Uuid
+  previousStatusId String?  @map("previous_status_id") @db.Uuid
+  newStatusId      String   @map("new_status_id") @db.Uuid
+  changedById      String?  @map("changed_by") @db.Uuid
+  changedAt        DateTime @default(now()) @map("changed_at") @db.Timestamptz(6)
+  note             String?  @db.VarChar(300)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  changedBy   User?       @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  appointment    Appointment        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  previousStatus AppointmentStatus? @relation("PreviousAppointmentStatus", fields: [previousStatusId], references: [id], onDelete: SetNull)
+  newStatus      AppointmentStatus  @relation("NewAppointmentStatus", fields: [newStatusId], references: [id], onDelete: Restrict)
+  changedBy      User?              @relation(fields: [changedById], references: [id], onDelete: SetNull)
 
   @@index([appointmentId, changedAt])
-  @@map("appointment_history")
+  @@index([previousStatusId])
+  @@index([newStatusId])
+  @@map("appointment_histories")
 }
 
 model EventCategory {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid()) @db.Uuid
   name      String   @unique @db.VarChar(50)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   events Event[]
 
@@ -353,54 +435,63 @@ model EventCategory {
 }
 
 model Event {
-  id               String        @id @default(uuid()) @db.Uuid
-  title            String        @db.VarChar(150)
+  id               String    @id @default(uuid()) @db.Uuid
+  title            String    @db.VarChar(150)
   description      String?
-  categoryId       Int           @map("category_id")
-  instructorName   String?       @map("instructor_name") @db.VarChar(120)
-  eventDate        DateTime      @map("event_date") @db.Date
-  startTime        DateTime      @map("start_time") @db.Time(6)
-  endTime          DateTime      @map("end_time") @db.Time(6)
-  modality         EventModality
+  categoryId       String    @map("category_id") @db.Uuid
+  instructorName   String?   @map("instructor_name") @db.VarChar(120)
+  eventDate        DateTime  @map("event_date") @db.Date
+  startTime        DateTime  @map("start_time") @db.Time(6)
+  endTime          DateTime  @map("end_time") @db.Time(6)
+  modalityId       String    @map("modality_id") @db.Uuid
   location         String?
   capacity         Int?
-  origin           EventOrigin
-  status           EventStatus   @default(borrador)
-  supportThreshold Int?          @map("support_threshold")
-  votingDeadline   DateTime?     @map("voting_deadline") @db.Timestamptz(6)
-  moderatedById    String?       @map("moderated_by") @db.Uuid
-  moderationReason String?       @map("moderation_reason")
-  createdById      String        @map("created_by") @db.Uuid
-  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  originId         String    @map("origin_id") @db.Uuid
+  statusId         String    @map("status_id") @db.Uuid
+  supportThreshold Int?      @map("support_threshold")
+  votingDeadline   DateTime? @map("voting_deadline") @db.Timestamptz(6)
+  moderatedById    String?   @map("moderated_by") @db.Uuid
+  moderationReason String?   @map("moderation_reason")
+  createdById      String    @map("created_by") @db.Uuid
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   category    EventCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  modality    EventModality @relation(fields: [modalityId], references: [id], onDelete: Restrict)
+  origin      EventOrigin   @relation(fields: [originId], references: [id], onDelete: Restrict)
+  status      EventStatus   @relation(fields: [statusId], references: [id], onDelete: Restrict)
   createdBy   User          @relation("EventCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   moderatedBy User?         @relation("EventModeratedBy", fields: [moderatedById], references: [id], onDelete: SetNull)
 
   registrations EventRegistration[]
 
   @@index([categoryId])
+  @@index([modalityId])
+  @@index([originId])
+  @@index([statusId])
   @@index([eventDate])
-  @@index([status])
   @@map("events")
 }
 
 model EventRegistration {
-  id           String             @id @default(uuid()) @db.Uuid
-  eventId      String             @map("event_id") @db.Uuid
-  userId       String             @map("user_id") @db.Uuid
-  status       RegistrationStatus @default(confirmada)
-  qrToken      String             @unique @map("qr_token") @db.VarChar(64)
-  registeredAt DateTime           @default(now()) @map("registered_at") @db.Timestamptz(6)
-  cancelledAt  DateTime?          @map("cancelled_at") @db.Timestamptz(6)
+  id           String    @id @default(uuid()) @db.Uuid
+  eventId      String    @map("event_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  statusId     String    @map("status_id") @db.Uuid
+  qrToken      String    @unique @map("qr_token") @db.VarChar(64)
+  registeredAt DateTime  @default(now()) @map("registered_at") @db.Timestamptz(6)
+  cancelledAt  DateTime? @map("cancelled_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  event      Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event      Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     RegistrationStatus @relation(fields: [statusId], references: [id], onDelete: Restrict)
   attendance EventAttendance?
 
   @@unique([eventId, userId])
   @@index([userId])
+  @@index([statusId])
   @@map("event_registrations")
 }
 
@@ -411,6 +502,8 @@ model EventAttendance {
   checkedInById    String?   @map("checked_in_by") @db.Uuid
   checkedInOffline Boolean   @default(false) @map("checked_in_offline")
   syncedAt         DateTime? @map("synced_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   registration EventRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   checkedInBy  User?             @relation(fields: [checkedInById], references: [id], onDelete: SetNull)
