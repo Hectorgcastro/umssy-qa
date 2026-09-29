@@ -54,7 +54,18 @@ describe('RegisteredUsersReportView', () => {
 
     expect(screen.getByRole('button', { name: 'Actualizar' })).toBeDefined()
     expect(screen.getByRole('button', { name: 'Exportar CSV' })).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Gestión' })).toBeDefined()
+  })
+
+  it('muestra el filtro de gestión con el año actual seleccionado', () => {
+    render(<RegisteredUsersReportView />)
+
+    const currentYear = String(new Date().getFullYear())
+    const select = screen.getByRole('combobox', { name: 'Gestión' })
+    expect(select.textContent).toContain(currentYear)
+
+    fireEvent.click(select)
+    expect(screen.getByRole('option', { name: currentYear })).toBeDefined()
+    expect(screen.getByRole('option', { name: '2020' })).toBeDefined()
   })
 
   it('muestra las columnas de la tabla sin datos', () => {

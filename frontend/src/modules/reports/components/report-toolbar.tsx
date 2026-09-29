@@ -1,12 +1,15 @@
-import { ChevronDown, FileText, RotateCw, Settings } from "lucide-react";
+import { FileText, RotateCw } from "lucide-react";
 import { SelectField } from "@/shared/components/ui/select-field";
 import { USER_TYPE_OPTIONS } from "../constants/registered-users-report";
+import { buildManagementYearOptions } from "../utils/management-years";
 
 const TOOLBAR_BUTTON_CLASS =
   "flex h-11 items-center gap-2 rounded-md bg-ink px-5 text-sm text-white shadow-sm transition-colors hover:bg-ink-soft";
 
-// Botones sin acción hasta conectar el reporte con el backend.
+// Botones y filtros sin acción hasta conectar el reporte con el backend.
 export function ReportToolbar() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <SelectField
@@ -27,11 +30,13 @@ export function ReportToolbar() {
           <FileText aria-hidden="true" className="h-4 w-4" />
           Exportar CSV
         </button>
-        <button type="button" className={TOOLBAR_BUTTON_CLASS}>
-          <Settings aria-hidden="true" className="h-4 w-4" />
-          Gestión
-          <ChevronDown aria-hidden="true" className="h-4 w-4" />
-        </button>
+        <div className="w-36">
+          <SelectField
+            label="Gestión"
+            options={buildManagementYearOptions(currentYear)}
+            defaultValue={String(currentYear)}
+          />
+        </div>
       </div>
     </div>
   );
