@@ -39,3 +39,9 @@ if you on in linux systems you can read here [CLI command installation](https://
 
 if you need GUI or have windows [Docker desktop](https://www.docker.com/products/docker-desktop/)
 
+### 5. To run Husky
+
+if you first time, you need to run:
+```bash
+pnpm install
+```
