@@ -53,7 +53,6 @@ jobs:
   commit-format:
     name: Commit format
     runs-on: ubuntu-latest
-
     if: github.head_ref != 'dev'
     steps:
       - name: Checkout repository
@@ -68,15 +67,9 @@ jobs:
 
       - name: Validate PR commits
         env:
-          HEAD_REF: ${{ github.head_ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          DEVOPS_BRANCH='^[a-z]+/devops-'
-          if [[ "$HEAD_REF" =~ $DEVOPS_BRANCH ]]; then
-            export COMMIT_PROFILE=devops
-          fi
-
           npx --yes @commitlint/cli \
             --config .github/commitlint.config.mjs \
             --from "$BASE_SHA" --to "$HEAD_SHA" --verbose

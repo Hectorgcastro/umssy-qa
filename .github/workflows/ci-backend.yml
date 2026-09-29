@@ -9,6 +9,7 @@ on:
 
 jobs:
   build-and-test:
+    name: Lint, unit tests and build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,11 +34,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Generate Prisma client
         run: pnpm generate
 
       - name: Run linter
         run: pnpm lint
+
+      - name: Run standards linter (naming, index files, exceptions)
+        run: pnpm lint:standards
 
       - name: Run unit tests and coverage
         run: pnpm test:cov
