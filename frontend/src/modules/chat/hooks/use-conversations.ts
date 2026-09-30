@@ -17,7 +17,6 @@ export function useConversations() {
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
 
     getConversations()
       .then((data) => {
@@ -96,6 +95,10 @@ export function useConversations() {
     }
   };
 
+  const clearSelectedConversation = () => {
+    setSelectedId(null);
+  };
+
   const simulateIncomingMessage = (conversationId: string, newContent: string) => {
     const timestamp = new Date().toISOString();
     setConversationsData((prev) => {
@@ -132,6 +135,7 @@ export function useConversations() {
     setActiveFilter,
     setSearchQuery,
     handleSelectConversation,
+    clearSelectedConversation,
     simulateIncomingMessage,
   };
 }

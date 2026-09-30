@@ -16,12 +16,13 @@ export function ChatView() {
     setActiveFilter,
     setSearchQuery,
     handleSelectConversation,
+    clearSelectedConversation,
   } = useConversations();
 
   const selectedConversation = conversations.find((item) => item.id === selectedId);
 
   const handleBackToList = () => {
-    handleSelectConversation({ id: '' } as any);
+    clearSelectedConversation();
   };
 
   return (
