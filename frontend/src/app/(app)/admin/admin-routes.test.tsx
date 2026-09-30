@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import AdminLayout from './layout'
 import AdminHomePage from './page'
 import RegisteredUsersReportPage from './reports/registered-users/page'
+import RejectedUsersReportPage from './reports/rejected-users/page'
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/admin',
@@ -33,6 +34,14 @@ describe('Rutas de administración', () => {
 
     expect(
       screen.getByRole('heading', { name: 'Reporte de usuarios registrados' }),
+    ).toBeDefined()
+  })
+
+  it('la página de rechazados muestra la vista de usuarios rechazados', () => {
+    render(<RejectedUsersReportPage />)
+
+    expect(
+      screen.getByRole('heading', { name: 'Reporte de usuarios rechazados' }),
     ).toBeDefined()
   })
 })

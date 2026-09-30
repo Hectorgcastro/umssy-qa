@@ -1,7 +1,10 @@
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { RegisteredUsersTable } from "../components/registered-users-table";
+import { ReportTable } from "../components/report-table";
 import { ReportToolbar } from "../components/report-toolbar";
-import { REGISTERED_USERS_BREADCRUMB } from "../constants/registered-users-report";
+import {
+  REGISTERED_USERS_BREADCRUMB,
+  REGISTERED_USERS_COLUMNS,
+} from "../constants/registered-users-report";
 
 export function RegisteredUsersReportView() {
   return (
@@ -11,7 +14,10 @@ export function RegisteredUsersReportView() {
         breadcrumbItems={REGISTERED_USERS_BREADCRUMB}
       />
       <ReportToolbar />
-      <RegisteredUsersTable />
+      <ReportTable
+        columns={REGISTERED_USERS_COLUMNS}
+        emptyMessage="No hay usuarios registrados para mostrar."
+      />
     </div>
   );
 }
