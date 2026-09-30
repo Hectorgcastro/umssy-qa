@@ -46,7 +46,9 @@ describe('RegisteredUsersReportView', () => {
     expect(select.textContent).toContain('Todos')
 
     fireEvent.click(select)
-    expect(screen.getAllByRole('option')).toHaveLength(5)
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent),
+    ).toEqual(['Todos', 'Titulado', 'Empresa', 'Administrador'])
   })
 
   it('muestra los botones de acciones', () => {
