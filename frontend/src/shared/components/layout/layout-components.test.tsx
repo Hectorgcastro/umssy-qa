@@ -58,6 +58,6 @@ describe("Shell", () => {
       </Shell>
     )
     expect(screen.getByRole("main").textContent).toContain("contenido")
-    expect(screen.getByText("Comunidad de Egresados UMSS")).toBeTruthy()
+    expect(screen.getByText("Comunidad de Titulados UMSS")).toBeTruthy()
   })
 })

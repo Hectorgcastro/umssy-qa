@@ -11,7 +11,7 @@ export function Shell({ children }: ShellProps) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b border-border bg-surface px-4 md:px-8">
           <span className="text-sm text-text-secondary">
-            Comunidad de Egresados UMSS
+            Comunidad de Titulados UMSS
           </span>
           <Bell size={18} aria-label="Notificaciones" className="text-ink-soft" />
         </header>
