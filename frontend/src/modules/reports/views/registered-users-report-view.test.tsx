@@ -10,6 +10,11 @@ async function renderLoadedView() {
   });
 }
 
+function selectUserType(label: string) {
+  fireEvent.click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
+  fireEvent.click(screen.getByRole("option", { name: label }));
+}
+
 describe("RegisteredUsersReportView", () => {
   afterEach(() => {
     cleanup();
@@ -39,8 +44,24 @@ describe("RegisteredUsersReportView", () => {
   it("ofrece las opciones de tipo de usuario en orden", () => {
     render(<RegisteredUsersReportView />);
 
+    expect(screen.queryByRole("listbox")).toBeNull();
+    fireEvent.click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
+
     const options = screen.getAllByRole("option").map((option) => option.textContent);
     expect(options).toEqual(["Todos", "Estudiante", "Titulado", "Mentor", "Empresa", "Administrador"]);
+  });
+
+  it("vuelve a cargar los datos al presionar actualizar", async () => {
+    const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
+    await renderLoadedView();
+
+    fireEvent.click(screen.getByRole("button", { name: "actualizar" }));
+
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "actualizar" }).disabled).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByText("Juan Carlos Peres Rojas")).toBeDefined();
+    });
+    expect(getRegisteredUsersSpy).toHaveBeenCalledTimes(2);
   });
 
   it("navega a la última página", async () => {
@@ -62,24 +83,61 @@ describe("RegisteredUsersReportView", () => {
       expect(screen.getByText("Mostrando 11-20 de 24 usuarios")).toBeDefined();
     });
 
-    fireEvent.change(screen.getByLabelText("Tipo de usuario"), { target: { value: "COMPANY" } });
+    selectUserType("Empresa");
 
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-4 de 4 usuarios")).toBeDefined();
     });
     expect(screen.getByText("Diego Mercado Rocha")).toBeDefined();
     expect(screen.queryByText("Juan Carlos Peres Rojas")).toBeNull();
+    expect(screen.getByRole("combobox", { name: "Tipo de usuario" }).textContent).toContain("Empresa");
 
-    fireEvent.change(screen.getByLabelText("Tipo de usuario"), { target: { value: "MENTOR" } });
+    selectUserType("Mentor");
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-2 de 2 usuarios")).toBeDefined();
     });
     expect(screen.getByText("Gabriela Soliz Arnez")).toBeDefined();
 
-    fireEvent.change(screen.getByLabelText("Tipo de usuario"), { target: { value: "ALL" } });
+    selectUserType("Todos");
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
     });
+  });
+
+  it("maneja el filtro con el teclado y lo cierra con Escape o al hacer clic afuera", async () => {
+    await renderLoadedView();
+    const combobox = screen.getByRole("combobox", { name: "Tipo de usuario" });
+
+    fireEvent.keyDown(combobox, { key: "ArrowDown" });
+    expect(combobox.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.keyDown(combobox, { key: "ArrowDown" });
+    fireEvent.keyDown(combobox, { key: "ArrowDown" });
+    fireEvent.keyDown(combobox, { key: "ArrowUp" });
+    fireEvent.keyDown(combobox, { key: "Enter" });
+
+    expect(combobox.getAttribute("aria-expanded")).toBe("false");
+    await waitFor(() => {
+      expect(combobox.textContent).toContain("Estudiante");
+    });
+
+    fireEvent.keyDown(combobox, { key: " " });
+    expect(screen.getByRole("listbox")).toBeDefined();
+    fireEvent.keyDown(combobox, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).toBeNull();
+
+    fireEvent.click(combobox);
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("no vuelve a consultar si se elige la misma opción", async () => {
+    const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
+    await renderLoadedView();
+
+    selectUserType("Todos");
+
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(getRegisteredUsersSpy).toHaveBeenCalledTimes(1);
   });
 
   it("muestra un mensaje cuando no hay usuarios", async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { PaginatedData } from "@/shared/types/api-response.types";
 import { reportsService } from "../services/reports.service";
 import type { RegisteredUser, UserType } from "../types/registered-user.types";
@@ -16,7 +16,8 @@ interface RegisteredUsersState {
 // Se migrará a useQuery cuando TanStack Query esté instalado en el proyecto.
 export function useRegisteredUsers(page: number, userType?: UserType) {
   const [state, setState] = useState<RegisteredUsersState | null>(null);
-  const requestKey = `${page}-${userType ?? "ALL"}`;
+  const [refreshCount, setRefreshCount] = useState(0);
+  const requestKey = `${page}-${userType ?? "ALL"}-${refreshCount}`;
 
   useEffect(() => {
     let isCancelled = false;
@@ -37,6 +38,8 @@ export function useRegisteredUsers(page: number, userType?: UserType) {
     };
   }, [page, userType, requestKey]);
 
+  const refresh = useCallback(() => setRefreshCount((count) => count + 1), []);
+
   const isCurrentRequest = state?.requestKey === requestKey;
   const totalItems = state?.result?.totalItems ?? 0;
 
@@ -46,5 +49,6 @@ export function useRegisteredUsers(page: number, userType?: UserType) {
     totalPages: Math.max(1, Math.ceil(totalItems / REGISTERED_USERS_PAGE_SIZE)),
     isLoading: !isCurrentRequest,
     errorMessage: isCurrentRequest ? state.errorMessage : undefined,
+    refresh,
   };
 }

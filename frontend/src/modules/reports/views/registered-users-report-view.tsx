@@ -19,7 +19,7 @@ const BREADCRUMB_ITEMS: BreadcrumbItem[] = [
 export function RegisteredUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [userType, setUserType] = useState<UserType | undefined>(undefined);
-  const { users, totalItems, totalPages, isLoading, errorMessage } = useRegisteredUsers(currentPage, userType);
+  const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRegisteredUsers(currentPage, userType);
 
   const handleUserTypeChange = (selectedUserType?: UserType) => {
     setUserType(selectedUserType);
@@ -48,7 +48,7 @@ export function RegisteredUsersReportView() {
           {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
         </p>
         <div className="flex justify-center">
-          <RefreshButton />
+          <RefreshButton onClick={refresh} isRefreshing={isLoading} />
         </div>
         <div className="flex justify-center md:justify-end">
           <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
