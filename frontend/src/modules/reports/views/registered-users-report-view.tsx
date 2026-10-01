@@ -38,19 +38,21 @@ export function RegisteredUsersReportView() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <UserTypeFilter value={userType} onChange={handleUserTypeChange} />
-        <div className="flex flex-wrap items-center gap-3 lg:flex-1 lg:justify-between lg:pl-16">
-          <RefreshButton />
-          <ReportActions />
-        </div>
+        <ReportActions />
       </div>
 
       <RegisteredUsersTable users={users} isLoading={isLoading} errorMessage={errorMessage} />
 
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-        <p className="text-sm text-text-secondary">
+      <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
+        <p className="text-center text-sm text-text-secondary md:text-left">
           {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
         </p>
-        <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        <div className="flex justify-center">
+          <RefreshButton />
+        </div>
+        <div className="flex justify-center md:justify-end">
+          <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </div>
       </div>
     </section>
   );
