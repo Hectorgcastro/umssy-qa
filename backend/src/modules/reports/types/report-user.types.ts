@@ -1,4 +1,4 @@
-export const REPORT_USER_TYPES = ['graduate', 'company', 'admin'] as const;
+export const REPORT_USER_TYPES = ['graduate', 'student', 'company', 'admin'] as const;
 
 export type ReportUserType = (typeof REPORT_USER_TYPES)[number];
 

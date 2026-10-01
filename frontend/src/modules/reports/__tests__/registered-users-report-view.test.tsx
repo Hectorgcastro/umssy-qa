@@ -121,12 +121,12 @@ describe('RegisteredUsersReportView', () => {
     fireEvent.click(select)
     expect(
       screen.getAllByRole('option').map((option) => option.textContent),
-    ).toEqual(['Todos', 'Titulado', 'Empresa', 'Administrador'])
+    ).toEqual(['Todos', 'Estudiante', 'Titulado', 'Empresa', 'Administrador'])
 
-    fireEvent.click(screen.getByRole('option', { name: 'Empresa' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Estudiante' }))
 
     await waitFor(() =>
-      expect(lastRequestParams()).toMatchObject({ userType: 'company', page: 1 }),
+      expect(lastRequestParams()).toMatchObject({ userType: 'student', page: 1 }),
     )
   })
 

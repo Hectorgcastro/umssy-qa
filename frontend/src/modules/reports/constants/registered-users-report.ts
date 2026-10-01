@@ -9,6 +9,7 @@ export const REGISTERED_USERS_BREADCRUMB: BreadcrumbItem[] = [
 
 export const USER_TYPE_OPTIONS: SelectOption[] = [
   { value: "all", label: "Todos" },
+  { value: "student", label: "Estudiante" },
   { value: "graduate", label: "Titulado" },
   { value: "company", label: "Empresa" },
   { value: "admin", label: "Administrador" },

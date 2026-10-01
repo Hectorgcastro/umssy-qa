@@ -50,12 +50,17 @@ describe('ReportsService', () => {
       expect(result).toMatchObject({ total: 3, page: 1, limit: 10 });
     });
 
-    it('filtra por tipo de usuario', () => {
-      const result = buildService().getRegisteredUsers(
-        registeredQuery({ userType: 'company' }),
-      );
+    it.each([
+      { userType: 'company', expectedId: 'b' },
+      { userType: 'student', expectedId: 'student-1' },
+    ])('filtra por tipo de usuario $userType', ({ userType, expectedId }) => {
+      const service = buildService([
+        ...USERS,
+        buildUser({ id: 'student-1', userType: 'student' }),
+      ]);
+      const result = service.getRegisteredUsers(registeredQuery({ userType }));
 
-      expect(result.items.map((user) => user.id)).toEqual(['b']);
+      expect(result.items.map((user) => user.id)).toEqual([expectedId]);
     });
 
     it('filtra por gestión', () => {
