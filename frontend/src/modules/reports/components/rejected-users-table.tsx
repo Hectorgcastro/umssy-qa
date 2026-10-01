@@ -2,23 +2,19 @@ import { FileText } from "lucide-react";
 import { formatDate } from "@/shared/utils/date.utils";
 import { USER_DOCUMENT_LABELS } from "../constants/registered-users.constants";
 import type { RejectedUser } from "../types/rejected-user.types";
-import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
+import { getNoResultsMessage } from "../utils/no-results-message";
+import { TableMessageRow, TableNoResultsRow, TableSkeletonRows } from "./table-state-rows";
 
 interface RejectedUsersTableProps {
   users: RejectedUser[];
   isLoading: boolean;
   errorMessage?: string;
-  emptyMessage?: string;
+  searchTerm?: string;
 }
 
 const COLUMN_COUNT = 5;
 
-export function RejectedUsersTable({
-  users,
-  isLoading,
-  errorMessage,
-  emptyMessage = "No hay usuarios rechazados.",
-}: RejectedUsersTableProps) {
+export function RejectedUsersTable({ users, isLoading, errorMessage, searchTerm = "" }: RejectedUsersTableProps) {
   const renderBody = () => {
     if (isLoading) {
       return <TableSkeletonRows columnCount={COLUMN_COUNT} />;
@@ -28,8 +24,12 @@ export function RejectedUsersTable({
       return <TableMessageRow columnCount={COLUMN_COUNT} message={errorMessage} />;
     }
 
+    if (users.length === 0 && searchTerm) {
+      return <TableNoResultsRow columnCount={COLUMN_COUNT} message={getNoResultsMessage(searchTerm)} />;
+    }
+
     if (users.length === 0) {
-      return <TableMessageRow columnCount={COLUMN_COUNT} message={emptyMessage} />;
+      return <TableMessageRow columnCount={COLUMN_COUNT} message="No hay usuarios rechazados." />;
     }
 
     return users.map((user) => (

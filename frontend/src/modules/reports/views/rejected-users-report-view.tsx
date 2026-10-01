@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Breadcrumb, type BreadcrumbItem } from "@/shared/components/layout";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
-import { EmailSearchInput } from "../components/email-search-input";
+import { UserSearchInput } from "../components/user-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
 import { RefreshButton } from "../components/refresh-button";
 import { RejectedUsersTable } from "../components/rejected-users-table";
@@ -40,7 +40,7 @@ export function RejectedUsersReportView() {
       </header>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <EmailSearchInput value={searchInput} onChange={handleSearchChange} />
+        <UserSearchInput value={searchInput} onChange={handleSearchChange} />
         <div className="flex flex-wrap items-center gap-3">
           <RefreshButton label="Actualizar" onClick={refresh} isRefreshing={isLoading} />
           <ExportCsvButton />
@@ -51,7 +51,7 @@ export function RejectedUsersReportView() {
         users={users}
         isLoading={isLoading}
         errorMessage={errorMessage}
-        emptyMessage={search ? "No se encontraron usuarios rechazados con ese correo." : undefined}
+        searchTerm={search}
       />
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">

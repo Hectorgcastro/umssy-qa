@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 
 interface RefreshButtonProps {
@@ -7,14 +10,33 @@ interface RefreshButtonProps {
 }
 
 export function RefreshButton({ label = "actualizar", onClick, isRefreshing = false }: RefreshButtonProps) {
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const handleClick = () => {
+    if (!onClick) return;
+    setIsSpinning(true);
+    onClick();
+  };
+
+  // Se detiene al terminar una vuelta completa, para que el ícono no salte.
+  const handleAnimationIteration = () => {
+    if (!isRefreshing) setIsSpinning(false);
+  };
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={isRefreshing}
       className="flex items-center gap-2 rounded-md bg-ink px-5 py-2.5 text-base font-semibold text-surface transition-colors hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-70"
     >
-      <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} strokeWidth={1.5} aria-hidden="true" />
+      <RefreshCw
+        data-testid="refresh-icon"
+        onAnimationIteration={handleAnimationIteration}
+        className={`h-5 w-5 ${isSpinning || isRefreshing ? "animate-spin" : ""}`}
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
       {label}
     </button>
   );

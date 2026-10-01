@@ -44,7 +44,7 @@ describe("RejectedUsersReportView", () => {
     render(<RejectedUsersReportView />);
 
     expect(screen.getByRole("heading", { name: "Reporte de usuarios rechazados" })).toBeDefined();
-    expect(screen.getByPlaceholderText("Buscar por correo electrónico")).toBeDefined();
+    expect(screen.getByPlaceholderText("Buscar por nombre, correo o identificador")).toBeDefined();
     expect(screen.getByRole("button", { name: "Actualizar" })).toBeDefined();
     expect(screen.getByRole("button", { name: "Exportar CSV" })).toBeDefined();
     expect(screen.getAllByTestId("skeleton-row")).toHaveLength(5);
@@ -83,7 +83,7 @@ describe("RejectedUsersReportView", () => {
     });
 
     vi.useFakeTimers();
-    fireEvent.change(screen.getByPlaceholderText("Buscar por correo electrónico"), {
+    fireEvent.change(screen.getByPlaceholderText("Buscar por nombre, correo o identificador"), {
       target: { value: " juan.perez@ " },
     });
     expect(reportsService.getRejectedUsers).not.toHaveBeenCalledWith(expect.objectContaining({ search: "juan.perez@" }));
@@ -101,7 +101,7 @@ describe("RejectedUsersReportView", () => {
 
   it("limpia la búsqueda con el botón de la x", async () => {
     render(<RejectedUsersReportView />);
-    const searchInput = screen.getByPlaceholderText<HTMLInputElement>("Buscar por correo electrónico");
+    const searchInput = screen.getByPlaceholderText<HTMLInputElement>("Buscar por nombre, correo o identificador");
 
     expect(screen.queryByRole("button", { name: "Limpiar búsqueda" })).toBeNull();
     fireEvent.change(searchInput, { target: { value: "juan" } });
@@ -111,15 +111,19 @@ describe("RejectedUsersReportView", () => {
     expect(screen.queryByRole("button", { name: "Limpiar búsqueda" })).toBeNull();
   });
 
-  it("muestra un mensaje cuando la búsqueda no encuentra usuarios", async () => {
+  it.each([
+    { searchTerm: "noexiste@correo.com", expected: "No se encontró ningún usuario con el correo" },
+    { searchTerm: "Pedro Ninguno", expected: "No se encontró ningún usuario con el nombre" },
+    { searchTerm: "999999999", expected: "No se encontró ningún usuario con el identificador" },
+  ])('muestra "$expected" cuando la búsqueda no encuentra usuarios', async ({ searchTerm, expected }) => {
     render(<RejectedUsersReportView />);
 
-    fireEvent.change(screen.getByPlaceholderText("Buscar por correo electrónico"), {
-      target: { value: "noexiste@correo.com" },
+    fireEvent.change(screen.getByPlaceholderText("Buscar por nombre, correo o identificador"), {
+      target: { value: searchTerm },
     });
 
     await waitFor(() => {
-      expect(screen.getByText("No se encontraron usuarios rechazados con ese correo.")).toBeDefined();
+      expect(screen.getByRole("status").textContent).toBe(expected);
     });
     expect(screen.getByText("Mostrando 0-0 de 0 usuarios")).toBeDefined();
   });

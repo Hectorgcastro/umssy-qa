@@ -1,11 +1,11 @@
 import { Search, X } from "lucide-react";
 
-interface EmailSearchInputProps {
+interface UserSearchInputProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-export function EmailSearchInput({ value, onChange }: EmailSearchInputProps) {
+export function UserSearchInput({ value, onChange }: UserSearchInputProps) {
   return (
     <div className="relative w-full sm:w-96">
       <Search
@@ -16,8 +16,8 @@ export function EmailSearchInput({ value, onChange }: EmailSearchInputProps) {
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Buscar por correo electrónico"
-        aria-label="Buscar por correo electrónico"
+        placeholder="Buscar por nombre, correo o identificador"
+        aria-label="Buscar por nombre, correo o identificador"
         maxLength={100}
         className="w-full rounded-md border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-text-secondary focus:border-ink-soft focus:outline-none"
       />
