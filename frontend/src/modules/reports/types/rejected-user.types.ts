@@ -1,15 +1,16 @@
-export type RejectedDocumentStatus = "OBSERVED" | "NOT_SUBMITTED";
+import type { UserDocumentType } from "./registered-user.types";
 
 export interface RejectedUser {
   id: string;
   fullName: string;
   email: string;
   identifier: string;
-  documentStatus: RejectedDocumentStatus;
+  documentType: UserDocumentType;
   registeredAt: string;
 }
 
 export interface RejectedUsersParams {
   page: number;
   limit: number;
+  search?: string;
 }

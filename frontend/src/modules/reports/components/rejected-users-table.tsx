@@ -1,22 +1,24 @@
 import { FileText } from "lucide-react";
 import { formatDate } from "@/shared/utils/date.utils";
-import type { RejectedDocumentStatus, RejectedUser } from "../types/rejected-user.types";
+import { USER_DOCUMENT_LABELS } from "../constants/registered-users.constants";
+import type { RejectedUser } from "../types/rejected-user.types";
 import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
 
 interface RejectedUsersTableProps {
   users: RejectedUser[];
   isLoading: boolean;
   errorMessage?: string;
+  emptyMessage?: string;
 }
-
-const DOCUMENT_STATUS_LABELS: Record<RejectedDocumentStatus, string> = {
-  OBSERVED: "Observado",
-  NOT_SUBMITTED: "No presentó documento",
-};
 
 const COLUMN_COUNT = 5;
 
-export function RejectedUsersTable({ users, isLoading, errorMessage }: RejectedUsersTableProps) {
+export function RejectedUsersTable({
+  users,
+  isLoading,
+  errorMessage,
+  emptyMessage = "No hay usuarios rechazados.",
+}: RejectedUsersTableProps) {
   const renderBody = () => {
     if (isLoading) {
       return <TableSkeletonRows columnCount={COLUMN_COUNT} />;
@@ -27,7 +29,7 @@ export function RejectedUsersTable({ users, isLoading, errorMessage }: RejectedU
     }
 
     if (users.length === 0) {
-      return <TableMessageRow columnCount={COLUMN_COUNT} message="No hay usuarios rechazados." />;
+      return <TableMessageRow columnCount={COLUMN_COUNT} message={emptyMessage} />;
     }
 
     return users.map((user) => (
@@ -38,7 +40,7 @@ export function RejectedUsersTable({ users, isLoading, errorMessage }: RejectedU
         <td className="px-6 py-4">
           <span className="flex items-center gap-2 text-ink-soft">
             <FileText className="h-5 w-5 shrink-0 text-ink" strokeWidth={1.5} aria-hidden="true" />
-            {DOCUMENT_STATUS_LABELS[user.documentStatus]}
+            {USER_DOCUMENT_LABELS[user.documentType]}
           </span>
         </td>
         <td className="whitespace-nowrap px-6 py-4 text-ink-soft">{formatDate(user.registeredAt)}</td>

@@ -7,4 +7,4 @@ export { useReportHistory } from "./hooks/use-report-history";
 export { reportsService } from "./services/reports.service";
 export type { GeneratedReport, ReportType } from "./types/generated-report.types";
 export type { RegisteredUser, UserDocumentType, UserType } from "./types/registered-user.types";
-export type { RejectedDocumentStatus, RejectedUser } from "./types/rejected-user.types";
+export type { RejectedUser } from "./types/rejected-user.types";

@@ -1,9 +1,9 @@
+import { apiClient } from "@/shared/services/api-client";
 import type { ApiResponse, PaginatedData } from "@/shared/types/api-response.types";
 import type { GeneratedReport, ReportHistoryParams } from "../types/generated-report.types";
 import type { RegisteredUser, RegisteredUsersParams } from "../types/registered-user.types";
 import type { RejectedUser, RejectedUsersParams } from "../types/rejected-user.types";
 import { REGISTERED_USERS_MOCK } from "./registered-users.mock";
-import { REJECTED_USERS_MOCK } from "./rejected-users.mock";
 import { REPORT_HISTORY_MOCK } from "./report-history.mock";
 
 export const reportsService = {
@@ -51,23 +51,15 @@ export const reportsService = {
     };
   },
 
-  // Mock temporal: reemplazar por apiClient.get("/reports/rejected-users", { params }) cuando exista el endpoint.
   getRejectedUsers: async ({
     page,
     limit,
+    search,
   }: RejectedUsersParams): Promise<ApiResponse<PaginatedData<RejectedUser>>> => {
-    const offset = (page - 1) * limit;
+    const { data } = await apiClient.get<ApiResponse<PaginatedData<RejectedUser>>>("/reports/rejected-users", {
+      params: { page, limit, search: search || undefined },
+    });
 
-    return {
-      statusCode: 200,
-      data: {
-        items: REJECTED_USERS_MOCK.slice(offset, offset + limit),
-        totalItems: REJECTED_USERS_MOCK.length,
-      },
-      offset,
-      page,
-      detail: "Usuarios rechazados obtenidos correctamente",
-      ok: true,
-    };
+    return data;
   },
 };
