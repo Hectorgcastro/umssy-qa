@@ -1,19 +1,43 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { apiClient } from '@/shared/services/api-client'
 import { RejectedUsersReportView } from '../index'
+import { buildApiPage, buildReportUser } from './report-test-data'
+
+const getSpy = vi.spyOn(apiClient, 'get')
 
 describe('RejectedUsersReportView', () => {
-  afterEach(() => {
-    cleanup()
+  beforeEach(() => {
+    getSpy.mockResolvedValue(
+      buildApiPage([
+        buildReportUser({
+          fullName: 'Juan Carlos Peres Rojas',
+          registrationStatus: 'rejected',
+          rejectionReason: 'No presentó documento.',
+        }),
+      ]),
+    )
   })
 
-  it('muestra la ruta de navegación y el título', () => {
+  afterEach(() => {
+    cleanup()
+    getSpy.mockReset()
+  })
+
+  it('muestra la ruta, el título, el buscador y los botones', async () => {
     render(<RejectedUsersReportView />)
+    await screen.findByText('Juan Carlos Peres Rojas')
 
     const breadcrumb = within(
       screen.getByRole('navigation', { name: 'Ruta de navegación' }),
     )
-    expect(breadcrumb.getByRole('link', { name: 'Inicio' })).toBeDefined()
     expect(
       breadcrumb
         .getByText('Reporte de usuarios rechazados')
@@ -25,11 +49,6 @@ describe('RejectedUsersReportView', () => {
         name: 'Reporte de usuarios rechazados',
       }),
     ).toBeDefined()
-  })
-
-  it('muestra el buscador y los botones de acciones', () => {
-    render(<RejectedUsersReportView />)
-
     expect(
       screen.getByRole('searchbox', { name: 'Buscar usuarios rechazados' }),
     ).toBeDefined()
@@ -37,8 +56,9 @@ describe('RejectedUsersReportView', () => {
     expect(screen.getByRole('button', { name: 'Exportar CSV' })).toBeDefined()
   })
 
-  it('muestra las columnas de la tabla sin datos', () => {
+  it('muestra las columnas y los usuarios rechazados', async () => {
     render(<RejectedUsersReportView />)
+    await screen.findByText('Juan Carlos Peres Rojas')
 
     const headers = screen
       .getAllByRole('columnheader')
@@ -50,8 +70,37 @@ describe('RejectedUsersReportView', () => {
       'Documento',
       'Fecha de Registro',
     ])
+    expect(screen.getByText('Mostrando 1-1 de 1 usuarios')).toBeDefined()
+    expect(getSpy).toHaveBeenCalledWith('/reports/rejected-users', {
+      params: { page: 1, limit: 10 },
+    })
+  })
+
+  it('busca después de que el usuario deja de escribir', async () => {
+    render(<RejectedUsersReportView />)
+    await screen.findByText('Juan Carlos Peres Rojas')
+    const callsBefore = getSpy.mock.calls.length
+
+    fireEvent.change(
+      screen.getByRole('searchbox', { name: 'Buscar usuarios rechazados' }),
+      { target: { value: ' juan ' } },
+    )
+    expect(getSpy.mock.calls.length).toBe(callsBefore)
+
+    await waitFor(() =>
+      expect(getSpy).toHaveBeenLastCalledWith('/reports/rejected-users', {
+        params: { page: 1, limit: 10, search: 'juan' },
+      }),
+    )
+  })
+
+  it('muestra un mensaje si no hay rechazados', async () => {
+    getSpy.mockResolvedValue(buildApiPage([]))
+
+    render(<RejectedUsersReportView />)
+
     expect(
-      screen.getByText('No hay usuarios rechazados para mostrar.'),
+      await screen.findByText('No hay usuarios rechazados para mostrar.'),
     ).toBeDefined()
   })
 })

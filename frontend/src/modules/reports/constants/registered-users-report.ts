@@ -13,12 +13,3 @@ export const USER_TYPE_OPTIONS: SelectOption[] = [
   { value: "company", label: "Empresa" },
   { value: "admin", label: "Administrador" },
 ];
-
-export const REGISTERED_USERS_COLUMNS = [
-  "Usuario",
-  "Correo",
-  "Tipo de Usuario",
-  "Identificador",
-  "Documento",
-  "Fecha de Registro",
-];
