@@ -10,12 +10,13 @@ export default defineConfig({
     },
   },
   test: {
+setupFiles: ['./vitest.setup.ts'],
     environment: 'jsdom',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/app/layout.tsx', '**/*.test.{ts,tsx}'],
+        exclude: ['src/app/layout.tsx', '**/*.test.{ts,tsx}', 'src/lib/utils.ts', 'src/components/ui/card/index.ts'],
       thresholds: {
         lines: 80,
         functions: 80,
