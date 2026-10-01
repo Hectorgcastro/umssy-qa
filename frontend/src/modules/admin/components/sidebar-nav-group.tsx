@@ -29,7 +29,7 @@ export function SidebarNavGroup({ item, pathname }: SidebarNavGroupProps) {
             : "border-transparent text-white/80 hover:bg-white/5 hover:text-white"
         }`}
       >
-        <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+        <Icon aria-hidden="true" className="h-6 w-6 shrink-0" strokeWidth={1.5} />
         <span className="flex-1">{item.label}</span>
         <ChevronDown
           aria-hidden="true"
