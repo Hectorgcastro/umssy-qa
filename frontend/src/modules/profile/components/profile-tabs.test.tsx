@@ -28,14 +28,12 @@ describe("ProfileTabs", () => {
     expect(documentsTab).toHaveAttribute("aria-current", "page");
   });
 
-  it("shows the unavailable tabs as disabled text", () => {
-    render(<ProfileTabs activeTab="presentation" />);
+  it("links the trajectory tab to the education section", () => {
+    render(<ProfileTabs activeTab="trajectory" />);
 
-    expect(screen.queryByRole("link", { name: "Documentos" })).not.toBeInTheDocument();
-    expect(screen.getByText("Documentos")).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByText("Documentos")).toHaveAttribute("title", "Disponible próximamente");
-    expect(screen.queryByRole("link", { name: "Trayectoria" })).not.toBeInTheDocument();
-    expect(screen.getByText("Trayectoria")).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByText("Trayectoria")).toHaveAttribute("title", "Disponible próximamente");
+    const trajectoryTab = screen.getByRole("link", { name: "Trayectoria" });
+
+    expect(trajectoryTab).toHaveAttribute("href", "/profile/trajectory/education");
+    expect(trajectoryTab).toHaveAttribute("aria-current", "page");
   });
 });

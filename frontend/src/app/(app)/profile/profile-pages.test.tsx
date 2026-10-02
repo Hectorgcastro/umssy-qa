@@ -33,6 +33,8 @@ describe("profile pages", () => {
     render(<EducationPage />);
 
     expect(screen.getByText("education-view")).toBeInTheDocument();
+  });
+
   it("mounts the documents cv view", () => {
     render(<DocumentsPage />);
 
