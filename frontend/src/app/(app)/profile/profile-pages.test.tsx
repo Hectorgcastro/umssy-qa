@@ -3,11 +3,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import DocumentsPage from "./documents/page";
 import PersonalInfoPage from "./personal-info/page";
 import PresentationPage from "./presentation/page";
+import EducationPage from "./trajectory/education/page";
 
 vi.mock("@/modules/profile", () => ({
   DocumentsCvView: () => <p>documents-cv-view</p>,
   PersonalInfoView: () => <p>personal-info-view</p>,
   PresentationView: () => <p>presentation-view</p>,
+  EducationView: () => <p>education-view</p>,
 }));
 
 describe("profile pages", () => {
@@ -25,6 +27,12 @@ describe("profile pages", () => {
     render(<PresentationPage />);
 
     expect(screen.getByText("presentation-view")).toBeInTheDocument();
+  });
+
+  it("mounts the education view", () => {
+    render(<EducationPage />);
+
+    expect(screen.getByText("education-view")).toBeInTheDocument();
   });
 
   it("mounts the documents cv view", () => {
