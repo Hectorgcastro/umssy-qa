@@ -21,7 +21,7 @@ export function useAvailability(filters?: AvailabilityFilters) {
       const data = await availabilityApi.getAvailabilityBlocks(filtersRef.current);
       if (mountedRef.current) setBlocks(data);
     } catch {
-      if (mountedRef.current) setError("Failed to fetch availability blocks");
+      if (mountedRef.current) setError("Error al obtener los bloques de disponibilidad");
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
@@ -41,7 +41,7 @@ export function useAvailability(filters?: AvailabilityFilters) {
       setBlocks((prev) => [...prev, newBlock]);
       return newBlock;
     } catch {
-      setError("Failed to create availability block");
+      setError("Error al crear el bloque de disponibilidad");
       return null;
     }
   };
@@ -52,7 +52,7 @@ export function useAvailability(filters?: AvailabilityFilters) {
       setBlocks((prev) => prev.map((block) => (block.id === id ? updatedBlock : block)));
       return updatedBlock;
     } catch {
-      setError("Failed to update availability block");
+      setError("Error al actualizar el bloque de disponibilidad");
       return null;
     }
   };
@@ -63,7 +63,7 @@ export function useAvailability(filters?: AvailabilityFilters) {
       setBlocks((prev) => prev.filter((block) => block.id !== id));
       return true;
     } catch {
-      setError("Failed to delete availability block");
+      setError("Error al eliminar el bloque de disponibilidad");
       return false;
     }
   };
@@ -98,7 +98,7 @@ export function useAvailabilityBlock(id: string) {
       })
       .catch(() => {
         if (mountedRef.current) {
-          setError("Failed to fetch availability block");
+          setError("Error al obtener el bloque de disponibilidad");
           setIsLoading(false);
         }
       });
