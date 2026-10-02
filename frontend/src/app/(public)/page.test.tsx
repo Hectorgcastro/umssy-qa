@@ -10,14 +10,14 @@ describe('Home Page', () => {
 
   it('renderiza el título principal y muestra la respuesta GET del backend via Axios', async () => {
     vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
-      data: 'Hello World!',
+      data: '¡Hola, mundo!',
     })
 
     render(<Home />)
     expect(screen.getByText('PWA Egresados UMSS')).toBeDefined()
 
     await waitFor(() => {
-      expect(screen.getByText('Hello World!')).toBeDefined()
+      expect(screen.getByText('¡Hola, mundo!')).toBeDefined()
     })
   })
 
@@ -27,7 +27,7 @@ describe('Home Page', () => {
     render(<Home />)
 
     await waitFor(() => {
-      expect(screen.getByText('Error connecting to backend')).toBeDefined()
+      expect(screen.getByText('No se pudo conectar con el servidor')).toBeDefined()
     })
   })
 })
