@@ -1,28 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import type { NavigationItem } from "@/shared/types/navigation.types";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import { SIDEBAR_ITEM_CLASS, SIDEBAR_SUB_ITEM_CLASS } from "@/shared/constants/sidebar.constants";
+import type { SidebarNavItemProps } from "@/shared/types/sidebar-nav-item-props.types";
+import { isRouteActive } from "@/shared/utils/is-route-active";
 
-interface SidebarNavItemProps {
-  item: NavigationItem;
-  pathname: string;
-  onNavigate?: () => void;
-}
-
-const BASE_ITEM_CLASSES =
-  "relative flex w-full items-center gap-3 rounded-md px-4 py-3 text-left text-base transition-colors";
-const ACTIVE_ITEM_CLASSES =
-  "bg-surface/10 text-surface before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-md before:bg-accent";
-const IDLE_ITEM_CLASSES = "text-surface/80 hover:bg-surface/5 hover:text-surface";
-
-function isRouteActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function SidebarNavItem({ item, pathname, onNavigate }: SidebarNavItemProps) {
+export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
   const Icon = item.icon;
+  const submenuId = useId();
   const hasActiveChild = item.children?.some((child) => isRouteActive(pathname, child.href)) ?? false;
   const [isExpanded, setIsExpanded] = useState(hasActiveChild);
 
@@ -30,65 +24,61 @@ export function SidebarNavItem({ item, pathname, onNavigate }: SidebarNavItemPro
     const isActive = item.href ? isRouteActive(pathname, item.href) : false;
 
     return (
-      <Link
-        href={item.href ?? "#"}
-        onClick={onNavigate}
-        aria-current={isActive ? "page" : undefined}
-        className={`${BASE_ITEM_CLASSES} ${isActive ? ACTIVE_ITEM_CLASSES : IDLE_ITEM_CLASSES}`}
-      >
-        <Icon className="h-6 w-6 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-        <span>{item.label}</span>
-      </Link>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          render={<Link href={item.href ?? "#"} />}
+          isActive={isActive}
+          aria-current={isActive ? "page" : undefined}
+          className={SIDEBAR_ITEM_CLASS}
+        >
+          <Icon strokeWidth={1.5} aria-hidden="true" />
+          <span>{item.label}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     );
   }
 
-  const submenuId = `submenu-${item.label.toLowerCase().replace(/\s+/g, "-")}`;
-
   return (
-    <div className={hasActiveChild ? "rounded-md bg-surface/5" : undefined}>
-      <button
-        type="button"
-        onClick={() => setIsExpanded((previous) => !previous)}
+    <SidebarMenuItem className={hasActiveChild ? "rounded-md bg-surface/5" : undefined}>
+      <SidebarMenuButton
+        isActive={hasActiveChild}
         aria-expanded={isExpanded}
         aria-controls={submenuId}
-        className={`${BASE_ITEM_CLASSES} ${hasActiveChild ? ACTIVE_ITEM_CLASSES : IDLE_ITEM_CLASSES}`}
+        onClick={() => setIsExpanded((previous) => !previous)}
+        className={SIDEBAR_ITEM_CLASS}
       >
-        <Icon className="h-6 w-6 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+        <Icon strokeWidth={1.5} aria-hidden="true" />
         <span className="flex-1">{item.label}</span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-accent transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          className={`text-accent transition-transform ${isExpanded ? "rotate-180" : ""}`}
           aria-hidden="true"
         />
-      </button>
+      </SidebarMenuButton>
 
       {isExpanded && (
-        <ul id={submenuId} className="flex flex-col gap-1 py-2 pl-6 pr-2">
+        <SidebarMenuSub id={submenuId} className="mx-0 border-l-0 py-2 pl-6 pr-2">
           {item.children.map((child) => {
             const isChildActive = isRouteActive(pathname, child.href);
 
             return (
-              <li key={child.href}>
-                <Link
-                  href={child.href}
-                  onClick={onNavigate}
+              <SidebarMenuSubItem key={child.href}>
+                <SidebarMenuSubButton
+                  render={<Link href={child.href} />}
+                  isActive={isChildActive}
                   aria-current={isChildActive ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
-                    isChildActive
-                      ? "bg-surface/10 text-surface"
-                      : "text-surface/70 hover:bg-surface/5 hover:text-surface"
-                  }`}
+                  className={SIDEBAR_SUB_ITEM_CLASS}
                 >
                   <span
-                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${isChildActive ? "bg-accent" : "bg-surface/40"}`}
+                    className={`size-1.5 shrink-0 rounded-full ${isChildActive ? "bg-accent" : "bg-surface/40"}`}
                     aria-hidden="true"
                   />
                   <span>{child.label}</span>
-                </Link>
-              </li>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
             );
           })}
-        </ul>
+        </SidebarMenuSub>
       )}
-    </div>
+    </SidebarMenuItem>
   );
 }
