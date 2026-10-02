@@ -10,8 +10,9 @@ describe("DocumentsCvView", () => {
   it("renders the cv title in the header and the main heading", () => {
     render(<DocumentsCvView />);
 
-    expect(screen.getByRole("heading", { level: 1, name: "Currículum PDF" })).toBeInTheDocument();
-    expect(screen.getAllByText("Currículum PDF")).toHaveLength(2);
+    expect(screen.getByRole("heading", { level: 1, name: "Currículum Vitae" })).toBeInTheDocument();
+    expect(screen.getAllByText("Currículum Vitae")).toHaveLength(2);
+    expect(screen.queryByText("Currículum PDF")).not.toBeInTheDocument();
     expect(
       screen.getByText("Sube tu CV para tenerlo disponible en el perfil y mantenerlo actualizado"),
     ).toBeInTheDocument();
