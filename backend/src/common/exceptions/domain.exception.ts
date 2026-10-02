@@ -1,4 +1,3 @@
-// Clase base abstracta para todas las excepciones de negocio.
 export abstract class DomainException extends Error {
   constructor(
     message: string,
