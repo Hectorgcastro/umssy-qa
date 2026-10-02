@@ -13,7 +13,6 @@ export interface CreateAvailabilityBlockInput {
   mentorId: string;
   startAt: string;
   endAt: string;
-  seriesId?: string;
   repeatUntil?: string;
 }
 
