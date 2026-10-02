@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { DocumentsCvView } from "./documents-cv-view";
 
@@ -7,12 +7,13 @@ describe("DocumentsCvView", () => {
     cleanup();
   });
 
-  it("renders the documents title and subtitle", () => {
+  it("renders the cv title in the header and the main heading", () => {
     render(<DocumentsCvView />);
 
-    expect(screen.getByRole("heading", { level: 1, name: "Documentos" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Currículum PDF" })).toBeInTheDocument();
+    expect(screen.getAllByText("Currículum PDF")).toHaveLength(2);
     expect(
-      screen.getByText("Sube o actualiza tu CV y mantén tus documentos en orden"),
+      screen.getByText("Sube tu CV para tenerlo disponible en el perfil y mantenerlo actualizado"),
     ).toBeInTheDocument();
   });
 
@@ -26,6 +27,7 @@ describe("DocumentsCvView", () => {
     expect(screen.getByText("Trayectoria")).toBeInTheDocument();
     expect(documentsTab).toHaveAttribute("href", "/profile/documents");
     expect(documentsTab).toHaveAttribute("aria-current", "page");
+    expect(screen.getAllByText("Documentos")).toHaveLength(1);
   });
 
   it("renders the upload and saved file cards", () => {
@@ -51,24 +53,10 @@ describe("DocumentsCvView", () => {
     expect(confirmButton).toHaveAttribute("title", "Disponible próximamente");
   });
 
-  it("marks step 1 as the current step", () => {
+  it("does not show the steps indicator nor the certifications link", () => {
     render(<DocumentsCvView />);
 
-    const steps = within(screen.getByRole("list", { name: "Pasos de documentos" }));
-
-    expect(steps.getByText("Currículum vitae").closest("li")).toHaveAttribute(
-      "aria-current",
-      "step",
-    );
-    expect(steps.getByText("Certificaciones").closest("li")).not.toHaveAttribute("aria-current");
-  });
-
-  it("links Ver certificaciones to the certifications step", () => {
-    render(<DocumentsCvView />);
-
-    expect(screen.getByRole("link", { name: "Ver certificaciones" })).toHaveAttribute(
-      "href",
-      "/profile/documents/certifications",
-    );
+    expect(screen.queryByRole("list", { name: "Pasos de documentos" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Ver certificaciones" })).not.toBeInTheDocument();
   });
 });

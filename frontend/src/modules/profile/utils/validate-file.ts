@@ -10,13 +10,10 @@ function hasAllowedFormat(
     return allowedTypes.includes(file.type);
   }
 
-  // Some systems leave the MIME type empty, so the extension of the name is checked instead.
   const fileName = file.name.toLowerCase();
   return allowedExtensions.some((extension) => fileName.endsWith(extension));
 }
 
-// Client-side check to guide the user; the backend validates the real content of the file.
-// Returns the error message in Spanish, or null when the file is valid.
 export function validateFile(
   file: File,
   allowedTypes: readonly string[],

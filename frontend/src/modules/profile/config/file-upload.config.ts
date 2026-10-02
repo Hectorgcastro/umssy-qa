@@ -2,7 +2,6 @@ export const BYTES_PER_KB = 1024;
 
 export const BYTES_PER_MB = 1024 * BYTES_PER_KB;
 
-// Must match the limit validated by the backend (issue #104).
 export const MAX_FILE_SIZE_MB = 5;
 
 export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * BYTES_PER_MB;
