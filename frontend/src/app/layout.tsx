@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 import "./globals.css";
-import { RegisterServiceWorker } from "./registerServiceWorker";
+import { RegisterServiceWorker } from "./register-service-worker";
 
 const inter=Inter({
   variable: "--font-inter",
