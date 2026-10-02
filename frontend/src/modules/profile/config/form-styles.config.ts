@@ -10,3 +10,6 @@ export const PRIMARY_BUTTON_CLASS =
 
 export const SECONDARY_BUTTON_CLASS =
   "h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft";
+
+export const DANGER_OUTLINE_BUTTON_CLASS =
+  "h-12 border-accent bg-surface px-6 text-[14px] font-semibold text-accent hover:bg-interaction hover:text-accent";
