@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { USER_TYPE_FILTER_OPTIONS, USER_TYPE_LABELS } from "../constants/registered-users.constants";
 import type { UserType } from "../types/registered-user.types";
 
@@ -86,8 +87,9 @@ export function UserTypeFilter({ value, onChange }: UserTypeFilterProps) {
 
   return (
     <div ref={containerRef} className="relative w-full sm:w-72">
-      <button
+      <Button
         type="button"
+        variant="outline"
         role="combobox"
         aria-labelledby={labelId}
         aria-haspopup="listbox"
@@ -96,7 +98,7 @@ export function UserTypeFilter({ value, onChange }: UserTypeFilterProps) {
         aria-activedescendant={isOpen ? `${listboxId}-option-${activeIndex}` : undefined}
         onClick={() => (isOpen ? setIsOpen(false) : openList())}
         onKeyDown={handleKeyDown}
-        className={`flex w-full cursor-pointer items-center rounded-md border bg-surface px-3 pb-2 pt-1.5 text-left transition-colors hover:border-ink-soft hover:bg-surface-soft focus:outline-none focus-visible:border-ink-soft ${
+        className={`h-auto w-full cursor-pointer justify-start rounded-md bg-surface px-3 pb-2 pt-1.5 text-left font-normal whitespace-normal hover:border-ink-soft hover:bg-surface-soft focus-visible:border-ink-soft focus-visible:ring-0 aria-expanded:bg-surface ${
           isOpen ? "border-ink-soft" : "border-border"
         }`}
       >
@@ -107,10 +109,10 @@ export function UserTypeFilter({ value, onChange }: UserTypeFilterProps) {
           <span className="block text-sm text-ink">{FILTER_OPTIONS[selectedIndex].label}</span>
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-text-secondary transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`size-4 shrink-0 text-text-secondary transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           aria-hidden="true"
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <ul
