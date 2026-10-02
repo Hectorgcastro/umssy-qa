@@ -28,3 +28,11 @@ export const MENTORSHIP_STEPS: MentorshipStepDefinition[] = [
     description: "Revisa tu configuración",
   },
 ];
+
+/** Estado completo del wizard (se irá llenando en T2-T5) */
+export interface MentorshipWizardState {
+  currentStep: MentorshipStep;
+  wantsToParticipate: boolean;
+  selectedTechnicalAreaIds: string[];
+  selectedOrientationTypeIds: string[];
+}

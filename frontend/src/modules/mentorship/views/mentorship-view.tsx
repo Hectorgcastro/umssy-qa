@@ -1,73 +1,60 @@
 "use client";
 
-import { useState } from "react";
 import { ProgressStepper } from "../components/progress-stepper";
-import {
-  MENTORSHIP_STEPS,
-  type MentorshipStep,
-} from "../types/mentorship.types";
+import { useMentorshipWizard } from "../hooks/use-mentorship-wizard";
+import { MENTORSHIP_STEPS } from "../types/mentorship.types";
 
 export function MentorshipView() {
-  const [currentStep, setCurrentStep] = useState<MentorshipStep>(1);
-
-  const canGoBack = currentStep > 1;
-  const canGoNext = currentStep < 4;
-
-  const handleBack = () => {
-    if (canGoBack) {
-      setCurrentStep((step) => (step - 1) as MentorshipStep);
-    }
-  };
-
-  const handleNext = () => {
-    if (canGoNext) {
-      setCurrentStep((step) => (step + 1) as MentorshipStep);
-    }
-  };
+  const {
+    currentStep,
+    goNext,
+    goBack,
+    canGoBack,
+    canGoNext,
+  } = useMentorshipWizard();
 
   const currentStepDefinition = MENTORSHIP_STEPS[currentStep - 1];
 
   return (
-    <main className="min-h-full bg-surface-soft px-4 py-8">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+    <main className="min-h-full bg-surface-soft px-4 py-6 sm:py-8">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 sm:gap-8">
         <ProgressStepper currentStep={currentStep} />
 
-        <section className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-          <div className="mb-6">
-            <h1 className="font-tight text-2xl font-bold text-ink">
+        <section className="rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6">
+          <header className="mb-6">
+            <h1 className="font-tight text-xl font-bold text-ink sm:text-2xl">
               Participa como mentor
             </h1>
-
-            <p className="mt-2 text-sm text-text-secondary">
+            <p className="mt-1 text-sm text-text-secondary">
               Configura tu participación como mentor.
             </p>
-          </div>
+          </header>
 
-          <div className="min-h-48 rounded-md border border-border bg-surface-soft p-6">
+          {/* Slot de contenido del paso actual – se reemplazará en T2-T5 */}
+          <div className="min-h-48 rounded-md border border-border bg-surface-soft p-4 sm:p-6">
             <p className="text-sm font-semibold text-ink">
               Paso {currentStep}: {currentStepDefinition.label}
             </p>
-
             <p className="mt-2 text-sm text-text-secondary">
               {currentStepDefinition.description}
             </p>
           </div>
 
-          <div className="mt-6 flex justify-between">
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
               type="button"
-              onClick={handleBack}
+              onClick={goBack}
               disabled={!canGoBack}
-              className="rounded-md border border-border-strong px-4 py-2 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-border-strong px-4 py-2.5 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               ← Volver
             </button>
 
             <button
               type="button"
-              onClick={handleNext}
+              onClick={goNext}
               disabled={!canGoNext}
-              className="rounded-md bg-accent px-5 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuar →
             </button>
