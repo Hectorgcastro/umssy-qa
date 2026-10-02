@@ -9,7 +9,6 @@ class TestDomainException extends DomainException {
   }
 }
 
-// Construye un host falso que expone un response con mocks de status y json.
 function buildHost() {
   const json = vi.fn();
   const status = vi.fn().mockReturnValue({ json });
