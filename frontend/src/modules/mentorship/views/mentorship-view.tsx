@@ -1,5 +1,6 @@
 "use client";
 
+import { ParticipationStep } from "../components/participation-step";
 import { ProgressStepper } from "../components/progress-stepper";
 import { useMentorshipWizard } from "../hooks/use-mentorship-wizard";
 import { MENTORSHIP_STEPS } from "../types/mentorship.types";
@@ -7,13 +8,25 @@ import { MENTORSHIP_STEPS } from "../types/mentorship.types";
 export function MentorshipView() {
   const {
     currentStep,
+    wantsToParticipate,
     goNext,
     goBack,
     canGoBack,
     canGoNext,
+    setState,
   } = useMentorshipWizard();
 
   const currentStepDefinition = MENTORSHIP_STEPS[currentStep - 1];
+
+  const canAdvance =
+    currentStep === 1 ? wantsToParticipate : canGoNext;
+
+  const handleParticipationChange = (value: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      wantsToParticipate: value,
+    }));
+  };
 
   return (
     <main className="min-h-full bg-surface-soft px-4 py-6 sm:py-8">
@@ -25,19 +38,29 @@ export function MentorshipView() {
             <h1 className="font-tight text-xl font-bold text-ink sm:text-2xl">
               Participa como mentor
             </h1>
+
             <p className="mt-1 text-sm text-text-secondary">
               Configura tu participación como mentor.
             </p>
           </header>
 
-          {/* Slot de contenido del paso actual – se reemplazará en T2-T5 */}
           <div className="min-h-48 rounded-md border border-border bg-surface-soft p-4 sm:p-6">
-            <p className="text-sm font-semibold text-ink">
-              Paso {currentStep}: {currentStepDefinition.label}
-            </p>
-            <p className="mt-2 text-sm text-text-secondary">
-              {currentStepDefinition.description}
-            </p>
+            {currentStep === 1 ? (
+              <ParticipationStep
+                isParticipating={wantsToParticipate}
+                onParticipationChange={handleParticipationChange}
+              />
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-ink">
+                  Paso {currentStep}: {currentStepDefinition.label}
+                </p>
+
+                <p className="mt-2 text-sm text-text-secondary">
+                  {currentStepDefinition.description}
+                </p>
+              </>
+            )}
           </div>
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
@@ -53,7 +76,7 @@ export function MentorshipView() {
             <button
               type="button"
               onClick={goNext}
-              disabled={!canGoNext}
+              disabled={!canAdvance}
               className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuar →

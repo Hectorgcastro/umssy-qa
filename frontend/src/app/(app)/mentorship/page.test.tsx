@@ -7,6 +7,13 @@ describe('MentorshipPage', () => {
     render(<MentorshipPage />)
 
     expect(screen.getByText('Participa como mentor')).toBeDefined()
-    expect(screen.getByText('Paso 1: Participación')).toBeDefined()
+
+    expect(
+      screen.getByRole('heading', { name: 'Participación' }),
+    ).toBeDefined()
+
+    expect(
+      screen.getByText('Quiero participar como mentor'),
+    ).toBeDefined()
   })
 })
