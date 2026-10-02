@@ -1,8 +1,15 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { SectionCardProps } from "../types/section-card-props.types";
 
-export function SectionCard({ title, description, children, className }: SectionCardProps) {
+export function SectionCard({ title, description, action, children, className }: SectionCardProps) {
   return (
     <Card
       className={cn(
@@ -16,6 +23,7 @@ export function SectionCard({ title, description, children, className }: Section
         {description ? (
           <CardDescription className="text-[15px] text-text-secondary">{description}</CardDescription>
         ) : null}
+        {action ? <CardAction className="row-span-3">{action}</CardAction> : null}
       </CardHeader>
       <CardContent className="px-8">{children}</CardContent>
     </Card>
