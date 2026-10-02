@@ -3,8 +3,6 @@
 import { Menu } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 
-// Replaces SidebarTrigger because the generated one has a fixed icon and an
-// English label, and files in components/ui are not edited.
 export function SidebarToggleButton() {
   const { open, toggleSidebar } = useSidebar();
 

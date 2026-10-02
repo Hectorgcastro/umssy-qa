@@ -1,13 +1,10 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SIDEBAR_STYLE } from "@/shared/constants/sidebar.constants";
 import type { AppShellProps } from "@/shared/types/app-shell-props.types";
 import { AppSidebar } from "./app-sidebar";
 import { SidebarToggleButton } from "./sidebar-toggle-button";
-
-// Wider than the shadcn default (16rem) so the brand text fits on one line.
-const SIDEBAR_STYLE = { "--sidebar-width": "18rem" } as CSSProperties;
 
 export function AppShell({ children, items, user }: AppShellProps) {
   return (

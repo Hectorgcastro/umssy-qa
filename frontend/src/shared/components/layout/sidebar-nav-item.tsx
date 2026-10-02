@@ -10,13 +10,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { SIDEBAR_ITEM_CLASS, SIDEBAR_SUB_ITEM_CLASS } from "@/shared/constants/sidebar.constants";
 import type { SidebarNavItemProps } from "@/shared/types/sidebar-nav-item-props.types";
 import { isRouteActive } from "@/shared/utils/is-route-active";
-
-const ITEM_CLASS =
-  "relative h-auto gap-3 px-4 py-3 text-base text-surface/80 hover:bg-surface/5 hover:text-surface active:bg-surface/10 active:text-surface data-active:bg-surface/10 data-active:font-normal data-active:text-surface data-active:before:absolute data-active:before:inset-y-0 data-active:before:left-0 data-active:before:w-1 data-active:before:rounded-l-md data-active:before:bg-accent [&_svg]:size-5";
-const SUB_ITEM_CLASS =
-  "h-auto gap-3 px-3 py-2 text-surface/70 hover:bg-surface/5 hover:text-surface active:bg-surface/10 active:text-surface data-active:bg-surface/10 data-active:text-surface";
 
 export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
   const Icon = item.icon;
@@ -33,7 +29,7 @@ export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
           render={<Link href={item.href ?? "#"} />}
           isActive={isActive}
           aria-current={isActive ? "page" : undefined}
-          className={ITEM_CLASS}
+          className={SIDEBAR_ITEM_CLASS}
         >
           <Icon strokeWidth={1.5} aria-hidden="true" />
           <span>{item.label}</span>
@@ -49,7 +45,7 @@ export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
         aria-expanded={isExpanded}
         aria-controls={submenuId}
         onClick={() => setIsExpanded((previous) => !previous)}
-        className={ITEM_CLASS}
+        className={SIDEBAR_ITEM_CLASS}
       >
         <Icon strokeWidth={1.5} aria-hidden="true" />
         <span className="flex-1">{item.label}</span>
@@ -70,7 +66,7 @@ export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
                   render={<Link href={child.href} />}
                   isActive={isChildActive}
                   aria-current={isChildActive ? "page" : undefined}
-                  className={SUB_ITEM_CLASS}
+                  className={SIDEBAR_SUB_ITEM_CLASS}
                 >
                   <span
                     className={`size-1.5 shrink-0 rounded-full ${isChildActive ? "bg-accent" : "bg-surface/40"}`}
