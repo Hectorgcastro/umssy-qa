@@ -76,6 +76,10 @@ describe('createBlockSchema', () => {
     ).toEqual([MSG.outOfRange]);
   });
 
+  it('usa dos dígitos en el mensaje de rango', () => {
+    expect(MSG.outOfRange).toBe('El horario debe estar entre las 07:00 y las 22:00');
+  });
+
   it('rechaza un bloque que cruza la medianoche de Bolivia', () => {
     expect(
       getMessages({ startAt: '2026-10-11T01:00:00Z', endAt: '2026-10-11T04:30:00Z' }),
