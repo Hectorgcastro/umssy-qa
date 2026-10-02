@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { MentorshipStep, MentorshipWizardState } from "../types/mentorship.types";
+import type {
+  MentorshipStep,
+  MentorshipWizardState,
+} from "../types/mentorship.types";
 
 const INITIAL_STATE: MentorshipWizardState = {
   currentStep: 1,
@@ -31,14 +34,30 @@ export function useMentorshipWizard() {
     });
   }, []);
 
+  const toggleTechnicalArea = useCallback((id: string) => {
+    setState((prev) => {
+      const alreadySelected = prev.selectedTechnicalAreaIds.includes(id);
+      const selectedTechnicalAreaIds = alreadySelected
+        ? prev.selectedTechnicalAreaIds.filter((areaId) => areaId !== id)
+        : [...prev.selectedTechnicalAreaIds, id];
+
+      return { ...prev, selectedTechnicalAreaIds };
+    });
+  }, []);
+
+  const canGoNextFromStep2 = state.selectedTechnicalAreaIds.length > 0;
+
   return {
     ...state,
     goToStep,
     goNext,
     goBack,
+    toggleTechnicalArea,
     canGoBack: state.currentStep > 1,
-    canGoNext: state.currentStep < 4,
-    // setState se exportará más adelante cuando se necesite mutar selecciones
+    canGoNext:
+      state.currentStep === 2
+        ? canGoNextFromStep2
+        : state.currentStep < 4,
     setState,
   };
 }
