@@ -22,6 +22,7 @@ describe("useAvailability", () => {
     expect(result.current.isLoading).toBe(true)
     expect(result.current.blocks).toEqual([])
     expect(result.current.error).toBeNull()
+    expect(result.current.mutationError).toBeNull()
   })
 
   it("obtiene bloques de disponibilidad correctamente", async () => {
@@ -100,7 +101,7 @@ describe("useAvailability", () => {
     })
 
     expect(created).toBeNull()
-    expect(result.current.error).toBe("Error al crear el bloque de disponibilidad")
+    expect(result.current.mutationError).toBe("Error al crear el bloque de disponibilidad")
   })
 
   it("actualiza un bloque de disponibilidad", async () => {
