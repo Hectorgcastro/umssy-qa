@@ -48,9 +48,11 @@ export function NewAvailabilityView() {
       <h1 className="text-2xl font-bold mb-4">Crear Nuevo Bloque de Disponibilidad</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">ID del Mentor</label>
+          <label htmlFor="mentorId" className="block text-sm font-medium mb-1">ID del Mentor</label>
           <input
             type="text"
+            id="mentorId"
+            data-testid="mentorId-input"
             name="mentorId"
             value={formData.mentorId}
             onChange={handleChange}
@@ -59,9 +61,11 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Hora de Inicio</label>
+          <label htmlFor="startAt" className="block text-sm font-medium mb-1">Hora de Inicio</label>
           <input
             type="datetime-local"
+            id="startAt"
+            data-testid="startAt-input"
             name="startAt"
             value={formData.startAt}
             onChange={handleChange}
@@ -70,9 +74,11 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Hora de Fin</label>
+          <label htmlFor="endAt" className="block text-sm font-medium mb-1">Hora de Fin</label>
           <input
             type="datetime-local"
+            id="endAt"
+            data-testid="endAt-input"
             name="endAt"
             value={formData.endAt}
             onChange={handleChange}
@@ -81,9 +87,11 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">ID de Serie (opcional)</label>
+          <label htmlFor="seriesId" className="block text-sm font-medium mb-1">ID de Serie (opcional)</label>
           <input
             type="text"
+            id="seriesId"
+            data-testid="seriesId-input"
             name="seriesId"
             value={formData.seriesId}
             onChange={handleChange}
@@ -91,9 +99,11 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Repetir Hasta (opcional)</label>
+          <label htmlFor="repeatUntil" className="block text-sm font-medium mb-1">Repetir Hasta (opcional)</label>
           <input
             type="date"
+            id="repeatUntil"
+            data-testid="repeatUntil-input"
             name="repeatUntil"
             value={formData.repeatUntil}
             onChange={handleChange}
