@@ -39,16 +39,16 @@ export function NewAvailabilityView() {
       setSubmitSuccess(true);
       setFormData({ mentorId: "", startAt: "", endAt: "", seriesId: "", repeatUntil: "" });
     } else {
-      setSubmitError("Failed to create availability block");
+      setSubmitError("Error al crear el bloque de disponibilidad");
     }
   };
 
   return (
     <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-4">Create New Availability Block</h1>
+      <h1 className="text-2xl font-bold mb-4">Crear Nuevo Bloque de Disponibilidad</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Mentor ID</label>
+          <label className="block text-sm font-medium mb-1">ID del Mentor</label>
           <input
             type="text"
             name="mentorId"
@@ -59,7 +59,7 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Start Time</label>
+          <label className="block text-sm font-medium mb-1">Hora de Inicio</label>
           <input
             type="datetime-local"
             name="startAt"
@@ -70,7 +70,7 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">End Time</label>
+          <label className="block text-sm font-medium mb-1">Hora de Fin</label>
           <input
             type="datetime-local"
             name="endAt"
@@ -81,7 +81,7 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Series ID (optional)</label>
+          <label className="block text-sm font-medium mb-1">ID de Serie (opcional)</label>
           <input
             type="text"
             name="seriesId"
@@ -91,7 +91,7 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Repeat Until (optional)</label>
+          <label className="block text-sm font-medium mb-1">Repetir Hasta (opcional)</label>
           <input
             type="date"
             name="repeatUntil"
@@ -101,13 +101,13 @@ export function NewAvailabilityView() {
           />
         </div>
         {submitError && <p className="text-red-500">{submitError}</p>}
-        {submitSuccess && <p className="text-green-500">Availability block created successfully!</p>}
+        {submitSuccess && <p className="text-green-500">¡Bloque de disponibilidad creado exitosamente!</p>}
         <button
           type="submit"
           disabled={isLoading}
           className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         >
-          {isLoading ? "Creating..." : "Create"}
+          {isLoading ? "Creando..." : "Crear"}
         </button>
       </form>
     </div>
