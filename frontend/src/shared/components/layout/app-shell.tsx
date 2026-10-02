@@ -1,21 +1,17 @@
-"use client";
+import type { ReactNode } from "react";
+import { Sidebar } from "./sidebar";
 
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { SIDEBAR_STYLE } from "@/shared/constants/sidebar.constants";
-import type { AppShellProps } from "@/shared/types/app-shell-props.types";
-import { AppSidebar } from "./app-sidebar";
-import { SidebarToggleButton } from "./sidebar-toggle-button";
+type AppShellProps = {
+  children: ReactNode;
+};
 
-export function AppShell({ children, items, user }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   return (
-    <SidebarProvider style={SIDEBAR_STYLE}>
-      <AppSidebar items={items} user={user} />
-      <SidebarInset className="bg-surface-soft">
-        <header className="flex items-center px-4 py-3">
-          <SidebarToggleButton />
-        </header>
-        <div className="flex-1 px-8 pb-8">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex min-h-dvh flex-col bg-surface-soft md:flex-row">
+      <Sidebar />
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col" id="main-content">
+        {children}
+      </main>
+    </div>
   );
 }
