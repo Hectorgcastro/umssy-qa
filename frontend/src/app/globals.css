@@ -57,6 +57,9 @@
   --color-text-secondary: #5B6470;
   --color-border: #E3E7EC;
   --color-border-strong: #C9CFD8;
+  --color-app-sidebar: #0B1F2E;
+  --color-app-sidebar-active: #1C394A;
+  --color-app-online: #13B88A;
 }
 
 :root {
