@@ -6,7 +6,7 @@ import {
   BlockNotOwnedException,
   BlockOverlapException,
   InvalidBlockTimeException,
-} from '../exceptions/availability.exceptions.js';
+} from '../exceptions/index.js';
 
 describe('availability exceptions', () => {
   it.each([
