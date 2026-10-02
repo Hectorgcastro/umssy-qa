@@ -10,7 +10,7 @@ export function DocumentsCvView() {
   return (
     <ProfilePageLayout
       activeTab="documents"
-      title="Currículum PDF"
+      title="Currículum Vitae"
       description="Sube tu CV para tenerlo disponible en el perfil y mantenerlo actualizado"
     >
       <div className="grid grid-cols-2 items-start gap-6">
