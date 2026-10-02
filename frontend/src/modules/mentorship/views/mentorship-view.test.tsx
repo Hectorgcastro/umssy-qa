@@ -1,106 +1,139 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, it, expect } from 'vitest'
-import { MentorshipView } from './mentorship-view'
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { MentorshipView } from "./mentorship-view";
 
-afterEach(cleanup)
+afterEach(cleanup);
 
-describe('MentorshipView', () => {
-  it('renderiza inicialmente el paso 1 con participación desmarcada', () => {
-    render(<MentorshipView />)
-
-    expect(
-      screen.getByRole('heading', { name: 'Participación' }),
-    ).toBeDefined()
+describe("MentorshipView", () => {
+  it("renderiza inicialmente el paso 1 con participación desmarcada", () => {
+    render(<MentorshipView />);
 
     expect(
-      screen.getByText('Quiero participar como mentor'),
-    ).toBeDefined()
+      screen.getByRole("heading", { name: "Participación" }),
+    ).toBeDefined();
 
-    const checkbox = screen.getByRole('checkbox')
+    expect(
+      screen.getByText("Quiero participar como mentor"),
+    ).toBeDefined();
 
-    expect((checkbox as HTMLInputElement).checked).toBe(false)
+    const checkbox = screen.getByRole("checkbox");
 
-    const nextButton = screen.getByRole('button', {
+    expect((checkbox as HTMLInputElement).checked).toBe(false);
+
+    const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
-    })
+    });
 
-    expect((nextButton as HTMLButtonElement).disabled).toBe(true)
-  })
+    expect((nextButton as HTMLButtonElement).disabled).toBe(true);
+  });
 
-  it('habilita Continuar al seleccionar participación', () => {
-    render(<MentorshipView />)
+  it("habilita Continuar al seleccionar participación", () => {
+    render(<MentorshipView />);
 
-    const checkbox = screen.getByRole('checkbox')
+    const checkbox = screen.getByRole("checkbox");
 
-    fireEvent.click(checkbox)
+    fireEvent.click(checkbox);
 
-    expect((checkbox as HTMLInputElement).checked).toBe(true)
+    expect((checkbox as HTMLInputElement).checked).toBe(true);
 
-    const nextButton = screen.getByRole('button', {
+    const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
-    })
+    });
 
-    expect((nextButton as HTMLButtonElement).disabled).toBe(false)
-  })
+    expect((nextButton as HTMLButtonElement).disabled).toBe(false);
+  });
 
-  it('permite avanzar entre los pasos después de aceptar participación', () => {
-    render(<MentorshipView />)
+  it("permite avanzar entre los pasos después de aceptar participación", () => {
+    render(<MentorshipView />);
 
-    const checkbox = screen.getByRole('checkbox')
-    fireEvent.click(checkbox)
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
 
-    const nextButton = screen.getByRole('button', {
+    const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
-    })
+    });
 
-    fireEvent.click(nextButton)
+    fireEvent.click(nextButton);
+    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
 
-    expect(screen.getByText('Paso 2: Áreas técnicas')).toBeDefined()
+    fireEvent.click(nextButton);
+    expect(
+      screen.getByText("Paso 3: Tipos de orientación"),
+    ).toBeDefined();
 
-    fireEvent.click(nextButton)
+    fireEvent.click(nextButton);
+    expect(screen.getByText("Paso 4: Confirmación")).toBeDefined();
 
-    expect(screen.getByText('Paso 3: Tipos de orientación')).toBeDefined()
+    expect((nextButton as HTMLButtonElement).disabled).toBe(true);
+  });
 
-    fireEvent.click(nextButton)
+  it("deshabilita Volver en el primer paso", () => {
+    render(<MentorshipView />);
 
-    expect(screen.getByText('Paso 4: Confirmación')).toBeDefined()
-  })
-
-  it('deshabilita Volver en el primer paso', () => {
-    render(<MentorshipView />)
-
-    const backButton = screen.getByRole('button', {
+    const backButton = screen.getByRole("button", {
       name: /Volver/i,
-    })
+    });
 
-    expect((backButton as HTMLButtonElement).disabled).toBe(true)
-  })
+    expect((backButton as HTMLButtonElement).disabled).toBe(true);
+  });
 
-  it('conserva la participación al avanzar y regresar', () => {
-    render(<MentorshipView />)
+  it("permite regresar al paso anterior", () => {
+    render(<MentorshipView />);
 
-    const checkbox = screen.getByRole('checkbox')
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
 
-    fireEvent.click(checkbox)
-
-    expect((checkbox as HTMLInputElement).checked).toBe(true)
-
-    const nextButton = screen.getByRole('button', {
+    const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
-    })
+    });
 
-    fireEvent.click(nextButton)
+    fireEvent.click(nextButton);
+    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
 
-    expect(screen.getByText('Paso 2: Áreas técnicas')).toBeDefined()
-
-    const backButton = screen.getByRole('button', {
+    const backButton = screen.getByRole("button", {
       name: /Volver/i,
-    })
+    });
 
-    fireEvent.click(backButton)
+    fireEvent.click(backButton);
 
-    const participationCheckbox = screen.getByRole('checkbox')
+    expect(
+      screen.getByRole("heading", { name: "Participación" }),
+    ).toBeDefined();
+  });
 
-    expect((participationCheckbox as HTMLInputElement).checked).toBe(true)
-  })
-})
+  it("conserva la participación al avanzar y regresar", () => {
+    render(<MentorshipView />);
+
+    const checkbox = screen.getByRole("checkbox");
+
+    fireEvent.click(checkbox);
+
+    expect((checkbox as HTMLInputElement).checked).toBe(true);
+
+    const nextButton = screen.getByRole("button", {
+      name: /Continuar/i,
+    });
+
+    fireEvent.click(nextButton);
+
+    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
+
+    const backButton = screen.getByRole("button", {
+      name: /Volver/i,
+    });
+
+    fireEvent.click(backButton);
+
+    const participationCheckbox = screen.getByRole("checkbox");
+
+    expect(
+      (participationCheckbox as HTMLInputElement).checked,
+    ).toBe(true);
+  });
+
+  it("muestra el título principal del wizard", () => {
+    render(<MentorshipView />);
+
+    expect(screen.getByText("Participa como mentor")).toBeDefined();
+  });
+});
