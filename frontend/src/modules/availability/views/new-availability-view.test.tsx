@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { NewAvailabilityView } from "./new-availability-view"
 import { availabilityApi } from "../services/availability.api"
+import type { AvailabilityBlock } from "../types/availability"
 
 describe("NewAvailabilityView", () => {
   beforeEach(() => {
@@ -24,13 +25,13 @@ describe("NewAvailabilityView", () => {
     expect(screen.getByTestId("mentorId-input")).toBeInTheDocument()
     expect(screen.getByTestId("startAt-input")).toBeInTheDocument()
     expect(screen.getByTestId("endAt-input")).toBeInTheDocument()
-    expect(screen.getByTestId("seriesId-input")).toBeInTheDocument()
     expect(screen.getByTestId("repeatUntil-input")).toBeInTheDocument()
+    expect(screen.queryByTestId("seriesId-input")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Crear" })).toBeInTheDocument()
   })
 
   it("crea un bloque de disponibilidad correctamente", async () => {
-    const mockBlock = { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" }
+    const mockBlock: AvailabilityBlock = { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" }
     vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
     vi.spyOn(availabilityApi, "createAvailabilityBlock").mockResolvedValue(mockBlock)
 
@@ -72,19 +73,45 @@ describe("NewAvailabilityView", () => {
     })
   })
 
-  it("deshabilita el botón mientras carga inicial", async () => {
-    // No resuelve la promesa para mantener isLoading=true
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockImplementation(() => new Promise(() => {}))
-    vi.spyOn(availabilityApi, "createAvailabilityBlock").mockResolvedValue({ 
-      id: "1", mentorId: "m1", startAt: "", endAt: "", createdAt: "", updatedAt: "" 
-    })
-
+  it("valida que endAt sea posterior a startAt", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
     render(<NewAvailabilityView />)
+    const user = userEvent.setup()
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Creando..." })).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Crear" })).toBeInTheDocument()
     })
 
+    await user.type(screen.getByTestId("mentorId-input"), "m1")
+    await user.type(screen.getByTestId("startAt-input"), "2024-01-15T11:00")
+    await user.type(screen.getByTestId("endAt-input"), "2024-01-15T10:00")
+    await user.click(screen.getByRole("button", { name: "Crear" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("La hora de fin debe ser posterior a la hora de inicio")).toBeInTheDocument()
+    })
+  })
+
+  it("deshabilita el botón mientras está enviando", async () => {
+    let resolvePromise: (value: AvailabilityBlock) => void
+    const promise = new Promise<AvailabilityBlock>((resolve) => { resolvePromise = resolve })
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+    vi.spyOn(availabilityApi, "createAvailabilityBlock").mockReturnValue(promise)
+
+    render(<NewAvailabilityView />)
+    const user = userEvent.setup()
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Crear" })).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByTestId("mentorId-input"), "m1")
+    await user.type(screen.getByTestId("startAt-input"), "2024-01-15T10:00")
+    await user.type(screen.getByTestId("endAt-input"), "2024-01-15T11:00")
+    await user.click(screen.getByRole("button", { name: "Crear" }))
+
     expect(screen.getByRole("button", { name: "Creando..." })).toBeDisabled()
+    resolvePromise!({ id: "1", mentorId: "m1", startAt: "", endAt: "", createdAt: "", updatedAt: "" })
+    await promise
   })
 })
