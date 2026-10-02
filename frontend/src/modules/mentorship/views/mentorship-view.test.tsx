@@ -16,6 +16,10 @@ describe('MentorshipView', () => {
       screen.getByText('Quiero participar como mentor'),
     ).toBeDefined()
 
+    const checkbox = screen.getByRole('checkbox')
+
+    expect((checkbox as HTMLInputElement).checked).toBe(false)
+
     const nextButton = screen.getByRole('button', {
       name: /Continuar/i,
     })
@@ -29,6 +33,8 @@ describe('MentorshipView', () => {
     const checkbox = screen.getByRole('checkbox')
 
     fireEvent.click(checkbox)
+
+    expect((checkbox as HTMLInputElement).checked).toBe(true)
 
     const nextButton = screen.getByRole('button', {
       name: /Continuar/i,
@@ -70,11 +76,14 @@ describe('MentorshipView', () => {
     expect((backButton as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it('permite regresar al paso anterior', () => {
+  it('conserva la participación al avanzar y regresar', () => {
     render(<MentorshipView />)
 
     const checkbox = screen.getByRole('checkbox')
+
     fireEvent.click(checkbox)
+
+    expect((checkbox as HTMLInputElement).checked).toBe(true)
 
     const nextButton = screen.getByRole('button', {
       name: /Continuar/i,
@@ -90,8 +99,8 @@ describe('MentorshipView', () => {
 
     fireEvent.click(backButton)
 
-    expect(
-      screen.getByRole('heading', { name: 'Participación' }),
-    ).toBeDefined()
+    const participationCheckbox = screen.getByRole('checkbox')
+
+    expect((participationCheckbox as HTMLInputElement).checked).toBe(true)
   })
 })
