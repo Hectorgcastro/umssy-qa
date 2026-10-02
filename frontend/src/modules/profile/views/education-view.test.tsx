@@ -7,14 +7,30 @@ describe("EducationView", () => {
     cleanup();
   });
 
-  it("shows the title and the registered education records", () => {
+  it("shows the title Trayectoria and the registered education records", () => {
     render(<EducationView />);
 
-    expect(screen.getByRole("heading", { level: 1, name: "Formación académica" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Trayectoria" })).toBeInTheDocument();
     expect(screen.getByText("Ingeniería Informática")).toBeInTheDocument();
     expect(screen.getByText("Bachiller en Humanidades")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Editar Ingeniería Informática" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Eliminar Ingeniería Informática" })).toBeInTheDocument();
+  });
+
+  it("renders the four numbered trajectory sub-tabs with education as active", () => {
+    render(<EducationView />);
+
+    const list = screen.getByRole("list", { name: "Sub-secciones de trayectoria" });
+
+    expect(list).toBeInTheDocument();
+    expect(screen.getByText("01")).toBeInTheDocument();
+    expect(screen.getByText("Formación académica")).toBeInTheDocument();
+    expect(screen.getByText("02")).toBeInTheDocument();
+    expect(screen.getByText("Experiencia laboral")).toBeInTheDocument();
+    expect(screen.getByText("03")).toBeInTheDocument();
+    expect(screen.getByText("Habilidades")).toBeInTheDocument();
+    expect(screen.getByText("04")).toBeInTheDocument();
+    expect(screen.getByText("Certificaciones")).toBeInTheDocument();
   });
 
   it("marks Trayectoria as the active tab", () => {
