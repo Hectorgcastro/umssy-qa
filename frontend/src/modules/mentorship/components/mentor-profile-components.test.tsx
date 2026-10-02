@@ -6,6 +6,7 @@ import { mentorsMock } from "../services/mentor-profile.mock";
 import { MentorGuidanceTypes } from "./mentor-guidance-types";
 import { MentorProfileHeader } from "./mentor-profile-header";
 import { MentorTechnicalAreas } from "./mentor-technical-areas";
+import { MentorProfileNavigation } from "./mentor-profile-navigation";
 
 vi.mock("next/image", () => ({
   default: (
@@ -28,6 +29,16 @@ describe("Mentor profile components", () => {
     expect(
       screen.getByText("No hay áreas técnicas registradas."),
     ).toBeInTheDocument();
+  });
+  it("permite volver al directorio de mentores", () => {
+    render(<MentorProfileNavigation mentorName="Ana Rojas" />);
+
+    const backLink = screen.getByRole("link", {
+      name: "Volver al directorio",
+    });
+
+    expect(backLink).toBeInTheDocument();
+    expect(backLink).toHaveAttribute("href", "/mentors");
   });
 
   it("muestra todas las áreas técnicas", () => {

@@ -46,10 +46,11 @@ export function MentorGuidanceTypes({
               key={guidance.id}
               type="button"
               onClick={() => setSelectedGuidanceId(guidance.id)}
-              className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+              aria-pressed={isSelected}
+              className={`cursor-pointer rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-umssy-red ${
                 isSelected
-                  ? "border-umssy-red bg-umssy-red-soft text-umssy-ink"
-                  : "border-umssy-border bg-white text-umssy-secondary hover:bg-umssy-background"
+                  ? "border-umssy-red bg-umssy-red-soft text-umssy-ink shadow-md"
+                  : "border-umssy-border bg-white text-umssy-secondary hover:-translate-y-0.5 hover:border-umssy-red hover:bg-umssy-background hover:shadow-md"
               }`}
             >
               {guidance.name}
