@@ -28,12 +28,16 @@ export const MENTORSHIP_STEPS: MentorshipStepDefinition[] = [
     description: "Revisa tu configuración",
   },
 ];
+
 export interface TechnicalArea {
   id: string;
+  // Nombre visible del área técnica
   name: string;
   description: string;
-  icon: string; // nombre del icono de Lucide
+  // Nombre del icono de Lucide
+  icon: string;
 }
+
 /** Estado completo del wizard (se irá llenando en T2-T5) */
 export interface MentorshipWizardState {
   currentStep: MentorshipStep;

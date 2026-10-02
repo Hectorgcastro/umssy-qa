@@ -54,6 +54,7 @@ export function useMentorshipWizard() {
     goBack,
     toggleTechnicalArea,
     canGoBack: state.currentStep > 1,
+    // En el paso 2 se exige al menos un area tecnica seleccionada
     canGoNext:
       state.currentStep === 2
         ? canGoNextFromStep2

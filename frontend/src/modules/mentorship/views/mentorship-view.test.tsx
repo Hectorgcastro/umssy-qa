@@ -201,4 +201,27 @@ describe("MentorshipView", () => {
 
     expect(screen.getByText("1 seleccionada")).toBeDefined();
   });
+
+  it("deshabilita Continuar en el último paso", () => {
+    render(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+
+    const nextButton = screen.getByRole("button", {
+      name: /Continuar/i,
+    });
+
+    // Paso 1 a paso 2
+    fireEvent.click(nextButton);
+
+    // Se selecciona un area para poder salir del paso 2
+    fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
+
+    // Paso 2 a paso 3 y paso 3 a paso 4
+    fireEvent.click(nextButton);
+    fireEvent.click(nextButton);
+
+    expect(screen.getByText("Paso 4: Confirmación")).toBeDefined();
+    expect((nextButton as HTMLButtonElement).disabled).toBe(true);
+  });
 });

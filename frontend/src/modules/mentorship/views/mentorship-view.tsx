@@ -21,6 +21,7 @@ export function MentorshipView() {
 
   const currentStepDefinition = MENTORSHIP_STEPS[currentStep - 1];
 
+  // En el paso 1 se exige aceptar la participacion
   const canAdvance =
     currentStep === 1 ? wantsToParticipate : canGoNext;
 
