@@ -29,18 +29,15 @@ const getBoliviaParts = (date: Date) => {
   };
 };
 
-const isoDateTime = z
-  .string({ message: CREATE_BLOCK_MESSAGES.invalidDate })
-  .datetime({ offset: true, message: CREATE_BLOCK_MESSAGES.invalidDate });
+const isoDateTime = z.iso.datetime({ offset: true, error: CREATE_BLOCK_MESSAGES.invalidDate });
 
 // Se recibe "now" para poder probar el esquema con una fecha fija.
 export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
   z
-    .object({
+    .strictObject({
       startAt: isoDateTime,
       endAt: isoDateTime,
     })
-    .strict()
     .superRefine((payload, ctx) => {
       const startAt = new Date(payload.startAt);
       const endAt = new Date(payload.endAt);
