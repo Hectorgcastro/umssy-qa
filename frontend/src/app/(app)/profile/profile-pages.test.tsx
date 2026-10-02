@@ -1,10 +1,12 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import DocumentsPage from "./documents/page";
 import PersonalInfoPage from "./personal-info/page";
 import PresentationPage from "./presentation/page";
 import EducationPage from "./trajectory/education/page";
 
 vi.mock("@/modules/profile", () => ({
+  DocumentsCvView: () => <p>documents-cv-view</p>,
   PersonalInfoView: () => <p>personal-info-view</p>,
   PresentationView: () => <p>presentation-view</p>,
   EducationView: () => <p>education-view</p>,
@@ -31,5 +33,9 @@ describe("profile pages", () => {
     render(<EducationPage />);
 
     expect(screen.getByText("education-view")).toBeInTheDocument();
+  it("mounts the documents cv view", () => {
+    render(<DocumentsPage />);
+
+    expect(screen.getByText("documents-cv-view")).toBeInTheDocument();
   });
 });
