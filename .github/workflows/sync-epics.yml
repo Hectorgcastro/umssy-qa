@@ -1,0 +1,62 @@
+name: Sync Develop to Epics
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  sync-epics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN}}
+
+      - name: Configure Git User
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync develop to all epic/* branches
+        run: |
+          git fetch origin
+
+          EPIC_BRANCHES=$(git branch -r | grep -E 'origin/epic/' | sed 's/origin\///')
+
+          if [ -z "$EPIC_BRANCHES" ]; then
+            echo "No remote branches found matching the pattern 'epic/*'."
+            exit 0
+          fi
+
+          FAILED_BRANCHES=()
+
+          for branch in $EPIC_BRANCHES; do
+
+            git checkout -B "$branch" "origin/$branch"
+
+
+            if git merge origin/develop --no-ff -m "chore: auto-sync develop into $branch [skip ci]"; then
+              if git push origin "$branch"; then
+                echo "Successfully synced $branch."
+              else
+                echo "Error pushing to $branch."
+                FAILED_BRANCHES+=("$branch (Push error)")
+                git reset --hard "origin/$branch"
+              fi
+            else
+              echo "Git conflict detected in $branch. Aborting merge..."
+              git merge --abort
+              FAILED_BRANCHES+=("$branch (Merge conflicts)")
+            fi
+          done
+
+          if [ ${#FAILED_BRANCHES[@]} -ne 0 ]; then
+            echo "The following branches could not be synced automatically:"
+            for failed in "${FAILED_BRANCHES[@]}"; do
+              echo " - $failed"
+            done
+            exit 1
+          fi
