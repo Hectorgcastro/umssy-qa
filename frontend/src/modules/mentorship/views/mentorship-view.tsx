@@ -1,6 +1,7 @@
 "use client";
 
 import { OrientationStep } from "../components/orientation-step";
+import { ParticipationStep } from "../components/participation-step";
 import { ProgressStepper } from "../components/progress-stepper";
 import { useMentorshipWizard } from "../hooks/use-mentorship-wizard";
 import { MENTORSHIP_STEPS } from "../types/mentorship.types";
@@ -8,6 +9,7 @@ import { MENTORSHIP_STEPS } from "../types/mentorship.types";
 export function MentorshipView() {
   const {
     currentStep,
+    wantsToParticipate,
     selectedOrientationTypeIds,
     goNext,
     goBack,
@@ -17,6 +19,16 @@ export function MentorshipView() {
   } = useMentorshipWizard();
 
   const currentStepDefinition = MENTORSHIP_STEPS[currentStep - 1];
+
+  const canAdvance =
+    currentStep === 1 ? wantsToParticipate : canGoNext;
+
+  const handleParticipationChange = (value: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      wantsToParticipate: value,
+    }));
+  };
 
   const handleOrientationChange = (ids: string[]) => {
     setState((prev) => ({
@@ -42,7 +54,12 @@ export function MentorshipView() {
           </header>
 
           <div className="min-h-48 rounded-md border border-border bg-surface-soft p-4 sm:p-6">
-            {currentStep === 3 ? (
+            {currentStep === 1 ? (
+              <ParticipationStep
+                isParticipating={wantsToParticipate}
+                onParticipationChange={handleParticipationChange}
+              />
+            ) : currentStep === 3 ? (
               <OrientationStep
                 selectedOrientationTypeIds={selectedOrientationTypeIds}
                 onSelectionChange={handleOrientationChange}
@@ -73,7 +90,7 @@ export function MentorshipView() {
             <button
               type="button"
               onClick={goNext}
-              disabled={!canGoNext}
+              disabled={!canAdvance}
               className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuar →
