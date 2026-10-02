@@ -17,8 +17,8 @@ export const PROFILE_TABS: ProfileTab[] = [
   {
     id: "trajectory",
     label: "Trayectoria",
-    href: "/profile/trajectory",
-    isAvailable: false,
+    href: "/profile/trajectory/education",
+    isAvailable: true,
   },
   {
     id: "documents",

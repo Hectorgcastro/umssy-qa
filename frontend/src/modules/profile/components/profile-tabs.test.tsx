@@ -22,8 +22,12 @@ describe("ProfileTabs", () => {
   it("shows the unavailable tabs as disabled text", () => {
     render(<ProfileTabs activeTab="presentation" />);
 
-    expect(screen.queryByRole("link", { name: "Trayectoria" })).not.toBeInTheDocument();
-    expect(screen.getByText("Trayectoria")).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("link", { name: "Trayectoria" })).toHaveAttribute(
+      "href",
+      "/profile/trajectory/education",
+    );
+    expect(screen.queryByRole("link", { name: "Documentos" })).not.toBeInTheDocument();
+    expect(screen.getByText("Documentos")).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByText("Documentos")).toHaveAttribute("title", "Disponible próximamente");
   });
 });
