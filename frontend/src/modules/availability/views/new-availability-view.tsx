@@ -5,20 +5,37 @@ import { useAvailability } from "../hooks/use-availability";
 import type { CreateAvailabilityBlockInput } from "../types/availability";
 
 export function NewAvailabilityView() {
-  const { createBlock, isLoading } = useAvailability();
+  const { createBlock, mutationError } = useAvailability();
   const [formData, setFormData] = useState<CreateAvailabilityBlockInput>({
     mentorId: "",
     startAt: "",
     endAt: "",
-    seriesId: "",
     repeatUntil: "",
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "startAt" || name === "endAt") {
+      setSubmitError(null);
+    }
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.mentorId || !formData.startAt || !formData.endAt) {
+      setSubmitError("Todos los campos obligatorios deben completarse");
+      return false;
+    }
+    const start = new Date(formData.startAt).getTime();
+    const end = new Date(formData.endAt).getTime();
+    if (end <= start) {
+      setSubmitError("La hora de fin debe ser posterior a la hora de inicio");
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,20 +43,25 @@ export function NewAvailabilityView() {
     setSubmitError(null);
     setSubmitSuccess(false);
 
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
     const input: CreateAvailabilityBlockInput = {
       mentorId: formData.mentorId,
       startAt: formData.startAt,
       endAt: formData.endAt,
-      seriesId: formData.seriesId || undefined,
       repeatUntil: formData.repeatUntil || undefined,
     };
 
     const result = await createBlock(input);
+    setIsSubmitting(false);
+
     if (result) {
       setSubmitSuccess(true);
-      setFormData({ mentorId: "", startAt: "", endAt: "", seriesId: "", repeatUntil: "" });
+      setFormData({ mentorId: "", startAt: "", endAt: "", repeatUntil: "" });
     } else {
-      setSubmitError("Error al crear el bloque de disponibilidad");
+      setSubmitError(mutationError || "Error al crear el bloque de disponibilidad");
     }
   };
 
@@ -87,18 +109,6 @@ export function NewAvailabilityView() {
           />
         </div>
         <div>
-          <label htmlFor="seriesId" className="block text-sm font-medium mb-1">ID de Serie (opcional)</label>
-          <input
-            type="text"
-            id="seriesId"
-            data-testid="seriesId-input"
-            name="seriesId"
-            value={formData.seriesId}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div>
           <label htmlFor="repeatUntil" className="block text-sm font-medium mb-1">Repetir Hasta (opcional)</label>
           <input
             type="date"
@@ -114,10 +124,10 @@ export function NewAvailabilityView() {
         {submitSuccess && <p className="text-green-500">¡Bloque de disponibilidad creado exitosamente!</p>}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isSubmitting}
           className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         >
-          {isLoading ? "Creando..." : "Crear"}
+          {isSubmitting ? "Creando..." : "Crear"}
         </button>
       </form>
     </div>
