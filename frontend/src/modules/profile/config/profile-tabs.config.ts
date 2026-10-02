@@ -24,6 +24,6 @@ export const PROFILE_TABS: ProfileTab[] = [
     id: "documents",
     label: "Documentos",
     href: "/profile/documents",
-    isAvailable: false,
+    isAvailable: true,
   },
 ];
