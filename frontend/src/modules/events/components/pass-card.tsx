@@ -1,4 +1,4 @@
-import { Calendar } from "lucide-react";
+import { Calendar, Check } from "lucide-react";
 
 interface PassCardProps {
   title: string;
@@ -21,7 +21,7 @@ export function PassCard({ title, date, status, isSelected, onClick }: PassCardP
       <div className={`text-xs font-semibold px-2.5 py-1 rounded-md w-fit flex items-center gap-1.5 ${
         isSelected ? "bg-white/10 text-gold" : "bg-surface-soft text-text-secondary"
       }`}>
-        <span className="text-[10px]">✓</span> {status}
+        <Check className="w-3 h-3" /> {status}
       </div>
       
       <div>

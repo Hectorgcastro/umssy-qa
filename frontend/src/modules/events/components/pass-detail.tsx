@@ -1,4 +1,4 @@
-import { MapPin, WifiOff, QrCode } from "lucide-react";
+import { MapPin, WifiOff, QrCode, Check } from "lucide-react";
 
 export function PassDetail() {
   return (
@@ -37,7 +37,7 @@ export function PassDetail() {
           <div className="flex flex-col gap-1 text-right">
             <span className="text-[10px] text-surface-soft/50 uppercase tracking-widest">Estado</span>
             <span className="font-bold text-gold text-sm flex items-center gap-1 justify-end">
-              ✓ Confirmado
+              <Check className="w-4 h-4" /> Confirmado
             </span>
           </div>
         </div>
