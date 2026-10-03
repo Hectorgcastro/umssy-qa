@@ -1,12 +1,8 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthenticatedUser, ROLES_KEY } from '../decorators/roles.decorator.js';
+import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
+import { ForbiddenRoleException } from '../exceptions/forbidden-role.exception.js';
 
 /**
  * Permanente: no depende de cómo se autentique el usuario, solo de que
@@ -36,14 +32,12 @@ export class RolesGuard implements CanActivate {
 
     // Si llega sin usuario, el guard de sesión no corrió antes
     if (!user) {
-      throw new UnauthorizedException('Sesión requerida');
+      throw new UnauthorizedSessionException('Sesión requerida');
     }
 
     const hasRole = requiredRoles.some((role) => user.roles.includes(role));
     if (!hasRole) {
-      throw new ForbiddenException(
-        'No tienes el rol necesario para este recurso',
-      );
+      throw new ForbiddenRoleException();
     }
 
     return true;

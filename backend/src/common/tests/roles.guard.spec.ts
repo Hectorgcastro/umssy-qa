@@ -1,12 +1,10 @@
-import {
-  ExecutionContext,
-  ForbiddenException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { describe, expect, it, vi } from 'vitest';
 import { ROLES_KEY, Roles } from '../decorators/roles.decorator.js';
 import { RolesGuard } from '../guards/roles.guard.js';
+import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
+import { ForbiddenRoleException } from '../exceptions/forbidden-role.exception.js';
 
 function createContext(user?: { id: string; email: string; roles: string[] }) {
   return {
@@ -50,14 +48,14 @@ describe('RolesGuard', () => {
   it('responde 403 si el usuario no tiene el rol requerido', () => {
     const guard = createGuard(['mentor']);
     expect(() => guard.canActivate(createContext(titulado))).toThrow(
-      ForbiddenException,
+      ForbiddenRoleException,
     );
   });
 
   it('responde 401 si no hay usuario (el guard de sesión no corrió antes)', () => {
     const guard = createGuard(['mentor']);
     expect(() => guard.canActivate(createContext(undefined))).toThrow(
-      UnauthorizedException,
+      UnauthorizedSessionException,
     );
   });
 });
