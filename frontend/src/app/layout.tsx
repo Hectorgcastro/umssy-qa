@@ -16,7 +16,7 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "UMSSY | Titulados",
+  title: "UMSSY",
   description: "Plataforma de talleres y pases para Titulados UMSSY",
   manifest: "/manifest.json",
   appleWebApp: {
