@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, waitFor, act } from "@testing-library/react"
-import { useAvailability, useAvailabilityBlock } from "./use-availability"
+import { useAvailability } from "./use-availability"
 import { availabilityApi } from "../services/availability.api"
 
 describe("useAvailability", () => {
@@ -149,46 +149,5 @@ describe("useAvailability", () => {
     expect(deleted).toBe(true)
     expect(result.current.blocks).toHaveLength(1)
     expect(result.current.blocks[0].id).toBe("2")
-  })
-})
-
-describe("useAvailabilityBlock", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  it("obtiene un bloque por ID", async () => {
-    const mockBlock = { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" }
-    vi.spyOn(availabilityApi, "getAvailabilityBlockById").mockResolvedValue(mockBlock)
-
-    const { result } = renderHook(() => useAvailabilityBlock("1"))
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    expect(result.current.block).toEqual(mockBlock)
-    expect(result.current.error).toBeNull()
-  })
-
-  it("maneja error al obtener bloque por ID", async () => {
-    vi.spyOn(availabilityApi, "getAvailabilityBlockById").mockRejectedValue(new Error("Network error"))
-
-    const { result } = renderHook(() => useAvailabilityBlock("1"))
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    expect(result.current.block).toBeNull()
-    expect(result.current.error).toBe("Error al obtener el bloque de disponibilidad")
-  })
-
-  it("no hace petición si no hay ID", () => {
-    const spy = vi.spyOn(availabilityApi, "getAvailabilityBlockById")
-
-    renderHook(() => useAvailabilityBlock(""))
-
-    expect(spy).not.toHaveBeenCalled()
   })
 })

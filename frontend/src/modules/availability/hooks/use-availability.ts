@@ -91,36 +91,3 @@ export function useAvailability(filters?: AvailabilityFilters) {
     deleteBlock,
   };
 }
-
-export function useAvailabilityBlock(id: string) {
-  const [block, setBlock] = useState<AvailabilityBlock | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    if (!id) return;
-    mountedRef.current = true;
-    let cancelled = false;
-    availabilityApi
-      .getAvailabilityBlockById(id)
-      .then((data) => {
-        if (mountedRef.current && !cancelled) {
-          setBlock(data);
-          setIsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (mountedRef.current && !cancelled) {
-          setError("Error al obtener el bloque de disponibilidad");
-          setIsLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-      mountedRef.current = false;
-    };
-  }, [id]);
-
-  return { block, isLoading, error };
-}
