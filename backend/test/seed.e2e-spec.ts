@@ -11,116 +11,193 @@ import {
   STATUS_CONFIRMED,
   STATUS_PENDING,
 } from '../prisma/seed.js';
+import type { SeedSummary } from '../prisma/seed.js';
+import { ROLE_NAMES } from '../src/common/enums/roles.enum.js';
 import type { PrismaClient } from '../src/prisma/client.js';
 
-const ALL_EMAILS = SEED_USERS.map((user) => user.email);
-const emailOf = (key: (typeof SEED_USERS)[number]['key']): string =>
-  SEED_USERS.find((user) => user.key === key)?.email ?? '';
+const CORREOS = SEED_USERS.map((usuario) => usuario.correo);
+const correoDe = (clave: (typeof SEED_USERS)[number]['key']): string =>
+  SEED_USERS.find((usuario) => usuario.key === clave)?.correo ?? '';
 
-const weeks = getWeeks(new Date());
-const canHavePastBlock = pastBlockRange(weeks.actual, new Date()) !== null;
+const CORREO_USUARIO_PRUEBA = 'prueba@umss.edu.bo';
+const ROLES_HEREDADOS = ['MENTOR', 'TITULADO'];
+const SEMANA_EN_MS = 7 * 86_400_000;
+
+const semanasIniciales = getWeeks(new Date());
+const puedeHaberBloquePasado = pastBlockRange(semanasIniciales.actual, new Date()) !== null;
 
 describe('Seed de desarrollo (e2e)', () => {
   let prisma: PrismaClient;
+  let resumen: SeedSummary;
 
-  const snapshot = async () => {
-    const mentors = await prisma.user.findMany({ where: { email: { in: ALL_EMAILS } }, select: { id: true } });
-    const mentorIds = mentors.map((mentor) => mentor.id);
+  const instantanea = async () => {
+    const semillas = await prisma.user.findMany({ where: { email: { in: CORREOS } }, select: { id: true } });
+    const ids = semillas.map((usuario) => usuario.id);
 
     return {
       roles: await prisma.role.count(),
-      statuses: await prisma.appointmentStatus.count(),
-      users: await prisma.user.count({ where: { email: { in: ALL_EMAILS } } }),
-      userRoles: await prisma.userRole.count({ where: { userId: { in: mentorIds } } }),
-      blocks: await prisma.availabilityBlock.count({ where: { mentorId: { in: mentorIds } } }),
-      appointments: await prisma.appointment.count({ where: { mentorId: { in: mentorIds } } }),
+      estados: await prisma.appointmentStatus.count(),
+      usuarios: await prisma.user.count({ where: { email: { in: CORREOS } } }),
+      rolesDeUsuario: await prisma.userRole.count({ where: { userId: { in: ids } } }),
+      bloques: await prisma.availabilityBlock.count({ where: { mentorId: { in: ids } } }),
+      citas: await prisma.appointment.count({ where: { mentorId: { in: ids } } }),
     };
   };
 
   beforeAll(async () => {
     prisma = createSeedClient();
-    await runSeed(prisma);
+    resumen = await runSeed(prisma);
   });
 
   afterAll(async () => {
     await prisma.$disconnect();
   });
 
-  it('crea los usuarios de prueba con los roles MENTOR y TITULADO', async () => {
-    const users = await prisma.user.findMany({
-      where: { email: { in: ALL_EMAILS } },
+  it('crea los usuarios de prueba con los roles en minúscula de ROLE_NAMES', async () => {
+    const usuarios = await prisma.user.findMany({
+      where: { email: { in: CORREOS } },
       include: { roles: { include: { role: true } } },
     });
 
-    expect(users).toHaveLength(SEED_USERS.length);
+    expect(usuarios).toHaveLength(SEED_USERS.length);
 
-    const roleNames = (email: string) =>
-      users.find((user) => user.email === email)?.roles.map((userRole) => userRole.role.name) ?? [];
+    const rolesDe = (correo: string) =>
+      usuarios.find((usuario) => usuario.email === correo)?.roles.map((userRole) => userRole.role.name) ?? [];
 
-    expect(roleNames(emailOf('mentorA'))).toContain('MENTOR');
-    expect(roleNames(emailOf('mentorB'))).toContain('MENTOR');
-    expect(roleNames(emailOf('titulado'))).toContain('TITULADO');
+    expect(rolesDe(correoDe('mentorA'))).toContain('mentor');
+    expect(rolesDe(correoDe('mentorB'))).toContain('mentor');
+    expect(rolesDe(correoDe('titulado'))).toContain('titulado');
+    expect(rolesDe(correoDe('estudiante'))).toContain('estudiante');
   });
 
-  it('CA2: tiene un bloque libre, uno con cita pendiente y uno con cita confirmada en la semana actual', async () => {
-    const blocks = await prisma.availabilityBlock.findMany({
-      where: { startAt: { gte: weeks.actual.start, lt: weeks.actual.end } },
+  it('deja solo los roles de ROLE_NAMES y elimina los heredados en mayúscula', async () => {
+    const encontrados = await prisma.role.findMany({
+      where: { name: { in: [...ROLE_NAMES, ...ROLES_HEREDADOS] } },
+    });
+    const nombres = encontrados.map((rol) => rol.name);
+
+    expect(nombres).toHaveLength(ROLE_NAMES.length);
+    for (const nombre of ROLE_NAMES) {
+      expect(nombres).toContain(nombre);
+    }
+    for (const nombre of ROLES_HEREDADOS) {
+      expect(nombres).not.toContain(nombre);
+    }
+  });
+
+  it('da contraseña a los cuatro usuarios del seed', async () => {
+    const usuarios = await prisma.user.findMany({ where: { email: { in: CORREOS } } });
+
+    expect(usuarios).toHaveLength(SEED_USERS.length);
+    for (const usuario of usuarios) {
+      expect(usuario.password).toBeTruthy();
+    }
+  });
+
+  it('conserva el usuario provisional de Epic 1 con contraseña y rol titulado', async () => {
+    const usuario = await prisma.user.findUniqueOrThrow({ where: { email: CORREO_USUARIO_PRUEBA } });
+
+    expect(usuario.password).toBeTruthy();
+
+    const roles = await prisma.userRole.findMany({ where: { userId: usuario.id }, include: { role: true } });
+    expect(roles.map((userRole) => userRole.role.name)).toContain('titulado');
+  });
+
+  it('CA2: tiene un bloque libre, uno con cita pendiente y uno con cita confirmada', async () => {
+    const { plan } = resumen;
+    const bloques = await prisma.availabilityBlock.findMany({
+      where: { startAt: { gte: plan.semanaTrio.inicio, lt: plan.semanaTrio.fin } },
       include: { appointments: { include: { status: true } } },
     });
 
-    expect(blocks.length).toBeGreaterThanOrEqual(3);
+    expect(bloques.length).toBeGreaterThanOrEqual(3);
 
-    const free = blocks.filter((block) => block.appointments.length === 0);
-    const withPending = blocks.filter((block) =>
-      block.appointments.some((appointment) => appointment.status.title === STATUS_PENDING),
+    const libres = bloques.filter((bloque) => bloque.appointments.length === 0);
+    const conPendiente = bloques.filter((bloque) =>
+      bloque.appointments.some((cita) => cita.status.title === STATUS_PENDING),
     );
-    const withConfirmed = blocks.filter((block) =>
-      block.appointments.some((appointment) => appointment.status.title === STATUS_CONFIRMED),
+    const conConfirmada = bloques.filter((bloque) =>
+      bloque.appointments.some((cita) => cita.status.title === STATUS_CONFIRMED),
     );
 
-    expect(free.length).toBeGreaterThanOrEqual(1);
-    expect(withPending).toHaveLength(1);
-    expect(withConfirmed).toHaveLength(1);
+    expect(libres.length).toBeGreaterThanOrEqual(1);
+    expect(conPendiente).toHaveLength(1);
+    expect(conConfirmada).toHaveLength(1);
+  });
+
+  it('CA2/HU-04: libre, pendiente y confirmada están después de la hora de ejecución', async () => {
+    const inicios = [resumen.plan.libre, resumen.plan.pendiente, resumen.plan.confirmada].map(
+      (bloque) => bloque.inicio,
+    );
+    const bloques = await prisma.availabilityBlock.findMany({ where: { startAt: { in: inicios } } });
+
+    expect(bloques).toHaveLength(3);
+
+    const ahora = Date.now();
+    for (const bloque of bloques) {
+      expect(bloque.startAt.getTime()).toBeGreaterThan(ahora);
+      expect(bloque.endAt.getTime()).toBeGreaterThan(ahora);
+    }
   });
 
   // Solo es imposible si el seed corre un lunes antes de las 07:30 (hora de Bolivia).
-  it.skipIf(!canHavePastBlock)('CA2/HU-04: tiene un bloque pasado dentro de la semana actual', async () => {
-    const blocks = await prisma.availabilityBlock.findMany({
-      where: { startAt: { gte: weeks.actual.start, lt: weeks.actual.end } },
+  it.skipIf(!puedeHaberBloquePasado)('CA2/HU-04: tiene un bloque pasado dentro de la semana actual', async () => {
+    const bloques = await prisma.availabilityBlock.findMany({
+      where: { startAt: { gte: resumen.semanas.actual.inicio, lt: resumen.semanas.actual.fin } },
       select: { endAt: true },
     });
 
-    expect(blocks.some((block) => block.endAt.getTime() < Date.now())).toBe(true);
+    expect(bloques.some((bloque) => bloque.endAt.getTime() < Date.now())).toBe(true);
   });
 
   it('CA3: un mentor tiene 50 bloques en una semana y el otro no tiene ninguno', async () => {
-    const mentorA = await prisma.user.findUniqueOrThrow({ where: { email: emailOf('mentorA') } });
-    const mentorB = await prisma.user.findUniqueOrThrow({ where: { email: emailOf('mentorB') } });
+    const mentorA = await prisma.user.findUniqueOrThrow({ where: { email: correoDe('mentorA') } });
+    const mentorB = await prisma.user.findUniqueOrThrow({ where: { email: correoDe('mentorB') } });
+    const iniciosDelTrio = [resumen.plan.libre, resumen.plan.pendiente, resumen.plan.confirmada].map(
+      (bloque) => bloque.inicio,
+    );
 
-    const grouped = await prisma.availabilityBlock.groupBy({
+    const agrupados = await prisma.availabilityBlock.groupBy({
       by: ['mentorId'],
       where: {
         mentorId: { in: [mentorA.id, mentorB.id] },
-        startAt: { gte: weeks.siguiente.start, lt: weeks.siguiente.end },
+        startAt: {
+          gte: resumen.semanas.siguiente.inicio,
+          lt: resumen.semanas.siguiente.fin,
+          notIn: iniciosDelTrio,
+        },
       },
       _count: { _all: true },
     });
 
-    const blocksInNextWeek = (mentorId: string): number =>
-      grouped.find((group) => group.mentorId === mentorId)?._count._all ?? 0;
+    const bloquesDe = (mentorId: string): number =>
+      agrupados.find((grupo) => grupo.mentorId === mentorId)?._count._all ?? 0;
 
-    expect(blocksInNextWeek(mentorA.id)).toBe(50);
-    expect(blocksInNextWeek(mentorB.id)).toBe(0);
+    expect(bloquesDe(mentorA.id)).toBe(50);
+    expect(bloquesDe(mentorB.id)).toBe(0);
   });
 
   it('CA4: correr el seed dos veces no duplica datos', async () => {
-    const before = await snapshot();
+    const antes = await instantanea();
     await runSeed(prisma);
-    const after = await snapshot();
+    const despues = await instantanea();
 
-    expect(after).toEqual(before);
-    expect(after.users).toBe(SEED_USERS.length);
-    expect(after.blocks).toBeGreaterThanOrEqual(55);
-    expect(after.appointments).toBe(2);
+    expect(despues).toEqual(antes);
+    expect(despues.usuarios).toBe(SEED_USERS.length);
+    expect(despues.bloques).toBeGreaterThanOrEqual(55);
+    expect(despues.citas).toBe(2);
+  });
+
+  it('getWeeks mantiene el domingo 21:00 y 23:30 de Bolivia en la semana actual', () => {
+    const domingosTarde = [new Date('2026-10-05T01:00:00.000Z'), new Date('2026-10-05T03:30:00.000Z')];
+
+    for (const instante of domingosTarde) {
+      const semanas = getWeeks(instante);
+
+      expect(semanas.actual.inicio.getTime()).toBeLessThanOrEqual(instante.getTime());
+      expect(instante.getTime()).toBeLessThan(semanas.actual.fin.getTime());
+      expect(semanas.actual.fin.getTime() - semanas.actual.inicio.getTime()).toBe(SEMANA_EN_MS);
+      expect(semanas.actual.inicio.getUTCDay()).toBe(1);
+    }
   });
 });
