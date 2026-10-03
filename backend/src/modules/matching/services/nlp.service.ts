@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class NlpService {
- feature/grupo-5-backend-nlp-tokenization
   tokenizeAndFilter(text: string): string[] {
     const stopwords = new Set([
       'a',
@@ -26,7 +25,6 @@ export class NlpService {
       .split(/\s+/)
       .filter((word) => word.length > 0 && !stopwords.has(word));
   }
-}
 
   normalizeText(text: string): string {
     return text
