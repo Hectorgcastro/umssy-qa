@@ -34,9 +34,22 @@ describe("OrientationStep", () => {
       />,
     );
 
+    expect(screen.getByText("0 seleccionadas")).toBeDefined();
+  });
+
+  it("muestra el mensaje de validación cuando no hay orientaciones seleccionadas", () => {
+    render(
+      <OrientationStep
+        selectedOrientationTypeIds={[]}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
     expect(
-      screen.getByText("Orientaciones seleccionadas: 0"),
-    ).toBeDefined();
+      screen.getByRole("alert"),
+    ).toHaveTextContent(
+      "Debe seleccionarse al menos un tipo de orientación para continuar",
+    );
   });
 
   it("agrega una orientación al seleccionarla", () => {
@@ -84,7 +97,7 @@ describe("OrientationStep", () => {
     ]);
   });
 
-  it("muestra la etiqueta Activo en las orientaciones seleccionadas", () => {
+  it("marca visualmente una orientación seleccionada", () => {
     render(
       <OrientationStep
         selectedOrientationTypeIds={["career-guidance"]}
@@ -92,7 +105,13 @@ describe("OrientationStep", () => {
       />,
     );
 
-    expect(screen.getByText("Activo")).toBeDefined();
+    const selectedButton = screen.getByRole("button", {
+      name: /Orientación profesional/i,
+    });
+
+    expect(
+      selectedButton.getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 
   it("actualiza visualmente el contador según las selecciones recibidas", () => {
@@ -106,8 +125,19 @@ describe("OrientationStep", () => {
       />,
     );
 
+    expect(screen.getByText("2 seleccionadas")).toBeDefined();
+  });
+
+  it("oculta el mensaje de validación cuando existe una selección", () => {
+    render(
+      <OrientationStep
+        selectedOrientationTypeIds={["career-guidance"]}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
     expect(
-      screen.getByText("Orientaciones seleccionadas: 2"),
-    ).toBeDefined();
+      screen.queryByRole("alert"),
+    ).toBeNull();
   });
 });

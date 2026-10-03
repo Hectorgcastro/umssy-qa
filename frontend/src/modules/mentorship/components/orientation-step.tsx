@@ -1,3 +1,6 @@
+"use client";
+
+import { CheckCircle } from "lucide-react";
 import { ORIENTATION_TYPES } from "../data/orientation-types";
 
 interface OrientationStepProps {
@@ -9,6 +12,9 @@ export function OrientationStep({
   selectedOrientationTypeIds,
   onSelectionChange,
 }: OrientationStepProps) {
+  const selectedCount = selectedOrientationTypeIds.length;
+  const hasSelection = selectedCount > 0;
+
   const toggleOrientation = (id: string) => {
     const isSelected = selectedOrientationTypeIds.includes(id);
 
@@ -25,10 +31,10 @@ export function OrientationStep({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-lg font-semibold text-ink">
-          Tipos de orientación
+        <h2 className="text-sm font-semibold text-ink">
+          Paso 3: Tipos de orientación
         </h2>
 
         <p className="mt-1 text-sm text-text-secondary">
@@ -36,32 +42,59 @@ export function OrientationStep({
         </p>
       </div>
 
-      <p className="text-sm font-medium text-ink">
-        Orientaciones seleccionadas: {selectedOrientationTypeIds.length}
-      </p>
+      <div className="rounded-md bg-surface-soft px-3 py-2 text-sm font-medium text-ink">
+        {selectedCount} seleccionada{selectedCount === 1 ? "" : "s"}
+      </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {!hasSelection && (
+        <p
+          className="text-sm font-medium text-red-600"
+          role="alert"
+        >
+          Debe seleccionarse al menos un tipo de orientación para continuar
+        </p>
+      )}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {ORIENTATION_TYPES.map((orientation) => {
-          const isSelected = selectedOrientationTypeIds.includes(
-            orientation.id,
-          );
+          const isSelected =
+            selectedOrientationTypeIds.includes(orientation.id);
 
           return (
             <button
               key={orientation.id}
               type="button"
               onClick={() => toggleOrientation(orientation.id)}
-              className="flex items-center justify-between rounded-lg border border-border bg-surface p-4 text-left"
+              className={[
+                "flex w-full flex-col items-start gap-3 rounded-lg border p-4 text-left transition-colors",
+                isSelected
+                  ? "border-red-600 bg-red-50"
+                  : "border-border bg-slate-100 hover:border-slate-300",
+              ].join(" ")}
+              aria-pressed={isSelected}
             >
-              <span className="text-sm font-medium text-ink">
-                {orientation.label}
-              </span>
-
-              {isSelected && (
-                <span className="rounded-full bg-accent px-2 py-1 text-xs font-semibold text-white">
-                  Activo
+              <div className="flex w-full items-start justify-between">
+                <span className="text-sm font-semibold text-ink">
+                  {orientation.label}
                 </span>
-              )}
+
+                <div
+                  className={[
+                    "flex h-5 w-5 items-center justify-center rounded border",
+                    isSelected
+                      ? "border-red-600 bg-red-600 text-white"
+                      : "border-slate-300 bg-white",
+                  ].join(" ")}
+                >
+                  {isSelected && (
+                    <CheckCircle
+                      className="h-3.5 w-3.5"
+                      strokeWidth={3}
+                      aria-hidden
+                    />
+                  )}
+                </div>
+              </div>
             </button>
           );
         })}
