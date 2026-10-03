@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
+import { ConfirmationStep } from "../components/confirmation-step";
 import { OrientationStep } from "../components/orientation-step";
 import { ParticipationStep } from "../components/participation-step";
 import { ProgressStepper } from "../components/progress-stepper";
 import { StepTechnicalAreas } from "../components/step-technical-areas";
+import { ORIENTATION_TYPES } from "../data/orientation-types";
+import { TECHNICAL_AREAS } from "../data/technical-areas";
 import { useMentorshipWizard } from "../hooks/use-mentorship-wizard";
-import { MENTORSHIP_STEPS } from "../types/mentorship.types";
 
 export function MentorshipView() {
   const {
@@ -15,15 +19,16 @@ export function MentorshipView() {
     selectedOrientationTypeIds,
     goNext,
     goBack,
+    goToStep,
     toggleTechnicalArea,
     canGoBack,
     canGoNext,
     setState,
   } = useMentorshipWizard();
 
-  const currentStepDefinition = MENTORSHIP_STEPS[currentStep - 1];
+  const [isActivating, setIsActivating] = useState(false);
+  const [isActivated, setIsActivated] = useState(false);
 
-  // En el paso 1 se exige aceptar la participacion
   const canAdvance =
     currentStep === 1 ? wantsToParticipate : canGoNext;
 
@@ -40,6 +45,87 @@ export function MentorshipView() {
       selectedOrientationTypeIds: ids,
     }));
   };
+
+  const handleActivate = async () => {
+    setIsActivating(true);
+
+    // La integración real con la API se realizará en la tarea correspondiente.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setIsActivating(false);
+    setIsActivated(true);
+  };
+
+  const selectedTechnicalAreas = TECHNICAL_AREAS.filter((area) =>
+    selectedTechnicalAreaIds.includes(area.id),
+  );
+
+  const selectedOrientationTypes = ORIENTATION_TYPES.filter((orientation) =>
+    selectedOrientationTypeIds.includes(orientation.id),
+  );
+
+  if (isActivated) {
+    return (
+      <main className="min-h-full bg-surface-soft px-4 py-6 sm:py-8">
+        <div className="mx-auto w-full max-w-4xl">
+          <section className="rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6">
+            <div className="space-y-6">
+              <div>
+                <h1 className="font-tight text-xl font-bold text-ink sm:text-2xl">
+                  Tu participación como mentor está activa
+                </h1>
+
+                <p className="mt-2 text-sm text-text-secondary">
+                  Tu configuración fue registrada correctamente.
+                </p>
+              </div>
+
+              <section className="rounded-lg border border-border bg-surface-soft p-4">
+                <h2 className="text-sm font-semibold text-ink">
+                  Áreas técnicas
+                </h2>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedTechnicalAreas.map((area) => (
+                    <span
+                      key={area.id}
+                      className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-ink"
+                    >
+                      {area.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-border bg-surface-soft p-4">
+                <h2 className="text-sm font-semibold text-ink">
+                  Tipos de orientación
+                </h2>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedOrientationTypes.map((orientation) => (
+                    <span
+                      key={orientation.id}
+                      className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-ink"
+                    >
+                      {orientation.label}
+                    </span>
+                  ))}
+                </div>
+              </section>
+
+              <Link
+                href="/mentorship/mentors"
+                className="block w-full rounded-md bg-accent px-5 py-2.5 text-center text-sm font-semibold text-white"
+              >
+                Ir al directorio
+              </Link>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   const renderStepContent = () => {
     if (currentStep === 1) {
@@ -70,15 +156,16 @@ export function MentorshipView() {
     }
 
     return (
-      <div>
-        <p className="text-sm font-semibold text-ink">
-          Paso {currentStep}: {currentStepDefinition.label}
-        </p>
-
-        <p className="mt-2 text-sm text-text-secondary">
-          {currentStepDefinition.description}
-        </p>
-      </div>
+      <ConfirmationStep
+        wantsToParticipate={wantsToParticipate}
+        selectedTechnicalAreaIds={selectedTechnicalAreaIds}
+        selectedOrientationTypeIds={selectedOrientationTypeIds}
+        isActivating={isActivating}
+        onEditParticipation={() => goToStep(1)}
+        onEditTechnicalAreas={() => goToStep(2)}
+        onEditOrientationTypes={() => goToStep(3)}
+        onActivate={handleActivate}
+      />
     );
   };
 
@@ -102,25 +189,39 @@ export function MentorshipView() {
             {renderStepContent()}
           </div>
 
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              disabled={!canGoBack}
-              className="rounded-md border border-border-strong px-4 py-2.5 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              ← Volver
-            </button>
+          {currentStep < 4 && (
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={goBack}
+                disabled={!canGoBack}
+                className="rounded-md border border-border-strong px-4 py-2.5 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                ← Volver
+              </button>
 
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={!canAdvance}
-              className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Continuar →
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!canAdvance}
+                className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Continuar →
+              </button>
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={goBack}
+                className="rounded-md border border-border-strong px-4 py-2.5 text-sm font-semibold text-ink"
+              >
+                ← Volver
+              </button>
+            </div>
+          )}
         </section>
       </div>
     </main>

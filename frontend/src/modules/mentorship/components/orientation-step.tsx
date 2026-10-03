@@ -1,31 +1,9 @@
-interface OrientationOption {
-  id: string;
-  label: string;
-}
+import { ORIENTATION_TYPES } from "../data/orientation-types";
 
 interface OrientationStepProps {
   selectedOrientationTypeIds: string[];
   onSelectionChange: (ids: string[]) => void;
 }
-
-const ORIENTATION_OPTIONS: OrientationOption[] = [
-  {
-    id: "career-guidance",
-    label: "Orientación profesional",
-  },
-  {
-    id: "technical-guidance",
-    label: "Orientación técnica",
-  },
-  {
-    id: "job-search",
-    label: "Búsqueda de empleo",
-  },
-  {
-    id: "interview-preparation",
-    label: "Preparación para entrevistas",
-  },
-];
 
 export function OrientationStep({
   selectedOrientationTypeIds,
@@ -63,7 +41,7 @@ export function OrientationStep({
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {ORIENTATION_OPTIONS.map((orientation) => {
+        {ORIENTATION_TYPES.map((orientation) => {
           const isSelected = selectedOrientationTypeIds.includes(
             orientation.id,
           );

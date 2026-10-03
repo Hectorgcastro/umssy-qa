@@ -55,7 +55,9 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
+    expect(
+      screen.getByText("Paso 2: Áreas técnicas"),
+    ).toBeDefined();
   });
 
   it("no permite avanzar del paso 2 sin seleccionar un área", () => {
@@ -70,12 +72,16 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
+    expect(
+      screen.getByText("Paso 2: Áreas técnicas"),
+    ).toBeDefined();
 
     expect((nextButton as HTMLButtonElement).disabled).toBe(true);
 
     expect(
-      screen.getByText("Debe seleccionarse al menos un área para continuar"),
+      screen.getByText(
+        "Debe seleccionarse al menos un área para continuar",
+      ),
     ).toBeDefined();
   });
 
@@ -91,7 +97,9 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
+    expect(
+      screen.getByText("Paso 2: Áreas técnicas"),
+    ).toBeDefined();
 
     const backendCard = screen.getByRole("button", {
       name: /Backend/i,
@@ -104,7 +112,9 @@ describe("MentorshipView", () => {
     fireEvent.click(nextButton);
 
     expect(
-      screen.getByRole("heading", { name: "Tipos de orientación" }),
+      screen.getByRole("heading", {
+        name: "Tipos de orientación",
+      }),
     ).toBeDefined();
   });
 
@@ -115,7 +125,9 @@ describe("MentorshipView", () => {
       name: /Volver/i,
     });
 
-    expect((backButton as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (backButton as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it("permite regresar al paso anterior", () => {
@@ -130,7 +142,9 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
+    expect(
+      screen.getByText("Paso 2: Áreas técnicas"),
+    ).toBeDefined();
 
     const backButton = screen.getByRole("button", {
       name: /Volver/i,
@@ -139,7 +153,9 @@ describe("MentorshipView", () => {
     fireEvent.click(backButton);
 
     expect(
-      screen.getByRole("heading", { name: "Participación" }),
+      screen.getByRole("heading", {
+        name: "Participación",
+      }),
     ).toBeDefined();
   });
 
@@ -158,7 +174,9 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeDefined();
+    expect(
+      screen.getByText("Paso 2: Áreas técnicas"),
+    ).toBeDefined();
 
     const backButton = screen.getByRole("button", {
       name: /Volver/i,
@@ -176,7 +194,9 @@ describe("MentorshipView", () => {
   it("muestra el título principal del wizard", () => {
     render(<MentorshipView />);
 
-    expect(screen.getByText("Participa como mentor")).toBeDefined();
+    expect(
+      screen.getByText("Participa como mentor"),
+    ).toBeDefined();
   });
 
   it("actualiza el contador al seleccionar áreas", () => {
@@ -191,7 +211,9 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("0 seleccionadas")).toBeDefined();
+    expect(
+      screen.getByText("0 seleccionadas"),
+    ).toBeDefined();
 
     const backendCard = screen.getByRole("button", {
       name: /Backend/i,
@@ -199,69 +221,135 @@ describe("MentorshipView", () => {
 
     fireEvent.click(backendCard);
 
-    expect(screen.getByText("1 seleccionada")).toBeDefined();
+    expect(
+      screen.getByText("1 seleccionada"),
+    ).toBeDefined();
   });
 
-  it("deshabilita Continuar en el último paso", () => {
+  it("muestra la confirmación en el último paso", () => {
     render(<MentorshipView />);
 
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(
+      screen.getByRole("checkbox"),
+    );
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
     });
 
-    // Paso 1 a paso 2
     fireEvent.click(nextButton);
 
-    // Se selecciona un area para poder salir del paso 2
-    fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Backend/i,
+      }),
+    );
 
-    // Paso 2 a paso 3 y paso 3 a paso 4
     fireEvent.click(nextButton);
     fireEvent.click(nextButton);
 
-    expect(screen.getByText("Paso 4: Confirmación")).toBeDefined();
-    expect((nextButton as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      screen.getByRole("heading", {
+        name: "Confirma tu participación",
+      }),
+    ).toBeDefined();
+
+    expect(
+      screen.getByRole("button", {
+        name: "Activar participación",
+      }),
+    ).toBeDefined();
   });
 
   it("muestra las orientaciones y permite seleccionar varias", () => {
     render(<MentorshipView />);
 
-    fireEvent.click(screen.getByRole("checkbox"));
-    const nextButton = screen.getByRole("button", { name: /Continuar/i });
-    fireEvent.click(nextButton);
-    fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
+    fireEvent.click(
+      screen.getByRole("checkbox"),
+    );
+
+    const nextButton = screen.getByRole("button", {
+      name: /Continuar/i,
+    });
+
     fireEvent.click(nextButton);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /Orientación profesional/i }),
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: /Orientación técnica/i }),
+      screen.getByRole("button", {
+        name: /Backend/i,
+      }),
     );
 
-    expect(screen.getByText("Orientaciones seleccionadas: 2")).toBeDefined();
-    expect(screen.getAllByText("Activo")).toHaveLength(2);
+    fireEvent.click(nextButton);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Orientación profesional/i,
+      }),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Orientación técnica/i,
+      }),
+    );
+
+    expect(
+      screen.getByText("Orientaciones seleccionadas: 2"),
+    ).toBeDefined();
+
+    expect(
+      screen.getAllByText("Activo"),
+    ).toHaveLength(2);
   });
 
   it("conserva las orientaciones al avanzar y regresar", () => {
     render(<MentorshipView />);
 
-    fireEvent.click(screen.getByRole("checkbox"));
-    const nextButton = screen.getByRole("button", { name: /Continuar/i });
-    fireEvent.click(nextButton);
-    fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
-    fireEvent.click(nextButton);
     fireEvent.click(
-      screen.getByRole("button", { name: /Orientación profesional/i }),
+      screen.getByRole("checkbox"),
+    );
+
+    const nextButton = screen.getByRole("button", {
+      name: /Continuar/i,
+    });
+
+    fireEvent.click(nextButton);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Backend/i,
+      }),
     );
 
     fireEvent.click(nextButton);
-    expect(screen.getByText("Paso 4: Confirmación")).toBeDefined();
 
-    fireEvent.click(screen.getByRole("button", { name: /Volver/i }));
-    expect(screen.getByText("Orientaciones seleccionadas: 1")).toBeDefined();
-    expect(screen.getByText("Activo")).toBeDefined();
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Orientación profesional/i,
+      }),
+    );
+
+    fireEvent.click(nextButton);
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Confirma tu participación",
+      }),
+    ).toBeDefined();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Volver/i,
+      }),
+    );
+
+    expect(
+      screen.getByText("Orientaciones seleccionadas: 1"),
+    ).toBeDefined();
+
+    expect(
+      screen.getByText("Activo"),
+    ).toBeDefined();
   });
 });
