@@ -1,5 +1,6 @@
-import { AppShell } from "@/shared/components/layout/app-shell";
+import type { ReactNode } from "react";
+import { EventsAppShell } from "@/modules/events";
 
-export default function AppLayout({ children }: LayoutProps<"/">) {
-  return <AppShell>{children}</AppShell>;
+export default function EventsLayout({ children }: { children: ReactNode }) {
+  return <EventsAppShell>{children}</EventsAppShell>;
 }
