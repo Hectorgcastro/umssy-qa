@@ -24,8 +24,8 @@ describe("MentorAvailabilityView", () => {
 
   it("renderiza lista de bloques de disponibilidad", async () => {
     const mockBlocks = [
-      { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" },
-      { id: "2", mentorId: "m1", startAt: "2024-01-15T14:00:00Z", endAt: "2024-01-15T15:00:00Z", createdAt: "", updatedAt: "" },
+      { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", state: "free" as const, createdAt: "", updatedAt: "" },
+      { id: "2", mentorId: "m1", startAt: "2024-01-15T14:00:00Z", endAt: "2024-01-15T15:00:00Z", state: "free" as const, createdAt: "", updatedAt: "" },
     ]
     vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue(mockBlocks)
 
