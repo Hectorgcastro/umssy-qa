@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Breadcrumb, type BreadcrumbItem } from "@/shared/components/layout";
+import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
 import { RefreshButton } from "../components/refresh-button";
 import { RegisteredUsersTable } from "../components/registered-users-table";
 import { ReportActions } from "../components/report-actions";
@@ -10,7 +10,7 @@ import { UserTypeFilter } from "../components/user-type-filter";
 import { REGISTERED_USERS_PAGE_SIZE, useRegisteredUsers } from "../hooks/use-registered-users";
 import type { UserType } from "../types/registered-user.types";
 
-const BREADCRUMB_ITEMS: BreadcrumbItem[] = [
+const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
   { label: "Inicio", href: "/dashboard" },
   { label: "Reportes Analíticos" },
   { label: "Reporte de usuarios registrados" },
@@ -32,7 +32,7 @@ export function RegisteredUsersReportView() {
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <Breadcrumb items={BREADCRUMB_ITEMS} />
+        <PageBreadcrumb items={BREADCRUMB_ITEMS} />
         <h1 className="font-tight text-3xl font-extrabold text-ink">Reporte de usuarios registrados</h1>
       </header>
 

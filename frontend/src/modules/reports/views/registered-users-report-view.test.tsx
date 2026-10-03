@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { reportsService } from "../services/reports.service";
 import { RegisteredUsersReportView } from "./registered-users-report-view";
@@ -10,9 +11,10 @@ async function renderLoadedView() {
   });
 }
 
-function selectUserType(label: string) {
-  fireEvent.click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
-  fireEvent.click(screen.getByRole("option", { name: label }));
+// El Select de shadcn responde a eventos de puntero reales: se usa user-event.
+async function selectUserType(user: UserEvent, label: string) {
+  await user.click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
+  await user.click(await screen.findByRole("option", { name: label }));
 }
 
 describe("RegisteredUsersReportView", () => {
@@ -41,12 +43,13 @@ describe("RegisteredUsersReportView", () => {
     expect(screen.getByRole("button", { name: "Página 3" })).toBeDefined();
   });
 
-  it("ofrece las opciones de tipo de usuario en orden", () => {
+  it("ofrece las opciones de tipo de usuario en orden", async () => {
     render(<RegisteredUsersReportView />);
 
     expect(screen.queryByRole("listbox")).toBeNull();
-    fireEvent.click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
+    await userEvent.setup().click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
 
+    await screen.findByRole("listbox");
     const options = screen.getAllByRole("option").map((option) => option.textContent);
     expect(options).toEqual(["Todos", "Estudiante", "Titulado", "Mentor", "Empresa", "Administrador"]);
   });
@@ -76,6 +79,7 @@ describe("RegisteredUsersReportView", () => {
   });
 
   it("filtra por tipo de usuario y vuelve a la primera página", async () => {
+    const user = userEvent.setup();
     await renderLoadedView();
 
     fireEvent.click(screen.getByRole("button", { name: "Página 2" }));
@@ -83,7 +87,7 @@ describe("RegisteredUsersReportView", () => {
       expect(screen.getByText("Mostrando 11-20 de 24 usuarios")).toBeDefined();
     });
 
-    selectUserType("Empresa");
+    await selectUserType(user, "Empresa");
 
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-4 de 4 usuarios")).toBeDefined();
@@ -92,51 +96,60 @@ describe("RegisteredUsersReportView", () => {
     expect(screen.queryByText("Juan Carlos Peres Rojas")).toBeNull();
     expect(screen.getByRole("combobox", { name: "Tipo de usuario" }).textContent).toContain("Empresa");
 
-    selectUserType("Mentor");
+    await selectUserType(user, "Mentor");
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-2 de 2 usuarios")).toBeDefined();
     });
     expect(screen.getByText("Gabriela Soliz Arnez")).toBeDefined();
 
-    selectUserType("Todos");
+    await selectUserType(user, "Todos");
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
     });
   });
 
   it("maneja el filtro con el teclado y lo cierra con Escape o al hacer clic afuera", async () => {
+    const user = userEvent.setup();
     await renderLoadedView();
     const combobox = screen.getByRole("combobox", { name: "Tipo de usuario" });
 
-    fireEvent.keyDown(combobox, { key: "ArrowDown" });
-    expect(combobox.getAttribute("aria-expanded")).toBe("true");
-    fireEvent.keyDown(combobox, { key: "ArrowDown" });
-    fireEvent.keyDown(combobox, { key: "ArrowDown" });
-    fireEvent.keyDown(combobox, { key: "ArrowUp" });
-    fireEvent.keyDown(combobox, { key: "Enter" });
+    combobox.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(await screen.findByRole("listbox")).toBeDefined();
+    await user.keyboard("{ArrowDown}{Enter}");
 
-    expect(combobox.getAttribute("aria-expanded")).toBe("false");
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).toBeNull();
+    });
     await waitFor(() => {
       expect(combobox.textContent).toContain("Estudiante");
     });
 
-    fireEvent.keyDown(combobox, { key: " " });
-    expect(screen.getByRole("listbox")).toBeDefined();
-    fireEvent.keyDown(combobox, { key: "Escape" });
-    expect(screen.queryByRole("listbox")).toBeNull();
+    await user.click(combobox);
+    expect(await screen.findByRole("listbox")).toBeDefined();
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).toBeNull();
+    });
 
-    fireEvent.click(combobox);
-    fireEvent.mouseDown(document.body);
-    expect(screen.queryByRole("listbox")).toBeNull();
+    await user.click(combobox);
+    expect(await screen.findByRole("listbox")).toBeDefined();
+    await user.click(document.body);
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).toBeNull();
+    });
   });
 
   it("no vuelve a consultar si se elige la misma opción", async () => {
+    const user = userEvent.setup();
     const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
     await renderLoadedView();
 
-    selectUserType("Todos");
+    await selectUserType(user, "Todos");
 
-    expect(screen.queryByRole("listbox")).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).toBeNull();
+    });
     expect(getRegisteredUsersSpy).toHaveBeenCalledTimes(1);
   });
 

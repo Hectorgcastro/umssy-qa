@@ -1,10 +1,7 @@
-import { ChartColumn, History, House, Inbox } from "lucide-react";
-import type { NavigationItem } from "@/shared/types/navigation.types";
+import { ChartColumn } from "lucide-react";
+import type { NavigationItem } from "@/shared/types/navigation-item.types";
 
 export const SIDEBAR_NAVIGATION: NavigationItem[] = [
-  { label: "Inicio", icon: House, href: "/dashboard" },
-  { label: "Solicitudes", icon: Inbox, href: "/requests" },
-  { label: "Registro de auditoría", icon: History, href: "/audit-log" },
   {
     label: "Reportes Analíticos",
     icon: ChartColumn,

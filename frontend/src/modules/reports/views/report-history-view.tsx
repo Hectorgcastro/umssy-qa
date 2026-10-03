@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Breadcrumb, type BreadcrumbItem } from "@/shared/components/layout";
+import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
 import { ReportHistoryTable } from "../components/report-history-table";
 import { TablePagination } from "../components/table-pagination";
 import { useReportHistory } from "../hooks/use-report-history";
 
-const BREADCRUMB_ITEMS: BreadcrumbItem[] = [
+const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
   { label: "Inicio", href: "/dashboard" },
   { label: "Reportes Analíticos" },
   { label: "Historial de reportes generados" },
@@ -19,7 +19,7 @@ export function ReportHistoryView() {
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <Breadcrumb items={BREADCRUMB_ITEMS} />
+        <PageBreadcrumb items={BREADCRUMB_ITEMS} />
         <h1 className="font-tight text-3xl font-extrabold text-ink">Historial de Reportes Generados</h1>
       </header>
 

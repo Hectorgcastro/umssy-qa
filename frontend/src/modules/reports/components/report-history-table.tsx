@@ -1,4 +1,5 @@
 import { FileText } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTime } from "@/shared/utils/date.utils";
 import type { GeneratedReport, ReportType } from "../types/generated-report.types";
 import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
@@ -16,6 +17,8 @@ const REPORT_TYPE_LABELS: Record<ReportType, string> = {
 };
 
 const COLUMN_COUNT = 3;
+const HEAD_CLASSES = "h-auto px-6 py-3 font-semibold text-text-secondary";
+const CELL_CLASSES = "px-6 py-4 text-ink-soft";
 
 export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportHistoryTableProps) {
   const renderBody = () => {
@@ -32,31 +35,31 @@ export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportH
     }
 
     return reports.map((report) => (
-      <tr key={report.id} className="border-t border-border transition-colors hover:bg-surface-soft">
-        <td className="px-6 py-4">
-          <span className="flex items-center gap-3 text-ink-soft">
-            <FileText className="h-5 w-5 shrink-0 text-ink" strokeWidth={1.5} aria-hidden="true" />
+      <TableRow key={report.id} className="border-border hover:bg-surface-soft">
+        <TableCell className={`${CELL_CLASSES} whitespace-normal`}>
+          <span className="flex items-center gap-3">
+            <FileText className="size-5 shrink-0 text-ink" strokeWidth={1.5} aria-hidden="true" />
             <span className="break-all">{report.fileName}</span>
           </span>
-        </td>
-        <td className="px-6 py-4 text-ink-soft">{REPORT_TYPE_LABELS[report.reportType]}</td>
-        <td className="whitespace-nowrap px-6 py-4 text-ink-soft">{formatDateTime(report.generatedAt)}</td>
-      </tr>
+        </TableCell>
+        <TableCell className={CELL_CLASSES}>{REPORT_TYPE_LABELS[report.reportType]}</TableCell>
+        <TableCell className={CELL_CLASSES}>{formatDateTime(report.generatedAt)}</TableCell>
+      </TableRow>
     ));
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-      <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="bg-surface-soft text-text-secondary">
-          <tr>
-            <th scope="col" className="px-6 py-3 font-semibold">Nombre del Archivo / Reporte</th>
-            <th scope="col" className="px-6 py-3 font-semibold">Tipo de Reporte</th>
-            <th scope="col" className="px-6 py-3 font-semibold">Fecha y Hora de Generación</th>
-          </tr>
-        </thead>
-        <tbody aria-busy={isLoading}>{renderBody()}</tbody>
-      </table>
+    <div className="rounded-lg border border-border bg-surface">
+      <Table className="min-w-160 text-left">
+        <TableHeader className="bg-surface-soft">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead scope="col" className={HEAD_CLASSES}>Nombre del Archivo / Reporte</TableHead>
+            <TableHead scope="col" className={HEAD_CLASSES}>Tipo de Reporte</TableHead>
+            <TableHead scope="col" className={HEAD_CLASSES}>Fecha y Hora de Generación</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody aria-busy={isLoading}>{renderBody()}</TableBody>
+      </Table>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Breadcrumb, type BreadcrumbItem } from "@/shared/components/layout";
+import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { UserSearchInput } from "../components/user-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
@@ -10,7 +10,7 @@ import { RejectedUsersTable } from "../components/rejected-users-table";
 import { TablePagination } from "../components/table-pagination";
 import { REJECTED_USERS_PAGE_SIZE, useRejectedUsers } from "../hooks/use-rejected-users";
 
-const BREADCRUMB_ITEMS: BreadcrumbItem[] = [
+const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
   { label: "Inicio", href: "/dashboard" },
   { label: "Reportes Analíticos" },
   { label: "Reporte de usuarios rechazados" },
@@ -35,7 +35,7 @@ export function RejectedUsersReportView() {
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <Breadcrumb items={BREADCRUMB_ITEMS} />
+        <PageBreadcrumb items={BREADCRUMB_ITEMS} />
         <h1 className="font-tight text-3xl font-extrabold uppercase text-ink">Reporte de usuarios rechazados</h1>
       </header>
 
