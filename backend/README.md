@@ -96,13 +96,18 @@ pnpm seed
 pnpm seed:test
 ```
 
+Migrations and the seed use the schema from `DB_SCHEMA`, which is intentionally
+absent from `.env.example`: keep `DB_SCHEMA=test` in your local `.env` (it is
+already present in `.env.test.example`) so development data goes to the `test`
+schema, while the application at runtime always connects to `public`.
+
 The seed is **idempotent**: it runs inside a single transaction that first
 removes the `@umssy.test` users it owns, so running it twice never duplicates
 data. If anything fails, the transaction is rolled back.
 
-> **Note:** this is a development seed created for Epic #7 (B-03). It already
-> merges the Epic 1 login seed (roles + provisional user), so re-running it
-> keeps both suites of data in sync.
+> **Note:** this development seed (Epic #7, B-03) **replaces** the Epic 1 login
+> seed in `prisma/seed.ts`: it keeps the Epic 1 roles and provisional user and
+> adds the Epic 7 test data, so re-running it keeps both suites in sync.
 
 ## Run Tests
 
