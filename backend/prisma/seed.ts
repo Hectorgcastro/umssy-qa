@@ -21,31 +21,34 @@ import type { AppointmentStatus, Prisma, Role, User } from '../src/prisma/client
 export const STATUS_PENDING = 'PENDIENTE';
 export const STATUS_CONFIRMED = 'CONFIRMADA';
 
-export type SeedUserKey = 'mentorA' | 'mentorB' | 'titulado' | 'estudiante';
+export type SeedUserKey = 'mentorA' | 'mentorB' | 'graduate' | 'student';
 
-export const SEED_USERS: ReadonlyArray<{ key: SeedUserKey; nombre: string; apellido: string; correo: string }> = [
-  { key: 'mentorA', nombre: 'Mentor', apellido: 'Alfa', correo: 'mentor.a@umssy.test' },
-  { key: 'mentorB', nombre: 'Mentor', apellido: 'Beta', correo: 'mentor.b@umssy.test' },
-  { key: 'titulado', nombre: 'Titulado', apellido: 'Uno', correo: 'titulado.1@umssy.test' },
-  { key: 'estudiante', nombre: 'Estudiante', apellido: 'Uno', correo: 'estudiante.1@umssy.test' },
+export const SEED_USERS: ReadonlyArray<{
+  key: SeedUserKey;
+  firstName: string;
+  lastName: string;
+  email: string;
+}> = [
+  { key: 'mentorA', firstName: 'Mentor', lastName: 'Alfa', email: 'mentor.a@umssy.test' },
+  { key: 'mentorB', firstName: 'Mentor', lastName: 'Beta', email: 'mentor.b@umssy.test' },
+  { key: 'graduate', firstName: 'Titulado', lastName: 'Uno', email: 'titulado.1@umssy.test' },
+  { key: 'student', firstName: 'Estudiante', lastName: 'Uno', email: 'estudiante.1@umssy.test' },
 ];
 
-const CORREOS_SEED = SEED_USERS.map((usuario) => usuario.correo);
+const SEED_EMAILS = SEED_USERS.map((user) => user.email);
 
-const CONTRASENA_SEED = 'Prueba123';
-const RONDAS_BCRYPT = 10;
+const SEED_PASSWORD = 'Prueba123';
+const BCRYPT_ROUNDS = 10;
 
-const USUARIO_PRUEBA = {
-  correo: 'prueba@umss.edu.bo',
-  nombre: 'Usuario',
-  apellido: 'De Prueba',
+const TEST_USER = {
+  email: 'prueba@umss.edu.bo',
+  firstName: 'Usuario',
+  lastName: 'De Prueba',
 };
 
-// Roles creados por versiones anteriores de este seed: vienen en mayúscula y
-// el login de Epic 1 solo reconoce ROLE_NAMES (minúscula).
-const ROLES_HEREDADOS = ['MENTOR', 'TITULADO'];
+const LEGACY_ROLES = ['MENTOR', 'TITULADO'];
 
-const EsquemaEntorno = z.object({
+const EnvSchema = z.object({
   DB_USER: z.string().min(1),
   DB_PASSWORD: z.string().min(1),
   DB_NAME: z.string().min(1),
@@ -54,17 +57,17 @@ const EsquemaEntorno = z.object({
   DB_SCHEMA: z.string().min(1).optional(),
 });
 
-export type SeedEnv = z.infer<typeof EsquemaEntorno>;
+export type SeedEnv = z.infer<typeof EnvSchema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): SeedEnv {
-  const resultado = EsquemaEntorno.safeParse(source);
-  if (!resultado.success) {
-    const detalle = resultado.error.issues
+  const parsed = EnvSchema.safeParse(source);
+  if (!parsed.success) {
+    const detail = parsed.error.issues
       .map((issue) => `${issue.path.join('.') || '(raíz)'}: ${issue.message}`)
       .join(' | ');
-    throw new Error(`Configuración de base de datos inválida — ${detalle}`);
+    throw new Error(`Configuración de base de datos inválida — ${detail}`);
   }
-  return resultado.data;
+  return parsed.data;
 }
 
 export function createSeedClient(env: SeedEnv = loadEnv()): PrismaClient {
@@ -77,162 +80,157 @@ export function createSeedClient(env: SeedEnv = loadEnv()): PrismaClient {
 
 const MS_PER_DAY = 86_400_000;
 const MS_PER_MINUTE = 60_000;
-const PASO_MS = BLOCK_STEP_MINUTES * MS_PER_MINUTE;
+const STEP_MS = BLOCK_STEP_MINUTES * MS_PER_MINUTE;
 
-export type WeekRange = { inicio: Date; fin: Date };
-export type SeedWeeks = { anterior: WeekRange; actual: WeekRange; siguiente: WeekRange };
+export type WeekRange = { start: Date; end: Date };
+export type SeedWeeks = { previous: WeekRange; current: WeekRange; next: WeekRange };
 
-const semanaDe = (referencia: Date): WeekRange => {
-  const rango = getWeekRange(referencia);
-  return { inicio: new Date(rango.startAt), fin: new Date(addWeeks(rango.startAt, 1)) };
+const weekOf = (reference: Date): WeekRange => {
+  const range = getWeekRange(reference);
+  return { start: new Date(range.startAt), end: new Date(addWeeks(range.startAt, 1)) };
 };
 
-// Semana de lunes a domingo en hora de Bolivia, con `fin` exclusivo.
 export function getWeeks(now: Date = new Date()): SeedWeeks {
-  const actual = semanaDe(now);
+  const current = weekOf(now);
   return {
-    anterior: semanaDe(new Date(actual.inicio.getTime() - 7 * MS_PER_DAY)),
-    actual,
-    siguiente: semanaDe(new Date(actual.inicio.getTime() + 7 * MS_PER_DAY)),
+    previous: weekOf(new Date(current.start.getTime() - 7 * MS_PER_DAY)),
+    current,
+    next: weekOf(new Date(current.start.getTime() + 7 * MS_PER_DAY)),
   };
 }
 
-const minutosEn = (hora: number, minuto = 0): number => hora * 60 + minuto;
+const minutesAt = (hour: number, minute = 0): number => hour * 60 + minute;
 
-const instanteEn = (semana: WeekRange, dia: number, minutosDelDia: number): Date =>
-  new Date(semana.inicio.getTime() + dia * MS_PER_DAY + minutosDelDia * MS_PER_MINUTE);
+const instantAt = (week: WeekRange, day: number, minutesOfDay: number): Date =>
+  new Date(week.start.getTime() + day * MS_PER_DAY + minutesOfDay * MS_PER_MINUTE);
 
-export type BlockSeed = { inicio: Date; fin: Date };
+export type BlockSeed = { start: Date; end: Date };
 
-const bloqueEn = (semana: WeekRange, dia: number, minutosDelDia: number): BlockSeed => {
-  const inicio = instanteEn(semana, dia, minutosDelDia);
-  return { inicio, fin: new Date(inicio.getTime() + PASO_MS) };
+const blockAt = (week: WeekRange, day: number, minutesOfDay: number): BlockSeed => {
+  const start = instantAt(week, day, minutesOfDay);
+  return { start, end: new Date(start.getTime() + STEP_MS) };
 };
 
 export function pastBlockRange(week: WeekRange, now: Date): BlockSeed | null {
-  const aperturaLunes = instanteEn(week, 0, minutosEn(BLOCK_MIN_HOUR));
-  const cierreLunes = new Date(aperturaLunes.getTime() + 60 * MS_PER_MINUTE);
-  if (now.getTime() >= cierreLunes.getTime()) {
-    return { inicio: aperturaLunes, fin: cierreLunes };
+  const mondayOpen = instantAt(week, 0, minutesAt(BLOCK_MIN_HOUR));
+  const mondayClose = new Date(mondayOpen.getTime() + 60 * MS_PER_MINUTE);
+  if (now.getTime() >= mondayClose.getTime()) {
+    return { start: mondayOpen, end: mondayClose };
   }
 
-  const finTramoCerrado = new Date(Math.floor(now.getTime() / PASO_MS) * PASO_MS);
-  const inicioTramoCerrado = new Date(finTramoCerrado.getTime() - PASO_MS);
-  if (inicioTramoCerrado.getTime() >= aperturaLunes.getTime()) {
-    return { inicio: inicioTramoCerrado, fin: finTramoCerrado };
+  const closedSlotEnd = new Date(Math.floor(now.getTime() / STEP_MS) * STEP_MS);
+  const closedSlotStart = new Date(closedSlotEnd.getTime() - STEP_MS);
+  if (closedSlotStart.getTime() >= mondayOpen.getTime()) {
+    return { start: closedSlotStart, end: closedSlotEnd };
   }
 
   return null;
 }
 
 export type BlockPlan = {
-  bloques: BlockSeed[];
-  libre: BlockSeed;
-  pendiente: BlockSeed;
-  confirmada: BlockSeed;
-  pasado: BlockSeed | null;
-  semanaTrio: WeekRange;
-  avisos: string[];
+  blocks: BlockSeed[];
+  free: BlockSeed;
+  pending: BlockSeed;
+  confirmed: BlockSeed;
+  past: BlockSeed | null;
+  trioWeek: WeekRange;
+  warnings: string[];
 };
 
-const BLOQUES_POR_DIA = 8;
+const BLOCKS_PER_DAY = 8;
 
-function construirCincuentaBloques(week: WeekRange): BlockSeed[] {
-  const bloques: BlockSeed[] = [];
-  for (let dia = 0; dia < 7 && bloques.length < 50; dia += 1) {
-    const porDia = dia < 6 ? BLOQUES_POR_DIA : 2;
-    for (let turno = 0; turno < porDia && bloques.length < 50; turno += 1) {
-      bloques.push(bloqueEn(week, dia, minutosEn(BLOCK_MIN_HOUR, turno * BLOCK_STEP_MINUTES)));
+function buildFiftyBlocks(week: WeekRange): BlockSeed[] {
+  const blocks: BlockSeed[] = [];
+  for (let day = 0; day < 7 && blocks.length < 50; day += 1) {
+    const perDay = day < 6 ? BLOCKS_PER_DAY : 2;
+    for (let slot = 0; slot < perDay && blocks.length < 50; slot += 1) {
+      blocks.push(blockAt(week, day, minutesAt(BLOCK_MIN_HOUR, slot * BLOCK_STEP_MINUTES)));
     }
   }
-  return bloques;
+  return blocks;
 }
 
-type PosicionTrio = { inicio: Date; semana: WeekRange };
+type TrioPosition = { start: Date; week: WeekRange };
 
-// Primer horario futuro que permita tres bloques de 30 minutos dentro de la
-// ventana 07:00-22:00 (el tercero debe terminar antes de las 22:00).
-function elegirTrio(ahora: Date, semanas: SeedWeeks): PosicionTrio {
-  const duracion = 3 * PASO_MS;
-  const apertura = minutosEn(BLOCK_MIN_HOUR);
-  const cierre = BLOCK_MAX_HOUR * 60;
-  const futuro = new Date(Math.ceil((ahora.getTime() + PASO_MS) / PASO_MS) * PASO_MS);
+function pickTrio(now: Date, weeks: SeedWeeks): TrioPosition {
+  const duration = 3 * STEP_MS;
+  const openMinutes = minutesAt(BLOCK_MIN_HOUR);
+  const closeMinutes = BLOCK_MAX_HOUR * 60;
+  const future = new Date(Math.ceil((now.getTime() + STEP_MS) / STEP_MS) * STEP_MS);
 
-  if (futuro.getTime() < semanas.actual.fin.getTime()) {
-    const diaActual = Math.floor((futuro.getTime() - semanas.actual.inicio.getTime()) / MS_PER_DAY);
-    for (let dia = diaActual; dia < 7; dia += 1) {
-      const aperturaDia = instanteEn(semanas.actual, dia, apertura);
-      const inicio = new Date(Math.max(futuro.getTime(), aperturaDia.getTime()));
-      const { hours, minutes } = toBoliviaTime(inicio);
-      const minutosDelDia = hours * 60 + minutes;
-      const cabe =
-        minutosDelDia + duracion / MS_PER_MINUTE <= cierre &&
-        inicio.getTime() + duracion <= semanas.actual.fin.getTime();
-      if (cabe) {
-        return { inicio, semana: semanas.actual };
+  if (future.getTime() < weeks.current.end.getTime()) {
+    const currentDay = Math.floor((future.getTime() - weeks.current.start.getTime()) / MS_PER_DAY);
+    for (let day = currentDay; day < 7; day += 1) {
+      const dayOpen = instantAt(weeks.current, day, openMinutes);
+      const start = new Date(Math.max(future.getTime(), dayOpen.getTime()));
+      const { hours, minutes } = toBoliviaTime(start);
+      const minutesOfDay = hours * 60 + minutes;
+      const fits =
+        minutesOfDay + duration / MS_PER_MINUTE <= closeMinutes &&
+        start.getTime() + duration <= weeks.current.end.getTime();
+      if (fits) {
+        return { start, week: weeks.current };
       }
     }
   }
 
-  // La semana actual ya no tiene espacio: 14:00 queda fuera de la franja de
-  // los 50 bloques de la semana siguiente (07:00-10:30), así que no colisiona.
-  return { inicio: instanteEn(semanas.siguiente, 0, 14 * 60), semana: semanas.siguiente };
+  return { start: instantAt(weeks.next, 0, 14 * 60), week: weeks.next };
 }
 
 export function buildBlockPlan(weeks: SeedWeeks, now: Date = new Date()): BlockPlan {
-  const avisos: string[] = [];
+  const warnings: string[] = [];
 
-  const semanaPasada = [
-    bloqueEn(weeks.anterior, 1, minutosEn(BLOCK_MIN_HOUR)),
-    bloqueEn(weeks.anterior, 1, minutosEn(BLOCK_MIN_HOUR, BLOCK_STEP_MINUTES)),
+  const previousWeekBlocks = [
+    blockAt(weeks.previous, 1, minutesAt(BLOCK_MIN_HOUR)),
+    blockAt(weeks.previous, 1, minutesAt(BLOCK_MIN_HOUR, BLOCK_STEP_MINUTES)),
   ];
 
-  const posicion = elegirTrio(now, weeks);
-  const libre = { inicio: posicion.inicio, fin: new Date(posicion.inicio.getTime() + PASO_MS) };
-  const pendiente = {
-    inicio: new Date(libre.inicio.getTime() + PASO_MS),
-    fin: new Date(libre.inicio.getTime() + 2 * PASO_MS),
+  const position = pickTrio(now, weeks);
+  const free = { start: position.start, end: new Date(position.start.getTime() + STEP_MS) };
+  const pending = {
+    start: new Date(free.start.getTime() + STEP_MS),
+    end: new Date(free.start.getTime() + 2 * STEP_MS),
   };
-  const confirmada = {
-    inicio: new Date(libre.inicio.getTime() + 2 * PASO_MS),
-    fin: new Date(libre.inicio.getTime() + 3 * PASO_MS),
+  const confirmed = {
+    start: new Date(free.start.getTime() + 2 * STEP_MS),
+    end: new Date(free.start.getTime() + 3 * STEP_MS),
   };
 
-  const pasado = pastBlockRange(weeks.actual, now);
-  if (pasado === null) {
-    avisos.push(
+  const past = pastBlockRange(weeks.current, now);
+  if (past === null) {
+    warnings.push(
       'Ejecución muy temprana en lunes: no se pudo crear el bloque pasado dentro de la ventana 07:00-22:00 de la semana actual.',
     );
   }
-  if (posicion.semana !== weeks.actual) {
-    avisos.push(
+  if (position.week !== weeks.current) {
+    warnings.push(
       'La semana actual ya no tiene horario disponible: los bloques de prueba (libre, pendiente y confirmada) se crearon en la semana siguiente.',
     );
   }
 
   return {
-    bloques: [
-      ...semanaPasada,
-      ...(pasado === null ? [] : [pasado]),
-      libre,
-      pendiente,
-      confirmada,
-      ...construirCincuentaBloques(weeks.siguiente),
+    blocks: [
+      ...previousWeekBlocks,
+      ...(past === null ? [] : [past]),
+      free,
+      pending,
+      confirmed,
+      ...buildFiftyBlocks(weeks.next),
     ],
-    libre,
-    pendiente,
-    confirmada,
-    pasado,
-    semanaTrio: posicion.semana,
-    avisos,
+    free,
+    pending,
+    confirmed,
+    past,
+    trioWeek: position.week,
+    warnings,
   };
 }
 
 type SeedUsers = Record<SeedUserKey, User>;
 
-async function limpiar(tx: Prisma.TransactionClient): Promise<number> {
-  const encontrados = await tx.user.findMany({ where: { email: { in: CORREOS_SEED } }, select: { id: true } });
-  const ids = encontrados.map((usuario) => usuario.id);
+async function cleanup(tx: Prisma.TransactionClient): Promise<number> {
+  const found = await tx.user.findMany({ where: { email: { in: SEED_EMAILS } }, select: { id: true } });
+  const ids = found.map((user) => user.id);
   if (ids.length === 0) {
     return 0;
   }
@@ -243,25 +241,25 @@ async function limpiar(tx: Prisma.TransactionClient): Promise<number> {
   return ids.length;
 }
 
-async function sembrarRoles(tx: Prisma.TransactionClient): Promise<{ mentor: Role; titulado: Role; estudiante: Role }> {
-  await tx.role.createMany({ data: ROLE_NAMES.map((nombre) => ({ name: nombre })), skipDuplicates: true });
+async function seedRoles(tx: Prisma.TransactionClient): Promise<{ mentor: Role; graduate: Role; student: Role }> {
+  await tx.role.createMany({ data: ROLE_NAMES.map((name) => ({ name })), skipDuplicates: true });
 
   const mentor = await tx.role.findUniqueOrThrow({ where: { name: 'mentor' } });
-  const titulado = await tx.role.findUniqueOrThrow({ where: { name: 'titulado' } });
-  const estudiante = await tx.role.findUniqueOrThrow({ where: { name: 'estudiante' } });
+  const graduate = await tx.role.findUniqueOrThrow({ where: { name: 'titulado' } });
+  const student = await tx.role.findUniqueOrThrow({ where: { name: 'estudiante' } });
 
-  return { mentor, titulado, estudiante };
+  return { mentor, graduate, student };
 }
 
-async function limpiarRolesHeredados(tx: Prisma.TransactionClient): Promise<number> {
-  const heredados = await tx.role.findMany({ where: { name: { in: ROLES_HEREDADOS } }, select: { id: true } });
-  if (heredados.length === 0) {
+async function removeLegacyRoles(tx: Prisma.TransactionClient): Promise<number> {
+  const legacy = await tx.role.findMany({ where: { name: { in: LEGACY_ROLES } }, select: { id: true } });
+  if (legacy.length === 0) {
     return 0;
   }
 
-  const ids = heredados.map((rol) => rol.id);
-  const referencias = await tx.userRole.count({ where: { roleId: { in: ids } } });
-  if (referencias > 0) {
+  const ids = legacy.map((role) => role.id);
+  const references = await tx.userRole.count({ where: { roleId: { in: ids } } });
+  if (references > 0) {
     return 0;
   }
 
@@ -269,198 +267,209 @@ async function limpiarRolesHeredados(tx: Prisma.TransactionClient): Promise<numb
   return count;
 }
 
-async function sembrarEstados(tx: Prisma.TransactionClient): Promise<{ pendiente: AppointmentStatus; confirmada: AppointmentStatus }> {
-  const asegurar = (titulo: string) =>
-    tx.appointmentStatus.upsert({ where: { title: titulo }, create: { title: titulo }, update: {} });
+async function seedStatuses(
+  tx: Prisma.TransactionClient,
+): Promise<{ pending: AppointmentStatus; confirmed: AppointmentStatus }> {
+  const ensure = (title: string) =>
+    tx.appointmentStatus.upsert({ where: { title }, create: { title }, update: {} });
 
-  return { pendiente: await asegurar(STATUS_PENDING), confirmada: await asegurar(STATUS_CONFIRMED) };
+  return { pending: await ensure(STATUS_PENDING), confirmed: await ensure(STATUS_CONFIRMED) };
 }
 
-async function sembrarUsuarioDePrueba(tx: Prisma.TransactionClient, clave: string, rol: Role): Promise<void> {
-  const usuario = await tx.user.upsert({
-    where: { email: USUARIO_PRUEBA.correo },
-    update: { password: clave },
+async function seedTestUser(tx: Prisma.TransactionClient, password: string, role: Role): Promise<void> {
+  const user = await tx.user.upsert({
+    where: { email: TEST_USER.email },
+    update: { password },
     create: {
-      firstName: USUARIO_PRUEBA.nombre,
-      lastName: USUARIO_PRUEBA.apellido,
-      email: USUARIO_PRUEBA.correo,
-      password: clave,
+      firstName: TEST_USER.firstName,
+      lastName: TEST_USER.lastName,
+      email: TEST_USER.email,
+      password,
     },
   });
 
-  const rolAsignado = await tx.userRole.findFirst({
-    where: { userId: usuario.id, roleId: rol.id, deletedAt: null },
+  const assignedRole = await tx.userRole.findFirst({
+    where: { userId: user.id, roleId: role.id, deletedAt: null },
   });
-  if (!rolAsignado) {
-    await tx.userRole.create({ data: { userId: usuario.id, roleId: rol.id } });
+  if (!assignedRole) {
+    await tx.userRole.create({ data: { userId: user.id, roleId: role.id } });
   }
 }
 
-async function sembrarUsuarios(tx: Prisma.TransactionClient, claves: string[]): Promise<SeedUsers> {
+async function seedUsers(tx: Prisma.TransactionClient, passwords: string[]): Promise<SeedUsers> {
   await tx.user.createMany({
-    data: SEED_USERS.map((usuario, posicion) => ({
-      firstName: usuario.nombre,
-      lastName: usuario.apellido,
-      email: usuario.correo,
-      password: claves[posicion],
+    data: SEED_USERS.map((user, index) => ({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      password: passwords[index],
     })),
   });
 
-  const creados = await tx.user.findMany({ where: { email: { in: CORREOS_SEED } } });
-  const porCorreo = new Map(creados.map((usuario) => [usuario.email, usuario]));
+  const created = await tx.user.findMany({ where: { email: { in: SEED_EMAILS } } });
+  const byEmail = new Map(created.map((user) => [user.email, user]));
 
   return {
-    mentorA: porCorreo.get(SEED_USERS[0].correo) as User,
-    mentorB: porCorreo.get(SEED_USERS[1].correo) as User,
-    titulado: porCorreo.get(SEED_USERS[2].correo) as User,
-    estudiante: porCorreo.get(SEED_USERS[3].correo) as User,
+    mentorA: byEmail.get(SEED_USERS[0].email) as User,
+    mentorB: byEmail.get(SEED_USERS[1].email) as User,
+    graduate: byEmail.get(SEED_USERS[2].email) as User,
+    student: byEmail.get(SEED_USERS[3].email) as User,
   };
 }
 
-async function sembrarRolesDeUsuario(
+async function assignUserRoles(
   tx: Prisma.TransactionClient,
-  usuarios: SeedUsers,
-  roles: { mentor: Role; titulado: Role; estudiante: Role },
+  users: SeedUsers,
+  roles: { mentor: Role; graduate: Role; student: Role },
 ): Promise<number> {
   const { count } = await tx.userRole.createMany({
     data: [
-      { userId: usuarios.mentorA.id, roleId: roles.mentor.id },
-      { userId: usuarios.mentorB.id, roleId: roles.mentor.id },
-      { userId: usuarios.titulado.id, roleId: roles.titulado.id },
-      { userId: usuarios.estudiante.id, roleId: roles.estudiante.id },
+      { userId: users.mentorA.id, roleId: roles.mentor.id },
+      { userId: users.mentorB.id, roleId: roles.mentor.id },
+      { userId: users.graduate.id, roleId: roles.graduate.id },
+      { userId: users.student.id, roleId: roles.student.id },
     ],
   });
   return count;
 }
 
-async function sembrarBloques(tx: Prisma.TransactionClient, mentorId: string, plan: BlockPlan): Promise<number> {
+async function seedBlocks(tx: Prisma.TransactionClient, mentorId: string, plan: BlockPlan): Promise<number> {
   const { count } = await tx.availabilityBlock.createMany({
-    data: plan.bloques.map((bloque) => ({ mentorId, startAt: bloque.inicio, endAt: bloque.fin })),
+    data: plan.blocks.map((block) => ({ mentorId, startAt: block.start, endAt: block.end })),
   });
   return count;
 }
 
-async function sembrarCitas(
+async function seedAppointments(
   tx: Prisma.TransactionClient,
-  usuarios: SeedUsers,
-  estados: { pendiente: AppointmentStatus; confirmada: AppointmentStatus },
+  users: SeedUsers,
+  statuses: { pending: AppointmentStatus; confirmed: AppointmentStatus },
   plan: BlockPlan,
 ): Promise<number> {
-  const bloquesDelTrio = await tx.availabilityBlock.findMany({
-    where: { mentorId: usuarios.mentorA.id, startAt: { gte: plan.semanaTrio.inicio, lt: plan.semanaTrio.fin } },
+  const trioBlocks = await tx.availabilityBlock.findMany({
+    where: { mentorId: users.mentorA.id, startAt: { gte: plan.trioWeek.start, lt: plan.trioWeek.end } },
     select: { id: true, startAt: true },
   });
-  const idPorInicio = new Map(bloquesDelTrio.map((bloque) => [bloque.startAt.getTime(), bloque.id]));
+  const idByStart = new Map(trioBlocks.map((block) => [block.startAt.getTime(), block.id]));
 
-  const bloquePendiente = idPorInicio.get(plan.pendiente.inicio.getTime());
-  const bloqueConfirmado = idPorInicio.get(plan.confirmada.inicio.getTime());
-  if (!bloquePendiente || !bloqueConfirmado) {
+  const pendingBlock = idByStart.get(plan.pending.start.getTime());
+  const confirmedBlock = idByStart.get(plan.confirmed.start.getTime());
+  if (!pendingBlock || !confirmedBlock) {
     throw new Error('No se encontraron los bloques de prueba para crear las citas de la semana del trío.');
   }
 
-  // En HU-04 el que reserva la sesión es el titulado.
-  const cita = (bloque: BlockSeed, blockId: string, statusId: string, mensaje: string) => ({
+  const buildAppointment = (block: BlockSeed, blockId: string, statusId: string, message: string) => ({
     blockId,
-    mentorId: usuarios.mentorA.id,
-    studentId: usuarios.titulado.id,
-    startAt: bloque.inicio,
-    endAt: bloque.fin,
+    mentorId: users.mentorA.id,
+    studentId: users.graduate.id,
+    startAt: block.start,
+    endAt: block.end,
     statusId,
-    message: mensaje,
+    message,
   });
 
   const { count } = await tx.appointment.createMany({
     data: [
-      cita(plan.pendiente, bloquePendiente, estados.pendiente.id, 'Cita de prueba pendiente (seed de desarrollo)'),
-      cita(plan.confirmada, bloqueConfirmado, estados.confirmada.id, 'Cita de prueba confirmada (seed de desarrollo)'),
+      buildAppointment(
+        plan.pending,
+        pendingBlock,
+        statuses.pending.id,
+        'Cita de prueba pendiente (seed de desarrollo)',
+      ),
+      buildAppointment(
+        plan.confirmed,
+        confirmedBlock,
+        statuses.confirmed.id,
+        'Cita de prueba confirmada (seed de desarrollo)',
+      ),
     ],
   });
   return count;
 }
 
 export type SeedSummary = {
-  semanas: SeedWeeks;
+  weeks: SeedWeeks;
   plan: BlockPlan;
   roles: number;
-  estados: number;
-  usuarios: number;
-  rolesDeUsuario: number;
-  bloques: number;
-  citas: number;
-  usuariosEliminados: number;
-  rolesHeredados: number;
-  avisos: string[];
+  statuses: number;
+  users: number;
+  userRoles: number;
+  blocks: number;
+  appointments: number;
+  removedUsers: number;
+  legacyRoles: number;
+  warnings: string[];
 };
 
 export async function runSeed(client?: PrismaClient): Promise<SeedSummary> {
-  const esDuenoDelCliente = client === undefined;
+  const ownsClient = client === undefined;
   const prisma = client ?? createSeedClient();
 
   try {
-    const ahora = new Date();
-    const semanas = getWeeks(ahora);
-    const plan = buildBlockPlan(semanas, ahora);
-    const claves = await Promise.all(SEED_USERS.map(() => bcrypt.hash(CONTRASENA_SEED, RONDAS_BCRYPT)));
-    const clavePrueba = await bcrypt.hash(CONTRASENA_SEED, RONDAS_BCRYPT);
+    const now = new Date();
+    const weeks = getWeeks(now);
+    const plan = buildBlockPlan(weeks, now);
+    const passwords = await Promise.all(SEED_USERS.map(() => bcrypt.hash(SEED_PASSWORD, BCRYPT_ROUNDS)));
+    const testPassword = await bcrypt.hash(SEED_PASSWORD, BCRYPT_ROUNDS);
 
     return await prisma.$transaction(
       async (tx) => {
-        const usuariosEliminados = await limpiar(tx);
-        const roles = await sembrarRoles(tx);
-        const rolesHeredados = await limpiarRolesHeredados(tx);
-        const estados = await sembrarEstados(tx);
-        await sembrarUsuarioDePrueba(tx, clavePrueba, roles.titulado);
-        const usuarios = await sembrarUsuarios(tx, claves);
-        const rolesDeUsuario = await sembrarRolesDeUsuario(tx, usuarios, roles);
-        const bloques = await sembrarBloques(tx, usuarios.mentorA.id, plan);
-        const citas = await sembrarCitas(tx, usuarios, estados, plan);
+        const removedUsers = await cleanup(tx);
+        const roles = await seedRoles(tx);
+        const legacyRoles = await removeLegacyRoles(tx);
+        const statuses = await seedStatuses(tx);
+        await seedTestUser(tx, testPassword, roles.graduate);
+        const users = await seedUsers(tx, passwords);
+        const userRoles = await assignUserRoles(tx, users, roles);
+        const blocks = await seedBlocks(tx, users.mentorA.id, plan);
+        const appointments = await seedAppointments(tx, users, statuses, plan);
 
         return {
-          semanas,
+          weeks,
           plan,
           roles: ROLE_NAMES.length,
-          estados: Object.keys(estados).length,
-          usuarios: SEED_USERS.length,
-          rolesDeUsuario,
-          bloques,
-          citas,
-          usuariosEliminados,
-          rolesHeredados,
-          avisos: plan.avisos,
+          statuses: Object.keys(statuses).length,
+          users: SEED_USERS.length,
+          userRoles,
+          blocks,
+          appointments,
+          removedUsers,
+          legacyRoles,
+          warnings: plan.warnings,
         };
       },
       { maxWait: 5_000, timeout: 30_000 },
     );
   } finally {
-    if (esDuenoDelCliente) {
+    if (ownsClient) {
       await prisma.$disconnect();
     }
   }
 }
 
 async function main(): Promise<void> {
-  const registro = new Logger('Seed');
-  let cliente: PrismaClient | undefined;
+  const logger = new Logger('Seed');
+  let client: PrismaClient | undefined;
 
   try {
-    cliente = createSeedClient();
-    const resumen = await runSeed(cliente);
-    registro.log(
-      `Seed completado — roles: ${resumen.roles}, estados: ${resumen.estados}, usuarios: ${resumen.usuarios}, ` +
-        `roles de usuario: ${resumen.rolesDeUsuario}, bloques: ${resumen.bloques}, citas: ${resumen.citas}` +
-        (resumen.usuariosEliminados > 0
-          ? ` (re-ejecución: ${resumen.usuariosEliminados} usuario(s) de prueba reemplazados)`
+    client = createSeedClient();
+    const summary = await runSeed(client);
+    logger.log(
+      `Seed completado — roles: ${summary.roles}, estados: ${summary.statuses}, usuarios: ${summary.users}, ` +
+        `roles de usuario: ${summary.userRoles}, bloques: ${summary.blocks}, citas: ${summary.appointments}` +
+        (summary.removedUsers > 0
+          ? ` (re-ejecución: ${summary.removedUsers} usuario(s) de prueba reemplazados)`
           : '') +
-        (resumen.rolesHeredados > 0 ? ` (roles en mayúscula eliminados: ${resumen.rolesHeredados})` : ''),
+        (summary.legacyRoles > 0 ? ` (roles en mayúscula eliminados: ${summary.legacyRoles})` : ''),
     );
-    for (const aviso of resumen.avisos) {
-      registro.warn(aviso);
+    for (const warning of summary.warnings) {
+      logger.warn(warning);
     }
   } catch (error) {
-    registro.error('El seed falló y la transacción se revirtió', error instanceof Error ? error.stack : String(error));
+    logger.error('El seed falló y la transacción se revirtió', error instanceof Error ? error.stack : String(error));
     process.exitCode = 1;
   } finally {
-    await cliente?.$disconnect();
+    await client?.$disconnect();
   }
 }
 
