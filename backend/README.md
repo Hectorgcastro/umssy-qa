@@ -69,13 +69,18 @@ pnpm generate
 
 Loads the test data used by the E2E tests (no mocks):
 
-- The `MENTOR` and `TITULADO` roles.
-- 2 mentors, 1 graduate and 1 student (test users under `@umssy.test`).
+- The 5 `ROLE_NAMES` roles (`titulado`, `estudiante`, `mentor`, `empresa`,
+  `administrativo`); the legacy `MENTOR` and `TITULADO` roles are deleted when
+  nothing references them anymore.
+- The Epic 1 provisional user (`prueba@umss.edu.bo`, `titulado` role) and
+  4 test users under `@umssy.test`: 2 mentors, 1 graduate and 1 student, each
+  with its role assigned and the password `Prueba123`.
 - Availability blocks in the previous, current and next week, relative to the
   execution date and calculated in Bolivia time (UTC-4).
 - One mentor with 50 blocks in a single week and another mentor with no blocks.
 - One block already in the past within the current week.
-- One pending and one confirmed appointment on blocks of the current week.
+- One free block plus one pending and one confirmed appointment, all scheduled
+  after the execution time (the graduate is the one who books, as in HU-04).
 
 ```bash
 # Runs `prisma db seed` against the database configured in .env
@@ -89,8 +94,9 @@ The seed is **idempotent**: it runs inside a single transaction that first
 removes the `@umssy.test` users it owns, so running it twice never duplicates
 data. If anything fails, the transaction is rolled back.
 
-> **Temporary:** this is a development seed created for Epic #7 (B-03). It will
-> be aligned with or removed once Epic 1 delivers the official seed.
+> **Note:** this is a development seed created for Epic #7 (B-03). It already
+> merges the Epic 1 login seed (roles + provisional user), so re-running it
+> keeps both suites of data in sync.
 
 ## Run Tests
 
