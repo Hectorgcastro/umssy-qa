@@ -2,15 +2,18 @@
 
 import { ParticipationStep } from "../components/participation-step";
 import { ProgressStepper } from "../components/progress-stepper";
+import { StepTechnicalAreas } from "../components/step-technical-areas";
 import { useMentorshipWizard } from "../hooks/use-mentorship-wizard";
 import { MENTORSHIP_STEPS } from "../types/mentorship.types";
 
 export function MentorshipView() {
   const {
     currentStep,
+    selectedTechnicalAreaIds,
     wantsToParticipate,
     goNext,
     goBack,
+    toggleTechnicalArea,
     canGoBack,
     canGoNext,
     setState,
@@ -18,6 +21,7 @@ export function MentorshipView() {
 
   const currentStepDefinition = MENTORSHIP_STEPS[currentStep - 1];
 
+  // En el paso 1 se exige aceptar la participacion
   const canAdvance =
     currentStep === 1 ? wantsToParticipate : canGoNext;
 
@@ -26,6 +30,38 @@ export function MentorshipView() {
       ...prev,
       wantsToParticipate: value,
     }));
+  };
+
+  const renderStepContent = () => {
+    if (currentStep === 1) {
+      return (
+        <ParticipationStep
+          isParticipating={wantsToParticipate}
+          onParticipationChange={handleParticipationChange}
+        />
+      );
+    }
+
+    if (currentStep === 2) {
+      return (
+        <StepTechnicalAreas
+          selectedIds={selectedTechnicalAreaIds}
+          onToggle={toggleTechnicalArea}
+        />
+      );
+    }
+
+    return (
+      <div>
+        <p className="text-sm font-semibold text-ink">
+          Paso {currentStep}: {currentStepDefinition.label}
+        </p>
+
+        <p className="mt-2 text-sm text-text-secondary">
+          {currentStepDefinition.description}
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -45,22 +81,7 @@ export function MentorshipView() {
           </header>
 
           <div className="min-h-48 rounded-md border border-border bg-surface-soft p-4 sm:p-6">
-            {currentStep === 1 ? (
-              <ParticipationStep
-                isParticipating={wantsToParticipate}
-                onParticipationChange={handleParticipationChange}
-              />
-            ) : (
-              <>
-                <p className="text-sm font-semibold text-ink">
-                  Paso {currentStep}: {currentStepDefinition.label}
-                </p>
-
-                <p className="mt-2 text-sm text-text-secondary">
-                  {currentStepDefinition.description}
-                </p>
-              </>
-            )}
+            {renderStepContent()}
           </div>
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
