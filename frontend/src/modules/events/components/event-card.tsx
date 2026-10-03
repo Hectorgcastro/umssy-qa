@@ -3,7 +3,7 @@
 import { Calendar, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { EventCardProps } from '../types/event.types';
+import type { EventCardProps, EventItem } from '../types/event.types';
 
 const CATEGORY_BADGE_STYLES: Record<string, string> = {
   tecnologia: 'bg-slate-200/80 text-ink',
@@ -21,7 +21,43 @@ function getCategoryBadgeClasses(categoryName: string): string {
   return CATEGORY_BADGE_STYLES[normalizedKey] ?? 'bg-slate-200/80 text-ink';
 }
 
-// Formatea la columna event_date (YYYY-MM-DD o ISO) al formato en espanol del mockup
+export interface EventCapacityStatus {
+  enrolledCount: number;
+  capacity: number | null;
+  progressPercentage: number | null;
+  isFull: boolean;
+}
+
+export function calculateEventCapacityStatus(
+  event: EventItem,
+): EventCapacityStatus {
+  const enrolledCount = Math.max(0, event.registrationCount);
+  const { capacity, availableSpots } = event;
+
+  if (capacity === null) {
+    return {
+      enrolledCount,
+      capacity: null,
+      progressPercentage: null,
+      isFull: false,
+    };
+  }
+
+  const safeCapacity = Math.max(0, capacity);
+  const isFull = availableSpots === 0 || enrolledCount >= safeCapacity;
+  const progressPercentage =
+    safeCapacity === 0
+      ? 100
+      : Math.min(Math.round((enrolledCount / safeCapacity) * 100), 100);
+
+  return {
+    enrolledCount,
+    capacity,
+    progressPercentage,
+    isFull,
+  };
+}
+
 export function formatEventDate(eventDate: string): string {
   const datePart = eventDate.split('T')[0];
   const parts = datePart.split('-').map(Number);
@@ -41,7 +77,6 @@ export function formatEventDate(eventDate: string): string {
   }).format(dateObj);
 }
 
-// Formatea las columnas start_time y end_time (HH:mm:ss o ISO) a HH:mm - HH:mm
 export function formatTimeRange(startTime: string, endTime: string): string {
   const extractHoursMinutes = (timeValue: string): string => {
     const timeMatch = timeValue.match(/(\d{2}:\d{2})/);
@@ -56,12 +91,10 @@ export function EventCard({
   isSelected = false,
   onSelect,
 }: EventCardProps) {
-  const capacity = event.capacity;
-  const hasCapacityLimit = capacity !== null && capacity > 0;
-  const occupancyPercentage = hasCapacityLimit
-    ? Math.min(Math.round((event.registrationCount / capacity) * 100), 100)
-    : null;
-  const isFull = hasCapacityLimit && event.registrationCount >= capacity;
+  const { enrolledCount, capacity, progressPercentage, isFull } =
+    calculateEventCapacityStatus(event);
+
+  const categoryName = event.category.name;
 
   const handleCardClick = () => {
     if (onSelect) {
@@ -90,24 +123,28 @@ export function EventCard({
           : 'border-border hover:border-border-strong',
       )}
     >
-      {/* Cabecera de la tarjeta: Nombre de la categoria desde la relacion event_category */}
+      {/* Cabecera de la tarjeta: Categoria e insignia condicional de estado "Lleno" */}
       <div className="flex items-center justify-between gap-2">
         <span
           className={cn(
             'text-xs font-semibold px-3 py-1 rounded-full',
-            getCategoryBadgeClasses(event.category.name),
+            getCategoryBadgeClasses(categoryName),
           )}
         >
-          {event.category.name}
+          {categoryName}
         </span>
+
         {isFull && (
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-interaction text-danger">
+          <span
+            data-testid="event-full-badge"
+            className="text-xs font-semibold px-3 py-1 rounded-full bg-interaction text-danger"
+          >
             Lleno
           </span>
         )}
       </div>
 
-      {/* Cuerpo central: Titulo, event_date y rango start_time - end_time */}
+      {/* Cuerpo central: Titulo del taller y metadatos de fecha y horario */}
       <div className="flex flex-col gap-2.5">
         <h2 className="text-base font-bold text-ink leading-snug">
           {event.title}
@@ -125,34 +162,35 @@ export function EventCard({
         </div>
       </div>
 
-      {/* Pie de la tarjeta: Indicador de inscritos confirmados sobre capacity */}
+      {/* Pie de la tarjeta: Barra de progreso de cupo (dorada disponible / roja lleno) + contador */}
       <div className="flex items-center gap-3 pt-1">
-        {occupancyPercentage !== null ? (
-          <div
-            role="progressbar"
-            aria-label="Ocupación del taller"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={occupancyPercentage}
-            className="flex-1 bg-slate-200/80 h-2 rounded-full overflow-hidden"
-          >
-            <div
-              className={cn(
-                'h-full rounded-full',
-                isFull ? 'bg-accent' : 'bg-gold',
-              )}
-              style={{ width: `${occupancyPercentage}%` }}
-            />
-          </div>
-        ) : (
+        {progressPercentage === null ? (
           <span className="flex-1 text-xs text-text-secondary">
             Sin limite de cupos
           </span>
+        ) : (
+          <div
+            role="progressbar"
+            aria-label={`Cupos ocupados para ${event.title}`}
+            aria-valuenow={progressPercentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="flex-1 bg-slate-200/80 h-2 rounded-full overflow-hidden"
+          >
+            <div
+              data-testid="event-capacity-bar"
+              className={cn(
+                'h-full rounded-full transition-all',
+                isFull ? 'bg-accent' : 'bg-gold',
+              )}
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
         )}
         <span className="text-xs font-medium text-text-secondary shrink-0">
-          {hasCapacityLimit
-            ? `${event.registrationCount}/${capacity}`
-            : `${event.registrationCount} inscritos`}
+          {capacity === null
+            ? `${enrolledCount} inscritos`
+            : `${enrolledCount}/${capacity}`}
         </span>
       </div>
     </Card>

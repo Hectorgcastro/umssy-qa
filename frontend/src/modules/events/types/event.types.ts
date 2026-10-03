@@ -21,6 +21,17 @@ export interface EventItem {
   modalityId: string;
 }
 
+export interface EventsListResponse {
+  data: EventItem[];
+  page: number;
+  offset: number;
+}
+
+export interface GetEventsParams {
+  page: number;
+  limit: number;
+}
+
 // Contrato de propiedades con sufijo obligatorio Props (Estandar 2.2)
 export interface EventCardProps {
   event: EventItem;
