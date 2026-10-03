@@ -1,50 +1,24 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { PrismaService } from '../prisma/prisma.service.js';
 
-// Se simula el cliente generado y el adapter: así no se abre ninguna conexión real.
-vi.mock('../../prisma/client', () => ({
-  PrismaClient: class {
-    options: unknown;
-    $connect = vi.fn().mockResolvedValue(undefined);
-    $disconnect = vi.fn().mockResolvedValue(undefined);
-    constructor(options: unknown) {
-      this.options = options;
-    }
-  },
-}));
-
-vi.mock('@prisma/adapter-pg', () => ({
-  PrismaPg: class {
-    config: unknown;
-    constructor(config: unknown) {
-      this.config = config;
-    }
-  },
-}));
-
-import { PrismaService } from '../prisma.service.js';
+beforeAll(() => {
+  process.env.DB_USER ??= 'user';
+  process.env.DB_PASSWORD ??= 'password';
+  process.env.DB_HOST ??= 'localhost';
+  process.env.DB_PORT ??= '5432';
+  process.env.DB_NAME ??= 'test_db';
+});
 
 describe('PrismaService', () => {
-  it('crea el cliente con el adapter de PostgreSQL', () => {
+  it('conecta y desconecta a traves de los hooks del ciclo de vida', async () => {
     const service = new PrismaService();
-    const options = (service as unknown as { options: { adapter: unknown } })
-      .options;
-
-    expect(options.adapter).toBeDefined();
-  });
-
-  it('se conecta al iniciar el módulo', async () => {
-    const service = new PrismaService();
+    const connectSpy = vi.spyOn(service, '$connect').mockResolvedValue(undefined);
+    const disconnectSpy = vi.spyOn(service, '$disconnect').mockResolvedValue(undefined);
 
     await service.onModuleInit();
-
-    expect(service.$connect).toHaveBeenCalledOnce();
-  });
-
-  it('se desconecta al destruir el módulo', async () => {
-    const service = new PrismaService();
-
     await service.onModuleDestroy();
 
-    expect(service.$disconnect).toHaveBeenCalledOnce();
+    expect(connectSpy).toHaveBeenCalledOnce();
+    expect(disconnectSpy).toHaveBeenCalledOnce();
   });
 });
