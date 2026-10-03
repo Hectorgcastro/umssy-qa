@@ -10,7 +10,12 @@ export class PrismaService
 {
   constructor() {
     super({
-      adapter: new PrismaPg({ connectionString: buildDatabaseConnectionString() }),
+      adapter: new PrismaPg({
+        connectionString: buildDatabaseConnectionString('runtime'),
+        max: 3,
+        connectionTimeoutMillis: 10_000,
+        idleTimeoutMillis: 30_000,
+      }),
     });
   }
 
