@@ -1,44 +1,49 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertCircle,
   Check,
   CheckCircle2,
   ChevronRight,
-  Code,
-  FileText,
-  FolderGit2,
-  Mic,
-  Repeat,
 } from "lucide-react";
-
-const ORIENTATION_OPTIONS = [
-  { id: "1", value: "tecnica", label: "Orientación técnica", icon: Code },
-  { id: "2", value: "cv", label: "Revisión de CV", icon: FileText },
-  {
-    id: "3",
-    value: "entrevista",
-    label: "Preparación de entrevista",
-    icon: Mic,
-  },
-  { id: "4", value: "cambio_area", label: "Cambio de área", icon: Repeat },
-  {
-    id: "5",
-    value: "portafolio",
-    label: "Revisión de portafolio",
-    icon: FolderGit2,
-  },
-];
+import {
+  getMentorParticipation,
+  updateMentorParticipation,
+} from "@/shared/services/mentor-participation.service";
+import { ORIENTATION_TYPES } from "../data/orientation-types";
 
 export function OrientationConfigView() {
-  const [selectedValues, setSelectedValues] = useState<string[]>([
-    "tecnica",
-    "cv",
-  ]);
+  const [participation, setParticipation] = useState<
+    ReturnType<typeof getMentorParticipation> | undefined
+  >(undefined);
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    queueMicrotask(() => {
+      if (!isMounted) return;
+
+      const currentParticipation = getMentorParticipation();
+      setParticipation(currentParticipation);
+
+      if (currentParticipation) {
+        setSelectedValues(
+          ORIENTATION_TYPES.filter((orientation) =>
+            currentParticipation.orientations.includes(orientation.label),
+          ).map((orientation) => orientation.id),
+        );
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleCheckboxChange = (value: string) => {
     setErrorMessage(null);
@@ -58,12 +63,54 @@ export function OrientationConfigView() {
       return;
     }
 
+    const orientations = ORIENTATION_TYPES.filter((orientation) =>
+      selectedValues.includes(orientation.id),
+    ).map((orientation) => orientation.label);
+
+    updateMentorParticipation({ orientations });
     setErrorMessage(null);
     setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
   };
+
+  if (participation === undefined) {
+    return (
+      <main className="min-h-full bg-background px-4 py-8 sm:px-8">
+        <section
+          className="mx-auto max-w-3xl rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+          aria-busy="true"
+        >
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
+            Editar tipos de orientación
+          </h1>
+          <p className="mt-3 text-sm text-text-secondary">
+            Cargando tu participación como mentor…
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (participation === null) {
+    return (
+      <main className="min-h-full bg-background px-4 py-8 sm:px-8">
+        <section className="mx-auto max-w-3xl rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
+            Editar tipos de orientación
+          </h1>
+          <p className="mt-3 text-sm text-text-secondary">
+            Primero debes activar tu participación como mentor para editar los
+            tipos de orientación que deseas brindar.
+          </p>
+          <Link
+            href="/mentorship"
+            className="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+          >
+            Activar participación como mentor
+          </Link>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-full w-full bg-background">
@@ -116,9 +163,8 @@ export function OrientationConfigView() {
 
             {/* Opciones */}
             <div className="flex flex-col gap-3">
-              {ORIENTATION_OPTIONS.map((option) => {
-                const isSelected = selectedValues.includes(option.value);
-                const IconComponent = option.icon;
+              {ORIENTATION_TYPES.map((option) => {
+                const isSelected = selectedValues.includes(option.id);
 
                 return (
                   <label
@@ -130,15 +176,6 @@ export function OrientationConfigView() {
                     }`}
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-4">
-                      <div
-                        className={`shrink-0 rounded-lg p-2 transition-colors ${
-                          isSelected
-                            ? "bg-red-100 text-red-600"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        <IconComponent size={20} />
-                      </div>
                       <span className="min-w-0 break-words text-sm font-semibold text-ink">
                         {option.label}
                       </span>
@@ -148,9 +185,9 @@ export function OrientationConfigView() {
                       <input
                         type="checkbox"
                         className="peer sr-only"
-                        value={option.value}
+                        value={option.id}
                         checked={isSelected}
-                        onChange={() => handleCheckboxChange(option.value)}
+                        onChange={() => handleCheckboxChange(option.id)}
                       />
                       <div
                         className={`flex h-5 w-5 items-center justify-center rounded transition-colors ${
@@ -178,7 +215,8 @@ export function OrientationConfigView() {
               <button
                 type="button"
                 onClick={handleSave}
-                className="flex h-10 items-center justify-center rounded-lg bg-red-600 px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+                disabled={selectedValues.length === 0}
+                className="flex h-10 items-center justify-center rounded-lg bg-red-600 px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Guardar cambios
               </button>
@@ -187,20 +225,17 @@ export function OrientationConfigView() {
         </div>
       </div>
 
-      {/* Demostración visual: no persiste cambios */}
-      <div
-        className={`fixed bottom-4 left-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-gray-900 px-6 py-3 text-white shadow-xl transition-all duration-300 sm:bottom-8 sm:left-auto sm:right-8 ${
-          showToast
-            ? "translate-y-0 opacity-100"
-            : "pointer-events-none translate-y-20 opacity-0"
-        }`}
-        role="status"
-      >
-        <CheckCircle2 size={20} className="text-amber-400" />
-        <span className="text-sm font-medium">
-          Selección actualizada para esta demostración
-        </span>
-      </div>
+      {showToast && (
+        <div
+          className="fixed bottom-4 left-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-gray-900 px-6 py-3 text-white shadow-xl sm:bottom-8 sm:left-auto sm:right-8"
+          role="status"
+        >
+          <CheckCircle2 size={20} className="text-amber-400" />
+          <span className="text-sm font-medium">
+            Tipos de orientación actualizados correctamente
+          </span>
+        </div>
+      )}
     </div>
   );
 }
