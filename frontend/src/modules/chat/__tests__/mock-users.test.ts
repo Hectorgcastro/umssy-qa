@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { MOCK_USERS, CURRENT_USER, CURRENT_USER_ID } from '../mocks/mock-users';
 
 describe('mock-users', () => {
-  it('debe tener al menos 30 usuarios', () => {
-    expect(MOCK_USERS.length).toBeGreaterThanOrEqual(30);
+  it('debe tener al menos 100 usuarios', ()=> {
+    expect(MOCK_USERS.length).toBeGreaterThanOrEqual(100);
   });
 
   it('debe incluir al menos un usuario sin avatar', () => {

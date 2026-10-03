@@ -3,16 +3,12 @@
 import { User, UserRole } from '../types/user.types';
 
 /**
- * Identifier for the currently logged-in user.
- * Mirrors the "current-user" id already used in mock-conversations.ts
- * so that get-or-create logic can detect existing conversations.
+ * Identificador del usuario que tiene la sesion iniciada.
+ * Coincide con el id "current-user" ya usado en mock-conversations.ts
+ * para que la logica de get-or-create pueda detectar conversaciones existentes.
  */
 export const CURRENT_USER_ID = 'current-user';
 
-/**
- * The user currently logged in to the app.
- * Excluded from search results per Rule R15.
- */
 export const CURRENT_USER: User = {
   id: CURRENT_USER_ID,
   fullName: 'Yo Mismo',
@@ -23,15 +19,15 @@ export const CURRENT_USER: User = {
 };
 
 /**
- * 30+ mock users for chat search and conversation creation.
+ * 100+ usuarios mock para la busqueda en el chat y la creacion de conversaciones.
  *
- * Edge cases required by the HU2 task:
- * - At least 30 users
- * - At least one without avatar (avatarUrl === null)
- * - At least one inactive (isActive === false)
- * - Various roles (GRADUATE, MENTOR, RECRUITER, ADMIN)
+ * Casos requeridos por la tarea de HU2:
+ * - Al menos 100 usuarios
+ * - Al menos uno sin avatar (avatarUrl === null)
+ * - Al menos uno inactivo (isActive === false)
+ * - Roles variados (GRADUATE, MENTOR, RECRUITER, ADMIN)
  *
- * IDs intentionally do NOT collide with CURRENT_USER_ID.
+ * Los ids NO colisionan intencionalmente con CURRENT_USER_ID.
  */
 const HAND_WRITTEN_USERS: User[] = [
   {
@@ -46,7 +42,7 @@ const HAND_WRITTEN_USERS: User[] = [
     id: 'user-102',
     fullName: 'Pablo Perez',
     role: 'GRADUATE',
-    avatarUrl: null, // edge case: user without avatar
+    avatarUrl: null, 
     headline: 'Backend Developer',
     isActive: true,
   },
@@ -96,7 +92,7 @@ const HAND_WRITTEN_USERS: User[] = [
     role: 'GRADUATE',
     avatarUrl: 'https://i.pravatar.cc/150?u=user-108',
     headline: 'Mobile Developer',
-    isActive: false, // edge case: inactive user
+    isActive: false, 
   },
   {
     id: 'user-109',
@@ -117,8 +113,8 @@ const HAND_WRITTEN_USERS: User[] = [
 ];
 
 /**
- * Deterministic generator for the remaining users.
- * No randomness: same output every time you run the app or tests.
+ * Generador para el resto de los usuarios.
+ * Sin aleatoriedad: mismo resultado cada vez que se ejecuta la app o los tests.
  */
 const FIRST_NAMES = [
   'Andrea', 'Bruno', 'Camila', 'Daniel', 'Elena', 'Fabian', 'Gabriela', 'Hugo',
@@ -135,7 +131,7 @@ const GENERATED_ROLES: UserRole[] = [
   'GRADUATE', 'GRADUATE', 'GRADUATE', 'MENTOR', 'RECRUITER', 'STUDENT',
 ];
 
-const GENERATED_USERS: User[] = Array.from({ length: 30 }, (_, i) => {
+const GENERATED_USERS: User[] = Array.from({ length:100 }, (_, i) => {
   const idx = i + 111; // start at user-111
   const first = FIRST_NAMES[i % FIRST_NAMES.length];
   const last = LAST_NAMES[(i * 3) % LAST_NAMES.length];
@@ -145,19 +141,17 @@ const GENERATED_USERS: User[] = Array.from({ length: 30 }, (_, i) => {
     role: GENERATED_ROLES[i % GENERATED_ROLES.length],
     avatarUrl: i % 7 === 0 ? null : `https://i.pravatar.cc/150?u=user-${idx}`,
     headline: null,
-    isActive: i % 11 !== 0, // sprinkle a few inactive
+    isActive: i % 11 !== 0,
   };
 });
 
 /**
- * Public list of all mock users: hand-written + generated.
- * Total: 10 + 30 = 40 users.
+ * Lista de todos los usuarios mock: escritos a mano + generados.
  */
 export const MOCK_USERS: User[] = [...HAND_WRITTEN_USERS, ...GENERATED_USERS];
 
 /**
- * Convenience lookup by id. Useful in Task 6 when resolving a contact
- * from a userId without re-scanning the array.
+ * Busqueda por id
  */
 export const MOCK_USER_BY_ID: Record<string, User> = Object.fromEntries(
   MOCK_USERS.map((u) => [u.id, u])
