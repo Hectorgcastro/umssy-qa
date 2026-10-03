@@ -4,8 +4,8 @@ import { AuthModule } from '../auth.module.js';
 import { AuthController } from '../controllers/auth.controller.js';
 import { AuthService } from '../services/auth.service.js';
 import { AuthRepository } from '../repositories/auth.repository.js';
-import { PrismaModule } from '../../../common/prisma/prisma.module.js';
-import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { PrismaModule } from '../../../prisma/prisma.module.js';
+import { PrismaService } from '../../../prisma/prisma.service.js';
 
 describe('AuthModule', () => {
   let moduleRef: TestingModule;
