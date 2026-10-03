@@ -42,7 +42,7 @@ export function TableNoResultsRow({ columnCount, message }: TableMessageRowProps
       <TableCell colSpan={columnCount} className="whitespace-normal px-6 py-16">
         <div role="status" className="mx-auto flex max-w-56 flex-col items-center gap-4 text-center">
           <FileSearchCorner className="size-14 text-ink-soft" strokeWidth={1.25} aria-hidden="true" />
-          <p className="text-base font-medium text-ink">{message}</p>
+          <p className="text-base font-semibold text-ink">{message}</p>
         </div>
       </TableCell>
     </TableRow>

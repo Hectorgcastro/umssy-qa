@@ -50,7 +50,7 @@ export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportH
 
   return (
     <div className="rounded-lg border border-border bg-surface">
-      <Table className="min-w-160 text-left">
+      <Table className="min-w-160 text-left text-base">
         <TableHeader className="bg-surface-soft">
           <TableRow className="border-border hover:bg-transparent">
             <TableHead scope="col" className={HEAD_CLASSES}>Nombre del Archivo / Reporte</TableHead>

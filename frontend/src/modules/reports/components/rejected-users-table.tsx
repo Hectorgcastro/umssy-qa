@@ -53,7 +53,7 @@ export function RejectedUsersTable({ users, isLoading, errorMessage, searchTerm 
 
   return (
     <div className="rounded-lg border border-border bg-surface">
-      <Table className="min-w-200 text-left">
+      <Table className="min-w-200 text-left text-base">
         <TableHeader className="bg-surface-soft">
           <TableRow className="border-border hover:bg-transparent">
             <TableHead scope="col" className={HEAD_CLASSES}>Usuario</TableHead>

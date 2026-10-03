@@ -21,7 +21,7 @@ export function UserSearchInput({ value, onChange }: UserSearchInputProps) {
         placeholder="Buscar por nombre, correo o identificador"
         aria-label="Buscar por nombre, correo o identificador"
         maxLength={100}
-        className="h-auto rounded-md border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-text-secondary focus-visible:border-ink-soft focus-visible:ring-0"
+        className="h-auto rounded-md border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-text-secondary focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-interaction"
       />
       {value && (
         <Button
