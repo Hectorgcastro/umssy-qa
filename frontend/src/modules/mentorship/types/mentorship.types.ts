@@ -29,6 +29,15 @@ export const MENTORSHIP_STEPS: MentorshipStepDefinition[] = [
   },
 ];
 
+export interface TechnicalArea {
+  id: string;
+  // Nombre visible del área técnica
+  name: string;
+  description: string;
+  // Nombre del icono de Lucide
+  icon: string;
+}
+
 /** Estado completo del wizard (se irá llenando en T2-T5) */
 export interface MentorshipWizardState {
   currentStep: MentorshipStep;
