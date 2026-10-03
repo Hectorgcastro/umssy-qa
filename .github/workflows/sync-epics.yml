@@ -38,7 +38,7 @@ jobs:
             git checkout -B "$branch" "origin/$branch"
 
 
-            if git merge origin/develop --no-ff -m "chore: auto-sync develop into $branch [skip ci]"; then
+            if git merge origin/develop --no-ff -m "chore: auto-sync develop into $branch"; then
               if git push origin "$branch"; then
                 echo "Successfully synced $branch."
               else
