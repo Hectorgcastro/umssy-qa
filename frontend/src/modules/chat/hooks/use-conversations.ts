@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Conversation, ConversationFilter, UserSummary } from '../types/conversation.types';
+import { Conversation, ConversationFilter } from '../types/conversation.types';
 import { User } from '../types/user.types';
-import { getConversations } from '../services/chat-api';
+import { getConversations, getOrCreateConversation } from '../services/chat-api';
 
 const PAGE_SIZE = 10;
 
@@ -15,6 +15,7 @@ export function useConversations() {
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
+  const [pendingContactId, setPendingContactId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -123,33 +124,33 @@ export function useConversations() {
     });
   };
 
-  // Función añadida para el Modal de Nueva Conversación
-  const startConversationWithContact = (contactUser: User) => {
-    const existingConversation = conversationsData.find(
-      (conv) => conv.contact.id === contactUser.id
-    );
+  const startConversationWithContact = async (contactUser: User) => {
+  // Guard: ignore if another selection is already in flight (AC #13)
+  if (pendingContactId) return;
 
-    if (existingConversation) {
-      handleSelectConversation(existingConversation);
-    } else {
-      const contactSummary: UserSummary = {
-        id: contactUser.id,
-        fullName: contactUser.fullName,
-        avatarUrl: contactUser.avatarUrl,
-        isOnline: contactUser.isActive, 
-      };
+  // Fast path: conversation with this contact already in session
+  const alreadyInList = conversationsData.find(
+    (conv) => conv.contact.id === contactUser.id
+  );
+  if (alreadyInList) {
+    handleSelectConversation(alreadyInList);
+    return;
+  }
 
-      const newConversation: Conversation = {
-        id: `conv-new-${Date.now()}`,
-        contact: contactSummary,
-        unreadCount: 0,
-        updatedAt: new Date().toISOString(),
-      };
+  setPendingContactId(contactUser.id);
+  try {
+    const conversation = await getOrCreateConversation(contactUser.id);
 
-      setConversationsData((prev) => [newConversation, ...prev]);
-      setSelectedId(newConversation.id);
-    }
-  };
+    setConversationsData((prev) => {
+      const exists = prev.some((c) => c.id === conversation.id);
+      return exists ? prev : [conversation, ...prev];
+    });
+
+    setSelectedId(conversation.id);
+  } finally {
+    setPendingContactId(null);
+  }
+};
 
   return {
     conversations: paginatedConversations,

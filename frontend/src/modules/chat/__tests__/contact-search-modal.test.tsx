@@ -6,7 +6,7 @@ import { useContactSearch } from '../hooks/use-contact-search';
 
 expect.extend(matchers);
 
-vi.mock('../hooks/useContactSearch', () => ({
+vi.mock('../hooks/use-contact-search', () => ({
   useContactSearch: vi.fn(),
 }));
 
