@@ -10,6 +10,7 @@ export class EventRegistrationsRepository {
       where: { userId },
       select: {
         id: true,
+        qrToken: true,
         status: { select: { title: true } },
         event: {
           select: {

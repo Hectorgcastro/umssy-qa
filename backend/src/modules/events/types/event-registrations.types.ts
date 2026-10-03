@@ -4,4 +4,5 @@ export interface MyRegistrationResponse {
   date: Date;
   location: string;
   status: string;
+  qrToken: string;
 }

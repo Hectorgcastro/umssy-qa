@@ -22,6 +22,7 @@ describe('EventRegistrationsRepository', () => {
       where: { userId: 'user-1' },
       select: {
         id: true,
+        qrToken: true,
         status: { select: { title: true } },
         event: {
           select: { title: true, eventDate: true, location: true },

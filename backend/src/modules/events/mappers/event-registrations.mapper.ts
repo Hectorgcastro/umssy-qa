@@ -13,6 +13,7 @@ export class EventRegistrationsMapper {
       date: entity.event.eventDate,
       location: entity.event.location ?? 'Virtual',
       status: entity.status.title,
+      qrToken: entity.qrToken,
     };
   }
 

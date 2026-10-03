@@ -17,6 +17,7 @@ describe('EventRegistrationsService', () => {
     findByUserId.mockResolvedValue([
       {
         id: 'reg-1',
+        qrToken: 'qr-1',
         status: { title: 'Confirmada' },
         event: {
           title: 'Taller de NestJS',
@@ -32,6 +33,7 @@ describe('EventRegistrationsService', () => {
     expect(result).toEqual([
       {
         id: 'reg-1',
+        qrToken: 'qr-1',
         eventName: 'Taller de NestJS',
         date: new Date('2026-10-20T00:00:00.000Z'),
         location: 'Aula 101',

@@ -3,6 +3,7 @@ import { EventRegistrationsMapper } from '../mappers/event-registrations.mapper.
 
 const entity = {
   id: 'reg-1',
+  qrToken: 'qr-1',
   status: { title: 'Confirmada' },
   event: {
     title: 'Taller de NestJS',
@@ -15,6 +16,7 @@ describe('EventRegistrationsMapper', () => {
   it('mapea una inscripción a la respuesta de "Mis pases"', () => {
     expect(EventRegistrationsMapper.toMyRegistration(entity)).toEqual({
       id: 'reg-1',
+      qrToken: 'qr-1',
       eventName: 'Taller de NestJS',
       date: new Date('2026-10-20T00:00:00.000Z'),
       location: 'Aula 101',
