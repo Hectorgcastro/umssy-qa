@@ -8,15 +8,22 @@ const MAX_SEARCH_LENGTH = 100;
 const searchSchema = z.string().trim().max(MAX_SEARCH_LENGTH).optional();
 
 // Sin userType se devuelven todos los tipos de usuario.
-export const registeredUsersQuerySchema = paginationSchema.extend({
+export const registeredUsersFiltersSchema = z.object({
   userType: z.enum(REPORT_USER_TYPES).optional(),
   year: z.coerce.number().int().min(FIRST_REPORT_YEAR).optional(),
   search: searchSchema,
 });
 
+export const registeredUsersQuerySchema = paginationSchema.extend(
+  registeredUsersFiltersSchema.shape,
+);
+
 export const rejectedUsersQuerySchema = paginationSchema.extend({
   search: searchSchema,
 });
 
+export type RegisteredUsersFilters = z.infer<
+  typeof registeredUsersFiltersSchema
+>;
 export type RegisteredUsersQuery = z.infer<typeof registeredUsersQuerySchema>;
 export type RejectedUsersQuery = z.infer<typeof rejectedUsersQuerySchema>;

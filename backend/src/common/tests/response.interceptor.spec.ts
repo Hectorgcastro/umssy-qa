@@ -1,4 +1,8 @@
-import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import {
+  StreamableFile,
+  type CallHandler,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { firstValueFrom, of } from 'rxjs';
 import { ResponseInterceptor } from '../interceptors/response.interceptor.js';
@@ -61,5 +65,16 @@ describe('ResponseInterceptor', () => {
 
     expect(withTextPage).not.toHaveProperty('page');
     expect(withNull).not.toHaveProperty('page');
+  });
+
+  it('deja pasar los archivos sin envolverlos en el formato JSON', async () => {
+    const interceptor = new ResponseInterceptor(new Reflector());
+    const file = new StreamableFile(Buffer.from('a,b'));
+
+    const result = await firstValueFrom(
+      interceptor.intercept(buildContext(), buildHandler(file)),
+    );
+
+    expect(result).toBe(file);
   });
 });

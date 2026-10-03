@@ -54,3 +54,8 @@ export interface RejectedUserResponse {
   readonly rejectionReason: string | null;
   readonly registeredAt: string;
 }
+
+export interface ReportCsvFile {
+  readonly fileName: string;
+  readonly content: string;
+}
