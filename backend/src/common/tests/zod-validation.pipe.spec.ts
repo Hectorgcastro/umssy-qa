@@ -21,4 +21,11 @@ describe('ZodValidationPipe', () => {
       expect((error as BadRequestException).message).toContain('page:');
     }
   });
+
+  it('valida cuerpos de petición como el del login', () => {
+    const bodyPipe = new ZodValidationPipe(z.object({ name: z.string().min(1) }));
+
+    expect(bodyPipe.transform({ name: 'Derek' })).toEqual({ name: 'Derek' });
+    expect(() => bodyPipe.transform({ name: '' })).toThrow(BadRequestException);
+  });
 });

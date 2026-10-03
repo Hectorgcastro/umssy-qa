@@ -7,6 +7,8 @@ import { DomainExceptionFilter } from './common/filters/domain-exception.filter.
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 import { AvailabilityModule } from './modules/availability/availability.module.js';
+import { PrismaModule } from './common/prisma/prisma.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
 import { ReportsModule } from './modules/reports/reports.module.js';
 
 @Module({
@@ -14,7 +16,9 @@ import { ReportsModule } from './modules/reports/reports.module.js';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PrismaModule,
     AvailabilityModule,
+    AuthModule,
     ReportsModule,
   ],
   controllers: [AppController],
