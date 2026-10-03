@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, afterEach, vi, Mock } from 'vitest'
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ContactSearchModal } from '../components/contact-search-modal';
-import { useContactSearch } from '../hooks/useContactSearch';
+import { useContactSearch } from '../hooks/use-contact-search';
 
 expect.extend(matchers);
 

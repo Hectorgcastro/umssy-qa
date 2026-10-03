@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { useContactSearch } from '../hooks/useContactSearch';
+import { useContactSearch } from '../hooks/use-contact-search';
 import { getInitials } from '../utils/date-formatter';
 import { User } from '../types/user.types';
 
