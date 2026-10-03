@@ -53,6 +53,29 @@ describe('ResponseInterceptor', () => {
     });
   });
 
+  it('promueve page y offset al nivel raiz para respuestas paginadas cuando data es un objeto', async () => {
+    const interceptor = new ResponseInterceptor();
+    const paginated = {
+      data: { items: [{ id: '1' }], total: 10, limit: 5, totalPages: 2 },
+      page: 2,
+      offset: 5,
+    };
+    const result = await new Promise((resolve) => {
+      interceptor
+        .intercept(buildContext(), buildCallHandler(paginated))
+        .subscribe(resolve);
+    });
+
+    expect(result).toEqual({
+      statusCode: 200,
+      ok: true,
+      detail: 'Operación exitosa',
+      data: { items: [{ id: '1' }], total: 10, limit: 5, totalPages: 2 },
+      page: 2,
+      offset: 5,
+    });
+  });
+
   it('no vuelve a envolver respuestas ya formateadas', async () => {
     const interceptor = new ResponseInterceptor();
     const alreadyFormatted = {

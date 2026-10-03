@@ -26,8 +26,7 @@ function isPaginatedPayload(value: unknown): value is PaginatedPayload {
     value !== null &&
     'data' in value &&
     'page' in value &&
-    'offset' in value &&
-    Array.isArray((value as PaginatedPayload).data)
+    'offset' in value
   );
 }
 
