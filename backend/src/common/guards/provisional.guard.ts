@@ -1,31 +1,10 @@
-/**
- * ARCHIVO PROVISIONAL (B-07, Epic 7).
- *
- * Epic 1 entrega el login (POST /auth/login, PR #398) que firma un JWT con
- * { sub, roleTag }, pero todavía no entrega el guard ni el decorador de
- * usuario actual que lo verifiquen. Ese hueco lo cubre este guard: lee
- * `Authorization: Bearer <token>`, lo valida con JwtService.verify (secreto
- * de AuthModule) y recién ahí vuelve a consultar los roles vigentes del
- * usuario en Prisma por el `sub` del token.
- *
- * Se repite la consulta a Prisma (en vez de confiar en el `roleTag` del
- * payload) porque los roles tienen revocación (`deletedAt`) y activación
- * programada (`startAt`): un usuario puede perder o ganar un rol en medio
- * de la vigencia del token (hasta 8h), y el guard debe reflejar eso de
- * inmediato en vez de confiar en un claim que puede quedar desfasado.
- *
- * El módulo que aplique este guard debe importar AuthModule (expone
- * JwtModule) para poder inyectar JwtService.
- *
- * Al reemplazarlo por el guard oficial de Epic 1, hay que borrar este
- * archivo y dejar que el nuevo deje `request.user` con la misma forma
- * (AuthenticatedUser). RolesGuard y @Roles NO cambian.
- */
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthenticatedUser } from '../decorators/roles.decorator.js';
 import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
+
+// PROVISIONAL (B-07): reemplazar cuando Epic 1 entregue su guard.
 
 interface LoginJwtPayload {
   sub: string;
