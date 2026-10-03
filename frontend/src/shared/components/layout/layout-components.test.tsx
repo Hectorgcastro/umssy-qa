@@ -22,6 +22,12 @@ describe("Sidebar", () => {
     expect(screen.getByText("Alex Vasquez")).toBeTruthy()
   })
 
+  it("no muestra rutas que no están implementadas", () => {
+    render(<Sidebar />)
+    expect(screen.queryByText("Mi perfil")).toBeNull()
+    expect(screen.queryByText("Empleos")).toBeNull()
+  })
+
   it("marca Mi participación como opción activa", () => {
     render(<Sidebar />)
     expect(link(/Mi participación/).getAttribute("aria-current")).toBe("page")

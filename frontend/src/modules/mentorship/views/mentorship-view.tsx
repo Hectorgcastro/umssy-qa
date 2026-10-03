@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { saveMentorParticipation } from "@/shared/services/mentor-participation.service";
 import { ConfirmationStep } from "../components/confirmation-step";
 import { OrientationStep } from "../components/orientation-step";
 import { ParticipationStep } from "../components/participation-step";
@@ -51,6 +52,12 @@ export function MentorshipView() {
 
     // La integración real con la API se realizará en la tarea correspondiente.
     await new Promise((resolve) => setTimeout(resolve, 500));
+
+    saveMentorParticipation({
+      status: "active",
+      areas: selectedTechnicalAreas.map((area) => area.name),
+      orientations: selectedOrientationTypes.map((orientation) => orientation.label),
+    });
 
     setIsActivating(false);
     setIsActivated(true);
