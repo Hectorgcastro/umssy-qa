@@ -7,3 +7,9 @@ export interface GeneratedReport {
   readonly reportType: ReportType;
   readonly generatedAt: string;
 }
+
+// Datos que entrega la exportación; el id y la fecha los asigna el servidor.
+export type RegisterGeneratedReportInput = Pick<
+  GeneratedReport,
+  'fileName' | 'reportType'
+>;
