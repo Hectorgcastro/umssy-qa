@@ -13,7 +13,6 @@ export async function getConversations(): Promise<Conversation[]> {
   });
 }
 
-
 /**
  * Normaliza una cadena para comparacion sin distinguir mayusculas ni tildes.
  * Convierte a minusculas, quita diacriticos (á → a, ñ → n, etc.) y recorta espacios.
@@ -25,6 +24,7 @@ function normalizeText(text: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 }
+
 /**
  * Busca usuarios mock por coincidencia parcial de nombre.
  *
@@ -47,7 +47,7 @@ export async function searchUsers(rawQuery: string): Promise<User[]> {
 
   return MOCK_USERS.filter((user) => {
     if (user.id === CURRENT_USER_ID) return false;
-    if (!user.isActive) return false;      
+    if (!user.isActive) return false;
     return normalizeText(user.fullName).includes(query);
   });
 }

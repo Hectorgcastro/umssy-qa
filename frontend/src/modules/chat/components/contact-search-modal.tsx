@@ -40,7 +40,11 @@ export function ContactSearchModal({ isOpen, onClose, onSelectContact }: Contact
         </div>
 
         <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto mt-2">
-          {results.length > 0 ? (
+          {isSearching ? (
+            <div className="text-center text-slate-500 py-6 text-sm">
+              Buscando...
+            </div>
+          ) : results.length > 0 ? (
             results.map((user) => (
               <button
                 key={user.id}
@@ -64,7 +68,7 @@ export function ContactSearchModal({ isOpen, onClose, onSelectContact }: Contact
               </button>
             ))
           ) : (
-            searchTerm.trim().length >= 2 && !isSearching && (
+            searchTerm.trim().length >= 2 && (
               <div className="text-center text-slate-500 py-6 text-sm">
                 No se encontraron usuarios
               </div>
