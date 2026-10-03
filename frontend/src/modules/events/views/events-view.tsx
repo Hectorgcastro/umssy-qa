@@ -3,111 +3,21 @@
 import { useState } from 'react';
 import { Info, Search } from 'lucide-react';
 import { EventCard } from '../components/event-card';
+import { useEvents } from '../hooks/use-events';
 import type { EventItem } from '../types/event.types';
-
-// Semilla local con la estructura exacta de las tablas event y event_category del ER
-const INITIAL_EVENTS: EventItem[] = [
-  {
-    id: 'e1a2b3c4-0001-4000-8000-000000000001',
-    title: 'Desarrollo Web con React',
-    description: 'Taller practico de desarrollo frontend moderno con React.',
-    category: { id: 'a1a1a1a1-0001-4000-8000-000000000001', name: 'Tecnologia' },
-    instructorName: 'Ing. Carlos Mendoza',
-    eventDate: '2026-10-15',
-    startTime: '09:00:00',
-    endTime: '13:00:00',
-    location: 'Auditorio FCyT',
-    capacity: 30,
-    availableSpots: 6,
-    registrationCount: 24,
-    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
-    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
-  },
-  {
-    id: 'e1a2b3c4-0002-4000-8000-000000000002',
-    title: 'Inteligencia Artificial Aplicada',
-    description: 'Introduccion practica a modelos de IA y analisis de datos.',
-    category: { id: 'a1a1a1a1-0002-4000-8000-000000000002', name: 'IA & Datos' },
-    instructorName: 'Dra. Elena Rojas',
-    eventDate: '2026-10-18',
-    startTime: '14:00:00',
-    endTime: '18:00:00',
-    location: null,
-    capacity: 50,
-    availableSpots: 38,
-    registrationCount: 12,
-    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
-    modalityId: 'c1c1c1c1-0002-4000-8000-000000000002',
-  },
-  {
-    id: 'e1a2b3c4-0003-4000-8000-000000000003',
-    title: 'Diseno UI/UX para Moviles',
-    description: 'Principios de diseno de interfaces y experiencia de usuario.',
-    category: { id: 'a1a1a1a1-0003-4000-8000-000000000003', name: 'Diseno' },
-    instructorName: 'Lic. Marco Siles',
-    eventDate: '2026-10-22',
-    startTime: '08:30:00',
-    endTime: '12:30:00',
-    location: 'Laboratorio 3 Infocal',
-    capacity: 20,
-    availableSpots: 0,
-    registrationCount: 20,
-    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
-    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
-  },
-  {
-    id: 'e1a2b3c4-0004-4000-8000-000000000004',
-    title: 'Seguridad Informatica Basica',
-    description: 'Fundamentos de ciberseguridad y proteccion de aplicaciones.',
-    category: { id: 'a1a1a1a1-0004-4000-8000-000000000004', name: 'Seguridad' },
-    instructorName: 'Ing. Roberto Vargas',
-    eventDate: '2026-10-28',
-    startTime: '15:00:00',
-    endTime: '19:00:00',
-    location: 'Aula Magna FCyT',
-    capacity: 25,
-    availableSpots: 20,
-    registrationCount: 5,
-    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
-    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
-  },
-  {
-    id: 'e1a2b3c4-0005-4000-8000-000000000005',
-    title: 'Bases de Datos NoSQL',
-    description: 'Modelado y consultas en bases de datos documentales.',
-    category: { id: 'a1a1a1a1-0001-4000-8000-000000000001', name: 'Tecnologia' },
-    instructorName: 'Ing. Patricia Flores',
-    eventDate: '2026-11-05',
-    startTime: '10:00:00',
-    endTime: '14:00:00',
-    location: null,
-    capacity: 20,
-    availableSpots: 5,
-    registrationCount: 15,
-    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
-    modalityId: 'c1c1c1c1-0002-4000-8000-000000000002',
-  },
-  {
-    id: 'e1a2b3c4-0006-4000-8000-000000000006',
-    title: 'Data Science con Python',
-    description: 'Procesamiento y visualizacion de datos con librerias de Python.',
-    category: { id: 'a1a1a1a1-0002-4000-8000-000000000002', name: 'IA & Datos' },
-    instructorName: 'MSc. Daniel Torrez',
-    eventDate: '2026-11-12',
-    startTime: '08:00:00',
-    endTime: '12:00:00',
-    location: 'Laboratorio Computo 1',
-    capacity: 60,
-    availableSpots: 25,
-    registrationCount: 35,
-    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
-    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
-  },
-];
 
 const MOCKUP_CATEGORIES = ['Todos', 'Tecnologia', 'IA & Datos', 'Diseno', 'Seguridad'];
 
 export function EventsView() {
+  const {
+    events,
+    error,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    loadMore,
+    retry,
+  } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const handleSelectEvent = (selectedEvent: EventItem) => {
@@ -123,7 +33,7 @@ export function EventsView() {
             Talleres disponibles
           </h1>
           <p className="text-sm text-text-secondary">
-            {INITIAL_EVENTS.length} talleres · Gestion 2026
+            {events.length} talleres cargados
           </p>
         </header>
 
@@ -162,7 +72,7 @@ export function EventsView() {
         {/* Grilla de 2 columnas renderizando el componente reutilizable EventCard */}
         <section aria-label="Listado de talleres">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {INITIAL_EVENTS.map((eventItem) => (
+            {events.map((eventItem) => (
               <EventCard
                 key={eventItem.id}
                 event={eventItem}
@@ -171,6 +81,40 @@ export function EventsView() {
               />
             ))}
           </div>
+          {isLoading && events.length === 0 && (
+            <p role="status" className="py-10 text-center text-text-secondary">
+              Cargando talleres...
+            </p>
+          )}
+          {!isLoading && !error && events.length === 0 && (
+            <p className="py-10 text-center text-text-secondary">
+              No hay talleres disponibles.
+            </p>
+          )}
+          {error && (
+            <div role="alert" className="py-6 text-center">
+              <p className="text-sm text-danger">{error}</p>
+              <button
+                type="button"
+                onClick={retry}
+                className="mt-3 text-sm font-semibold text-ink underline underline-offset-4"
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
+          {hasMore && !error && (
+            <div className="flex justify-center pt-6">
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={isLoadingMore}
+                className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:cursor-wait disabled:opacity-60"
+              >
+                {isLoadingMore ? 'Cargando...' : 'Cargar más talleres'}
+              </button>
+            </div>
+          )}
         </section>
       </div>
 
