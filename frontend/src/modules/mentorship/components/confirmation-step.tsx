@@ -6,7 +6,6 @@ interface ConfirmationStepProps {
   selectedTechnicalAreaIds: string[];
   selectedOrientationTypeIds: string[];
   isActivating: boolean;
-  onEditParticipation: () => void;
   onEditTechnicalAreas: () => void;
   onEditOrientationTypes: () => void;
   onActivate: () => void;
@@ -17,7 +16,6 @@ export function ConfirmationStep({
   selectedTechnicalAreaIds,
   selectedOrientationTypeIds,
   isActivating,
-  onEditParticipation,
   onEditTechnicalAreas,
   onEditOrientationTypes,
   onActivate,
@@ -47,14 +45,6 @@ export function ConfirmationStep({
           <h3 className="text-sm font-semibold text-ink">
             Participación
           </h3>
-
-          <button
-            type="button"
-            onClick={onEditParticipation}
-            className="text-sm font-semibold text-accent"
-          >
-            Editar
-          </button>
         </div>
 
         <p className="mt-2 text-sm text-text-secondary">
