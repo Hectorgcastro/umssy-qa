@@ -86,7 +86,7 @@ export function EventsView() {
             Talleres disponibles
           </h1>
           <p className="text-sm text-text-secondary">
-            {MOCKUP_PREVIEW_EVENTS.length} talleres · Gestion 2025
+            {MOCKUP_PREVIEW_EVENTS.length} talleres · Gestion 2026
           </p>
         </header>
 
