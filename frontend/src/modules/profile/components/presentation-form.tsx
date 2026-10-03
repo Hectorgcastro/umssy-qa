@@ -9,9 +9,12 @@ import {
   SECONDARY_BUTTON_CLASS,
   TEXTAREA_CLASS,
 } from "../config/form-styles.config";
+import type { PresentationErrors } from "../types/presentation-errors.types";
 import type { PresentationFormProps } from "../types/presentation-form-props.types";
 import type { PresentationValues } from "../types/presentation-values.types";
+import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
+import { validatePresentation } from "../utils/validate-presentation";
 import { FormField } from "./form-field";
 import { ProfilePreviewCard } from "./profile-preview-card";
 import { SectionCard } from "./section-card";
@@ -24,20 +27,29 @@ export function PresentationForm({
   onSubmit,
 }: PresentationFormProps) {
   const [values, setValues] = useState<PresentationValues>(initialValues);
+  const [errors, setErrors] = useState<PresentationErrors>({});
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const field = event.target.name as keyof PresentationValues;
     const { value } = event.target;
     setValues((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
   };
 
   const handleCancel = () => {
     setValues(initialValues);
+    setErrors({});
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSubmit(trimFormValues(values));
+    const trimmedValues = trimFormValues(values);
+    const validationErrors = validatePresentation(trimmedValues);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      onSubmit(trimmedValues);
+    }
   };
 
   return (
@@ -46,8 +58,8 @@ export function PresentationForm({
         title="Escribe tu presentación"
         description="Un resumen claro ayuda a entender qué haces y qué buscas."
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <FormField id="headline" label="Titular profesional" isRequired>
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+          <FormField id="headline" label="Titular profesional" isRequired error={errors.headline}>
             <input
               id="headline"
               name="headline"
@@ -57,9 +69,10 @@ export function PresentationForm({
               disabled={isSaving}
               onChange={handleChange}
               className={INPUT_CLASS}
+              {...getFieldErrorProps("headline", errors.headline)}
             />
           </FormField>
-          <FormField id="aboutMe" label="Acerca de" isRequired>
+          <FormField id="aboutMe" label="Acerca de" isRequired error={errors.aboutMe}>
             <textarea
               id="aboutMe"
               name="aboutMe"
@@ -69,6 +82,7 @@ export function PresentationForm({
               disabled={isSaving}
               onChange={handleChange}
               className={TEXTAREA_CLASS}
+              {...getFieldErrorProps("aboutMe", errors.aboutMe)}
             />
           </FormField>
           <FormField id="interestedOpportunities" label="Oportunidades que me interesan">

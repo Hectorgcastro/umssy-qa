@@ -1,5 +1,7 @@
 const FORM_CONTROL_BASE_CLASS =
-  "w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60";
+  "w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15";
+
+export const FIELD_ERROR_CLASS = "text-[13px] text-danger";
 
 export const INPUT_CLASS = `${FORM_CONTROL_BASE_CLASS} h-12`;
 

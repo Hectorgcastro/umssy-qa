@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_PRESENTATION_VALUES } from "../config/profile-form-defaults.config";
+import { PROFILE_VALIDATION_MESSAGES } from "../config/profile-validation.config";
 import type { PresentationValues } from "../types/presentation-values.types";
 import { PresentationForm } from "./presentation-form";
 
@@ -66,6 +67,34 @@ describe("PresentationForm", () => {
       aboutMe: "Graduate from UMSS.",
       interestedOpportunities: "",
     });
+  });
+
+  it("shows an error next to each empty required field and does not submit", async () => {
+    const { onSubmit, user } = renderForm();
+
+    await user.type(screen.getByLabelText(/Oportunidades que me interesan/), "Remote work");
+    await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Titular profesional/)).toHaveAccessibleDescription(
+      PROFILE_VALIDATION_MESSAGES.required,
+    );
+    expect(screen.getByLabelText(/Acerca de/)).toHaveAccessibleDescription(
+      PROFILE_VALIDATION_MESSAGES.required,
+    );
+    expect(screen.getByLabelText(/Oportunidades que me interesan/)).not.toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
+  it("clears the errors when cancelling", async () => {
+    const { user } = renderForm();
+
+    await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(screen.queryByText(PROFILE_VALIDATION_MESSAGES.required)).not.toBeInTheDocument();
   });
 
   it("restores the initial values when cancelling", async () => {

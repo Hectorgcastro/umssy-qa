@@ -29,6 +29,10 @@ describe("PersonalInfoView", () => {
     render(<PersonalInfoView />);
 
     await user.type(screen.getByLabelText(/Nombres/), "Valeria");
+    await user.type(screen.getByLabelText(/Apellidos/), "Quispe");
+    await user.selectOptions(screen.getByLabelText(/Ciudad de residencia/), "Cochabamba");
+    await user.type(screen.getByLabelText(/Teléfono/), "+591 70000000");
+    await user.type(screen.getByLabelText(/Correo personal/), "valeria@correo.com");
     await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
     await user.type(screen.getByLabelText(/Nombres/), " changed");
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
@@ -59,6 +63,7 @@ describe("PresentationView", () => {
     render(<PresentationView />);
 
     await user.type(screen.getByLabelText(/Titular profesional/), "Desarrolladora");
+    await user.type(screen.getByLabelText(/Acerca de/), "Graduate from UMSS.");
     await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
     await user.type(screen.getByLabelText(/Titular profesional/), " web");
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
