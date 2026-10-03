@@ -1,14 +1,32 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronRight, Pencil } from "lucide-react";
 import { getMentorParticipation } from "@/shared/services/mentor-participation.service";
 
 export function ParticipationView() {
-  const [state] = useState(() => {
-    if (typeof window === "undefined") return null;
-    return getMentorParticipation();
-  });
+  const [state, setState] = useState<
+    ReturnType<typeof getMentorParticipation> | undefined
+  >(undefined);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    queueMicrotask(() => {
+      if (isMounted) {
+        setState(getMentorParticipation());
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (state === undefined) {
+    return <p>Cargando participación...</p>;
+  }
+
   if (!state) return <main className="min-h-full bg-surface-soft px-4 py-6 sm:py-8"><section className="mx-auto max-w-4xl rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8"><p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">UMSSY · Mentorías</p><h1 className="mt-2 text-2xl font-bold text-ink">Mi participación</h1><p className="mt-2 max-w-2xl text-sm text-text-secondary">Completa el formulario para participar como mentor y elegir tus áreas técnicas y tipos de orientación.</p><Link href="/mentorship" className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white">Participa como mentor <ChevronRight size={16} /></Link></section></main>;
   const areas = state.areas;
   const orientations = state.orientations;
