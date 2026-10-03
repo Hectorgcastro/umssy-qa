@@ -5,9 +5,11 @@ import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { CvFileController } from '../controllers/cv-file.controller.js';
 import { CvController } from '../controllers/cv.controller.js';
 import { CvMapper } from '../mappers/cv.mapper.js';
+import { ProfileMapper } from '../mappers/profile.mapper.js';
 import { ProfileModule } from '../profile.module.js';
 import { CvFileRepository } from '../repositories/cv-file.repository.js';
 import { CvMetadataRepository } from '../repositories/cv-metadata.repository.js';
+import { ProfileRepository } from '../repositories/profile.repository.js';
 import { CvService } from '../services/cv.service.js';
 import { FileValidationService } from '../services/file-validation.service.js';
 import { FileStorage } from '../types/file-storage.type.js';
@@ -31,6 +33,8 @@ describe('ProfileModule', () => {
     CvMetadataRepository,
     CvMapper,
     FileValidationService,
+    ProfileRepository,
+    ProfileMapper,
   ])('resolves %o', (provider) => {
     expect(moduleRef.get(provider)).toBeInstanceOf(provider);
   });
