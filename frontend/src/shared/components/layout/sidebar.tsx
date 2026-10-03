@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Briefcase,
   ClipboardCheck,
   House,
   Search,
-  User,
   type LucideIcon,
 } from "lucide-react";
 
@@ -18,8 +16,6 @@ const NAV_SECTIONS: NavSection[] = [
   {
     items: [
       { label: "Inicio", href: "/", icon: House },
-      { label: "Mi perfil", href: "/profile", icon: User },
-      { label: "Empleos", href: "/jobs", icon: Briefcase },
     ],
   },
   {

@@ -1,4 +1,8 @@
 import type { TechnicalArea } from "../types/technical-area.types";
+import {
+  getMentorParticipation,
+  updateMentorParticipation,
+} from "@/shared/services/mentor-participation.service";
 
 // Datos de prueba: se reemplazan por GET /technical-areas cuando el backend esté listo
 export const MOCK_TECHNICAL_AREAS: TechnicalArea[] = [
@@ -15,23 +19,25 @@ export const MOCK_TECHNICAL_AREAS: TechnicalArea[] = [
 // Áreas que el mentor ya tiene guardadas (Backend, Cloud y Arquitectura)
 export const MOCK_MENTOR_AREA_IDS: number[] = [1, 6, 8];
 
-const STORAGE_KEY = "umssy-demo-mentor-technical-areas";
-
 export async function loadMentorAreas(): Promise<number[]> {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return [...MOCK_MENTOR_AREA_IDS];
-  try {
-    const ids: unknown = JSON.parse(stored);
-    if (Array.isArray(ids) && ids.length > 0 && ids.every(
-      (id) => MOCK_TECHNICAL_AREAS.some((area) => area.id === id),
-    )) return [...new Set(ids as number[])];
-  } catch {
-    // Invalid demo data falls back to the initial selection.
-  }
+  const participation = getMentorParticipation();
+  const ids = participation?.areas.flatMap((name) => {
+    const area = MOCK_TECHNICAL_AREAS.find((candidate) => candidate.name === name);
+    return area ? [area.id] : [];
+  });
+
+  if (ids?.length) return [...new Set(ids)];
   return [...MOCK_MENTOR_AREA_IDS];
 }
 
 export async function saveMentorAreas(areaIds: number[]): Promise<void> {
   if (!areaIds.length) throw new Error("At least one area is required");
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(areaIds));
+
+  const areas = areaIds.map((id) => {
+    const area = MOCK_TECHNICAL_AREAS.find((candidate) => candidate.id === id);
+    if (!area) throw new Error(`Unknown technical area: ${id}`);
+    return area.name;
+  });
+
+  updateMentorParticipation({ areas });
 }

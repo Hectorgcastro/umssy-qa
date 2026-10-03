@@ -44,6 +44,14 @@ describe("AppSidebar", () => {
     expect(within(navigation).getByText("Mentorías")).toBeDefined();
   });
 
+  it("does not render routes that are not implemented", () => {
+    renderSidebar();
+
+    const navigation = screen.getByRole("navigation", { name: "Menú principal" });
+    expect(within(navigation).queryByText("Mi perfil")).toBeNull();
+    expect(within(navigation).queryByText("Empleos")).toBeNull();
+  });
+
   it("renders the items and user received by props", () => {
     renderSidebar({
       items: [{ label: "Inicio", icon: House, href: "/home" }],

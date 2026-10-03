@@ -17,7 +17,10 @@ import { isRouteActive } from "@/shared/utils/is-route-active";
 export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
   const Icon = item.icon;
   const submenuId = useId();
-  const hasActiveChild = item.children?.some((child) => isRouteActive(pathname, child.href)) ?? false;
+  const hasActiveChild =
+    item.children?.some((child) =>
+      isRouteActive(pathname, child.href, child.activePathPatterns),
+    ) ?? false;
   const [isExpanded, setIsExpanded] = useState(hasActiveChild);
 
   if (!item.children) {
@@ -58,7 +61,11 @@ export function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
       {isExpanded && (
         <SidebarMenuSub id={submenuId} className="mx-0 border-l-0 py-2 pl-6 pr-2">
           {item.children.map((child) => {
-            const isChildActive = isRouteActive(pathname, child.href);
+            const isChildActive = isRouteActive(
+              pathname,
+              child.href,
+              child.activePathPatterns,
+            );
             const ChildIcon = child.icon;
 
             return (
