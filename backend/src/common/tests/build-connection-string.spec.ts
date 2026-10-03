@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { buildDatabaseConnectionString } from '../../prisma/build-connection-string.js';
+import { buildDatabaseConnectionString } from '../prisma/build-connection-string.js';
 
 describe('buildDatabaseConnectionString', () => {
   const originalEnv = { ...process.env };

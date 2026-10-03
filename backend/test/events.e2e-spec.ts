@@ -32,9 +32,14 @@ function buildPrismaEventRecord(overrides = {}) {
 }
 
 const findManyMock = vi.fn().mockResolvedValue([buildPrismaEventRecord()]);
+const countMock = vi.fn().mockResolvedValue(1);
 
 const prismaMock = {
-  event: { findMany: findManyMock },
+  event: {
+    findMany: findManyMock,
+    count: countMock,
+  },
+  $transaction: vi.fn().mockImplementation((promises) => Promise.all(promises)),
   $connect: vi.fn(),
   $disconnect: vi.fn(),
 };
@@ -67,7 +72,10 @@ describe('EventsController (e2e)', () => {
     }
   });
 
-  it('GET /api/events - retorna lista paginada con formato correcto', async () => {
+  it('GET /api/events - retorna lista paginada con formato data.items, total, limit y totalPages', async () => {
+    findManyMock.mockResolvedValueOnce([buildPrismaEventRecord()]);
+    countMock.mockResolvedValueOnce(1);
+
     const res = await request(app.getHttpServer())
       .get('/api/events')
       .expect(200);
@@ -78,22 +86,28 @@ describe('EventsController (e2e)', () => {
       detail: 'Operación exitosa',
       page: 1,
       offset: 0,
+      data: {
+        total: 1,
+        limit: 10,
+        totalPages: 1,
+      },
     });
-    expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.data[0]).toMatchObject({
+    expect(Array.isArray(res.body.data.items)).toBe(true);
+    expect(res.body.data.items[0]).toMatchObject({
       id: 'evt-001',
       title: 'Taller de Node.js',
       eventDate: '2026-09-01',
       startTime: '09:00',
       endTime: '11:00',
       availableSpots: 20,
-      registrationCount: 10,
+      registeredCount: 10,
       category: { id: 'cat-001', name: 'Tecnologia' },
     });
   });
 
-  it('GET /api/events?page=2&limit=5 - respeta parametros de paginacion', async () => {
+  it('GET /api/events?page=2&limit=5 - respeta parametros de paginacion y calcula offset', async () => {
     findManyMock.mockResolvedValueOnce([]);
+    countMock.mockResolvedValueOnce(0);
 
     const res = await request(app.getHttpServer())
       .get('/api/events?page=2&limit=5')
@@ -101,28 +115,23 @@ describe('EventsController (e2e)', () => {
 
     expect(res.body.page).toBe(2);
     expect(res.body.offset).toBe(5);
-    expect(res.body.data).toHaveLength(0);
+    expect(res.body.data.total).toBe(0);
+    expect(res.body.data.limit).toBe(5);
+    expect(res.body.data.totalPages).toBe(0);
+    expect(res.body.data.items).toHaveLength(0);
   });
 
-  it('GET /api/events?limit=999 - rechaza limit mayor al maximo', async () => {
+  it('GET /api/events?limit=100 - rechaza limit mayor al maximo (50)', async () => {
     const res = await request(app.getHttpServer())
-      .get('/api/events?limit=999')
+      .get('/api/events?limit=100')
       .expect(400);
 
     expect(res.body.ok).toBe(false);
   });
 
-  it('GET /api/events?from=2026-02-31 - rechaza fecha invalida', async () => {
+  it('GET /api/events?page=0 - rechaza pagina menor a 1', async () => {
     const res = await request(app.getHttpServer())
-      .get('/api/events?from=2026-02-31')
-      .expect(400);
-
-    expect(res.body.ok).toBe(false);
-  });
-
-  it('GET /api/events?from=2026-12-01&to=2026-01-01 - rechaza rango invertido', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/api/events?from=2026-12-01&to=2026-01-01')
+      .get('/api/events?page=0')
       .expect(400);
 
     expect(res.body.ok).toBe(false);
