@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   EventCard,
+  calculateEventCapacityStatus,
   formatEventDate,
   formatTimeRange,
 } from './event-card';
@@ -29,6 +30,45 @@ afterEach(() => {
 });
 
 describe('EventCard y utilidades de formato', () => {
+  it('calcula ocupacion desde el DTO GET /events', () => {
+    expect(calculateEventCapacityStatus(MOCK_EVENT)).toEqual({
+      enrolledCount: 24,
+      capacity: 30,
+      progressPercentage: 80,
+      isFull: false,
+    });
+  });
+
+  it('marca como lleno al llegar a la capacidad y limita el porcentaje a 100', () => {
+    const fullEvent: EventItem = {
+      ...MOCK_EVENT,
+      availableSpots: 0,
+      registrationCount: 32,
+    };
+
+    expect(calculateEventCapacityStatus(fullEvent)).toEqual({
+      enrolledCount: 32,
+      capacity: 30,
+      progressPercentage: 100,
+      isFull: true,
+    });
+  });
+
+  it('trata capacidad null como cupos sin limite', () => {
+    const unlimitedEvent: EventItem = {
+      ...MOCK_EVENT,
+      capacity: null,
+      availableSpots: null,
+    };
+
+    expect(calculateEventCapacityStatus(unlimitedEvent)).toEqual({
+      enrolledCount: 24,
+      capacity: null,
+      progressPercentage: null,
+      isFull: false,
+    });
+  });
+
   it('formatea correctamente fechas validas y retorna el valor original si es invalido', () => {
     expect(formatEventDate('2026-10-15')).toContain('15');
     expect(formatEventDate('fecha-invalida')).toBe('fecha-invalida');
@@ -97,5 +137,19 @@ describe('EventCard y utilidades de formato', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByText('Sin limite de cupos')).toBeInTheDocument();
     expect(screen.getByText('24 inscritos')).toBeInTheDocument();
+  });
+
+  it('muestra el estado lleno y una barra completa para un evento sin cupos disponibles', () => {
+    const fullEvent: EventItem = {
+      ...MOCK_EVENT,
+      availableSpots: 0,
+      registrationCount: 30,
+    };
+
+    render(<EventCard event={fullEvent} />);
+
+    expect(screen.getByTestId('event-full-badge')).toHaveTextContent('Lleno');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    expect(screen.getByTestId('event-capacity-bar')).toHaveStyle({ width: '100%' });
   });
 });
