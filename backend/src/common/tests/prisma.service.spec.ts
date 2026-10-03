@@ -2,7 +2,11 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 beforeAll(() => {
-  process.env.DATABASE_URL ??= 'postgresql://user:password@localhost:5432/test_db';
+  process.env.DB_USER ??= 'user';
+  process.env.DB_PASSWORD ??= 'password';
+  process.env.DB_HOST ??= 'localhost';
+  process.env.DB_PORT ??= '5432';
+  process.env.DB_NAME ??= 'test_db';
 });
 
 describe('PrismaService', () => {

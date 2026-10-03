@@ -20,17 +20,17 @@ describe('AuthService', () => {
     ).rejects.toBeInstanceOf(InvalidCredentialsException);
   });
 
-  it('lanza InvalidCredentialsException si el usuario no tiene passwordHash', async () => {
-    authRepository.findUserByEmailWithRoles.mockResolvedValue({ id: '1', passwordHash: null, roles: [] });
+  it('lanza InvalidCredentialsException si el usuario no tiene password', async () => {
+    authRepository.findUserByEmailWithRoles.mockResolvedValue({ id: '1', password: null, roles: [] });
     await expect(
       service.login({ email: 'prueba@umss.edu.bo', password: 'Prueba123', roleTag: 'titulado' }),
     ).rejects.toBeInstanceOf(InvalidCredentialsException);
   });
 
   it('lanza InvalidCredentialsException si la contrasena no coincide', async () => {
-    const passwordHash = await bcrypt.hash('otra-contrasena', 10);
+    const password = await bcrypt.hash('otra-contrasena', 10);
     authRepository.findUserByEmailWithRoles.mockResolvedValue({
-      id: '1', passwordHash, roles: [{ role: { name: 'titulado' } }],
+      id: '1', password, roles: [{ role: { name: 'titulado' } }],
     });
     await expect(
       service.login({ email: 'prueba@umss.edu.bo', password: 'Prueba123', roleTag: 'titulado' }),
@@ -38,9 +38,9 @@ describe('AuthService', () => {
   });
 
   it('lanza RoleNotAssignedException si el usuario no tiene el rol solicitado', async () => {
-    const passwordHash = await bcrypt.hash('Prueba123', 10);
+    const password = await bcrypt.hash('Prueba123', 10);
     authRepository.findUserByEmailWithRoles.mockResolvedValue({
-      id: '1', passwordHash, roles: [{ role: { name: 'mentor' } }],
+      id: '1', password, roles: [{ role: { name: 'mentor' } }],
     });
     await expect(
       service.login({ email: 'prueba@umss.edu.bo', password: 'Prueba123', roleTag: 'titulado' }),
@@ -48,9 +48,9 @@ describe('AuthService', () => {
   });
 
   it('devuelve el accessToken y el roleTag cuando todo es correcto', async () => {
-    const passwordHash = await bcrypt.hash('Prueba123', 10);
+    const password = await bcrypt.hash('Prueba123', 10);
     authRepository.findUserByEmailWithRoles.mockResolvedValue({
-      id: 'user-1', passwordHash, roles: [{ role: { name: 'titulado' } }],
+      id: 'user-1', password, roles: [{ role: { name: 'titulado' } }],
     });
     jwtService.sign.mockReturnValue('token-firmado');
 

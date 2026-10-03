@@ -15,11 +15,11 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.authRepository.findUserByEmailWithRoles(dto.email);
 
-    if (!user || !user.passwordHash) {
+    if (!user || !user.password) {
       throw new InvalidCredentialsException();
     }
 
-    const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
+    const passwordMatches = await bcrypt.compare(dto.password, user.password);
     if (!passwordMatches) {
       throw new InvalidCredentialsException();
     }
