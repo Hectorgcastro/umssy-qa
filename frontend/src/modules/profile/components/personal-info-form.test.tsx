@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_PERSONAL_INFO_VALUES } from "../config/profile-form-defaults.config";
+import { PROFILE_VALIDATION_MESSAGES } from "../config/profile-validation.config";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 import { PersonalInfoForm } from "./personal-info-form";
 
@@ -76,14 +77,61 @@ describe("PersonalInfoForm", () => {
     });
   });
 
-  it("restores the initial values when cancelling", async () => {
+  it("shows an error next to each empty required field and does not submit", async () => {
+    const { onSubmit, user } = renderForm();
+
+    await user.type(screen.getByLabelText(/Nombres/), "   ");
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getAllByText(PROFILE_VALIDATION_MESSAGES.required)).toHaveLength(4);
+    expect(screen.getByText(PROFILE_VALIDATION_MESSAGES.cityRequired)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Nombres/)).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText(/Nombres/)).toHaveAccessibleDescription(
+      PROFILE_VALIDATION_MESSAGES.required,
+    );
+  });
+
+  it("shows format errors for the phone and the email", async () => {
+    const { onSubmit, user } = renderForm({
+      ...SAVED_VALUES,
+      phone: "123",
+      personalEmail: "valeria",
+    });
+
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Teléfono/)).toHaveAccessibleDescription(
+      PROFILE_VALIDATION_MESSAGES.invalidPhone,
+    );
+    expect(screen.getByLabelText(/Correo personal/)).toHaveAccessibleDescription(
+      PROFILE_VALIDATION_MESSAGES.invalidEmail,
+    );
+  });
+
+  it("clears the error of a field when it changes", async () => {
+    const { user } = renderForm({ ...SAVED_VALUES, personalEmail: "valeria" });
+
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
+    await user.type(screen.getByLabelText(/Correo personal/), "@correo.com");
+
+    expect(screen.queryByText(PROFILE_VALIDATION_MESSAGES.invalidEmail)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Correo personal/)).toHaveAttribute("aria-invalid", "false");
+  });
+
+  it("restores the initial values and clears the errors when cancelling", async () => {
     const { user } = renderForm(SAVED_VALUES);
 
     await user.clear(screen.getByLabelText(/Nombres/));
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
     await user.type(screen.getByLabelText(/Nombres/), "Another name");
+    await user.clear(screen.getByLabelText(/Apellidos/));
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
     expect(screen.getByLabelText(/Nombres/)).toHaveValue("Valeria");
+    expect(screen.queryByText(PROFILE_VALIDATION_MESSAGES.required)).not.toBeInTheDocument();
   });
 
   it("disables the form while saving", () => {

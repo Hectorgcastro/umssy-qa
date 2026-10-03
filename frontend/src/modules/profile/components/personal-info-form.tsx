@@ -8,9 +8,12 @@ import {
   PRIMARY_BUTTON_CLASS,
   SECONDARY_BUTTON_CLASS,
 } from "../config/form-styles.config";
+import type { PersonalInfoErrors } from "../types/personal-info-errors.types";
 import type { PersonalInfoFormProps } from "../types/personal-info-form-props.types";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
+import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
+import { validatePersonalInfo } from "../utils/validate-personal-info";
 import { FormField } from "./form-field";
 import { ProfilePhotoField } from "./profile-photo-field";
 import { SectionCard } from "./section-card";
@@ -22,20 +25,29 @@ export function PersonalInfoForm({
   onSubmit,
 }: PersonalInfoFormProps) {
   const [values, setValues] = useState<PersonalInfoValues>(initialValues);
+  const [errors, setErrors] = useState<PersonalInfoErrors>({});
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const field = event.target.name as keyof PersonalInfoValues;
     const { value } = event.target;
     setValues((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
   };
 
   const handleCancel = () => {
     setValues(initialValues);
+    setErrors({});
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSubmit(trimFormValues(values));
+    const trimmedValues = trimFormValues(values);
+    const validationErrors = validatePersonalInfo(trimmedValues);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      onSubmit(trimmedValues);
+    }
   };
 
   return (
@@ -45,9 +57,9 @@ export function PersonalInfoForm({
     >
       <ProfilePhotoField />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-8 pt-8">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-8 pt-8">
         <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-          <FormField id="firstName" label="Nombres" isRequired>
+          <FormField id="firstName" label="Nombres" isRequired error={errors.firstName}>
             <input
               id="firstName"
               name="firstName"
@@ -58,9 +70,10 @@ export function PersonalInfoForm({
               disabled={isSaving}
               onChange={handleChange}
               className={INPUT_CLASS}
+              {...getFieldErrorProps("firstName", errors.firstName)}
             />
           </FormField>
-          <FormField id="lastName" label="Apellidos" isRequired>
+          <FormField id="lastName" label="Apellidos" isRequired error={errors.lastName}>
             <input
               id="lastName"
               name="lastName"
@@ -71,9 +84,10 @@ export function PersonalInfoForm({
               disabled={isSaving}
               onChange={handleChange}
               className={INPUT_CLASS}
+              {...getFieldErrorProps("lastName", errors.lastName)}
             />
           </FormField>
-          <FormField id="cityId" label="Ciudad de residencia" isRequired>
+          <FormField id="cityId" label="Ciudad de residencia" isRequired error={errors.cityId}>
             <select
               id="cityId"
               name="cityId"
@@ -81,6 +95,7 @@ export function PersonalInfoForm({
               disabled={isSaving}
               onChange={handleChange}
               className={INPUT_CLASS}
+              {...getFieldErrorProps("cityId", errors.cityId)}
             >
               <option value="">Selecciona tu ciudad</option>
               {cities.map((city) => (
@@ -90,7 +105,7 @@ export function PersonalInfoForm({
               ))}
             </select>
           </FormField>
-          <FormField id="phone" label="Teléfono" isRequired>
+          <FormField id="phone" label="Teléfono" isRequired error={errors.phone}>
             <input
               id="phone"
               name="phone"
@@ -101,9 +116,15 @@ export function PersonalInfoForm({
               disabled={isSaving}
               onChange={handleChange}
               className={INPUT_CLASS}
+              {...getFieldErrorProps("phone", errors.phone)}
             />
           </FormField>
-          <FormField id="personalEmail" label="Correo personal" isRequired>
+          <FormField
+            id="personalEmail"
+            label="Correo personal"
+            isRequired
+            error={errors.personalEmail}
+          >
             <input
               id="personalEmail"
               name="personalEmail"
@@ -114,6 +135,7 @@ export function PersonalInfoForm({
               disabled={isSaving}
               onChange={handleChange}
               className={INPUT_CLASS}
+              {...getFieldErrorProps("personalEmail", errors.personalEmail)}
             />
           </FormField>
         </div>
