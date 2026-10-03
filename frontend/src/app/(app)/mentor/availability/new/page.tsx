@@ -1,5 +1,5 @@
-import { NewAvailabilityView } from "@/modules/availability";
+import { AddBlockView } from "@/modules/availability";
 
 export default function NewAvailabilityPage() {
-  return <NewAvailabilityView />;
+  return <AddBlockView />;
 }

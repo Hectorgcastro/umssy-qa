@@ -1,6 +1,9 @@
 export { MentorAvailabilityView } from "./views/mentor-availability-view";
 export { NewAvailabilityView } from "./views/new-availability-view";
 export { MentorPublicAvailabilityView } from "./views/mentor-public-availability-view";
+export { AddBlockView } from "./views/add-block-view";
+export { BlockForm } from "./components/block-form";
+export type { BlockFormMode } from "./components/block-form";
 export { useAvailability } from "./hooks/use-availability";
 export { useMentorFreeBlocks } from "./hooks/use-mentor-free-blocks";
 export { useCreateAvailabilityBlock } from "./hooks/use-create-availability-block";
