@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service.js';
+import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import type { CreateCertificationRequest } from '../requests/create-certification.request.js';
 import type { UpdateCertificationRequest } from '../requests/update-certification.request.js';
 import type { CertificationRecord } from '../types/certification-record.type.js';

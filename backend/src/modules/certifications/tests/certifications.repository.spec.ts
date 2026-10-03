@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PrismaService } from '../../../prisma/prisma.service.js';
+import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { CertificationsRepository } from '../repositories/certifications.repository.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';

@@ -5,7 +5,7 @@ import { AppService } from './app.service.js';
 import { ConfigModule } from '@nestjs/config';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
-import { PrismaModule } from './prisma/prisma.module.js';
+import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { CertificationsModule } from './modules/certifications/certifications.module.js';
 

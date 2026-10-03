@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '../../prisma/prisma.module.js';
+import { PrismaModule } from '../../common/prisma/prisma.module.js';
 import { CertificationsController } from './controllers/certifications.controller.js';
 import { CertificationMapper } from './mappers/certification.mapper.js';
 import { CertificationsRepository } from './repositories/certifications.repository.js';
