@@ -1,6 +1,5 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import { ROLES } from '../guards/roles.constants.js';
 import { ProvisionalSessionGuard } from '../guards/provisional.guard.js';
 
 // Evita cargar el cliente real de Prisma: el guard solo necesita el tipo.
@@ -75,7 +74,7 @@ describe('ProvisionalSessionGuard', () => {
     const { guard } = createGuard({
       id: VALID_ID,
       email: 'mentor@test.com',
-      roles: [{ role: { name: ROLES.MENTOR } }],
+      roles: [{ role: { name: 'mentor' } }],
     });
     const request: FakeRequest = { headers: { 'x-user-id': VALID_ID } };
 
@@ -83,7 +82,7 @@ describe('ProvisionalSessionGuard', () => {
     expect(request.user).toEqual({
       id: VALID_ID,
       email: 'mentor@test.com',
-      roles: [ROLES.MENTOR],
+      roles: ['mentor'],
     });
   });
 });

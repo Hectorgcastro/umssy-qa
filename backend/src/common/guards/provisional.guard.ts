@@ -1,5 +1,5 @@
 /**
- * ⚠️ ARCHIVO PROVISIONAL (B-07, Epic 7).
+ * ARCHIVO PROVISIONAL (B-07, Epic 7).
  *
  * Epic 1 aún no entrega el login real. Mientras tanto, la "sesión" es el
  * header `x-user-id` con el UUID de un usuario existente y activo.
@@ -15,7 +15,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthenticatedUser } from '../decorators/roles.decorator.js';
 
 const UUID_REGEX =
