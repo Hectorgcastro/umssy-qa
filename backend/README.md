@@ -1,6 +1,5 @@
 ## Description
-
-This repository contains the backend for the **UMSSY** application.
+exit* application.
 
 ## Project Setup
 
