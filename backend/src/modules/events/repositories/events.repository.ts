@@ -1,59 +1,63 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
-import type { GetEventsPayload } from '../requests/get-events.request.js';
-import type { EventRawRecord } from '../types/events.types.js';
+import type { Prisma } from '../../../prisma/client.js';
+import type {
+  FindEventsPayload,
+  FindEventsResponse,
+  EventWithRelations,
+} from '../types/events.types.js';
 
 @Injectable()
 export class EventsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMany(payload: GetEventsPayload): Promise<EventRawRecord[]> {
-    const { page, limit, categoryId, statusId, from, to } = payload;
-    const skip = (page - 1) * limit;
+  async findAndCount(payload: FindEventsPayload): Promise<FindEventsResponse> {
+    const { categoryId, statusId, skip, take } = payload;
 
-    return this.prisma.event.findMany({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        instructorName: true,
-        eventDate: true,
-        startTime: true,
-        endTime: true,
-        location: true,
-        capacity: true,
-        statusId: true,
-        modalityId: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
+    const where: Prisma.EventWhereInput = {
+      ...(categoryId !== undefined && { categoryId }),
+      ...(statusId !== undefined && { statusId }),
+    };
+
+    const select = {
+      id: true,
+      title: true,
+      description: true,
+      eventDate: true,
+      startTime: true,
+      endTime: true,
+      location: true,
+      capacity: true,
+      statusId: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
         },
-        _count: {
-          select: {
-            registrations: {
-              where: { cancelledAt: null },
-            },
+      },
+      _count: {
+        select: {
+          registrations: {
+            where: { cancelledAt: null },
           },
         },
       },
-      where: {
-        ...(categoryId !== undefined && { categoryId }),
-        ...(statusId !== undefined && { statusId }),
-        ...(from !== undefined || to !== undefined
-          ? {
-              eventDate: {
-                ...(from !== undefined && { gte: new Date(from) }),
-                ...(to !== undefined && { lte: new Date(to) }),
-              },
-            }
-          : {}),
-      },
-      orderBy: [{ eventDate: 'asc' }, { startTime: 'asc' }],
-      skip,
-      take: limit,
-    }) as unknown as EventRawRecord[];
+    } as const;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.event.findMany({
+        select,
+        where,
+        orderBy: [{ eventDate: 'asc' }, { startTime: 'asc' }],
+        skip,
+        take,
+      }),
+      this.prisma.event.count({ where }),
+    ]);
+
+    return {
+      items: items as unknown as EventWithRelations[],
+      total,
+    };
   }
 }
