@@ -1,11 +1,12 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mentorsMock } from "../services/mentor-profile.mock";
 import { MentorGuidanceTypes } from "./mentor-guidance-types";
 import { MentorProfileHeader } from "./mentor-profile-header";
 import { MentorTechnicalAreas } from "./mentor-technical-areas";
+import { MentorProfileNavigation } from "./mentor-profile-navigation";
 
 vi.mock("next/image", () => ({
   default: (
@@ -17,6 +18,9 @@ vi.mock("next/image", () => ({
     return React.createElement("img", imageProps);
   },
 }));
+afterEach(() => {
+  cleanup();
+});
 
 describe("Mentor profile components", () => {
   it("muestra mensaje cuando no existen áreas técnicas", () => {
@@ -25,6 +29,16 @@ describe("Mentor profile components", () => {
     expect(
       screen.getByText("No hay áreas técnicas registradas."),
     ).toBeInTheDocument();
+  });
+  it("permite volver al directorio de mentores", () => {
+    render(<MentorProfileNavigation mentorName="Ana Rojas" />);
+
+    const backLink = screen.getByRole("link", {
+      name: "Volver al directorio",
+    });
+
+    expect(backLink).toBeInTheDocument();
+    expect(backLink).toHaveAttribute("href", "/mentors");
   });
 
   it("muestra todas las áreas técnicas", () => {
@@ -54,10 +68,63 @@ describe("Mentor profile components", () => {
     expect(screen.getByText("Orientación técnica")).toBeInTheDocument();
   });
 
+  it("actualiza la descripción al seleccionar un tipo de orientación", () => {
+    render(
+      <MentorGuidanceTypes guidanceTypes={mentorsMock[0].guidanceTypes} />,
+    );
+
+    expect(
+      screen.getByText(
+        "Orientación para mejorar hojas de vida enfocadas en roles tecnológicos.",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Orientación técnica",
+      }),
+    );
+
+    expect(
+      screen.getByText(
+        "Asesoramiento sobre arquitectura de software, patrones de diseño y preparación técnica.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("muestra las iniciales cuando el mentor no tiene fotografía", () => {
     render(<MentorProfileHeader mentor={mentorsMock[0]} />);
 
     expect(screen.getByText("AR")).toBeInTheDocument();
+    expect(screen.getByText("Intereses profesionales")).toBeInTheDocument();
+    expect(screen.getByText("Arquitectura de software")).toBeInTheDocument();
+    expect(screen.getByText("Cloud Computing")).toBeInTheDocument();
+    expect(screen.getByText("Sistemas distribuidos")).toBeInTheDocument();
+    expect(screen.getByText(/Ingeniería de Sistemas/)).toBeInTheDocument();
+  });
+
+  it("habilita solicitar mentoría cuando el mentor está disponible", () => {
+    render(<MentorProfileHeader mentor={mentorsMock[0]} />);
+
+    expect(screen.getByText("Disponible para mentoría")).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", {
+        name: "Solicitar mentoría",
+      }),
+    ).toBeEnabled();
+  });
+
+  it("deshabilita solicitar mentoría cuando el mentor no está disponible", () => {
+    render(<MentorProfileHeader mentor={mentorsMock[1]} />);
+
+    expect(screen.getByText("No disponible")).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", {
+        name: "Solicitar mentoría",
+      }),
+    ).toBeDisabled();
   });
 
   it("muestra la fotografía cuando el mentor tiene una imagen", () => {
