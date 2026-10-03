@@ -1,92 +1,129 @@
 'use client';
 
-import { Calendar, Clock, Info, Search } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
+import { Info, Search } from 'lucide-react';
+import { EventCard } from '../components/event-card';
+import type { EventItem } from '../types/event.types';
 
-// Datos temporales basados en el mockup oficial para previsualizar el layout ante QA
-const MOCKUP_PREVIEW_EVENTS = [
+// Semilla local con la estructura exacta de las tablas event y event_category del ER
+const INITIAL_EVENTS: EventItem[] = [
   {
-    id: '1',
-    category: 'Tecnologia',
-    categoryStyle: 'bg-slate-200/80 text-ink',
+    id: 'e1a2b3c4-0001-4000-8000-000000000001',
     title: 'Desarrollo Web con React',
-    dateText: 'jueves, 15 de octubre',
-    timeText: '09:00 - 13:00',
-    enrolled: 24,
+    description: 'Taller practico de desarrollo frontend moderno con React.',
+    category: { id: 'a1a1a1a1-0001-4000-8000-000000000001', name: 'Tecnologia' },
+    instructorName: 'Ing. Carlos Mendoza',
+    eventDate: '2026-10-15',
+    startTime: '09:00:00',
+    endTime: '13:00:00',
+    location: 'Auditorio FCyT',
     capacity: 30,
-    isFull: false,
+    availableSpots: 6,
+    registrationCount: 24,
+    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
+    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
   },
   {
-    id: '2',
-    category: 'IA & Datos',
-    categoryStyle: 'bg-amber-100/80 text-amber-800',
+    id: 'e1a2b3c4-0002-4000-8000-000000000002',
     title: 'Inteligencia Artificial Aplicada',
-    dateText: 'domingo, 18 de octubre',
-    timeText: '14:00 - 18:00',
-    enrolled: 12,
+    description: 'Introduccion practica a modelos de IA y analisis de datos.',
+    category: { id: 'a1a1a1a1-0002-4000-8000-000000000002', name: 'IA & Datos' },
+    instructorName: 'Dra. Elena Rojas',
+    eventDate: '2026-10-18',
+    startTime: '14:00:00',
+    endTime: '18:00:00',
+    location: null,
     capacity: 50,
-    isFull: false,
+    availableSpots: 38,
+    registrationCount: 12,
+    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
+    modalityId: 'c1c1c1c1-0002-4000-8000-000000000002',
   },
   {
-    id: '3',
-    category: 'Diseno',
-    categoryStyle: 'bg-slate-200/80 text-ink',
+    id: 'e1a2b3c4-0003-4000-8000-000000000003',
     title: 'Diseno UI/UX para Moviles',
-    dateText: 'jueves, 22 de octubre',
-    timeText: '08:30 - 12:30',
-    enrolled: 20,
+    description: 'Principios de diseno de interfaces y experiencia de usuario.',
+    category: { id: 'a1a1a1a1-0003-4000-8000-000000000003', name: 'Diseno' },
+    instructorName: 'Lic. Marco Siles',
+    eventDate: '2026-10-22',
+    startTime: '08:30:00',
+    endTime: '12:30:00',
+    location: 'Laboratorio 3 Infocal',
     capacity: 20,
-    isFull: true,
+    availableSpots: 0,
+    registrationCount: 20,
+    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
+    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
   },
   {
-    id: '4',
-    category: 'Seguridad',
-    categoryStyle: 'bg-interaction text-danger',
+    id: 'e1a2b3c4-0004-4000-8000-000000000004',
     title: 'Seguridad Informatica Basica',
-    dateText: 'miercoles, 28 de octubre',
-    timeText: '15:00 - 19:00',
-    enrolled: 5,
+    description: 'Fundamentos de ciberseguridad y proteccion de aplicaciones.',
+    category: { id: 'a1a1a1a1-0004-4000-8000-000000000004', name: 'Seguridad' },
+    instructorName: 'Ing. Roberto Vargas',
+    eventDate: '2026-10-28',
+    startTime: '15:00:00',
+    endTime: '19:00:00',
+    location: 'Aula Magna FCyT',
     capacity: 25,
-    isFull: false,
+    availableSpots: 20,
+    registrationCount: 5,
+    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
+    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
   },
   {
-    id: '5',
-    category: 'Tecnologia',
-    categoryStyle: 'bg-slate-200/80 text-ink',
+    id: 'e1a2b3c4-0005-4000-8000-000000000005',
     title: 'Bases de Datos NoSQL',
-    dateText: 'jueves, 5 de noviembre',
-    timeText: '10:00 - 14:00',
-    enrolled: 15,
+    description: 'Modelado y consultas en bases de datos documentales.',
+    category: { id: 'a1a1a1a1-0001-4000-8000-000000000001', name: 'Tecnologia' },
+    instructorName: 'Ing. Patricia Flores',
+    eventDate: '2026-11-05',
+    startTime: '10:00:00',
+    endTime: '14:00:00',
+    location: null,
     capacity: 20,
-    isFull: false,
+    availableSpots: 5,
+    registrationCount: 15,
+    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
+    modalityId: 'c1c1c1c1-0002-4000-8000-000000000002',
   },
   {
-    id: '6',
-    category: 'IA & Datos',
-    categoryStyle: 'bg-amber-100/80 text-amber-800',
+    id: 'e1a2b3c4-0006-4000-8000-000000000006',
     title: 'Data Science con Python',
-    dateText: 'jueves, 12 de noviembre',
-    timeText: '08:00 - 12:00',
-    enrolled: 35,
+    description: 'Procesamiento y visualizacion de datos con librerias de Python.',
+    category: { id: 'a1a1a1a1-0002-4000-8000-000000000002', name: 'IA & Datos' },
+    instructorName: 'MSc. Daniel Torrez',
+    eventDate: '2026-11-12',
+    startTime: '08:00:00',
+    endTime: '12:00:00',
+    location: 'Laboratorio Computo 1',
     capacity: 60,
-    isFull: false,
+    availableSpots: 25,
+    registrationCount: 35,
+    statusId: 'b1b1b1b1-0001-4000-8000-000000000001',
+    modalityId: 'c1c1c1c1-0001-4000-8000-000000000001',
   },
 ];
 
 const MOCKUP_CATEGORIES = ['Todos', 'Tecnologia', 'IA & Datos', 'Diseno', 'Seguridad'];
 
 export function EventsView() {
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const handleSelectEvent = (selectedEvent: EventItem) => {
+    setSelectedEventId(selectedEvent.id);
+  };
+
   return (
-    <div className="min-h-screen bg-surface-soft text-foreground flex flex-col lg:flex-row">
+    <div className="min-h-full w-full flex-1 bg-surface-soft text-foreground flex flex-col lg:flex-row">
       {/* Columna central: Catalogo de talleres disponibles */}
       <div className="flex-1 px-6 sm:px-10 py-8 flex flex-col gap-6 min-w-0">
-        {/* Cabecera identica al mockup */}
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
             Talleres disponibles
           </h1>
           <p className="text-sm text-text-secondary">
-            {MOCKUP_PREVIEW_EVENTS.length} talleres · Gestion 2026
+            {INITIAL_EVENTS.length} talleres · Gestion 2026
           </p>
         </header>
 
@@ -96,7 +133,6 @@ export function EventsView() {
           aria-label="Filtros de talleres"
           className="flex flex-wrap items-center gap-2.5"
         >
-          {/* Espacio para el componente Buscador (Miembro 2) */}
           <div className="w-full sm:w-64 h-10 rounded-full bg-surface border border-border px-4 flex items-center gap-2.5 shadow-2xs">
             <Search className="w-4 h-4 text-text-secondary shrink-0" aria-hidden="true" />
             <span className="text-sm text-text-secondary truncate">
@@ -104,7 +140,6 @@ export function EventsView() {
             </span>
           </div>
 
-          {/* Espacio para el componente de Chips de categorias */}
           <div className="flex flex-wrap items-center gap-2">
             {MOCKUP_CATEGORIES.map((categoryName, index) => {
               const isSelected = index === 0;
@@ -124,75 +159,22 @@ export function EventsView() {
           </div>
         </div>
 
-        {/* Grilla de 2 columnas segun el mockup */}
+        {/* Grilla de 2 columnas renderizando el componente reutilizable EventCard */}
         <section aria-label="Listado de talleres">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {MOCKUP_PREVIEW_EVENTS.map((workshop) => {
-              const progressPercentage = Math.min(
-                Math.round((workshop.enrolled / workshop.capacity) * 100),
-                100,
-              );
-
-              return (
-                <Card
-                  key={workshop.id}
-                  className="bg-surface border border-border rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-2xs hover:border-border-strong transition-colors cursor-pointer"
-                >
-                  {/* Fila superior: Categoria y etiqueta Lleno condicional */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full ${workshop.categoryStyle}`}
-                    >
-                      {workshop.category}
-                    </span>
-
-                    {workshop.isFull && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-interaction text-danger">
-                        Lleno
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Cuerpo: Titulo y metadatos de fecha y hora */}
-                  <div className="flex flex-col gap-2.5">
-                    <h2 className="text-base font-bold text-ink leading-snug">
-                      {workshop.title}
-                    </h2>
-
-                    <div className="flex flex-col gap-1.5 text-xs text-text-secondary">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                        <span>{workshop.dateText}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                        <span>{workshop.timeText}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Pie: Barra de progreso dorada/roja alineada con el contador */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <div className="flex-1 bg-slate-200/80 h-2 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          workshop.isFull ? 'bg-accent' : 'bg-gold'
-                        }`}
-                        style={{ width: `${progressPercentage}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-text-secondary shrink-0">
-                      {workshop.enrolled}/{workshop.capacity}
-                    </span>
-                  </div>
-                </Card>
-              );
-            })}
+            {INITIAL_EVENTS.map((eventItem) => (
+              <EventCard
+                key={eventItem.id}
+                event={eventItem}
+                isSelected={selectedEventId === eventItem.id}
+                onSelect={handleSelectEvent}
+              />
+            ))}
           </div>
         </section>
       </div>
 
-      {/* Columna derecha del mockup: Panel de detalle ("Selecciona un taller") */}
+      {/* Columna derecha del mockup: Panel de detalle */}
       <aside
         aria-label="Detalle del taller seleccionado"
         className="w-full lg:w-80 xl:w-96 bg-surface border-t lg:border-t-0 lg:border-l border-border p-8 flex flex-col items-center justify-center text-center shrink-0"
