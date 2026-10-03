@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { RequestValidationPipe } from '../../../common/pipes/request-validation.pipe.js';
 import {
   createCertificationSchema,
   type CreateCertificationRequest,
@@ -28,7 +28,7 @@ export class CertificationsController {
   @Post()
   create(
     @CurrentUserId() userId: string,
-    @Body(new ZodValidationPipe(createCertificationSchema))
+    @Body(new RequestValidationPipe(createCertificationSchema))
     request: CreateCertificationRequest,
   ): Promise<CertificationResponse> {
     return this.certificationsService.create(userId, request);
@@ -43,7 +43,7 @@ export class CertificationsController {
   update(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(new ZodValidationPipe(updateCertificationSchema))
+    @Body(new RequestValidationPipe(updateCertificationSchema))
     request: UpdateCertificationRequest,
   ): Promise<CertificationResponse> {
     return this.certificationsService.update(userId, id, request);
