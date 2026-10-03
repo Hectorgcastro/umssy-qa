@@ -3,37 +3,56 @@ import { availabilityApi } from "./availability.api"
 import { apiClient } from "@/shared/services/api-client"
 import type { AvailabilityBlock } from "../types/availability"
 
+const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+
+const mockBlock: AvailabilityBlock = {
+  id: "1",
+  mentorId: "m1",
+  startAt: "2024-01-15T10:00:00Z",
+  endAt: "2024-01-15T11:00:00Z",
+  state: "free",
+  createdAt: "",
+  updatedAt: "",
+}
+
 describe("availabilityApi", () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
 
-  it("getAvailabilityBlocks llama a la API con filtros correctos", async () => {
-    const mockBlocks: AvailabilityBlock[] = [
-      { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" },
-    ]
-    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: mockBlocks })
+  it("getAvailabilityBlocks envía from y to en UTC", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: [mockBlock] })
 
-    const result = await availabilityApi.getAvailabilityBlocks({ mentorId: "m1", startAt: "2024-01-15" })
+    const result = await availabilityApi.getAvailabilityBlocks({
+      from: "2024-01-15T00:00:00Z",
+      to: "2024-01-16T00:00:00Z",
+    })
 
-    expect(getSpy).toHaveBeenCalledWith("/availability-blocks?mentorId=m1&startAt=2024-01-15T00%3A00%3A00.000Z")
-    expect(result).toEqual(mockBlocks)
+    expect(getSpy).toHaveBeenCalledWith(
+      "/availability-blocks?from=2024-01-15T00%3A00%3A00.000Z&to=2024-01-16T00%3A00%3A00.000Z"
+    )
+    expect(result).toEqual([mockBlock])
   })
 
   it("getAvailabilityBlocks llama a la API sin filtros", async () => {
-    const mockBlocks: AvailabilityBlock[] = [
-      { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" },
-    ]
-    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: mockBlocks })
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: [mockBlock] })
 
     const result = await availabilityApi.getAvailabilityBlocks()
 
-    expect(getSpy).toHaveBeenCalledWith("/availability-blocks?")
-    expect(result).toEqual(mockBlocks)
+    expect(getSpy).toHaveBeenCalledWith("/availability-blocks")
+    expect(result).toEqual([mockBlock])
+  })
+
+  it("getMentorFreeBlocks llama a la ruta de bloques libres del mentor", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: [mockBlock] })
+
+    const result = await availabilityApi.getMentorFreeBlocks("m1")
+
+    expect(getSpy).toHaveBeenCalledWith("/mentors/m1/free-blocks")
+    expect(result).toEqual([mockBlock])
   })
 
   it("getAvailabilityBlockById llama a la API con ID correcto", async () => {
-    const mockBlock: AvailabilityBlock = { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" }
     const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: mockBlock })
 
     const result = await availabilityApi.getAvailabilityBlockById("1")
@@ -42,37 +61,27 @@ describe("availabilityApi", () => {
     expect(result).toEqual(mockBlock)
   })
 
-  it("createAvailabilityBlock llama a la API con datos correctos y convierte fechas a ISO", async () => {
-    const input = { mentorId: "m1", startAt: "2024-01-15T10:00", endAt: "2024-01-15T11:00", seriesId: "s1", repeatUntil: "2024-12-31" }
-    const mockBlock: AvailabilityBlock = { id: "1", ...input, createdAt: "", updatedAt: "" }
+  it("createAvailabilityBlock envía solo startAt y endAt en ISO", async () => {
     const postSpy = vi.spyOn(apiClient, "post").mockResolvedValue({ data: mockBlock })
 
-    await availabilityApi.createAvailabilityBlock(input)
+    await availabilityApi.createAvailabilityBlock({ startAt: "2024-01-15T10:00", endAt: "2024-01-15T11:00" })
 
     const [url, payload] = postSpy.mock.calls[0] as [string, Record<string, unknown>]
     expect(url).toBe("/availability-blocks")
-    expect(payload.mentorId).toBe("m1")
-    expect(typeof payload.startAt).toBe("string")
-    expect(payload.startAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
-    expect(typeof payload.endAt).toBe("string")
-    expect(payload.endAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
-    // seriesId se genera automáticamente como UUID
-    expect(typeof payload.seriesId).toBe("string")
-    expect(payload.seriesId).toMatch(/^[0-9a-f-]{36}$/)
-    expect(payload.repeatUntil).toBe("2024-12-31")
+    expect(Object.keys(payload).sort()).toEqual(["endAt", "startAt"])
+    expect(payload.startAt).toMatch(ISO_UTC)
+    expect(payload.endAt).toMatch(ISO_UTC)
   })
 
   it("updateAvailabilityBlock llama a la API con ID y datos correctos", async () => {
-    const input = { startAt: "2024-01-15T12:00" }
-    const mockBlock: AvailabilityBlock = { id: "1", mentorId: "m1", startAt: "2024-01-15T12:00:00Z", endAt: "2024-01-15T13:00:00Z", createdAt: "", updatedAt: "" }
     const patchSpy = vi.spyOn(apiClient, "patch").mockResolvedValue({ data: mockBlock })
 
-    await availabilityApi.updateAvailabilityBlock("1", input)
+    await availabilityApi.updateAvailabilityBlock("1", { startAt: "2024-01-15T12:00" })
 
     const [url, payload] = patchSpy.mock.calls[0] as [string, Record<string, unknown>]
     expect(url).toBe("/availability-blocks/1")
-    expect(typeof payload.startAt).toBe("string")
-    expect(payload.startAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+    expect(Object.keys(payload)).toEqual(["startAt"])
+    expect(payload.startAt).toMatch(ISO_UTC)
   })
 
   it("deleteAvailabilityBlock llama a la API con ID correcto", async () => {
