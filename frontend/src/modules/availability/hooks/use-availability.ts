@@ -1,48 +1,45 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { availabilityApi } from "../services/availability.api";
 import type { AvailabilityBlock, AvailabilityFilters, CreateAvailabilityBlockInput } from "../types/availability";
 
 export function useAvailability(filters?: AvailabilityFilters) {
+  const from = filters?.from;
+  const to = filters?.to;
+  const [reloadCount, setReloadCount] = useState(0);
+  const requestKey = `${from ?? ""}|${to ?? ""}|${reloadCount}`;
+  const [currentRequestKey, setCurrentRequestKey] = useState(requestKey);
   const [blocks, setBlocks] = useState<AvailabilityBlock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
-  const mountedRef = useRef(true);
-  const filtersRef = useRef(filters);
-  const initialFetchRef = useRef(true);
+
+  if (currentRequestKey !== requestKey) {
+    setCurrentRequestKey(requestKey);
+    setIsLoading(true);
+    setFetchError(null);
+  }
 
   useEffect(() => {
-    filtersRef.current = filters;
-  }, [filters]);
-
-  const fetchBlocks = useCallback(async (resetState = true) => {
-    if (!mountedRef.current) return;
-    if (resetState) {
-      setIsLoading(true);
-      setFetchError(null);
-    }
-    try {
-      const data = await availabilityApi.getAvailabilityBlocks(filtersRef.current);
-      if (mountedRef.current) setBlocks(data);
-    } catch {
-      if (mountedRef.current) setFetchError("Error al obtener los bloques de disponibilidad");
-    } finally {
-      if (mountedRef.current) setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    if (initialFetchRef.current) {
-      initialFetchRef.current = false;
-      fetchBlocks();
-    }
+    let cancelled = false;
+    availabilityApi
+      .getAvailabilityBlocks({ from, to })
+      .then((data) => {
+        if (!cancelled) setBlocks(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFetchError("Error al obtener los bloques de disponibilidad");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
     return () => {
-      mountedRef.current = false;
+      cancelled = true;
     };
-  }, [fetchBlocks]);
+  }, [from, to, reloadCount]);
+
+  const refetch = () => setReloadCount((count) => count + 1);
 
   const createBlock = async (input: CreateAvailabilityBlockInput): Promise<AvailabilityBlock | null> => {
     setMutationError(null);
@@ -85,7 +82,7 @@ export function useAvailability(filters?: AvailabilityFilters) {
     isLoading,
     error: fetchError,
     mutationError,
-    refetch: () => fetchBlocks(true),
+    refetch,
     createBlock,
     updateBlock,
     deleteBlock,
