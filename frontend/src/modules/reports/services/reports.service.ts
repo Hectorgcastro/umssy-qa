@@ -4,27 +4,17 @@ import type { GeneratedReport, ReportHistoryParams } from "../types/generated-re
 import type { RegisteredUser, RegisteredUsersParams } from "../types/registered-user.types";
 import type { RejectedUser, RejectedUsersParams } from "../types/rejected-user.types";
 import { REGISTERED_USERS_MOCK } from "./registered-users.mock";
-import { REPORT_HISTORY_MOCK } from "./report-history.mock";
 
 export const reportsService = {
-  // Mock temporal: reemplazar por apiClient.get("/reports/history", { params }) cuando exista el endpoint.
   getReportHistory: async ({
     page,
     limit,
   }: ReportHistoryParams): Promise<ApiResponse<PaginatedData<GeneratedReport>>> => {
-    const offset = (page - 1) * limit;
+    const { data } = await apiClient.get<ApiResponse<PaginatedData<GeneratedReport>>>("/reports/history", {
+      params: { page, limit },
+    });
 
-    return {
-      statusCode: 200,
-      data: {
-        items: REPORT_HISTORY_MOCK.slice(offset, offset + limit),
-        totalItems: REPORT_HISTORY_MOCK.length,
-      },
-      offset,
-      page,
-      detail: "Historial de reportes obtenido correctamente",
-      ok: true,
-    };
+    return data;
   },
 
   // Mock temporal: reemplazar por apiClient.get("/reports/registered-users", { params }) cuando exista el endpoint.
