@@ -46,8 +46,7 @@ describe("MentorshipView", () => {
   it("permite avanzar entre los pasos después de aceptar participación", () => {
     render(<MentorshipView />);
 
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -63,8 +62,7 @@ describe("MentorshipView", () => {
   it("no permite avanzar del paso 2 sin seleccionar un área", () => {
     render(<MentorshipView />);
 
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -88,8 +86,7 @@ describe("MentorshipView", () => {
   it("permite avanzar del paso 2 al seleccionar al menos un área", () => {
     render(<MentorshipView />);
 
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -97,15 +94,11 @@ describe("MentorshipView", () => {
 
     fireEvent.click(nextButton);
 
-    expect(
-      screen.getByText("Paso 2: Áreas técnicas"),
-    ).toBeDefined();
-
-    const backendCard = screen.getByRole("button", {
-      name: /Backend/i,
-    });
-
-    fireEvent.click(backendCard);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Backend/i,
+      }),
+    );
 
     expect((nextButton as HTMLButtonElement).disabled).toBe(false);
 
@@ -113,7 +106,7 @@ describe("MentorshipView", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Tipos de orientación",
+        name: "Paso 3: Tipos de orientación",
       }),
     ).toBeDefined();
   });
@@ -133,18 +126,13 @@ describe("MentorshipView", () => {
   it("permite regresar al paso anterior", () => {
     render(<MentorshipView />);
 
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
     });
 
     fireEvent.click(nextButton);
-
-    expect(
-      screen.getByText("Paso 2: Áreas técnicas"),
-    ).toBeDefined();
 
     const backButton = screen.getByRole("button", {
       name: /Volver/i,
@@ -166,23 +154,17 @@ describe("MentorshipView", () => {
 
     fireEvent.click(checkbox);
 
-    expect((checkbox as HTMLInputElement).checked).toBe(true);
-
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
     });
 
     fireEvent.click(nextButton);
 
-    expect(
-      screen.getByText("Paso 2: Áreas técnicas"),
-    ).toBeDefined();
-
-    const backButton = screen.getByRole("button", {
-      name: /Volver/i,
-    });
-
-    fireEvent.click(backButton);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Volver/i,
+      }),
+    );
 
     const participationCheckbox = screen.getByRole("checkbox");
 
@@ -202,8 +184,7 @@ describe("MentorshipView", () => {
   it("actualiza el contador al seleccionar áreas", () => {
     render(<MentorshipView />);
 
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -215,23 +196,21 @@ describe("MentorshipView", () => {
       screen.getByText("0 seleccionadas"),
     ).toBeDefined();
 
-    const backendCard = screen.getByRole("button", {
-      name: /Backend/i,
-    });
-
-    fireEvent.click(backendCard);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Backend/i,
+      }),
+    );
 
     expect(
       screen.getByText("1 seleccionada"),
     ).toBeDefined();
   });
 
-  it("muestra la confirmación en el último paso", () => {
+  it("deshabilita Continuar en el paso 3 sin orientación seleccionada", () => {
     render(<MentorshipView />);
 
-    fireEvent.click(
-      screen.getByRole("checkbox"),
-    );
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -246,27 +225,28 @@ describe("MentorshipView", () => {
     );
 
     fireEvent.click(nextButton);
-    fireEvent.click(nextButton);
 
     expect(
       screen.getByRole("heading", {
-        name: "Confirma tu participación",
+        name: "Paso 3: Tipos de orientación",
       }),
     ).toBeDefined();
 
     expect(
-      screen.getByRole("button", {
-        name: "Activar participación",
-      }),
-    ).toBeDefined();
+      (nextButton as HTMLButtonElement).disabled,
+    ).toBe(true);
+
+    expect(
+      screen.getByRole("alert"),
+    ).toHaveTextContent(
+      "Debe seleccionarse al menos un tipo de orientación para continuar",
+    );
   });
 
-  it("muestra las orientaciones y permite seleccionar varias", () => {
+  it("habilita Continuar en el paso 3 al seleccionar una orientación", () => {
     render(<MentorshipView />);
 
-    fireEvent.click(
-      screen.getByRole("checkbox"),
-    );
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -288,27 +268,98 @@ describe("MentorshipView", () => {
       }),
     );
 
+    expect(
+      (nextButton as HTMLButtonElement).disabled,
+    ).toBe(false);
+  });
+
+  it("muestra la confirmación en el último paso", () => {
+    render(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+
+    const nextButton = screen.getByRole("button", {
+      name: /Continuar/i,
+    });
+
+    fireEvent.click(nextButton);
+
     fireEvent.click(
       screen.getByRole("button", {
-        name: /Orientación técnica/i,
+        name: /Backend/i,
       }),
     );
 
+    fireEvent.click(nextButton);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Orientación profesional/i,
+      }),
+    );
+
+    fireEvent.click(nextButton);
+
     expect(
-      screen.getByText("Orientaciones seleccionadas: 2"),
+      screen.getByRole("heading", {
+        name: "Confirma tu participación",
+      }),
     ).toBeDefined();
 
     expect(
-      screen.getAllByText("Activo"),
-    ).toHaveLength(2);
+      screen.getByRole("button", {
+        name: "Activar participación",
+      }),
+    ).toBeDefined();
+  });
+
+  it("muestra las orientaciones y permite seleccionar varias", () => {
+    render(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+
+    const nextButton = screen.getByRole("button", {
+      name: /Continuar/i,
+    });
+
+    fireEvent.click(nextButton);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Backend/i,
+      }),
+    );
+
+    fireEvent.click(nextButton);
+
+    const professionalButton = screen.getByRole("button", {
+      name: /Orientación profesional/i,
+    });
+
+    const technicalButton = screen.getByRole("button", {
+      name: /Orientación técnica/i,
+    });
+
+    fireEvent.click(professionalButton);
+    fireEvent.click(technicalButton);
+
+    expect(
+      screen.getByText("2 seleccionadas"),
+    ).toBeDefined();
+
+    expect(
+      professionalButton.getAttribute("aria-pressed"),
+    ).toBe("true");
+
+    expect(
+      technicalButton.getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 
   it("conserva las orientaciones al avanzar y regresar", () => {
     render(<MentorshipView />);
 
-    fireEvent.click(
-      screen.getByRole("checkbox"),
-    );
+    fireEvent.click(screen.getByRole("checkbox"));
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -345,11 +396,15 @@ describe("MentorshipView", () => {
     );
 
     expect(
-      screen.getByText("Orientaciones seleccionadas: 1"),
+      screen.getByText("1 seleccionada"),
     ).toBeDefined();
 
+    const professionalButton = screen.getByRole("button", {
+      name: /Orientación profesional/i,
+    });
+
     expect(
-      screen.getByText("Activo"),
-    ).toBeDefined();
+      professionalButton.getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 });
