@@ -15,22 +15,24 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "UMSSY | Egresados",
+  title: "UMSSY | Titulados",
   description: "Plataforma de talleres y pases para egresados UMSSY",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "UMSSY",
   },
   icons: {
-    apple: "/icons/icon-180.png",
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0f172a", 
+  themeColor: "#1e3a8a",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
