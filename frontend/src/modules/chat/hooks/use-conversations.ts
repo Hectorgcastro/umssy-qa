@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Conversation, ConversationFilter } from '../types/conversation.types';
+import { Conversation, ConversationFilter, UserSummary } from '../types/conversation.types';
+import { User } from '../types/user.types';
 import { getConversations } from '../services/chat-api';
 
 const PAGE_SIZE = 10;
@@ -122,6 +123,34 @@ export function useConversations() {
     });
   };
 
+  // Función añadida para el Modal de Nueva Conversación
+  const startConversationWithContact = (contactUser: User) => {
+    const existingConversation = conversationsData.find(
+      (conv) => conv.contact.id === contactUser.id
+    );
+
+    if (existingConversation) {
+      handleSelectConversation(existingConversation);
+    } else {
+      const contactSummary: UserSummary = {
+        id: contactUser.id,
+        fullName: contactUser.fullName,
+        avatarUrl: contactUser.avatarUrl,
+        isOnline: contactUser.isActive, 
+      };
+
+      const newConversation: Conversation = {
+        id: `conv-new-${Date.now()}`,
+        contact: contactSummary,
+        unreadCount: 0,
+        updatedAt: new Date().toISOString(),
+      };
+
+      setConversationsData((prev) => [newConversation, ...prev]);
+      setSelectedId(newConversation.id);
+    }
+  };
+
   return {
     conversations: paginatedConversations,
     totalCount: filteredConversations.length,
@@ -137,5 +166,6 @@ export function useConversations() {
     handleSelectConversation,
     clearSelectedConversation,
     simulateIncomingMessage,
+    startConversationWithContact, // Exportada para usarla en el ChatView
   };
 }
