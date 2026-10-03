@@ -13,8 +13,8 @@ export const GENERATED_REPORTS_MOCK: readonly GeneratedReport[] = [
   },
   {
     id: 'report-002',
-    fileName: 'Reporte_Egresados_Registrados',
-    reportType: 'GRADUATES',
+    fileName: 'Reporte_Titulados_Registrados',
+    reportType: 'DEGREE_HOLDERS',
     generatedAt: '2026-09-27T20:32:00.000Z',
   },
   {
@@ -25,8 +25,8 @@ export const GENERATED_REPORTS_MOCK: readonly GeneratedReport[] = [
   },
   {
     id: 'report-004',
-    fileName: 'Egresados_Con_Titulo_2026',
-    reportType: 'GRADUATES',
+    fileName: 'Titulados_Con_Diploma_2026',
+    reportType: 'DEGREE_HOLDERS',
     generatedAt: '2026-09-25T19:17:00.000Z',
   },
   {
@@ -37,8 +37,8 @@ export const GENERATED_REPORTS_MOCK: readonly GeneratedReport[] = [
   },
   {
     id: 'report-006',
-    fileName: 'Reporte_Egresados_0126',
-    reportType: 'GRADUATES',
+    fileName: 'Reporte_Titulados_0126',
+    reportType: 'DEGREE_HOLDERS',
     generatedAt: '2026-09-23T18:08:00.000Z',
   },
   {
@@ -55,8 +55,8 @@ export const GENERATED_REPORTS_MOCK: readonly GeneratedReport[] = [
   },
   {
     id: 'report-009',
-    fileName: 'Egresados_Por_Area',
-    reportType: 'GRADUATES',
+    fileName: 'Titulados_Por_Area',
+    reportType: 'DEGREE_HOLDERS',
     generatedAt: '2026-09-20T16:18:00.000Z',
   },
   {
@@ -73,8 +73,8 @@ export const GENERATED_REPORTS_MOCK: readonly GeneratedReport[] = [
   },
   {
     id: 'report-012',
-    fileName: 'Egresados_Gestion_2025',
-    reportType: 'GRADUATES',
+    fileName: 'Titulados_Gestion_2025',
+    reportType: 'DEGREE_HOLDERS',
     generatedAt: '2026-09-17T22:05:00.000Z',
   },
 ];
