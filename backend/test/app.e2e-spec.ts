@@ -4,7 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { vi } from 'vitest';
 import { AppModule } from './../src/app.module.js';
-import { PrismaService } from '../src/prisma/prisma.service.js';
+import { PrismaService } from '../src/common/prisma/prisma.service.js';
 
 const prismaMock = {
   $connect: vi.fn(),

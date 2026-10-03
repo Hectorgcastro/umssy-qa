@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service.js';
+import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import type { GetEventsPayload } from '../requests/get-events.request.js';
 import type { EventRawRecord } from '../types/events.types.js';
 

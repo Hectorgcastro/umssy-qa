@@ -6,7 +6,7 @@ import { AppService } from './app.service.js';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
-import { PrismaModule } from './prisma/prisma.module.js';
+import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { EventsModule } from './modules/events/events.module.js';
