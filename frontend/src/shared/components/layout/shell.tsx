@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Bell } from "lucide-react";
 import { Sidebar } from "./sidebar";
+import Link from "next/link";
 
 type ShellProps = { children: ReactNode };
 
@@ -15,6 +16,10 @@ export function Shell({ children }: ShellProps) {
           </span>
           <Bell size={18} aria-label="Notificaciones" className="text-ink-soft" />
         </header>
+        <nav aria-label="Mentorías" className="flex flex-wrap gap-4 border-b p-4 text-sm md:hidden">
+          <Link href="/mentorship/mentors">Buscar mentores</Link>
+          <Link href="/mentors/participation">Mi participación</Link>
+        </nav>
         <main className="flex-1">{children}</main>
       </div>
     </div>

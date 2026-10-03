@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { Breadcrumbs } from "@/shared/components/layout";
@@ -9,6 +9,7 @@ import {
   MOCK_MENTOR_AREA_IDS,
   MOCK_TECHNICAL_AREAS,
   saveMentorAreas,
+  loadMentorAreas,
 } from "../services/technical-areas.mock";
 import type { TechnicalAreasViewProps } from "../types/technical-area.types";
 
@@ -27,10 +28,26 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
   const [savedIds, setSavedIds] = useState<number[]>(initialIds);
   const [selectedIds, setSelectedIds] = useState<number[]>(initialIds);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEditMode);
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [toast, setToast] = useState<{ isError: boolean; text: string } | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    let active = true;
+    loadMentorAreas().then((ids) => {
+      if (!active) return;
+      setSavedIds(ids);
+      setSelectedIds(ids);
+    }).catch(() => {
+      if (active) setToast({ isError: true, text: "No se pudieron cargar las áreas guardadas." });
+    }).finally(() => {
+      if (active) setIsLoading(false);
+    });
+    return () => { active = false; };
+  }, [isEditMode]);
 
   const hasChanges =
     selectedIds.length !== savedIds.length ||
@@ -101,7 +118,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
       )}
 
       {/* 1 columna en móvil, 2 en tablet (768px) y 3 en escritorio (1024px) */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <fieldset disabled={isLoading || isSaving} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {MOCK_TECHNICAL_AREAS.map((area) => (
           <TechnicalAreaCard
             key={area.id}
@@ -110,7 +127,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
             onToggle={handleToggleArea}
           />
         ))}
-      </div>
+      </fieldset>
 
       <div className="mt-6 flex items-center justify-between">
         <button
@@ -123,7 +140,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={hasNoSelection || isSaving}
+          disabled={hasNoSelection || isSaving || isLoading}
           className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-6 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? (

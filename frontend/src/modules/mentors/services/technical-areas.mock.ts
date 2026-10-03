@@ -15,15 +15,23 @@ export const MOCK_TECHNICAL_AREAS: TechnicalArea[] = [
 // Áreas que el mentor ya tiene guardadas (Backend, Cloud y Arquitectura)
 export const MOCK_MENTOR_AREA_IDS: number[] = [1, 6, 8];
 
-// Poner en true para probar el mensaje de error
-const SHOULD_SIMULATE_ERROR = false;
+const STORAGE_KEY = "umssy-demo-mentor-technical-areas";
 
-// Simula PUT /mentors/me/technical-areas
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const saveMentorAreas = (areaIds: number[]): Promise<void> =>
-  new Promise((resolve, reject) =>
-    setTimeout(
-      () => (SHOULD_SIMULATE_ERROR ? reject(new Error("500")) : resolve()),
-      800,
-    ),
-  );
+export async function loadMentorAreas(): Promise<number[]> {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return [...MOCK_MENTOR_AREA_IDS];
+  try {
+    const ids: unknown = JSON.parse(stored);
+    if (Array.isArray(ids) && ids.length > 0 && ids.every(
+      (id) => MOCK_TECHNICAL_AREAS.some((area) => area.id === id),
+    )) return [...new Set(ids as number[])];
+  } catch {
+    // Invalid demo data falls back to the initial selection.
+  }
+  return [...MOCK_MENTOR_AREA_IDS];
+}
+
+export async function saveMentorAreas(areaIds: number[]): Promise<void> {
+  if (!areaIds.length) throw new Error("At least one area is required");
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(areaIds));
+}

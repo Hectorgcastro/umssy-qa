@@ -25,7 +25,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Mentorías",
     items: [
-      { label: "Buscar mentores", href: "/mentors/search", icon: Search },
+      { label: "Buscar mentores", href: "/mentorship/mentors", icon: Search },
       {
         label: "Mi participación",
         href: "/mentors/participation",

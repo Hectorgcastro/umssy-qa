@@ -1,5 +1,5 @@
-import { TechnicalAreasView } from "@/modules/mentors";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <TechnicalAreasView mode="register" />;
+  redirect("/mentorship");
 }
