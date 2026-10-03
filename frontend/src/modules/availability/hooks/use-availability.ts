@@ -41,18 +41,6 @@ export function useAvailability(filters?: AvailabilityFilters) {
 
   const refetch = () => setReloadCount((count) => count + 1);
 
-  const createBlock = async (input: CreateAvailabilityBlockInput): Promise<AvailabilityBlock | null> => {
-    setMutationError(null);
-    try {
-      const newBlock = await availabilityApi.createAvailabilityBlock(input);
-      setBlocks((prev) => [...prev, newBlock]);
-      return newBlock;
-    } catch {
-      setMutationError("Error al crear el bloque de disponibilidad");
-      return null;
-    }
-  };
-
   const updateBlock = async (id: string, input: Partial<CreateAvailabilityBlockInput>): Promise<AvailabilityBlock | null> => {
     setMutationError(null);
     try {
@@ -83,7 +71,6 @@ export function useAvailability(filters?: AvailabilityFilters) {
     error: fetchError,
     mutationError,
     refetch,
-    createBlock,
     updateBlock,
     deleteBlock,
   };

@@ -137,54 +137,6 @@ describe("useAvailability", () => {
     expect(result.current.blocks).toEqual(mockBlocks)
   })
 
-  it("crea un bloque de disponibilidad", async () => {
-    const mockBlocks = [block("1", "2024-01-15T10:00:00Z", "2024-01-15T11:00:00Z")]
-    const newBlock = block("2", "2024-01-15T14:00:00Z", "2024-01-15T15:00:00Z")
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue(mockBlocks)
-    const createSpy = vi.spyOn(availabilityApi, "createAvailabilityBlock").mockResolvedValue(newBlock)
-
-    const { result } = renderHook(() => useAvailability())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    const created = await act(async () => {
-      return result.current.createBlock({
-        startAt: "2024-01-15T14:00:00Z",
-        endAt: "2024-01-15T15:00:00Z",
-      })
-    })
-
-    expect(createSpy).toHaveBeenCalled()
-    expect(created).toEqual(newBlock)
-    expect(result.current.blocks).toHaveLength(2)
-  })
-
-  it("maneja error al crear bloque sin afectar la lista", async () => {
-    const mockBlocks = [block("1", "2024-01-15T10:00:00Z", "2024-01-15T11:00:00Z")]
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue(mockBlocks)
-    vi.spyOn(availabilityApi, "createAvailabilityBlock").mockRejectedValue(new Error("Network error"))
-
-    const { result } = renderHook(() => useAvailability())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    const created = await act(async () => {
-      return result.current.createBlock({
-        startAt: "2024-01-15T14:00:00Z",
-        endAt: "2024-01-15T15:00:00Z",
-      })
-    })
-
-    expect(created).toBeNull()
-    expect(result.current.mutationError).toBe("Error al crear el bloque de disponibilidad")
-    expect(result.current.error).toBeNull()
-    expect(result.current.blocks).toEqual(mockBlocks)
-  })
-
   it("actualiza un bloque de disponibilidad", async () => {
     const mockBlocks = [block("1", "2024-01-15T10:00:00Z", "2024-01-15T11:00:00Z")]
     const updatedBlock = block("1", "2024-01-15T12:00:00Z", "2024-01-15T13:00:00Z")
