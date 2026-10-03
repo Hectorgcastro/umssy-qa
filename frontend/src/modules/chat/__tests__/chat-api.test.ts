@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getConversations, searchUsers } from '../services/chat-api';
+import {
+  getConversations, searchUsers, getMessages, getOrCreateConversation} from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
+import { MOCK_CONVERSATIONS } from '../mocks/mock-conversations';
 
 describe('chat-api', () => {
   it('debe retornar las conversaciones ordenadas cronologicamente descendente', async () => {
@@ -94,5 +96,61 @@ describe('chat-api — searchUsers', () => {
     const elapsed = performance.now() - start;
     const computeTime = elapsed - 200;
     expect(computeTime).toBeLessThan(50);
+  });
+});
+
+describe('chat-api — getMessages', () => {
+  it('debe retornar los mensajes de una conversacion ordenados del mas antiguo al mas reciente', async () => {
+    const messages = await getMessages('conv-1');
+    expect(messages.length).toBeGreaterThan(0);
+
+    for (let i = 0; i < messages.length - 1; i++) {
+      const current = new Date(messages[i].createdAt).getTime();
+      const next = new Date(messages[i + 1].createdAt).getTime();
+      expect(current).toBeLessThanOrEqual(next);
+    }
+  });
+
+  it('debe retornar lista vacia si la conversacion no tiene mensajes', async () => {
+    const messages = await getMessages('conv-4');
+    expect(messages).toEqual([]);
+  });
+
+  it('debe retornar lista vacia si la conversacion no existe', async () => {
+    const messages = await getMessages('conv-inexistente');
+    expect(messages).toEqual([]);
+  });
+});
+
+describe('chat-api — getOrCreateConversation', () => {
+  it('debe retornar la conversacion existente si ya hay una con ese contacto', async () => {
+    const existing = MOCK_CONVERSATIONS[0];
+    const result = await getOrCreateConversation(existing.contact.id);
+
+    expect(result.id).toBe(existing.id);
+    expect(result.contact.id).toBe(existing.contact.id);
+  });
+
+  it('debe crear una conversacion nueva si no existe con ese contacto', async () => {
+    // user-105 (Ana Rojas) has no conversation in mock-conversations.ts
+    const result = await getOrCreateConversation('user-105');
+
+    expect(result.id).toBeDefined();
+    expect(result.contact.id).toBe('user-105');
+    expect(result.contact.fullName).toBeTruthy();
+    expect(result.lastMessage).toBeNull();
+    expect(result.unreadCount).toBe(0);
+    expect(result.contact.isOnline).toBe(false);
+  });
+
+  it('debe lanzar error si el contacto no existe', async () => {
+    await expect(getOrCreateConversation('user-inexistente'))
+      .rejects.toThrow('UserNotFoundException');
+  });
+
+  it('no debe mutar MOCK_CONVERSATIONS al crear una conversacion nueva', async () => {
+    const before = MOCK_CONVERSATIONS.length;
+    await getOrCreateConversation('user-106');
+    expect(MOCK_CONVERSATIONS.length).toBe(before);
   });
 });

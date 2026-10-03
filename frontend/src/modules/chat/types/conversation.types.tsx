@@ -16,6 +16,10 @@ export interface LastMessage {
   createdAt: string;
 }
 
+export interface Message extends LastMessage {
+  conversationId: string;
+}
+
 export interface Conversation {
   id: string;
   contact: UserSummary;

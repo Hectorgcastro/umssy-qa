@@ -28,31 +28,30 @@ const mockList = [
 
 describe('ChatView & ChatPage', () => {
   it('debe renderizar ChatView con estado vacio y permitir seleccionar conversacion', async () => {
-    vi.spyOn(chatApi, 'getConversations').mockResolvedValue(mockList);
-    window.alert = vi.fn();
+  vi.spyOn(chatApi, 'getConversations').mockResolvedValue(mockList);
 
-    render(<ChatView />);
+  render(<ChatView />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Maria Fernandez')).toBeDefined();
-    });
-
-    expect(screen.getByText(/Selecciona una conversacion/i)).toBeDefined();
-
-    const newChatButtons = screen.getAllByText('Iniciar una nueva conversacion');
-    fireEvent.click(newChatButtons[0]);
-    expect(window.alert).toHaveBeenCalled();
-
-    const conversationItem = screen.getByText('Maria Fernandez');
-    fireEvent.click(conversationItem);
-
-    expect(screen.getByText('Sala de chat con Maria Fernandez')).toBeDefined();
-    expect(screen.getByText('En linea')).toBeDefined();
-
-    const backButton = screen.getByLabelText('Volver a la lista de chats');
-    fireEvent.click(backButton);
-    expect(screen.getByText(/Selecciona una conversacion/i)).toBeDefined();
+  await waitFor(() => {
+    expect(screen.getByText('Maria Fernandez')).toBeDefined();
   });
+
+  expect(screen.getByText(/Selecciona una conversacion/i)).toBeDefined();
+
+  const newChatButtons = screen.getAllByText('Iniciar una nueva conversacion');
+  fireEvent.click(newChatButtons[0]);
+  expect(await screen.findByText('Nueva conversación')).toBeDefined();
+
+  const conversationItem = screen.getByText('Maria Fernandez');
+  fireEvent.click(conversationItem);
+
+  expect(screen.getByText('Sala de chat con Maria Fernandez')).toBeDefined();
+  expect(screen.getByText('En linea')).toBeDefined();
+
+  const backButton = screen.getByLabelText('Volver a la lista de chats');
+  fireEvent.click(backButton);
+  expect(screen.getByText(/Selecciona una conversacion/i)).toBeDefined();
+});
 
   it('debe renderizar la conversacion seleccionada sin foto mostrando desconectado', async () => {
     vi.spyOn(chatApi, 'getConversations').mockResolvedValue(mockList);
