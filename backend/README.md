@@ -65,6 +65,33 @@ pnpm migrate <migration_name>
 pnpm generate
 ```
 
+## Development Seed
+
+Loads the test data used by the E2E tests (no mocks):
+
+- The `MENTOR` and `TITULADO` roles.
+- 2 mentors, 1 graduate and 1 student (test users under `@umssy.test`).
+- Availability blocks in the previous, current and next week, relative to the
+  execution date and calculated in Bolivia time (UTC-4).
+- One mentor with 50 blocks in a single week and another mentor with no blocks.
+- One block already in the past within the current week.
+- One pending and one confirmed appointment on blocks of the current week.
+
+```bash
+# Runs `prisma db seed` against the database configured in .env
+pnpm seed
+
+# Runs the seed with the variables from .env.test
+pnpm seed:test
+```
+
+The seed is **idempotent**: it runs inside a single transaction that first
+removes the `@umssy.test` users it owns, so running it twice never duplicates
+data. If anything fails, the transaction is rolled back.
+
+> **Temporary:** this is a development seed created for Epic #7 (B-03). It will
+> be aligned with or removed once Epic 1 delivers the official seed.
+
 ## Run Tests
 
 ```bash
