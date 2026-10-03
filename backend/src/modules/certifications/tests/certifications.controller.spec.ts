@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RequestValidationException } from '../../../common/exceptions/request-validation.exception.js';
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { RequestValidationPipe } from '../../../common/pipes/request-validation.pipe.js';
 import { CertificationsController } from '../controllers/certifications.controller.js';
 import { createCertificationSchema } from '../requests/create-certification.request.js';
 import { updateCertificationSchema } from '../requests/update-certification.request.js';
@@ -81,8 +81,8 @@ describe('CertificationsController', () => {
 });
 
 describe('Certification request validation', () => {
-  const createPipe = new ZodValidationPipe(createCertificationSchema);
-  const updatePipe = new ZodValidationPipe(updateCertificationSchema);
+  const createPipe = new RequestValidationPipe(createCertificationSchema);
+  const updatePipe = new RequestValidationPipe(updateCertificationSchema);
   const validBody = {
     name: 'AWS Solutions Architect',
     issuingOrganization: 'Amazon',
