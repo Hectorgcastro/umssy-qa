@@ -104,7 +104,7 @@ describe("MentorshipView", () => {
     fireEvent.click(nextButton);
 
     expect(
-      screen.getByText("Paso 3: Tipos de orientación"),
+      screen.getByRole("heading", { name: "Tipos de orientación" }),
     ).toBeDefined();
   });
 
@@ -223,5 +223,45 @@ describe("MentorshipView", () => {
 
     expect(screen.getByText("Paso 4: Confirmación")).toBeDefined();
     expect((nextButton as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("muestra las orientaciones y permite seleccionar varias", () => {
+    render(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+    const nextButton = screen.getByRole("button", { name: /Continuar/i });
+    fireEvent.click(nextButton);
+    fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
+    fireEvent.click(nextButton);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Orientación profesional/i }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /Orientación técnica/i }),
+    );
+
+    expect(screen.getByText("Orientaciones seleccionadas: 2")).toBeDefined();
+    expect(screen.getAllByText("Activo")).toHaveLength(2);
+  });
+
+  it("conserva las orientaciones al avanzar y regresar", () => {
+    render(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+    const nextButton = screen.getByRole("button", { name: /Continuar/i });
+    fireEvent.click(nextButton);
+    fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
+    fireEvent.click(nextButton);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Orientación profesional/i }),
+    );
+
+    fireEvent.click(nextButton);
+    expect(screen.getByText("Paso 4: Confirmación")).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /Volver/i }));
+    expect(screen.getByText("Orientaciones seleccionadas: 1")).toBeDefined();
+    expect(screen.getByText("Activo")).toBeDefined();
   });
 });

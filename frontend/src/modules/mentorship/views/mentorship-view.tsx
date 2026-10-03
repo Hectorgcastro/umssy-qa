@@ -1,5 +1,6 @@
 "use client";
 
+import { OrientationStep } from "../components/orientation-step";
 import { ParticipationStep } from "../components/participation-step";
 import { ProgressStepper } from "../components/progress-stepper";
 import { StepTechnicalAreas } from "../components/step-technical-areas";
@@ -11,6 +12,7 @@ export function MentorshipView() {
     currentStep,
     selectedTechnicalAreaIds,
     wantsToParticipate,
+    selectedOrientationTypeIds,
     goNext,
     goBack,
     toggleTechnicalArea,
@@ -32,6 +34,13 @@ export function MentorshipView() {
     }));
   };
 
+  const handleOrientationChange = (ids: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      selectedOrientationTypeIds: ids,
+    }));
+  };
+
   const renderStepContent = () => {
     if (currentStep === 1) {
       return (
@@ -47,6 +56,15 @@ export function MentorshipView() {
         <StepTechnicalAreas
           selectedIds={selectedTechnicalAreaIds}
           onToggle={toggleTechnicalArea}
+        />
+      );
+    }
+
+    if (currentStep === 3) {
+      return (
+        <OrientationStep
+          selectedOrientationTypeIds={selectedOrientationTypeIds}
+          onSelectionChange={handleOrientationChange}
         />
       );
     }
