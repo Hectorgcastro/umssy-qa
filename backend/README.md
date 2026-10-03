@@ -102,3 +102,19 @@ Then create a `.env.test` file by copying `.env.test.example`. Use the same cred
 - [NestJS Documentation](https://docs.nestjs.com?utm_source=gemini) — Learn more about the framework.
 - [NestJS Courses](https://courses.nestjs.com/?utm_source=gemini) — Official video courses for hands-on experience.
 - [Prisma v7 Documentation](https://www.prisma.io/docs/orm/v7?utm_source=gemini) — Official ORM documentation.
+
+## Authentication
+
+Login is provisional and works by role. The user sends email, password,
+and the role they want to log in as (`roleTag`). The backend validates
+the password and confirms the user has that role assigned before
+returning a token.
+
+Required environment variables in `.env`:
+
+- `JWT_SECRET` — secret used to sign tokens (ask the team).
+- `JWT_EXPIRES_IN` — token lifetime, e.g. `8h`.
+- `JWT_ALGORITHM` — signing algorithm, e.g. `HS256`.
+- `CORS_ORIGIN` — allowed origin, use `http://localhost:3000` in development.
+
+The backend won't start if any of these four variables is missing.
