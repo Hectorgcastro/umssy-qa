@@ -7,7 +7,7 @@ import type { NavigationItem } from "@/shared/types/navigation-item.types";
 
 const EVENTS_NAVIGATION: NavigationItem[] = [
   { label: "Talleres", icon: CalendarDays, href: "/events" },
-  { label: "Mis pases", icon: Ticket, href: "/events/mis-inscripciones" },
+  { label: "Mis pases", icon: Ticket, href: "/events/my-passes" },
 ];
 
 export function EventsAppShell({ children }: { children: ReactNode }) {
