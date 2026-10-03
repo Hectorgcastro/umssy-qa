@@ -7,3 +7,5 @@ export type {
   MentorshipStep,
   MentorshipWizardState,
 } from "./types/mentorship.types";
+
+export { OrientationConfigView } from "./views/orientation-config-view";
