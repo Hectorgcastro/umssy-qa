@@ -8,12 +8,20 @@ import {
   type RegisteredUsersQuery,
   type RejectedUsersQuery,
 } from '../requests/report-users.schema.js';
+import {
+  reportHistoryQuerySchema,
+  type ReportHistoryQuery,
+} from '../requests/report-history.schema.js';
+import { ReportHistoryService } from '../services/report-history.service.js';
 import { ReportsService } from '../services/reports.service.js';
 
 @ApiTags('Reportes')
 @Controller('reports')
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(
+    private readonly reportsService: ReportsService,
+    private readonly reportHistoryService: ReportHistoryService,
+  ) {}
 
   @Get('registered-users')
   @ResponseMessage('Usuarios registrados obtenidos correctamente')
@@ -31,5 +39,14 @@ export class ReportsController {
     query: RejectedUsersQuery,
   ) {
     return this.reportsService.getRejectedUsers(query);
+  }
+
+  @Get('history')
+  @ResponseMessage('Historial de reportes obtenido correctamente')
+  getReportHistory(
+    @Query(new ZodValidationPipe(reportHistoryQuerySchema))
+    query: ReportHistoryQuery,
+  ) {
+    return this.reportHistoryService.getReportHistory(query);
   }
 }
