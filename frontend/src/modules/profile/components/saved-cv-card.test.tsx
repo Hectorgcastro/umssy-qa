@@ -71,4 +71,16 @@ describe("SavedCvCard", () => {
     expect(deleteButton).toBeDisabled();
     expect(deleteButton).toHaveAttribute("title", "Disponible próximamente");
   });
+
+  it("disables the actions while busy", () => {
+    render(<SavedCvCard savedCv={SAVED_CV} isBusy onReplace={vi.fn()} onDelete={vi.fn()} />);
+
+    const replaceButton = screen.getByRole("button", { name: "Reemplazar CV" });
+    const deleteButton = screen.getByRole("button", { name: "Eliminar CV" });
+
+    expect(replaceButton).toBeDisabled();
+    expect(replaceButton).not.toHaveAttribute("title");
+    expect(deleteButton).toBeDisabled();
+    expect(deleteButton).not.toHaveAttribute("title");
+  });
 });
