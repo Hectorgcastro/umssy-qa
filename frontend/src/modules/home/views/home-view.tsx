@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { SkillsDetectedList } from "../components/skills-detected-list"
+import { SkillsDetectedList } from "../components/skills-detected-list";
 
 export function HomeView() {
   const { backendMessage } = useHome();
