@@ -1,6 +1,6 @@
 "use client";
 
-import { useAvailability } from "../hooks/use-availability";
+import { useMentorFreeBlocks } from "../hooks/use-mentor-free-blocks";
 import { AvailabilityBlockList } from "../components/availability-block-list";
 
 interface MentorPublicAvailabilityViewProps {
@@ -8,7 +8,7 @@ interface MentorPublicAvailabilityViewProps {
 }
 
 export function MentorPublicAvailabilityView({ mentorId }: MentorPublicAvailabilityViewProps) {
-  const { blocks, isLoading, error } = useAvailability({ mentorId });
+  const { blocks, isLoading, error } = useMentorFreeBlocks(mentorId);
 
   if (isLoading) {
     return <div className="p-6 text-center">Cargando disponibilidad...</div>;

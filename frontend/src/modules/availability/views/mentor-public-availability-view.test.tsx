@@ -9,7 +9,7 @@ describe("MentorPublicAvailabilityView", () => {
   })
 
   it("renderiza estado de carga inicial", () => {
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockImplementation(
+    vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockImplementation(
       () => new Promise(() => {})
     )
 
@@ -19,9 +19,9 @@ describe("MentorPublicAvailabilityView", () => {
 
   it("renderiza lista de bloques de disponibilidad del mentor", async () => {
     const mockBlocks = [
-      { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", createdAt: "", updatedAt: "" },
+      { id: "1", mentorId: "m1", startAt: "2024-01-15T10:00:00Z", endAt: "2024-01-15T11:00:00Z", state: "free" as const, createdAt: "", updatedAt: "" },
     ]
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue(mockBlocks)
+    vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockResolvedValue(mockBlocks)
 
     render(<MentorPublicAvailabilityView mentorId="m1" />)
 
@@ -33,7 +33,7 @@ describe("MentorPublicAvailabilityView", () => {
   })
 
   it("renderiza mensaje cuando no hay bloques", async () => {
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+    vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockResolvedValue([])
 
     render(<MentorPublicAvailabilityView mentorId="m1" />)
 
@@ -43,7 +43,7 @@ describe("MentorPublicAvailabilityView", () => {
   })
 
   it("renderiza error cuando falla la petición", async () => {
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockRejectedValue(new Error("Network error"))
+    vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockRejectedValue(new Error("Network error"))
 
     render(<MentorPublicAvailabilityView mentorId="m1" />)
 
@@ -52,13 +52,13 @@ describe("MentorPublicAvailabilityView", () => {
     })
   })
 
-  it("pasa mentorId como filtro a la API", async () => {
-    const spy = vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+  it("pide los bloques libres del mentor indicado", async () => {
+    const spy = vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockResolvedValue([])
 
     render(<MentorPublicAvailabilityView mentorId="mentor-123" />)
 
     await waitFor(() => {
-      expect(spy).toHaveBeenCalledWith({ mentorId: "mentor-123" })
+      expect(spy).toHaveBeenCalledWith("mentor-123")
     })
   })
 })
