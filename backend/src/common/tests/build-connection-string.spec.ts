@@ -1,23 +1,73 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildDatabaseConnectionString } from '../prisma/build-connection-string.js';
 
+// Función auxiliar para simular las variables de entorno de forma limpia
+function stubDbEnv(overrides: Record<string, string> = {}): void {
+  vi.stubEnv('DB_USER', 'user');
+  vi.stubEnv('DB_PASSWORD', 'password_db');
+  vi.stubEnv('DB_HOST', 'db.example.supabase.co');
+  vi.stubEnv('DB_PORT', '5432');
+  vi.stubEnv('DB_NAME', 'app_db');
+  vi.stubEnv('DB_SCHEMA', '');
+
+  for (const [key, value] of Object.entries(overrides)) {
+    vi.stubEnv(key, value);
+  }
+}
+
+// Limpia los entornos clonados después de cada prueba
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 describe('buildDatabaseConnectionString', () => {
-  const originalEnv = { ...process.env };
+  it('usa sslmode=no-verify para el runtime contra un host remoto', () => {
+    stubDbEnv();
 
-  beforeEach(() => {
-    process.env.DB_USER = 'test_user';
-    process.env.DB_PASSWORD = 'test_password';
-    process.env.DB_HOST = 'localhost';
-    process.env.DB_PORT = '5432';
-    process.env.DB_NAME = 'test_db';
+    const url = buildDatabaseConnectionString('runtime');
+
+    expect(url).toBe(
+      'postgresql://user:password_db@db.example.supabase.co:5432/app_db?sslmode=no-verify',
+    );
   });
 
-  afterEach(() => {
-    process.env = { ...originalEnv };
+  it('usa sslmode=require para migraciones contra un host remoto', () => {
+    stubDbEnv();
+
+    const url = buildDatabaseConnectionString('migrations');
+
+    expect(url).toBe(
+      'postgresql://user:password_db@db.example.supabase.co:5432/app_db?sslmode=require',
+    );
   });
 
-  it('construye la cadena de conexion PostgreSQL usando variables de entorno', () => {
-    const connectionString = buildDatabaseConnectionString();
-    expect(connectionString).toBe('postgresql://test_user:test_password@localhost:5432/test_db');
+  it('incluye el schema solo en el URL de migraciones', () => {
+    stubDbEnv({ DB_SCHEMA: 'public' });
+
+    const migrationsUrl = buildDatabaseConnectionString('migrations');
+    const runtimeUrl = buildDatabaseConnectionString('runtime');
+
+    expect(migrationsUrl).toContain('?schema=public&sslmode=require');
+    expect(runtimeUrl).not.toContain('schema=');
+  });
+
+  it('omite sslmode para hosts locales', () => {
+    stubDbEnv({ DB_HOST: 'localhost' });
+
+    expect(buildDatabaseConnectionString('runtime')).toBe(
+      'postgresql://user:password_db@localhost:5432/app_db',
+    );
+    expect(buildDatabaseConnectionString('migrations')).toBe(
+      'postgresql://user:password_db@localhost:5432/app_db',
+    );
+  });
+
+  it('omite sslmode para el host del servicio de docker compose', () => {
+    stubDbEnv({ DB_HOST: 'postgres' });
+
+    expect(buildDatabaseConnectionString('migrations')).toBe(
+      'postgresql://user:password_db@postgres:5432/app_db',
+    );
   });
 });
+
