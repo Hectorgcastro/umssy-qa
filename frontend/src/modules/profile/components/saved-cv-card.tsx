@@ -7,7 +7,7 @@ import { formatFileSize } from "../utils/format-file-size";
 import { formatUploadDate } from "../utils/format-upload-date";
 import { SectionCard } from "./section-card";
 
-export function SavedCvCard({ savedCv, onReplace, onDelete }: SavedCvCardProps) {
+export function SavedCvCard({ savedCv, isBusy = false, onReplace, onDelete }: SavedCvCardProps) {
   return (
     <SectionCard title="Archivo guardado">
       {savedCv ? (
@@ -26,7 +26,7 @@ export function SavedCvCard({ savedCv, onReplace, onDelete }: SavedCvCardProps) 
               type="button"
               variant="outline"
               className={SECONDARY_BUTTON_CLASS}
-              disabled={!onReplace}
+              disabled={!onReplace || isBusy}
               title={onReplace ? undefined : UNAVAILABLE_ACTION_TITLE}
               onClick={onReplace}
             >
@@ -36,7 +36,7 @@ export function SavedCvCard({ savedCv, onReplace, onDelete }: SavedCvCardProps) 
               type="button"
               variant="outline"
               className={DANGER_OUTLINE_BUTTON_CLASS}
-              disabled={!onDelete}
+              disabled={!onDelete || isBusy}
               title={onDelete ? undefined : UNAVAILABLE_ACTION_TITLE}
               onClick={onDelete}
             >

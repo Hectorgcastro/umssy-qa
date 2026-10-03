@@ -1,19 +1,7 @@
 import { cn } from "@/lib/utils";
+import type { TrajectoryStep } from "../types/trajectory-step.types";
+import type { TrajectoryStepsProps } from "../types/trajectory-steps-props.types";
 
-// Numbered sub-tab navigator for the Trayectoria section.
-// Mirrors the visual pattern of DocumentsSteps: bold number + label, active in accent color.
-
-type TrajectoryStepId = "education" | "experience" | "skills" | "certifications";
-
-interface TrajectoryStep {
-  id: TrajectoryStepId;
-  number: string;
-  label: string;
-}
-
-interface TrajectoryStepsProps {
-  activeStep?: TrajectoryStepId;
-}
 
 const TRAJECTORY_STEPS: TrajectoryStep[] = [
   { id: "education", number: "01", label: "Formación académica" },

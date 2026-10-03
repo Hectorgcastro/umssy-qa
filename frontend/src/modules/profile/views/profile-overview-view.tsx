@@ -6,7 +6,6 @@ import { EMPTY_PROFILE_SUMMARY } from "../config/profile-summary-defaults.config
 import type { ProfileOverviewViewProps } from "../types/profile-overview-view-props.types";
 import { isProfileComplete } from "../utils/is-profile-complete";
 
-// The profile data will come from the profile endpoints once they are connected (issue #63).
 export function ProfileOverviewView({ profile = EMPTY_PROFILE_SUMMARY }: ProfileOverviewViewProps) {
   return (
     <ProfilePageLayout
