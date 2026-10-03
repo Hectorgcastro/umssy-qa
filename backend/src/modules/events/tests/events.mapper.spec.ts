@@ -5,22 +5,19 @@ import {
   mapEventToResponse,
   mapEventsToListResponse,
 } from '../mappers/events.mapper.js';
-import type { EventRawRecord } from '../types/events.types.js';
+import type { EventWithRelations } from '../types/events.types.js';
 
-function buildRecord(overrides: Partial<EventRawRecord> = {}): EventRawRecord {
+function buildRecord(overrides: Partial<EventWithRelations> = {}): EventWithRelations {
   return {
     id: 'uuid-1',
     title: 'Evento de prueba',
     description: 'Descripcion',
-    categoryId: 'cat-uuid',
-    instructorName: 'Juan Perez',
     eventDate: new Date('2026-06-15T00:00:00.000Z'),
     startTime: new Date('1970-01-01T09:00:00.000Z'),
     endTime: new Date('1970-01-01T11:30:00.000Z'),
     location: 'Sala A',
     capacity: 20,
     statusId: 'status-uuid',
-    modalityId: 'modality-uuid',
     category: { id: 'cat-uuid', name: 'Tecnologia' },
     _count: { registrations: 5 },
     ...overrides,
@@ -56,17 +53,15 @@ describe('mapEventToResponse', () => {
       id: 'uuid-1',
       title: 'Evento de prueba',
       description: 'Descripcion',
-      category: { id: 'cat-uuid', name: 'Tecnologia' },
-      instructorName: 'Juan Perez',
       eventDate: '2026-06-15',
       startTime: '09:00',
       endTime: '11:30',
       location: 'Sala A',
       capacity: 20,
       availableSpots: 15,
-      registrationCount: 5,
+      registeredCount: 5,
+      category: { id: 'cat-uuid', name: 'Tecnologia' },
       statusId: 'status-uuid',
-      modalityId: 'modality-uuid',
     });
   });
 
@@ -79,34 +74,40 @@ describe('mapEventToResponse', () => {
 });
 
 describe('mapEventsToListResponse', () => {
-  it('calcula offset como (page - 1) * limit', () => {
+  it('calcula offset y totalPages correctamente para lista paginada', () => {
     const records = [buildRecord()];
-    const result = mapEventsToListResponse(records, 3, 10);
+    const result = mapEventsToListResponse(records, 25, 3, 10);
     expect(result.offset).toBe(20);
     expect(result.page).toBe(3);
+    expect(result.data.total).toBe(25);
+    expect(result.data.limit).toBe(10);
+    expect(result.data.totalPages).toBe(3);
+    expect(result.data.items).toHaveLength(1);
+  });
+
+  it('calcula totalPages como 0 cuando total es 0', () => {
+    const result = mapEventsToListResponse([], 0, 1, 10);
+    expect(result.data.totalPages).toBe(0);
+    expect(result.data.total).toBe(0);
+    expect(result.data.items).toHaveLength(0);
   });
 
   it('calcula availableSpots correctamente', () => {
     const record = buildRecord({ capacity: 20, _count: { registrations: 5 } });
-    const result = mapEventsToListResponse([record], 1, 10);
-    expect(result.data[0].availableSpots).toBe(15);
+    const result = mapEventsToListResponse([record], 1, 1, 10);
+    expect(result.data.items[0].availableSpots).toBe(15);
+    expect(result.data.items[0].registeredCount).toBe(5);
   });
 
   it('pone availableSpots en 0 cuando capacity esta llena', () => {
     const record = buildRecord({ capacity: 5, _count: { registrations: 5 } });
-    const result = mapEventsToListResponse([record], 1, 10);
-    expect(result.data[0].availableSpots).toBe(0);
+    const result = mapEventsToListResponse([record], 1, 1, 10);
+    expect(result.data.items[0].availableSpots).toBe(0);
   });
 
   it('pone availableSpots null cuando capacity es null', () => {
     const record = buildRecord({ capacity: null, _count: { registrations: 3 } });
-    const result = mapEventsToListResponse([record], 1, 10);
-    expect(result.data[0].availableSpots).toBeNull();
-  });
-
-  it('devuelve lista vacia cuando no hay registros', () => {
-    const result = mapEventsToListResponse([], 1, 10);
-    expect(result.data).toHaveLength(0);
-    expect(result.offset).toBe(0);
+    const result = mapEventsToListResponse([record], 1, 1, 10);
+    expect(result.data.items[0].availableSpots).toBeNull();
   });
 });
