@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import * as downloadFileModule from "@/shared/utils/download-file";
 import { reportsService } from "../services/reports.service";
 import { RegisteredUsersReportView } from "./registered-users-report-view";
 
@@ -177,5 +178,41 @@ describe("RegisteredUsersReportView", () => {
     await waitFor(() => {
       expect(screen.getByText("No se pudo cargar el reporte de usuarios registrados.")).toBeDefined();
     });
+  });
+
+  it("exporta en CSV los usuarios del filtro seleccionado y descarga el archivo", async () => {
+    const user = userEvent.setup();
+    const file = new Blob(["Usuario"], { type: "text/csv" });
+    let resolveExport: (value: { file: Blob; fileName: string }) => void = () => undefined;
+    const exportSpy = vi.spyOn(reportsService, "exportRegisteredUsersCsv").mockImplementationOnce(
+      () => new Promise((resolve) => (resolveExport = resolve)),
+    );
+    const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
+    await renderLoadedView();
+    await selectUserType(user, "Empresa");
+
+    await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+    const exportingButton = screen.getByRole("button", { name: "Exportando..." }) as HTMLButtonElement;
+    expect(exportingButton.disabled).toBe(true);
+    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY" });
+
+    resolveExport({ file, fileName: "usuarios-registrados-2026-10-03.csv" });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Exportar CSV" })).toBeDefined();
+    });
+    expect(downloadSpy).toHaveBeenCalledWith(file, "usuarios-registrados-2026-10-03.csv");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("muestra un mensaje si falla la exportación", async () => {
+    vi.spyOn(reportsService, "exportRegisteredUsersCsv").mockRejectedValueOnce(new Error("Network error"));
+    const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile");
+    await renderLoadedView();
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe("No se pudo exportar el reporte. Inténtalo de nuevo.");
+    expect(downloadSpy).not.toHaveBeenCalled();
   });
 });

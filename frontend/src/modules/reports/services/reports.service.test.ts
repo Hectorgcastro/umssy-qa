@@ -35,3 +35,33 @@ describe("reportsService.getRejectedUsers", () => {
     });
   });
 });
+
+describe("reportsService.exportRegisteredUsersCsv", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("descarga el CSV como archivo con el filtro de tipo de usuario", async () => {
+    const file = new Blob(["Usuario"], { type: "text/csv" });
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+      data: file,
+      headers: { "content-disposition": 'attachment; filename="usuarios-registrados-2026-10-03.csv"' },
+    });
+
+    const result = await reportsService.exportRegisteredUsersCsv({ userType: "COMPANY" });
+
+    expect(getSpy).toHaveBeenCalledWith("/reports/registered-users/export", {
+      params: { userType: "COMPANY" },
+      responseType: "blob",
+    });
+    expect(result).toEqual({ file, fileName: "usuarios-registrados-2026-10-03.csv" });
+  });
+
+  it("usa un nombre por defecto si el backend no envía el nombre del archivo", async () => {
+    vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: new Blob([]), headers: {} });
+
+    const result = await reportsService.exportRegisteredUsersCsv({});
+
+    expect(result.fileName).toBe("usuarios-registrados.csv");
+  });
+});

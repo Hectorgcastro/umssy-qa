@@ -1,10 +1,18 @@
 import { apiClient } from "@/shared/services/api-client";
 import type { ApiResponse, PaginatedData } from "@/shared/types/api-response.types";
+import { getFileNameFromDisposition } from "@/shared/utils/download-file";
 import type { GeneratedReport, ReportHistoryParams } from "../types/generated-report.types";
-import type { RegisteredUser, RegisteredUsersParams } from "../types/registered-user.types";
+import type {
+  ExportedFile,
+  RegisteredUser,
+  RegisteredUsersExportParams,
+  RegisteredUsersParams,
+} from "../types/registered-user.types";
 import type { RejectedUser, RejectedUsersParams } from "../types/rejected-user.types";
 import { REGISTERED_USERS_MOCK } from "./registered-users.mock";
 import { REPORT_HISTORY_MOCK } from "./report-history.mock";
+
+const REGISTERED_USERS_CSV_FALLBACK_NAME = "usuarios-registrados.csv";
 
 export const reportsService = {
   // Mock temporal: reemplazar por apiClient.get("/reports/history", { params }) cuando exista el endpoint.
@@ -48,6 +56,21 @@ export const reportsService = {
       page,
       detail: "Usuarios registrados obtenidos correctamente",
       ok: true,
+    };
+  },
+
+  exportRegisteredUsersCsv: async ({ userType }: RegisteredUsersExportParams): Promise<ExportedFile> => {
+    const response = await apiClient.get<Blob>("/reports/registered-users/export", {
+      params: { userType },
+      responseType: "blob",
+    });
+
+    return {
+      file: response.data,
+      fileName: getFileNameFromDisposition(
+        response.headers["content-disposition"] as string | undefined,
+        REGISTERED_USERS_CSV_FALLBACK_NAME,
+      ),
     };
   },
 
