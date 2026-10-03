@@ -27,6 +27,18 @@ function buildResponse(page: number, limit: number, search = ""): ApiResponse<Pa
   };
 }
 
+function getSearchInput() {
+  return screen.getByPlaceholderText<HTMLInputElement>("Buscar por correo electrónico");
+}
+
+// Escribe en el buscador y espera a que la tabla muestre el resultado de la búsqueda.
+async function searchFor(value: string, expectedSummary: string) {
+  fireEvent.change(getSearchInput(), { target: { value } });
+  await waitFor(() => {
+    expect(screen.getByText(expectedSummary)).toBeDefined();
+  });
+}
+
 describe("RejectedUsersReportView", () => {
   beforeEach(() => {
     vi.spyOn(reportsService, "getRejectedUsers").mockImplementation(async ({ page, limit, search }) =>
@@ -44,7 +56,7 @@ describe("RejectedUsersReportView", () => {
     render(<RejectedUsersReportView />);
 
     expect(screen.getByRole("heading", { name: "Reporte de usuarios rechazados" })).toBeDefined();
-    expect(screen.getByPlaceholderText("Buscar por nombre, correo o identificador")).toBeDefined();
+    expect(screen.getByPlaceholderText("Buscar por correo electrónico")).toBeDefined();
     expect(screen.getByRole("button", { name: "Actualizar" })).toBeDefined();
     expect(screen.getByRole("button", { name: "Exportar CSV" })).toBeDefined();
     expect(screen.getAllByTestId("skeleton-row")).toHaveLength(5);
@@ -83,13 +95,18 @@ describe("RejectedUsersReportView", () => {
     });
 
     vi.useFakeTimers();
-    fireEvent.change(screen.getByPlaceholderText("Buscar por nombre, correo o identificador"), {
+    fireEvent.change(screen.getByPlaceholderText("Buscar por correo electrónico"), {
       target: { value: " juan.perez@ " },
     });
     expect(reportsService.getRejectedUsers).not.toHaveBeenCalledWith(expect.objectContaining({ search: "juan.perez@" }));
 
+    // Espera ~300 ms después de dejar de escribir antes de consultar.
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(400);
+      await vi.advanceTimersByTimeAsync(299);
+    });
+    expect(reportsService.getRejectedUsers).not.toHaveBeenCalledWith(expect.objectContaining({ search: "juan.perez@" }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
     });
     vi.useRealTimers();
 
@@ -101,7 +118,7 @@ describe("RejectedUsersReportView", () => {
 
   it("limpia la búsqueda con el botón de la x", async () => {
     render(<RejectedUsersReportView />);
-    const searchInput = screen.getByPlaceholderText<HTMLInputElement>("Buscar por nombre, correo o identificador");
+    const searchInput = screen.getByPlaceholderText<HTMLInputElement>("Buscar por correo electrónico");
 
     expect(screen.queryByRole("button", { name: "Limpiar búsqueda" })).toBeNull();
     fireEvent.change(searchInput, { target: { value: "juan" } });
@@ -111,22 +128,22 @@ describe("RejectedUsersReportView", () => {
     expect(screen.queryByRole("button", { name: "Limpiar búsqueda" })).toBeNull();
   });
 
-  it.each([
-    { searchTerm: "noexiste@correo.com", expected: "No se encontró ningún usuario con el correo" },
-    { searchTerm: "Pedro Ninguno", expected: "No se encontró ningún usuario con el nombre" },
-    { searchTerm: "999999999", expected: "No se encontró ningún usuario con el identificador" },
-  ])('muestra "$expected" cuando la búsqueda no encuentra usuarios', async ({ searchTerm, expected }) => {
-    render(<RejectedUsersReportView />);
+  // El buscador solo busca por correo: un nombre o un identificador no encuentran usuarios.
+  it.each(["noexiste@correo.com", "Juan Carlos", "201900000"])(
+    'muestra el aviso del correo cuando "%s" no encuentra usuarios',
+    async (searchTerm) => {
+      render(<RejectedUsersReportView />);
 
-    fireEvent.change(screen.getByPlaceholderText("Buscar por nombre, correo o identificador"), {
-      target: { value: searchTerm },
-    });
+      fireEvent.change(screen.getByPlaceholderText("Buscar por correo electrónico"), {
+        target: { value: searchTerm },
+      });
 
-    await waitFor(() => {
-      expect(screen.getByRole("status").textContent).toBe(expected);
-    });
-    expect(screen.getByText("Mostrando 0-0 de 0 usuarios")).toBeDefined();
-  });
+      await waitFor(() => {
+        expect(screen.getByRole("status").textContent).toBe("No se encontró ningún usuario con el correo");
+      });
+      expect(screen.getByText("Mostrando 0-0 de 0 usuarios")).toBeDefined();
+    },
+  );
 
   it("vuelve a cargar los datos al presionar Actualizar", async () => {
     render(<RejectedUsersReportView />);
@@ -141,6 +158,55 @@ describe("RejectedUsersReportView", () => {
       expect(screen.getByText("Juan Carlos Peres Rojas")).toBeDefined();
     });
     expect(reportsService.getRejectedUsers).toHaveBeenCalledTimes(2);
+  });
+
+  it("conserva el texto buscado al presionar Actualizar", async () => {
+    render(<RejectedUsersReportView />);
+    await searchFor("juan.perez@", "Mostrando 1-1 de 1 usuarios");
+
+    fireEvent.click(screen.getByRole("button", { name: "Actualizar" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 1-1 de 1 usuarios")).toBeDefined();
+    });
+    expect(getSearchInput().value).toBe("juan.perez@");
+    expect(reportsService.getRejectedUsers).toHaveBeenLastCalledWith({ page: 1, limit: 10, search: "juan.perez@" });
+  });
+
+  it("conserva el texto buscado al cambiar de página", async () => {
+    render(<RejectedUsersReportView />);
+    await searchFor("usuario", "Mostrando 1-10 de 23 usuarios");
+
+    fireEvent.click(screen.getByRole("button", { name: "Página 2" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 11-20 de 23 usuarios")).toBeDefined();
+    });
+    expect(getSearchInput().value).toBe("usuario");
+    expect(reportsService.getRejectedUsers).toHaveBeenLastCalledWith({ page: 2, limit: 10, search: "usuario" });
+  });
+
+  it("muestra solo la página 1 cuando los resultados caben en una página", async () => {
+    render(<RejectedUsersReportView />);
+    await searchFor("juan.perez@", "Mostrando 1-1 de 1 usuarios");
+
+    const pageButtons = screen.getAllByRole("button", { name: /^Página \d+$/ });
+    expect(pageButtons.map((button) => button.textContent)).toEqual(["1"]);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Página siguiente" }).disabled).toBe(true);
+  });
+
+  it("al volver a entrar muestra la barra vacía y la lista completa", async () => {
+    const { unmount } = render(<RejectedUsersReportView />);
+    await searchFor("juan.perez@", "Mostrando 1-1 de 1 usuarios");
+
+    unmount();
+    render(<RejectedUsersReportView />);
+
+    expect(getSearchInput().value).toBe("");
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
+    });
+    expect(reportsService.getRejectedUsers).toHaveBeenLastCalledWith({ page: 1, limit: 10, search: "" });
   });
 
   it("muestra un mensaje cuando no hay usuarios rechazados", async () => {

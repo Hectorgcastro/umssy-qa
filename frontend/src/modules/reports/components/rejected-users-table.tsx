@@ -3,7 +3,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatDate } from "@/shared/utils/date.utils";
 import { USER_DOCUMENT_LABELS } from "../constants/registered-users.constants";
 import type { RejectedUser } from "../types/rejected-user.types";
-import { getNoResultsMessage } from "../utils/no-results-message";
 import { TableMessageRow, TableNoResultsRow, TableSkeletonRows } from "./table-state-rows";
 
 interface RejectedUsersTableProps {
@@ -28,7 +27,7 @@ export function RejectedUsersTable({ users, isLoading, errorMessage, searchTerm 
     }
 
     if (users.length === 0 && searchTerm) {
-      return <TableNoResultsRow columnCount={COLUMN_COUNT} message={getNoResultsMessage(searchTerm)} />;
+      return <TableNoResultsRow columnCount={COLUMN_COUNT} message="No se encontró ningún usuario con el correo" />;
     }
 
     if (users.length === 0) {

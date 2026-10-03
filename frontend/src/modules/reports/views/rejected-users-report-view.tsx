@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
-import { UserSearchInput } from "../components/user-search-input";
+import { EmailSearchInput } from "../components/email-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
 import { RefreshButton } from "../components/refresh-button";
 import { RejectedUsersTable } from "../components/rejected-users-table";
@@ -16,7 +16,7 @@ const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
   { label: "Reporte de usuarios rechazados" },
 ];
 
-const SEARCH_DEBOUNCE_MS = 400;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function RejectedUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,11 +40,8 @@ export function RejectedUsersReportView() {
       </header>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <UserSearchInput value={searchInput} onChange={handleSearchChange} />
-        <div className="flex flex-wrap items-center gap-3">
-          <RefreshButton label="Actualizar" onClick={refresh} isRefreshing={isLoading} />
-          <ExportCsvButton />
-        </div>
+        <EmailSearchInput value={searchInput} onChange={handleSearchChange} />
+        <ExportCsvButton />
       </div>
 
       <RejectedUsersTable
@@ -54,11 +51,16 @@ export function RejectedUsersReportView() {
         searchTerm={search}
       />
 
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-        <p className="text-sm text-text-secondary">
+      <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
+        <p className="text-center text-sm text-text-secondary md:text-left">
           {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
         </p>
-        <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        <div className="flex justify-center">
+          <RefreshButton label="Actualizar" onClick={refresh} isRefreshing={isLoading} />
+        </div>
+        <div className="flex justify-center md:justify-end">
+          <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </div>
       </div>
     </section>
   );
