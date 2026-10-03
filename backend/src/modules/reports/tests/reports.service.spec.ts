@@ -168,6 +168,28 @@ describe('ReportsService', () => {
 
       expect(result.items.map((user) => user.id)).toEqual(['g']);
     });
+
+    it('no busca por nombre ni por identificador', () => {
+      const service = buildService([
+        buildUser({
+          id: 'h',
+          fullName: 'Hugo Pardo',
+          email: 'contacto@example.com',
+          identifier: 'NIT-555',
+          registrationStatus: 'REJECTED',
+        }),
+      ]);
+
+      expect(
+        service.getRejectedUsers(rejectedQuery({ search: 'hugo' })).items,
+      ).toHaveLength(0);
+      expect(
+        service.getRejectedUsers(rejectedQuery({ search: 'nit-555' })).items,
+      ).toHaveLength(0);
+      expect(
+        service.getRejectedUsers(rejectedQuery({ search: 'contacto@' })).items,
+      ).toHaveLength(1);
+    });
   });
 
   it('usa los datos de prueba del repositorio por defecto', () => {

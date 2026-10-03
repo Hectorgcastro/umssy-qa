@@ -21,15 +21,13 @@ function normalizeText(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
-function matchesSearch(user: ReportUser, search?: string): boolean {
+function containsSearch(values: string[], search?: string): boolean {
   if (!search) {
     return true;
   }
 
   const term = normalizeText(search);
-  return [user.fullName, user.email, user.identifier].some((value) =>
-    normalizeText(value).includes(term),
-  );
+  return values.some((value) => normalizeText(value).includes(term));
 }
 
 function sortByNewest(users: ReportUser[]): ReportUser[] {
@@ -60,7 +58,12 @@ export class ReportsService {
           query.year === undefined ||
           new Date(user.registeredAt).getUTCFullYear() === query.year,
       )
-      .filter((user) => matchesSearch(user, query.search));
+      .filter((user) =>
+        containsSearch(
+          [user.fullName, user.email, user.identifier],
+          query.search,
+        ),
+      );
 
     return paginate(
       sortByNewest(users).map(toRegisteredUserResponse),
@@ -69,13 +72,14 @@ export class ReportsService {
     );
   }
 
+  // Usuarios rechazados: el buscador filtra solo por correo, según el diseño.
   getRejectedUsers(
     query: RejectedUsersQuery,
   ): PaginatedResult<RejectedUserResponse> {
     const users = this.reportUsersRepository
       .findAll()
       .filter((user) => user.registrationStatus === 'REJECTED')
-      .filter((user) => matchesSearch(user, query.search));
+      .filter((user) => containsSearch([user.email], query.search));
 
     return paginate(
       sortByNewest(users).map(toRejectedUserResponse),
