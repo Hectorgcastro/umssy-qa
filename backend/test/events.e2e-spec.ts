@@ -101,6 +101,8 @@ describe('EventsController (e2e)', () => {
       endTime: '11:00',
       availableSpots: 20,
       registeredCount: 10,
+      instructorName: 'Ana Garcia',
+      modalityId: 'modality-001',
       category: { id: 'cat-001', name: 'Tecnologia' },
     });
   });

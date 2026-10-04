@@ -32,6 +32,8 @@ export function mapEventToResponse(
     capacity: record.capacity,
     availableSpots,
     registeredCount: record._count.registrations,
+    instructorName: record.instructorName ?? null,
+    modalityId: record.modalityId ?? null,
     category: {
       id: record.category.id,
       name: record.category.name,

@@ -13,6 +13,8 @@ function buildRecord(): EventWithRelations {
     location: null,
     capacity: 10,
     statusId: 'status-1',
+    instructorName: null,
+    modalityId: 'modality-1',
     category: { id: 'cat-1', name: 'Tecnologia' },
     _count: { registrations: 3 },
   };
