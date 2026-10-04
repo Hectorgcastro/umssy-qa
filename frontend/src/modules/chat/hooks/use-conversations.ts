@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Conversation, ConversationFilter } from '../types/conversation.types';
-import { getConversations } from '../services/chat-api';
+import { User } from '../types/user.types';
+import { getConversations, getOrCreateConversation } from '../services/chat-api';
 
 const PAGE_SIZE = 10;
 
@@ -14,6 +15,7 @@ export function useConversations() {
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
+  const [pendingContactId, setPendingContactId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -122,6 +124,34 @@ export function useConversations() {
     });
   };
 
+  const startConversationWithContact = async (contactUser: User) => {
+  // Guard: ignore if another selection is already in flight (AC #13)
+  if (pendingContactId) return;
+
+  // Fast path: conversation with this contact already in session
+  const alreadyInList = conversationsData.find(
+    (conv) => conv.contact.id === contactUser.id
+  );
+  if (alreadyInList) {
+    handleSelectConversation(alreadyInList);
+    return;
+  }
+
+  setPendingContactId(contactUser.id);
+  try {
+    const conversation = await getOrCreateConversation(contactUser.id);
+
+    setConversationsData((prev) => {
+      const exists = prev.some((c) => c.id === conversation.id);
+      return exists ? prev : [conversation, ...prev];
+    });
+
+    setSelectedId(conversation.id);
+  } finally {
+    setPendingContactId(null);
+  }
+};
+
   return {
     conversations: paginatedConversations,
     totalCount: filteredConversations.length,
@@ -137,5 +167,6 @@ export function useConversations() {
     handleSelectConversation,
     clearSelectedConversation,
     simulateIncomingMessage,
+    startConversationWithContact, // Exportada para usarla en el ChatView
   };
 }

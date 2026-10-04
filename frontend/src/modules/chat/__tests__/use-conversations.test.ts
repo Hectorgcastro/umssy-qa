@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useConversations } from '../hooks/use-conversations';
 import * as chatApi from '../services/chat-api';
+import { User } from '../types/user.types';
+import { Conversation } from '../types/conversation.types';
 
 const mockList = [
   {
@@ -19,6 +21,16 @@ const mockList = [
     updatedAt: '2026-03-02T10:00:00Z',
   },
 ];
+
+const buildUser = (overrides: Partial<User> = {}): User => ({
+  id: 'u-default',
+  fullName: 'Default User',
+  role: 'GRADUATE',
+  avatarUrl: null,
+  headline: null,
+  isActive: true,
+  ...overrides,
+});
 
 describe('useConversations Hook', () => {
   it('debe cargar conversaciones, filtrar por texto y por no leidos', async () => {
@@ -127,4 +139,90 @@ describe('useConversations Hook', () => {
     expect(result.current.conversations.length).toBe(15);
     expect(result.current.hasMore).toBe(false);
   });
+
+  it('debe abrir la conversacion existente al iniciar chat con un contacto ya presente', async () => {
+  vi.spyOn(chatApi, 'getConversations').mockResolvedValue(mockList);
+  const existing = mockList[0];
+  const spy = vi.spyOn(chatApi, 'getOrCreateConversation').mockResolvedValue(existing);
+
+  const { result } = renderHook(() => useConversations());
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+  await act(async () => {
+    await result.current.startConversationWithContact(
+      buildUser({ id: existing.contact.id, fullName: existing.contact.fullName })
+    );
+  });
+
+  expect(result.current.selectedId).toBe(existing.id);
+  expect(spy).not.toHaveBeenCalled();
+
+  // No duplicados
+  const matches = result.current.conversations.filter(
+    (c) => c.contact.id === existing.contact.id
+  );
+  expect(matches.length).toBe(1);
 });
+
+it('debe crear y abrir una conversacion nueva sin duplicarla en la lista', async () => {
+  vi.spyOn(chatApi, 'getConversations').mockResolvedValue(mockList);
+
+  const brandNew = {
+    id: 'c-new',
+    contact: { id: 'u-new', fullName: 'Nuevo Contacto', avatarUrl: null, isOnline: false },
+    lastMessage: null,
+    unreadCount: 0,
+    updatedAt: new Date().toISOString(),
+  };
+  vi.spyOn(chatApi, 'getOrCreateConversation').mockResolvedValue(brandNew);
+
+  const { result } = renderHook(() => useConversations());
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+  await act(async () => {
+    await result.current.startConversationWithContact(
+      buildUser({ id: 'u-new', fullName: 'Nuevo Contacto' })
+    );
+  });
+
+  expect(result.current.selectedId).toBe('c-new');
+  expect(result.current.conversations.find((c) => c.id === 'c-new')).toBeDefined();
+});
+
+it('debe ignorar clics rapidos mientras una seleccion esta en proceso', async () => {
+  vi.spyOn(chatApi, 'getConversations').mockResolvedValue(mockList);
+
+  let resolveFirst: (value: Conversation) => void = () => {};
+const pendingPromise = new Promise<Conversation>((resolve) => {
+  resolveFirst = resolve;
+});
+const spy = vi
+  .spyOn(chatApi, 'getOrCreateConversation')
+  .mockReturnValue(pendingPromise);
+
+  const { result } = renderHook(() => useConversations());
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+  // primera llamada
+  act(() => {
+    result.current.startConversationWithContact(buildUser({ id: 'u-extra-1' }));
+  });
+
+  // ignorar seguna llamada
+  await act(async () => {
+    await result.current.startConversationWithContact(buildUser({ id: 'u-extra-2' }));
+  });
+
+  expect(spy).toHaveBeenCalledTimes(1);
+  expect(spy).toHaveBeenCalledWith('u-extra-1');
+
+  resolveFirst({
+    id: 'c-cleanup',
+    contact: { id: 'u-extra-1', fullName: 'X', avatarUrl: null, isOnline: false },
+    lastMessage: null,
+    unreadCount: 0,
+    updatedAt: '',
+  });
+});
+});
+
