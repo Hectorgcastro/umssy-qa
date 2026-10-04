@@ -8,6 +8,7 @@ import { AvailabilityModule } from './modules/availability/availability.module.j
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { ProfileModule } from './modules/profile/profile.module.js';
+import { EducationsModule } from './modules/educations/educations.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProfileModule } from './modules/profile/profile.module.js';
     AvailabilityModule,
     AuthModule,
     ProfileModule,
+    EducationsModule,
   ],
   controllers: [AppController],
   providers: [
