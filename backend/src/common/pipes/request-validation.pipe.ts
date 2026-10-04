@@ -10,10 +10,12 @@ export class RequestValidationPipe<T> implements PipeTransform<unknown, T> {
     const result = this.schema.safeParse(value);
 
     if (!result.success) {
-      const detail = result.error.issues
-        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-        .join('; ');
-      throw new RequestValidationException(detail);
+      throw new RequestValidationException(
+        result.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      );
     }
 
     return result.data;
