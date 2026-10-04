@@ -11,6 +11,7 @@ import {
   formatTimeRange,
 } from './event-card';
 import type { EventItem } from '../types/event.types';
+import { getEventRegistrationAvailability } from '../utils/event-registration-availability';
 
 type EventDetailPanelProps = {
   event: EventItem;
@@ -35,9 +36,19 @@ function DetailRow({
 }
 
 export function EventDetailPanel({ event }: EventDetailPanelProps) {
+  const availability = getEventRegistrationAvailability(event);
+  const hasValidCapacity = availability.state !== 'unknown';
   const { enrolledCount, capacity, progressPercentage } =
-    calculateEventCapacityStatus(event);
-  const availableSpots = event.availableSpots;
+    hasValidCapacity
+      ? calculateEventCapacityStatus(event)
+      : { enrolledCount: 0, capacity: null, progressPercentage: null };
+  const capacityDescription = !hasValidCapacity
+    ? 'Información de cupos no disponible.'
+    : availability.state === 'full'
+      ? 'No hay cupos disponibles.'
+      : capacity === null
+        ? 'Sin límite de cupos'
+        : `${availability.availableSpots} cupos disponibles`;
 
   return (
     <aside
@@ -98,33 +109,41 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
               Cupos
             </h3>
             <span className="text-xs font-semibold text-ink">
-              {capacity === null
-                ? `${enrolledCount} inscritos`
-                : `${enrolledCount} de ${capacity}`}
+              {!hasValidCapacity
+                ? 'Por confirmar'
+                : capacity === null
+                  ? `${enrolledCount} inscritos`
+                  : `${enrolledCount} de ${capacity}`}
             </span>
           </div>
-          <div
-            aria-label={`Ocupación del taller: ${progressPercentage ?? 0}%`}
-            aria-valuemax={100}
-            aria-valuemin={0}
-            aria-valuenow={progressPercentage ?? undefined}
-            className="h-1.5 overflow-hidden rounded-full bg-muted"
-            role="progressbar"
-          >
+          {progressPercentage !== null && (
             <div
-              className="h-full rounded-full bg-gold transition-[width]"
-              style={{ width: `${progressPercentage ?? 0}%` }}
-            />
-          </div>
-          <p className="text-xs text-text-secondary">
-            {capacity === null
-              ? 'Sin límite de cupos'
-              : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
+              aria-label={`Ocupación del taller: ${progressPercentage}%`}
+              aria-valuemax={100}
+              aria-valuemin={0}
+              aria-valuenow={progressPercentage}
+              className="h-1.5 overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+            >
+              <div
+                className={`h-full rounded-full transition-[width] ${availability.state === 'full' ? 'bg-accent' : 'bg-gold'}`}
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+          )}
+          <p
+            aria-live="polite"
+            className="text-xs text-text-secondary"
+            id="event-capacity-description"
+          >
+            {capacityDescription}
           </p>
         </section>
 
         <Button
-          className="mt-2 min-h-11 w-full bg-accent text-white hover:bg-danger"
+          aria-describedby="event-capacity-description"
+          className="mt-2 min-h-11 w-full bg-accent text-white hover:bg-danger disabled:cursor-not-allowed disabled:bg-muted disabled:text-text-secondary disabled:opacity-100"
+          disabled={availability.state !== 'available'}
           size="lg"
           type="button"
         >
