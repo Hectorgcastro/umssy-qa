@@ -32,7 +32,7 @@ export function RegisteredUsersReportView() {
   const lastVisibleItem = Math.min(currentPage * REGISTERED_USERS_PAGE_SIZE, totalItems);
 
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex  flex-1 flex-col gap-6">
       <header className="flex flex-col gap-2">
         <PageBreadcrumb items={BREADCRUMB_ITEMS} />
         <h1 className="font-tight text-3xl font-extrabold text-ink">Reporte de usuarios registrados</h1>
@@ -51,7 +51,7 @@ export function RegisteredUsersReportView() {
 
       <RegisteredUsersTable users={users} isLoading={isLoading} errorMessage={errorMessage} />
 
-      <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
+      <div className="mt-auto grid grid-cols-1 items-center gap-4 md:grid-cols-3">
         <p className="text-center text-sm text-text-secondary md:text-left">
           {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
         </p>

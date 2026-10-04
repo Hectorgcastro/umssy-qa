@@ -17,7 +17,7 @@ export function ReportHistoryView() {
   const { reports, totalPages, isLoading, errorMessage } = useReportHistory(currentPage);
 
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-1 flex-col gap-6">
       <header className="flex flex-col gap-2">
         <PageBreadcrumb items={BREADCRUMB_ITEMS} />
         <h1 className="font-tight text-3xl font-extrabold text-ink">Historial de Reportes Generados</h1>
@@ -25,7 +25,7 @@ export function ReportHistoryView() {
 
       <ReportHistoryTable reports={reports} isLoading={isLoading} errorMessage={errorMessage} />
 
-      <div className="flex justify-end">
+      <div className="mt-autoflex justify-end">
         <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </section>
