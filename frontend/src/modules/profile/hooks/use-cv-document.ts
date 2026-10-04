@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CV_ERROR_MESSAGES } from "../config/cv-error-messages.config";
+import { CV_ERROR_MESSAGES } from "../constants/cv-error-messages.constants";
 import { documentsService } from "../services/documents.service";
 import type { SavedCv } from "../types/saved-cv.types";
 import { getCvErrorMessage } from "../utils/get-cv-error-message";

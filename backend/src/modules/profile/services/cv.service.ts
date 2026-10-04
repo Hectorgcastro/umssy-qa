@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CV_VALIDATION_RULES } from '../constants/cv.constants.js';
 import { CvNotFoundException } from '../exceptions/cv-not-found.exception.js';
 import { ProfileNotFoundException } from '../exceptions/profile-not-found.exception.js';
 import { CvMapper } from '../mappers/cv.mapper.js';
@@ -7,14 +8,8 @@ import type { CvResponse } from '../responses/cv.response.js';
 import type { CvFileDownload } from '../types/cv-file-download.type.js';
 import type { CvMetadataRecord } from '../types/cv-metadata-record.type.js';
 import { FileStorage } from '../types/file-storage.type.js';
-import type { FileValidationRules } from '../types/file-validation-rules.type.js';
 import type { MulterFile } from '../types/multer-file.type.js';
 import { FileValidationService } from './file-validation.service.js';
-
-const cvValidationRules: FileValidationRules = {
-  allowedTypes: ['pdf'],
-  maxSizeBytes: 5 * 1024 * 1024,
-};
 
 @Injectable()
 export class CvService {
@@ -49,7 +44,7 @@ export class CvService {
 
     const validatedFile = this.fileValidationService.validate(
       file ? this.cvMapper.toUploadedFile(file) : undefined,
-      cvValidationRules,
+      CV_VALIDATION_RULES,
     );
 
     await this.fileStorage.save(userId, validatedFile.buffer);

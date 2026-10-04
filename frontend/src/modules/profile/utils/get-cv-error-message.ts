@@ -1,4 +1,4 @@
-import { CV_ERROR_MESSAGES_BY_STATUS } from "../config/cv-error-messages.config";
+import { CV_ERROR_MESSAGES_BY_STATUS } from "../constants/cv-error-messages.constants";
 import type { HttpError } from "../types/http-error.types";
 
 export function getCvErrorMessage(error: unknown, fallbackMessage: string): string {
