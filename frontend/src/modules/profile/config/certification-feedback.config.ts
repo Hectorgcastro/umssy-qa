@@ -3,4 +3,13 @@ export const CERTIFICATION_FEEDBACK_MESSAGES = {
   createError: "No se pudo agregar la certificación. Inténtalo de nuevo.",
   updateSuccess: "Certificación actualizada correctamente.",
   updateError: "No se pudo actualizar la certificación. Inténtalo de nuevo.",
+  loadError: "No se pudieron cargar tus certificaciones. Inténtalo de nuevo.",
+  deleteSuccess: "Certificación eliminada correctamente.",
+  deleteError: "No se pudo eliminar la certificación. Inténtalo de nuevo.",
+};
+
+export const CERTIFICATION_DELETE_DIALOG_TEXTS = {
+  title: "Eliminar certificación",
+  getMessage: (name: string) =>
+    `Se eliminará "${name}" de tu perfil. Esta acción no se puede deshacer.`,
 };

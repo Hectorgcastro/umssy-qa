@@ -32,6 +32,9 @@ describe('EducationsRepository', () => {
   const education = {
     findMany: vi.fn(),
     findFirst: vi.fn(),
+    create: vi.fn(),
+    updateManyAndReturn: vi.fn(),
+    deleteMany: vi.fn(),
   };
   let repository: EducationsRepository;
 
@@ -92,4 +95,57 @@ describe('EducationsRepository', () => {
       select: expectedSelect,
     });
   });
+
+  it('creates an education attached to the authenticated user', async () => {
+    const data = {
+      institution: record.institution,
+      degree: record.degree,
+      startDate: record.startDate,
+    };
+    education.create.mockResolvedValue(record);
+
+    await expect(repository.create(userId, data)).resolves.toEqual(record);
+    expect(education.create).toHaveBeenCalledWith({
+      data: { ...data, userId },
+      select: expectedSelect,
+    });
+  });
+
+  it('scopes updates to the owner and returns only selected fields', async () => {
+    const data = { degree: 'Updated degree', endDate: null };
+    education.updateManyAndReturn.mockResolvedValue([{ ...record, ...data }]);
+
+    await expect(repository.update(educationId, userId, data)).resolves.toEqual(
+      {
+        ...record,
+        ...data,
+      },
+    );
+    expect(education.updateManyAndReturn).toHaveBeenCalledWith({
+      where: { id: educationId, userId },
+      data,
+      select: expectedSelect,
+    });
+  });
+
+  it('returns null when no owned record can be updated', async () => {
+    education.updateManyAndReturn.mockResolvedValue([]);
+    await expect(
+      repository.update(educationId, userId, { degree: 'Updated' }),
+    ).resolves.toBeNull();
+  });
+
+  it.each([0, 1])(
+    'reports deletion using the affected row count %i',
+    async (count) => {
+      education.deleteMany.mockResolvedValue({ count });
+
+      await expect(repository.delete(educationId, userId)).resolves.toBe(
+        count === 1,
+      );
+      expect(education.deleteMany).toHaveBeenCalledWith({
+        where: { id: educationId, userId },
+      });
+    },
+  );
 });
