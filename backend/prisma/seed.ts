@@ -35,6 +35,25 @@ async function main() {
     await prisma.userRole.create({ data: { userId: testUser.id, roleId: tituladoRole.id } });
   }
 
+  // Usuario independiente para comprobar el estado vacío de Mis inscripciones.
+  const emptyUser = await prisma.user.upsert({
+    where: { email: 'sinpases@umss.edu.bo' },
+    update: { password },
+    create: {
+      firstName: 'Usuario',
+      lastName: 'Sin Pases',
+      email: 'sinpases@umss.edu.bo',
+      password,
+    },
+  });
+  const emptyUserRole = await prisma.userRole.findFirst({
+    where: { userId: emptyUser.id, roleId: tituladoRole.id, deletedAt: null },
+  });
+  if (!emptyUserRole) {
+    await prisma.userRole.create({ data: { userId: emptyUser.id, roleId: tituladoRole.id } });
+  }
+  console.log('Usuario para estado vacío: sinpases@umss.edu.bo / Prueba123 (rol: titulado)');
+
   console.log('Roles creados:', ROLE_NAMES.join(', '));
   console.log('Usuario de prueba: prueba@umss.edu.bo / Prueba123 (rol: titulado)');
 

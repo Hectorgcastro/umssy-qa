@@ -5,6 +5,7 @@ import axios from 'axios';
 import Link from 'next/link';
 import { PassCard } from '../components/pass-card';
 import { PassDetail } from '../components/pass-detail';
+import { MyPassesEmptyState } from '../components/my-passes-empty-state';
 import { registrationsService } from '../services/registrations.service';
 import { formatRegistrationDate, type Registration } from '../types/registration.types';
 
@@ -48,10 +49,7 @@ export function MyPassesView() {
             <button onClick={() => { setError(null); setIsLoading(true); setReload((value) => value + 1); }}>Reintentar</button>
           </div>
         ) : registrations.length === 0 ? (
-          <div className="space-y-3">
-            <p>Aún no tienes inscripciones.</p>
-            <Link href="/events" className="underline">Explorar talleres disponibles</Link>
-          </div>
+          <MyPassesEmptyState />
         ) : (
           <div className="max-w-md space-y-4">
             {registrations.map((item) => <PassCard key={item.id} title={item.eventName}
