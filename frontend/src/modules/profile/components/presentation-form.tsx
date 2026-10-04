@@ -23,6 +23,7 @@ import { WritingTipsCard } from "./writing-tips-card";
 export function PresentationForm({
   initialValues,
   fullName,
+  photoUrl,
   isSaving = false,
   onSubmit,
 }: PresentationFormProps) {
@@ -121,7 +122,7 @@ export function PresentationForm({
       </SectionCard>
 
       <div className="flex flex-col gap-6">
-        <ProfilePreviewCard fullName={fullName} presentation={values} />
+        <ProfilePreviewCard fullName={fullName} photoUrl={photoUrl} presentation={values} />
         <WritingTipsCard />
       </div>
     </div>
