@@ -50,14 +50,14 @@ describe("CertificationCard", () => {
     expect(container.querySelector("script")).toBeNull();
   });
 
-  it("renders the name, the organization and the month of the issue date", () => {
+  it("renders the name, the organization and the issue date", () => {
     renderCard();
 
     expect(
       screen.getByRole("heading", { name: "AWS Certified Cloud Practitioner" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Amazon Web Services · Obtenida en/)).toBeInTheDocument();
-    expect(screen.getByText("mar 2025")).toHaveAttribute("dateTime", "2025-03-07");
+    expect(screen.getByText(/Amazon Web Services · Obtenida el/)).toBeInTheDocument();
+    expect(screen.getByText("7 mar 2025")).toHaveAttribute("dateTime", "2025-03-07");
   });
 
   it("notifies when the certification is edited", async () => {

@@ -60,7 +60,7 @@ const CERTIFICATE_PDF = new File(["certificate"], "certificate.pdf", { type: "ap
 async function fillCertificationForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/Nombre de la certificación/), "CCNA");
   await user.type(screen.getByLabelText(/Entidad emisora/), "Cisco");
-  fireEvent.change(screen.getByLabelText(/Fecha de obtención/), { target: { value: "2024-01" } });
+  fireEvent.change(screen.getByLabelText(/Fecha de obtención/), { target: { value: "2024-01-15" } });
 }
 
 async function linkDocument(user: ReturnType<typeof userEvent.setup>, certificationName: string) {
@@ -136,7 +136,7 @@ describe("CertificationsView", () => {
     expect(certificationsService.createCertification).toHaveBeenCalledWith({
       name: "CCNA",
       issuingOrganization: "Cisco",
-      issueDate: "2024-01-01",
+      issueDate: "2024-01-15",
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       CERTIFICATION_FEEDBACK_MESSAGES.createSuccess,
@@ -169,7 +169,7 @@ describe("CertificationsView", () => {
 
     expect(screen.getByRole("form", { name: "Editar certificación" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Nombre de la certificación/)).toHaveValue("Scrum Master");
-    expect(screen.getByLabelText(/Fecha de obtención/)).toHaveValue("2022-05");
+    expect(screen.getByLabelText(/Fecha de obtención/)).toHaveValue("2022-05-10");
 
     await user.clear(screen.getByLabelText(/Nombre de la certificación/));
     await user.type(screen.getByLabelText(/Nombre de la certificación/), "Professional Scrum Master");
@@ -178,7 +178,7 @@ describe("CertificationsView", () => {
     expect(certificationsService.updateCertification).toHaveBeenCalledWith("scrum", {
       name: "Professional Scrum Master",
       issuingOrganization: "Scrum Alliance",
-      issueDate: "2022-05-01",
+      issueDate: "2022-05-10",
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       CERTIFICATION_FEEDBACK_MESSAGES.updateSuccess,
