@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import {
+  CV_FILE_EXTENSION,
+  CV_FILE_NAME_PREFIX,
+  CV_MIME_TYPE,
+  DIACRITIC_MARKS_PATTERN,
+  EDGE_HYPHENS_PATTERN,
+  NON_ALPHANUMERIC_PATTERN,
+} from '../constants/cv.constants.js';
 import type { CvResponse } from '../responses/cv.response.js';
 import type { CvFileDownload } from '../types/cv-file-download.type.js';
 import type { CvMetadataRecord } from '../types/cv-metadata-record.type.js';
 import type { MulterFile } from '../types/multer-file.type.js';
 import type { UploadedFile } from '../types/uploaded-file.type.js';
-
-const cvMimeType = 'application/pdf';
-
-const cvFileNamePrefix = 'CV';
-
-const cvFileExtension = '.pdf';
 
 @Injectable()
 export class CvMapper {
@@ -29,7 +31,7 @@ export class CvMapper {
 
     return {
       fileName: this.buildFileName(record),
-      fileType: cvMimeType,
+      fileType: CV_MIME_TYPE,
       sizeInBytes: record.sizeBytes,
       updatedAt: record.updatedAt.toISOString(),
     };
@@ -39,7 +41,7 @@ export class CvMapper {
     return {
       content,
       fileName: this.buildFileName(record),
-      mimeType: cvMimeType,
+      mimeType: CV_MIME_TYPE,
     };
   }
 
@@ -48,14 +50,14 @@ export class CvMapper {
       .map((part) => this.toAsciiSlug(part))
       .filter((part) => part.length > 0);
 
-    return [cvFileNamePrefix, ...nameParts].join('-') + cvFileExtension;
+    return [CV_FILE_NAME_PREFIX, ...nameParts].join('-') + CV_FILE_EXTENSION;
   }
 
   private toAsciiSlug(value: string): string {
     return value
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^A-Za-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(DIACRITIC_MARKS_PATTERN, '')
+      .replace(NON_ALPHANUMERIC_PATTERN, '-')
+      .replace(EDGE_HYPHENS_PATTERN, '');
   }
 }
