@@ -1,7 +1,7 @@
 {
-  "name": "PWA Egresados UMSS",
+  "name": "UMSSY",
   "short_name": "UMSSY",
-  "description": "Comunidad verificada de egresados de Ingenieria de Sistemas de la UMSS",
+  "description": "Comunidad verificada de titulados de Ingeniería en Sistemas e Informática de la UMSS",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
