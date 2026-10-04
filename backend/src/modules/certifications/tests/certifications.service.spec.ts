@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CertificationNotFoundException } from '../exceptions/certification-not-found.exception.js';
 import { CertificationMapper } from '../mappers/certification.mapper.js';
+import { CertificationDocumentsRepository } from '../repositories/certification-documents.repository.js';
 import { CertificationsRepository } from '../repositories/certifications.repository.js';
 import { CertificationsService } from '../services/certifications.service.js';
 import type { CertificationRecord } from '../types/certification-record.type.js';
@@ -31,6 +32,10 @@ describe('CertificationsService', () => {
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
   };
+  let documentsRepository: {
+    hasDocument: ReturnType<typeof vi.fn>;
+    findIdsWithDocument: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     repository = {
@@ -40,8 +45,13 @@ describe('CertificationsService', () => {
       update: vi.fn(),
       delete: vi.fn(),
     };
+    documentsRepository = {
+      hasDocument: vi.fn().mockResolvedValue(false),
+      findIdsWithDocument: vi.fn().mockResolvedValue(new Set<string>()),
+    };
     service = new CertificationsService(
       repository as unknown as CertificationsRepository,
+      documentsRepository as unknown as CertificationDocumentsRepository,
       new CertificationMapper(),
     );
   });
@@ -62,6 +72,7 @@ describe('CertificationsService', () => {
       name: 'AWS Solutions Architect',
       issuingOrganization: 'Amazon',
       issueDate: '2024-05-10',
+      hasDocument: false,
       createdAt: '2024-05-11T10:00:00.000Z',
       updatedAt: '2024-05-11T10:00:00.000Z',
     });
@@ -77,6 +88,19 @@ describe('CertificationsService', () => {
 
     expect(repository.findManyByUserId).toHaveBeenCalledWith(userId);
     expect(result.map((item) => item.id)).toEqual(['a', 'b']);
+  });
+
+  it('flags the certifications that have a document in the list', async () => {
+    repository.findManyByUserId.mockResolvedValue([
+      buildRecord({ id: 'a' }),
+      buildRecord({ id: 'b' }),
+    ]);
+    documentsRepository.findIdsWithDocument.mockResolvedValue(new Set(['b']));
+
+    const result = await service.findAll(userId);
+
+    expect(documentsRepository.findIdsWithDocument).toHaveBeenCalledWith(userId);
+    expect(result.map((item) => item.hasDocument)).toEqual([false, true]);
   });
 
   it('returns an empty list when the user has no certifications', async () => {
@@ -97,6 +121,19 @@ describe('CertificationsService', () => {
       name: 'Updated name',
     });
     expect(result.name).toBe('Updated name');
+  });
+
+  it('keeps the document flag of the certification when updating it', async () => {
+    repository.findById.mockResolvedValue(buildRecord());
+    repository.update.mockResolvedValue(buildRecord());
+    documentsRepository.hasDocument.mockResolvedValue(true);
+
+    const result = await service.update(userId, certificationId, {
+      name: 'Updated name',
+    });
+
+    expect(documentsRepository.hasDocument).toHaveBeenCalledWith(certificationId);
+    expect(result.hasDocument).toBe(true);
   });
 
   it('throws not found when updating a missing certification', async () => {
