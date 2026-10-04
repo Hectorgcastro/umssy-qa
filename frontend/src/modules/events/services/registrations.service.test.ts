@@ -7,6 +7,7 @@ vi.mock('@/shared/services/api-client', () => ({ apiClient: { defaults: { baseUR
 
 describe('registrationsService', () => {
   beforeEach(() => {
+    apiClient.defaults.baseURL = 'http://localhost/api';
     const values = new Map<string, string>();
     vi.stubGlobal('sessionStorage', { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value) });
     vi.clearAllMocks();
@@ -20,6 +21,12 @@ describe('registrationsService', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/event-registrations/me', {
       headers: { Authorization: 'Bearer signed-token' }, signal,
     });
+  });
+  it('rechaza la URL ausente sin enviar la solicitud', async () => {
+    sessionStorage.setItem('accessToken', 'token');
+    apiClient.defaults.baseURL = undefined;
+    await expect(registrationsService.getMine()).rejects.toThrow('URL del backend');
+    expect(apiClient.get).not.toHaveBeenCalled();
   });
   it('no consulta sin sesión', async () => {
     await expect(registrationsService.getMine()).rejects.toThrow('Debes iniciar sesión');
