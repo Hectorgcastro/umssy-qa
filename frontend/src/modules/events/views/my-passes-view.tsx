@@ -1,40 +1,70 @@
 "use client";
 
-import { useState } from "react";
-import { PassCard } from "../components/pass-card";
-import { PassDetail } from "../components/pass-detail";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import Link from 'next/link';
+import { PassCard } from '../components/pass-card';
+import { PassDetail } from '../components/pass-detail';
+import { registrationsService } from '../services/registrations.service';
+import { formatRegistrationDate, type Registration } from '../types/registration.types';
 
 export function MyPassesView() {
-  const [selectedPass, setSelectedPass] = useState(1);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    registrationsService.getMine(controller.signal).then((items) => {
+      if (controller.signal.aborted) return;
+      setRegistrations(items);
+    }).catch((cause: unknown) => {
+      if (controller.signal.aborted) return;
+      setError(axios.isAxiosError(cause) && cause.response?.status === 401
+        ? 'La sesión ha expirado. Inicia sesión nuevamente.'
+        : cause instanceof Error && !axios.isAxiosError(cause)
+          ? cause.message : 'No se pudieron cargar tus inscripciones. Inténtalo nuevamente.');
+    }).finally(() => {
+      if (!controller.signal.aborted) setIsLoading(false);
+    });
+    return () => controller.abort();
+  }, [reload]);
+
+  const selected = registrations.find((item) => item.id === selectedId) ?? registrations[0];
 
   return (
-    // Cambiamos bg-surface por bg-transparent para que se funda con la barra superior
     <div className="flex flex-col lg:flex-row h-full w-full min-h-screen bg-transparent">
-      
-      {/* Columna Izquierda: Lista de Pases */}
-      {/* Redujimos un poco el padding superior (pt-4) para que no quede tan separado del menú */}
       <div className="flex-1 p-8 pt-4 lg:p-12 lg:pt-6">
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-ink mb-1">Mis Inscripciones</h1>
-          <p className="text-text-secondary text-sm">1 pase · disponible sin Internet</p>
+          <p className="text-text-secondary text-sm">{registrations.length} {registrations.length === 1 ? 'pase' : 'pases'}</p>
         </div>
-
-        <div className="max-w-md">
-          <PassCard 
-            title="Desarrollo Web con React"
-            date="jueves, 15 de octubre"
-            status="Confirmada"
-            isSelected={selectedPass === 1}
-            onClick={() => setSelectedPass(1)}
-          />
+        {isLoading ? <p role="status">Cargando tus inscripciones...</p> : error ? (
+          <div role="alert" className="space-y-3">
+            <p>{error}</p>
+            <Link href="/login" className="underline mr-4">Iniciar sesión</Link>
+            <button onClick={() => { setError(null); setIsLoading(true); setReload((value) => value + 1); }}>Reintentar</button>
+          </div>
+        ) : registrations.length === 0 ? (
+          <div className="space-y-3">
+            <p>Aún no tienes inscripciones.</p>
+            <Link href="/events" className="underline">Explorar talleres disponibles</Link>
+          </div>
+        ) : (
+          <div className="max-w-md space-y-4">
+            {registrations.map((item) => <PassCard key={item.id} title={item.eventName}
+              date={formatRegistrationDate(item.date)} status={item.status}
+              isSelected={selected?.id === item.id} onClick={() => setSelectedId(item.id)} />)}
+          </div>
+        )}
+      </div>
+      {!isLoading && !error && selected && (
+        <div className="w-full lg:w-[480px] border-l border-border bg-surface-soft/30 p-8 pt-4 lg:p-12 lg:pt-6 shrink-0">
+          <PassDetail registration={selected} />
         </div>
-      </div>
-
-      {/* Columna Derecha: Detalle y QR */}
-      <div className="w-full lg:w-[480px] border-l border-border bg-surface-soft/30 p-8 pt-4 lg:p-12 lg:pt-6 shrink-0">
-        <PassDetail />
-      </div>
-
+      )}
     </div>
   );
 }
