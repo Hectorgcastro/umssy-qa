@@ -25,7 +25,7 @@ export function ReportHistoryView() {
 
       <ReportHistoryTable reports={reports} isLoading={isLoading} errorMessage={errorMessage} />
 
-      <div className="mt-autoflex justify-end">
+      <div className="mt-auto flex justify-end">
         <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </section>
