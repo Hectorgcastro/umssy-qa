@@ -20,11 +20,11 @@ import {
 } from "../../constants/week-grid.constants";
 import type { AvailabilityBlock } from "../../types/availability-block.types";
 import type { WeekGridProps } from "../../types/week-grid-props.types";
-import { getBlockVerticalPosition, getWeekDayIndex } from "./week-grid.utils";
-
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
+import {
+  capitalize,
+  getBlockVerticalPosition,
+  getWeekDayIndex,
+} from "../../utils/week-grid.utils";
 
 export function WeekGrid({
   blocks,

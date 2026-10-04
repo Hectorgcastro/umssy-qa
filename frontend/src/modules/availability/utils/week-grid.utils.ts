@@ -1,6 +1,6 @@
 import { toBoliviaTime } from "@/shared/utils/date-time";
 import type { WeekRange } from "@/shared/types/week-range.types";
-import { HOUR_HEIGHT_PX } from "../../constants/week-grid.constants";
+import { HOUR_HEIGHT_PX } from "../constants/week-grid.constants";
 
 export function getWeekDayIndex(startAt: string, weekRange: WeekRange): number | null {
   const startMs = new Date(startAt).getTime();
@@ -30,4 +30,8 @@ export function getBlockVerticalPosition(
     topPx: startMinutes * pxPerMinute,
     heightPx: Math.max(0, endMinutes - startMinutes) * pxPerMinute,
   };
+}
+
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
