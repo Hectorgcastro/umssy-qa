@@ -13,7 +13,6 @@ import type {
   RejectedUsersExportParams,
   RejectedUsersParams,
 } from "../types/rejected-user.types";
-import { REGISTERED_USERS_MOCK } from "./registered-users.mock";
 
 const REGISTERED_USERS_CSV_FALLBACK_NAME = "usuarios-registrados.csv";
 const REJECTED_USERS_CSV_FALLBACK_NAME = "usuarios-rechazados.csv";
@@ -43,28 +42,16 @@ export const reportsService = {
     return data;
   },
 
-  // Mock temporal: reemplazar por apiClient.get("/reports/registered-users", { params }) cuando exista el endpoint.
   getRegisteredUsers: async ({
     page,
     limit,
     userType,
   }: RegisteredUsersParams): Promise<ApiResponse<PaginatedData<RegisteredUser>>> => {
-    const offset = (page - 1) * limit;
-    const filteredUsers = userType
-      ? REGISTERED_USERS_MOCK.filter((user) => user.userType === userType)
-      : REGISTERED_USERS_MOCK;
+    const { data } = await apiClient.get<ApiResponse<PaginatedData<RegisteredUser>>>("/reports/registered-users", {
+      params: { page, limit, userType },
+    });
 
-    return {
-      statusCode: 200,
-      data: {
-        items: filteredUsers.slice(offset, offset + limit),
-        totalItems: filteredUsers.length,
-      },
-      offset,
-      page,
-      detail: "Usuarios registrados obtenidos correctamente",
-      ok: true,
-    };
+    return data;
   },
 
   exportRegisteredUsersCsv: ({ userType }: RegisteredUsersExportParams): Promise<ExportedFile> =>

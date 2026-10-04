@@ -1,4 +1,3 @@
-import { GENERATED_REPORTS_MOCK } from '../mocks/generated-reports.mock.js';
 import { GeneratedReportsRepository } from '../repositories/generated-reports.repository.js';
 import { reportHistoryQuerySchema } from '../requests/report-history.schema.js';
 import { ReportHistoryService } from '../services/report-history.service.js';
@@ -131,11 +130,10 @@ describe('ReportHistoryService', () => {
       expect(result).toEqual({ items: [], totalItems: 0, page: 1, limit: 10 });
     });
 
-    it('usa los datos de prueba del repositorio por defecto', () => {
+    it('el repositorio empieza sin reportes', () => {
       const result = buildServiceWithStorage().getReportHistory(historyQuery());
 
-      expect(result.totalItems).toBe(12);
-      expect(result.items[0].fileName).toBe('Lista_Usuarios_Activos_2026');
+      expect(result.totalItems).toBe(0);
     });
   });
 
@@ -166,7 +164,7 @@ describe('ReportHistoryService', () => {
       });
       const result = service.getReportHistory(historyQuery());
 
-      expect(result.totalItems).toBe(13);
+      expect(result.totalItems).toBe(1);
       expect(result.items[0]).toEqual(report);
     });
 
@@ -208,14 +206,14 @@ describe('ReportHistoryService', () => {
       const history = service.getReportHistory(historyQuery({ limit: '100' }));
 
       expect(new Set(registered.map((report) => report.id)).size).toBe(3);
-      expect(history.totalItems).toBe(15);
+      expect(history.totalItems).toBe(3);
       registered.forEach((report, index) => {
         expect(report).toMatchObject(inputs[index]);
         expect(history.items).toContainEqual(report);
       });
     });
 
-    it('no comparte registros entre instancias ni modifica los datos de prueba', () => {
+    it('no comparte registros entre instancias', () => {
       buildServiceWithStorage().registerGeneratedReport({
         fileName: 'Temporal',
         reportType: 'GRADUATES',
@@ -223,8 +221,7 @@ describe('ReportHistoryService', () => {
 
       const result = buildServiceWithStorage().getReportHistory(historyQuery());
 
-      expect(result.totalItems).toBe(12);
-      expect(GENERATED_REPORTS_MOCK).toHaveLength(12);
+      expect(result.totalItems).toBe(0);
     });
   });
 });

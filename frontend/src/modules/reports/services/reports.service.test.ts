@@ -24,6 +24,30 @@ describe("reportsService.getReportHistory", () => {
   });
 });
 
+describe("reportsService.getRegisteredUsers", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("consulta el endpoint de registrados con la página, el límite y el tipo de usuario", async () => {
+    const response = {
+      statusCode: 200,
+      data: { items: [], totalItems: 0 },
+      page: 1,
+      detail: "Usuarios registrados obtenidos correctamente",
+      ok: true,
+    };
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: response });
+
+    const result = await reportsService.getRegisteredUsers({ page: 1, limit: 10, userType: "COMPANY" });
+
+    expect(getSpy).toHaveBeenCalledWith("/reports/registered-users", {
+      params: { page: 1, limit: 10, userType: "COMPANY" },
+    });
+    expect(result).toEqual(response);
+  });
+});
+
 describe("reportsService.getRejectedUsers", () => {
   afterEach(() => {
     vi.restoreAllMocks();

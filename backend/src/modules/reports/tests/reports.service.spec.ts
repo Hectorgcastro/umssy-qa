@@ -290,13 +290,13 @@ describe('ReportsService', () => {
     });
   });
 
-  it('usa los datos de prueba del repositorio por defecto', () => {
+  it('el repositorio por defecto no tiene usuarios', () => {
     const service = new ReportsService(new ReportUsersRepository());
 
     const registered = service.getRegisteredUsers(registeredQuery());
     const rejected = service.getRejectedUsers(rejectedQuery());
 
-    expect(registered.totalItems).toBe(24);
-    expect(rejected.totalItems).toBe(24);
+    expect(registered.totalItems).toBe(0);
+    expect(rejected.totalItems).toBe(0);
   });
 });
