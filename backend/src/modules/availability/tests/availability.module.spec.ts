@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaModule } from '../../../common/prisma/prisma.module.js';
 import { AvailabilityModule } from '../availability.module.js';
 import { AvailabilityController } from '../controllers/availability.controller.js';
 import { AvailabilityService } from '../services/availability.service.js';
@@ -11,7 +12,7 @@ describe('AvailabilityModule', () => {
 
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [AvailabilityModule],
+      imports: [PrismaModule, AvailabilityModule],
     }).compile();
   });
 
