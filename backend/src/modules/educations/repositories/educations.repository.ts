@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import type { CreateEducationRequest } from '../requests/create-education.request.js';
+import type { UpdateEducationRequest } from '../requests/update-education.request.js';
 import type { EducationRecord } from '../types/education-record.type.js';
 
 const educationSelect = {
@@ -34,5 +36,35 @@ export class EducationsRepository {
       where: { id, userId },
       select: educationSelect,
     });
+  }
+
+  create(
+    userId: string,
+    data: CreateEducationRequest,
+  ): Promise<EducationRecord> {
+    return this.prisma.education.create({
+      data: { ...data, userId },
+      select: educationSelect,
+    });
+  }
+
+  async update(
+    id: string,
+    userId: string,
+    data: UpdateEducationRequest,
+  ): Promise<EducationRecord | null> {
+    const records = await this.prisma.education.updateManyAndReturn({
+      where: { id, userId },
+      data,
+      select: educationSelect,
+    });
+    return records[0] ?? null;
+  }
+
+  async delete(id: string, userId: string): Promise<boolean> {
+    const result = await this.prisma.education.deleteMany({
+      where: { id, userId },
+    });
+    return result.count > 0;
   }
 }
