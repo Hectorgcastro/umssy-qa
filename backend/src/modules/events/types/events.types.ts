@@ -15,7 +15,9 @@ export interface EventItemResponse {
   location: string | null;
   capacity: number | null;
   availableSpots: number | null;
-  registeredCount: number;
+  registrationCount: number;
+  instructorName: string | null;
+  modalityId: string | null;
   category: EventCategoryResponse;
   statusId: string;
 }
@@ -44,6 +46,8 @@ export type EventWithRelations = Prisma.EventGetPayload<{
     location: true;
     capacity: true;
     statusId: true;
+    instructorName: true;
+    modalityId: true;
     category: {
       select: {
         id: true;

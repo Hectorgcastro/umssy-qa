@@ -13,6 +13,8 @@ function buildRecord(): EventWithRelations {
     location: null,
     capacity: 10,
     statusId: 'status-1',
+    instructorName: null,
+    modalityId: 'modality-1',
     category: { id: 'cat-1', name: 'Tecnologia' },
     _count: { registrations: 3 },
   };
@@ -41,7 +43,7 @@ describe('EventsService', () => {
     expect(result.data.total).toBe(1);
     expect(result.data.totalPages).toBe(1);
     expect(result.data.items[0].availableSpots).toBe(7);
-    expect(result.data.items[0].registeredCount).toBe(3);
+    expect(result.data.items[0].registrationCount).toBe(3);
   });
 
   it('calculates totalPages as 0 when total is 0', async () => {

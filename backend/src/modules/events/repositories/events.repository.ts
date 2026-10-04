@@ -35,6 +35,8 @@ export class EventsRepository {
       location: true,
       capacity: true,
       statusId: true,
+      instructorName: true,
+      modalityId: true,
       category: {
         select: {
           id: true,

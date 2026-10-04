@@ -18,6 +18,8 @@ function buildRecord(overrides: Partial<EventWithRelations> = {}): EventWithRela
     location: 'Sala A',
     capacity: 20,
     statusId: 'status-uuid',
+    instructorName: 'Ana Lopez',
+    modalityId: 'modality-uuid',
     category: { id: 'cat-uuid', name: 'Tecnologia' },
     _count: { registrations: 5 },
     ...overrides,
@@ -59,7 +61,9 @@ describe('mapEventToResponse', () => {
       location: 'Sala A',
       capacity: 20,
       availableSpots: 15,
-      registeredCount: 5,
+      registrationCount: 5,
+      instructorName: 'Ana Lopez',
+      modalityId: 'modality-uuid',
       category: { id: 'cat-uuid', name: 'Tecnologia' },
       statusId: 'status-uuid',
     });
@@ -70,6 +74,12 @@ describe('mapEventToResponse', () => {
     const result = mapEventToResponse(record, null);
     expect(result.availableSpots).toBeNull();
     expect(result.capacity).toBeNull();
+  });
+
+  it('maps instructorName as null when field is null', () => {
+    const record = buildRecord({ instructorName: null });
+    const result = mapEventToResponse(record, 0);
+    expect(result.instructorName).toBeNull();
   });
 });
 
@@ -96,7 +106,7 @@ describe('mapEventsToListResponse', () => {
     const record = buildRecord({ capacity: 20, _count: { registrations: 5 } });
     const result = mapEventsToListResponse([record], 1, 1, 10);
     expect(result.data.items[0].availableSpots).toBe(15);
-    expect(result.data.items[0].registeredCount).toBe(5);
+    expect(result.data.items[0].registrationCount).toBe(5);
   });
 
   it('pone availableSpots en 0 cuando capacity esta llena', () => {
