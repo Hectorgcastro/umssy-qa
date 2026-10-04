@@ -1,6 +1,5 @@
 import type { ProfileTab } from "../types/profile-tab.types";
 
-// "Mi perfil" tabs. Each user story sets isAvailable to true once its page exists.
 export const PROFILE_TABS: ProfileTab[] = [
   {
     id: "personal-info",

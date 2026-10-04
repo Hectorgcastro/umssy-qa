@@ -17,7 +17,8 @@ import { useCreateCertification, useUpdateCertification } from "../hooks/use-cer
 import { useCertifications } from "../hooks/use-certifications";
 import { useDeleteCertification } from "../hooks/use-delete-certification";
 import type { CertificationFormState } from "../types/certification-form-state.types";
-import type { Certification, CreateCertificationDto } from "../types/certification.types";
+import type { Certification } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import type { Feedback } from "../types/feedback.types";
 
 function toFormValues(certification: Certification): CreateCertificationDto {

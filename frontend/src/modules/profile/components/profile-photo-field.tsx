@@ -20,7 +20,6 @@ export function ProfilePhotoField({
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    // Reset so the same file can be selected again after an error.
     event.target.value = "";
     if (file && onSelectPhoto) {
       onSelectPhoto(file);

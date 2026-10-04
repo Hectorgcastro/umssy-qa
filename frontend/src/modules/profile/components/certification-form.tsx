@@ -11,7 +11,7 @@ import {
 } from "../config/form-styles.config";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
-import type { CreateCertificationDto } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
 import { getTodayIsoDate, validateCertification } from "../utils/validate-certification";
