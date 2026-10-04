@@ -93,6 +93,11 @@ describe('EventCategoriesController (e2e)', () => {
       id: 'cat-001',
       name: 'Tecnologia',
     });
+    expect(prismaMock.eventCategory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      }),
+    );
   });
 
   it('GET /api/event-categories?search=tec - filters by name search term', async () => {
