@@ -1,136 +1,173 @@
-import { render, screen, cleanup } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-texts.config";
+import type { SkillItem } from "../types/skill-item.types";
+import type { SkillsSelectorProps } from "../types/skills-selector-props.types";
 import { SkillsSelector } from "./skills-selector";
-import { SkillItem } from "../types/skill-item.types";
 
-const mockCatalog: SkillItem[] = [
-  { id: "1", name: "React" },
-  { id: "2", name: "TypeScript" },
+const MOCK_CATALOG: SkillItem[] = [
+  { id: "skill-1", name: "React", category: "Desarrollo web" },
+  { id: "skill-2", name: "TypeScript" },
 ];
+
+function renderSelector(overrides: Partial<SkillsSelectorProps> = {}) {
+  const props: SkillsSelectorProps = {
+    catalogSkills: MOCK_CATALOG,
+    selectedSkills: [],
+    onAddSkill: vi.fn(),
+    onRemoveSkill: vi.fn(),
+    onCreateCustomSkill: vi.fn(),
+    onSave: vi.fn(),
+    ...overrides,
+  };
+
+  render(<SkillsSelector {...props} />);
+
+  return props;
+}
 
 describe("SkillsSelector", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("filters skills by search term and shows empty message when no matches", async () => {
-    const user = userEvent.setup();
-    render(
-      <SkillsSelector
-        catalogSkills={mockCatalog}
-        selectedSkills={[]}
-        onAddSkill={vi.fn()}
-        onRemoveSkill={vi.fn()}
-      />
-    );
+  it("shows the catalog skills with their category when available", () => {
+    renderSelector();
 
-    const input = screen.getByPlaceholderText("Buscar en el catálogo");
-    await user.type(input, "Python");
-
-    expect(
-      screen.getByText("No se encontraron coincidencias en el catálogo.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("React")).toBeInTheDocument();
+    expect(screen.getByText("Desarrollo web")).toBeInTheDocument();
+    expect(screen.getByText("TypeScript")).toBeInTheDocument();
   });
 
-  it("triggers onAddSkill when clicking Añadir button", async () => {
+  it("shows only the skills that match the search term", async () => {
     const user = userEvent.setup();
-    const handleAdd = vi.fn();
-    render(
-      <SkillsSelector
-        catalogSkills={mockCatalog}
-        selectedSkills={[]}
-        onAddSkill={handleAdd}
-        onRemoveSkill={vi.fn()}
-      />
-    );
+    renderSelector();
 
-    const addButton = screen.getAllByRole("button", { name: /añadir/i })[0];
-    await user.click(addButton);
+    await user.type(screen.getByLabelText("Buscar en el catálogo"), "  type ");
 
-    expect(handleAdd).toHaveBeenCalledWith(mockCatalog[0]);
+    expect(screen.getByText("TypeScript")).toBeInTheDocument();
+    expect(screen.queryByText("React")).not.toBeInTheDocument();
   });
 
-  it("triggers onRemoveSkill when clicking the X button on a badge", async () => {
+  it("informs when the search has no matches", async () => {
     const user = userEvent.setup();
-    const handleRemove = vi.fn();
-    render(
-      <SkillsSelector
-        catalogSkills={mockCatalog}
-        selectedSkills={[{ id: "1", name: "React" }]}
-        onAddSkill={vi.fn()}
-        onRemoveSkill={handleRemove}
-      />
-    );
+    renderSelector();
 
-    const removeButton = screen.getByRole("button", { name: /eliminar react/i });
-    await user.click(removeButton);
+    await user.type(screen.getByLabelText("Buscar en el catálogo"), "Python");
 
-    expect(handleRemove).toHaveBeenCalledWith("1");
+    expect(screen.getByText("No se encontraron coincidencias en el catálogo.")).toBeInTheDocument();
   });
 
-  it("creates custom skill when input is valid", async () => {
+  it("calls onAddSkill when clicking Añadir", async () => {
     const user = userEvent.setup();
-    const handleCreateCustom = vi.fn();
-    render(
-      <SkillsSelector
-        catalogSkills={mockCatalog}
-        selectedSkills={[]}
-        onAddSkill={vi.fn()}
-        onRemoveSkill={vi.fn()}
-        onCreateCustomSkill={handleCreateCustom}
-      />
-    );
+    const { onAddSkill } = renderSelector();
 
-    const input = screen.getByPlaceholderText("Ej. Docker");
-    const submitBtn = screen.getByRole("button", { name: "Agregar" });
+    await user.click(screen.getAllByRole("button", { name: "Añadir" })[0]);
 
-    await user.type(input, "Docker");
-    await user.click(submitBtn);
-
-    expect(handleCreateCustom).toHaveBeenCalledWith("Docker");
+    expect(onAddSkill).toHaveBeenCalledWith(MOCK_CATALOG[0]);
   });
 
-  it("shows error when trying to add an empty custom skill", async () => {
-    const user = userEvent.setup();
-    render(
-      <SkillsSelector
-        catalogSkills={mockCatalog}
-        selectedSkills={[]}
-        onAddSkill={vi.fn()}
-        onRemoveSkill={vi.fn()}
-        onCreateCustomSkill={vi.fn()}
-      />
-    );
+  it("disables the add option of a skill that is already selected", () => {
+    renderSelector({ selectedSkills: [MOCK_CATALOG[0]] });
 
-    const submitBtn = screen.getByRole("button", { name: "Agregar" });
-    await user.click(submitBtn);
-
-    expect(
-      screen.getByText("El nombre no puede estar vacío")
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Agregada" })).toBeDisabled();
   });
 
-  it("shows error when custom skill already exists in selectedSkills", async () => {
+  it("shows a message when there are no selected skills", () => {
+    renderSelector();
+
+    expect(screen.getByText("No tienes habilidades seleccionadas aún.")).toBeInTheDocument();
+  });
+
+  it("calls onRemoveSkill when clicking the remove option of a tag", async () => {
     const user = userEvent.setup();
-    render(
-      <SkillsSelector
-        catalogSkills={mockCatalog}
-        selectedSkills={[{ id: "1", name: "React" }]}
-        onAddSkill={vi.fn()}
-        onRemoveSkill={vi.fn()}
-        onCreateCustomSkill={vi.fn()}
-      />
-    );
+    const { onRemoveSkill } = renderSelector({ selectedSkills: [MOCK_CATALOG[0]] });
 
-    const input = screen.getByPlaceholderText("Ej. Docker");
-    const submitBtn = screen.getByRole("button", { name: "Agregar" });
+    await user.click(screen.getByRole("button", { name: "Quitar React" }));
 
-    await user.type(input, "react");
-    await user.click(submitBtn);
+    expect(onRemoveSkill).toHaveBeenCalledWith("skill-1");
+  });
 
-    expect(
-      screen.getByText("Esta habilidad ya está agregada")
-    ).toBeInTheDocument();
+  it("creates a custom skill with the trimmed name and clears the field", async () => {
+    const user = userEvent.setup();
+    const { onCreateCustomSkill } = renderSelector();
+    const input = screen.getByLabelText("Agregar habilidad propia");
+
+    await user.type(input, "  Docker ");
+    await user.click(screen.getByRole("button", { name: "Agregar" }));
+
+    expect(onCreateCustomSkill).toHaveBeenCalledWith("Docker");
+    expect(input).toHaveValue("");
+  });
+
+  it("does not create a custom skill with an empty name", async () => {
+    const user = userEvent.setup();
+    const { onCreateCustomSkill } = renderSelector();
+
+    await user.click(screen.getByRole("button", { name: "Agregar" }));
+
+    expect(screen.getByText(SKILLS_VALIDATION_MESSAGES.emptyName)).toBeInTheDocument();
+    expect(screen.getByLabelText("Agregar habilidad propia")).toHaveAttribute("aria-invalid", "true");
+    expect(onCreateCustomSkill).not.toHaveBeenCalled();
+  });
+
+  it("does not create a custom skill that already exists in the catalog", async () => {
+    const user = userEvent.setup();
+    const { onCreateCustomSkill } = renderSelector();
+
+    await user.type(screen.getByLabelText("Agregar habilidad propia"), "react");
+    await user.click(screen.getByRole("button", { name: "Agregar" }));
+
+    expect(screen.getByText(SKILLS_VALIDATION_MESSAGES.duplicated)).toBeInTheDocument();
+    expect(onCreateCustomSkill).not.toHaveBeenCalled();
+  });
+
+  it("does not create a custom skill that is already in my skills", async () => {
+    const user = userEvent.setup();
+    const { onCreateCustomSkill } = renderSelector({
+      selectedSkills: [{ id: "custom-docker", name: "Docker" }],
+    });
+
+    await user.type(screen.getByLabelText("Agregar habilidad propia"), "DOCKER");
+    await user.click(screen.getByRole("button", { name: "Agregar" }));
+
+    expect(screen.getByText(SKILLS_VALIDATION_MESSAGES.duplicated)).toBeInTheDocument();
+    expect(onCreateCustomSkill).not.toHaveBeenCalled();
+  });
+
+  it("clears the custom skill error when the user types again", async () => {
+    const user = userEvent.setup();
+    renderSelector();
+
+    await user.click(screen.getByRole("button", { name: "Agregar" }));
+    await user.type(screen.getByLabelText("Agregar habilidad propia"), "G");
+
+    expect(screen.queryByText(SKILLS_VALIDATION_MESSAGES.emptyName)).not.toBeInTheDocument();
+  });
+
+  it("calls onSave when clicking Guardar habilidades", async () => {
+    const user = userEvent.setup();
+    const { onSave } = renderSelector();
+
+    await user.click(screen.getByRole("button", { name: "Guardar habilidades" }));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables the save button and shows a spinner while saving", () => {
+    renderSelector({ isSaving: true });
+
+    const saveButton = screen.getByRole("button", { name: "Guardando..." });
+    expect(saveButton).toBeDisabled();
+    expect(saveButton.querySelector("svg.lucide-loader-circle")).toBeInTheDocument();
+  });
+
+  it("shows the feedback message after saving", () => {
+    renderSelector({
+      feedback: { type: "success", message: "Tus habilidades se guardaron correctamente." },
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Tus habilidades se guardaron correctamente.");
   });
 });

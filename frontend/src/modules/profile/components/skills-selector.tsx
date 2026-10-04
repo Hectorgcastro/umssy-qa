@@ -1,8 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, Plus } from "lucide-react";
-import { SkillsSelectorProps } from "../types/skills-selector-props.types";
+import { useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { LoaderCircle, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  INPUT_CLASS,
+  PRIMARY_BUTTON_CLASS,
+  SECONDARY_BUTTON_CLASS,
+} from "../config/form-styles.config";
+import { SKILLS_TEXTS } from "../config/skills-texts.config";
+import type { SkillsSelectorProps } from "../types/skills-selector-props.types";
+import { getFieldErrorProps } from "../utils/get-field-error-props";
+import { validateCustomSkill } from "../utils/validate-custom-skill";
+import { FeedbackMessage } from "./feedback-message";
+import { FormField } from "./form-field";
 import { SkillBadge } from "./skill-badge";
 
 export function SkillsSelector({
@@ -11,142 +24,141 @@ export function SkillsSelector({
   onAddSkill,
   onRemoveSkill,
   onCreateCustomSkill,
+  onSave,
+  isSaving = false,
+  feedback = null,
 }: SkillsSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [customSkillInput, setCustomSkillInput] = useState("");
-  const [customError, setCustomError] = useState("");
+  const [customSkillName, setCustomSkillName] = useState("");
+  const [customSkillError, setCustomSkillError] = useState("");
 
   const selectedIds = useMemo(
-    () => new Set(selectedSkills.map((s) => s.id)),
-    [selectedSkills]
+    () => new Set(selectedSkills.map((skill) => skill.id)),
+    [selectedSkills],
   );
 
   const filteredCatalog = useMemo(() => {
-    if (!searchTerm.trim()) return catalogSkills;
-    return catalogSkills.filter((skill) =>
-      skill.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+    if (!normalizedTerm) return catalogSkills;
+    return catalogSkills.filter((skill) => skill.name.toLowerCase().includes(normalizedTerm));
   }, [catalogSkills, searchTerm]);
 
-  const handleAddCustom = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = customSkillInput.trim();
-    if (!trimmed) {
-      setCustomError("El nombre no puede estar vacío");
+  const handleCreateCustomSkill = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const error = validateCustomSkill(customSkillName, [...catalogSkills, ...selectedSkills]);
+    if (error) {
+      setCustomSkillError(error);
       return;
     }
 
-    const exists = selectedSkills.some(
-      (s) => s.name.toLowerCase() === trimmed.toLowerCase()
-    );
-    if (exists) {
-      setCustomError("Esta habilidad ya está agregada");
-      return;
-    }
-
-    if (onCreateCustomSkill) {
-      onCreateCustomSkill(trimmed);
-      setCustomSkillInput("");
-      setCustomError("");
-    }
+    onCreateCustomSkill(customSkillName.trim());
+    setCustomSkillName("");
+    setCustomSkillError("");
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <div>
-        <h3 className="text-sm font-semibold mb-3">Mis habilidades</h3>
+        <h3 className="mb-3 text-[15px] font-semibold text-ink">{SKILLS_TEXTS.mySkillsTitle}</h3>
         {selectedSkills.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No tienes habilidades seleccionadas aún.
-          </p>
+          <p className="text-[13px] text-text-secondary">{SKILLS_TEXTS.emptySelection}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {selectedSkills.map((skill) => (
-              <SkillBadge
-                key={skill.id}
-                skill={skill}
-                onRemove={onRemoveSkill}
-              />
+              <SkillBadge key={skill.id} skill={skill} onRemove={onRemoveSkill} />
             ))}
           </div>
         )}
       </div>
 
-      <div className="space-y-3">
-        <label htmlFor="search-catalog" className="text-sm font-medium">
-          Buscar en el catálogo
-        </label>
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            id="search-catalog"
-            type="text"
-            placeholder="Buscar en el catálogo"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-          />
-        </div>
+      <div className="flex flex-col gap-3">
+        <FormField id="skills-search" label={SKILLS_TEXTS.searchLabel}>
+          <div className="relative">
+            <Search
+              aria-hidden="true"
+              className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-text-secondary"
+            />
+            <input
+              id="skills-search"
+              type="text"
+              placeholder={SKILLS_TEXTS.searchPlaceholder}
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className={cn(INPUT_CLASS, "pl-11")}
+            />
+          </div>
+        </FormField>
 
-        <div className="max-h-48 overflow-y-auto space-y-1 border rounded-md p-2">
+        <ul className="max-h-64 divide-y divide-border overflow-y-auto">
           {filteredCatalog.length === 0 ? (
-            <p className="text-xs text-muted-foreground p-2">
-              No se encontraron coincidencias en el catálogo.
-            </p>
+            <li className="py-3 text-[13px] text-text-secondary">{SKILLS_TEXTS.noMatches}</li>
           ) : (
             filteredCatalog.map((skill) => {
               const isSelected = selectedIds.has(skill.id);
+
               return (
-                <div
-                  key={skill.id}
-                  className="flex items-center justify-between p-1.5 hover:bg-accent rounded text-sm"
-                >
-                  <span>{skill.name}</span>
+                <li key={skill.id} className="flex items-center justify-between gap-4 py-3">
+                  <div className="flex flex-col">
+                    <span className="text-[15px] font-semibold text-ink">{skill.name}</span>
+                    {skill.category ? (
+                      <span className="text-[13px] text-text-secondary">{skill.category}</span>
+                    ) : null}
+                  </div>
                   <button
                     type="button"
                     disabled={isSelected}
                     onClick={() => onAddSkill(skill)}
-                    className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:opacity-90 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink hover:text-accent disabled:text-text-secondary"
                   >
-                    <Plus className="w-3 h-3" />
-                    {isSelected ? "Agregada" : "Añadir"}
+                    <Plus aria-hidden="true" className="size-3.5" />
+                    {isSelected ? SKILLS_TEXTS.addedSkill : SKILLS_TEXTS.addSkill}
                   </button>
-                </div>
+                </li>
               );
             })
           )}
-        </div>
+        </ul>
       </div>
 
-      {onCreateCustomSkill && (
-        <form onSubmit={handleAddCustom} className="space-y-2">
-          <label htmlFor="custom-skill" className="text-sm font-medium">
-            Agregar habilidad propia
-          </label>
-          <div className="flex gap-2">
+      <form noValidate onSubmit={handleCreateCustomSkill}>
+        <FormField
+          id="custom-skill"
+          label={SKILLS_TEXTS.customSkillLabel}
+          error={customSkillError}
+        >
+          <div className="flex gap-3">
             <input
               id="custom-skill"
               type="text"
-              placeholder="Ej. Docker"
-              value={customSkillInput}
-              onChange={(e) => {
-                setCustomSkillInput(e.target.value);
-                setCustomError("");
+              placeholder={SKILLS_TEXTS.customSkillPlaceholder}
+              value={customSkillName}
+              onChange={(event) => {
+                setCustomSkillName(event.target.value);
+                setCustomSkillError("");
               }}
-              className="flex-1 px-3 py-2 border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+              className={INPUT_CLASS}
+              {...getFieldErrorProps("custom-skill", customSkillError)}
             />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-secondary text-secondary-foreground text-sm font-medium rounded-md hover:bg-secondary/80"
-            >
-              Agregar
-            </button>
+            <Button type="submit" variant="outline" className={SECONDARY_BUTTON_CLASS}>
+              {SKILLS_TEXTS.createCustomSkill}
+            </Button>
           </div>
-          {customError && (
-            <p className="text-xs text-destructive">{customError}</p>
-          )}
-        </form>
-      )}
+        </FormField>
+      </form>
+
+      <div className="flex flex-col gap-4">
+        {feedback ? <FeedbackMessage feedback={feedback} /> : null}
+        <Button
+          type="button"
+          onClick={onSave}
+          disabled={isSaving}
+          className={cn(PRIMARY_BUTTON_CLASS, "w-full")}
+        >
+          {isSaving ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+          {isSaving ? SKILLS_TEXTS.savingSkills : SKILLS_TEXTS.saveSkills}
+        </Button>
+      </div>
     </div>
   );
 }
