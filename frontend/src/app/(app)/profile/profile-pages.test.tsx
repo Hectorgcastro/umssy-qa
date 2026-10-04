@@ -4,9 +4,11 @@ import DocumentsPage from "./documents/page";
 import ProfilePage from "./page";
 import PersonalInfoPage from "./personal-info/page";
 import PresentationPage from "./presentation/page";
+import CertificationsPage from "./trajectory/certifications/page";
 import EducationPage from "./trajectory/education/page";
 
 vi.mock("@/modules/profile", () => ({
+  CertificationsView: () => <p>certifications-view</p>,
   DocumentsCvView: () => <p>documents-cv-view</p>,
   PersonalInfoView: () => <p>personal-info-view</p>,
   PresentationView: () => <p>presentation-view</p>,
@@ -47,5 +49,11 @@ describe("profile pages", () => {
     render(<DocumentsPage />);
 
     expect(screen.getByText("documents-cv-view")).toBeInTheDocument();
+  });
+
+  it("mounts the certifications view", () => {
+    render(<CertificationsPage />);
+
+    expect(screen.getByText("certifications-view")).toBeInTheDocument();
   });
 });
