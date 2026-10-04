@@ -1,5 +1,4 @@
-export interface WorkExperienceItem {
-  id: string;
+export interface WorkExperiencePayload {
   companyName: string;
   position: string;
   startDate: string;
