@@ -29,8 +29,7 @@ export function WorkExperienceView() {
     void reload();
   });
 
-  const visibleFeedback: Feedback | null =
-    feedback ?? (error ? { type: "error", message: error } : null);
+  const loadFeedback: Feedback | null = error ? { type: "error", message: error } : null;
 
   const handleEdit = (experience: WorkExperienceItem) => {
     clearFeedback();
@@ -48,7 +47,7 @@ export function WorkExperienceView() {
       description="Muestra tus estudios, experiencia, habilidades y certificaciones"
     >
       <TrajectorySteps activeStep="experience" />
-      {visibleFeedback ? <FeedbackMessage feedback={visibleFeedback} /> : null}
+      <FeedbackMessage feedback={loadFeedback} />
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <WorkExperienceListCard
           experiences={experiences}
@@ -61,6 +60,7 @@ export function WorkExperienceView() {
             editingExperience ? toWorkExperienceFormValues(editingExperience) : undefined
           }
           isPending={isSaving}
+          feedback={feedback}
           onSubmit={handleSubmit}
           onCancel={resetForm}
         />
