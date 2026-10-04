@@ -7,6 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Breadcrumbs } from "@/shared/components/layout";
+import { PARTICIPATION_BREADCRUMB_ITEMS } from "../../constants/participation-breadcrumb.constants";
 
 type ParticipationOverviewProps = {
   areas: string[];
@@ -74,9 +76,9 @@ export function ParticipationOverview({
     <main className="min-h-full bg-surface-soft px-4 py-6 sm:py-8">
       <div className="mx-auto max-w-5xl space-y-5">
         <div>
-          <p className="text-xs text-text-secondary">
-            UMSSY &nbsp;›&nbsp; Mentorías &nbsp;›&nbsp; Mi participación
-          </p>
+          <div className="[&>nav]:mb-0 [&>nav]:text-xs [&_[aria-current=page]]:font-normal [&_[aria-current=page]]:text-text-secondary">
+            <Breadcrumbs items={PARTICIPATION_BREADCRUMB_ITEMS} />
+          </div>
           <h1 className="mt-2 text-2xl font-bold text-ink">
             Mi participación como mentor
           </h1>

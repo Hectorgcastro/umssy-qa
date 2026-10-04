@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { GraduationCap, UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 import type { MentorProfile } from "../../types/mentor-profile.types";
 
@@ -18,8 +20,8 @@ function getInitials(name: string) {
 
 export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
   return (
-    <section className="rounded-xl border border-umssy-border bg-white p-6">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+    <Card className="gap-0 overflow-visible rounded-xl border border-umssy-border bg-white py-0 text-base ring-0">
+      <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
           <div className="relative h-24 w-24 shrink-0">
             {mentor.profileImage ? (
@@ -97,19 +99,19 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           disabled={!mentor.isAvailable}
-          className={`inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold transition sm:w-auto ${
+          className={`h-auto w-full shrink-0 gap-2 rounded-lg border-0 px-6 py-3 text-base font-semibold transition active:translate-y-0 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-100 sm:w-auto ${
             mentor.isAvailable
               ? "bg-[#E30613] text-white hover:brightness-90"
               : "cursor-not-allowed bg-gray-200 text-gray-500"
           }`}
         >
-          <UserPlus size={20} />
+          <UserPlus className="size-5" />
           Solicitar mentoría
-        </button>
-      </div>
-    </section>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

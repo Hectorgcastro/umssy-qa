@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 type ParticipationStepProps = {
   isParticipating: boolean;
   onParticipationChange: (value: boolean) => void;
@@ -22,17 +24,18 @@ export function ParticipationStep({
       </div>
 
       <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border p-4">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isParticipating}
-          onChange={(event) =>
-            onParticipationChange(event.target.checked)
-          }
-          className="mt-1 h-4 w-4"
+          onCheckedChange={onParticipationChange}
+          aria-labelledby="participation-checkbox-label"
+          className="mt-1"
         />
 
         <div>
-          <p className="text-sm font-semibold text-ink">
+          <p
+            id="participation-checkbox-label"
+            className="text-sm font-semibold text-ink"
+          >
             Quiero participar como mentor
           </p>
 

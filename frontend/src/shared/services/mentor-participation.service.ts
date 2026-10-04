@@ -1,8 +1,4 @@
-export interface MentorParticipationState {
-  status: "active";
-  areas: string[];
-  orientations: string[];
-}
+import type { MentorParticipationState } from "@/shared/types/mentor-participation-state.types";
 
 const STORAGE_KEY = "umssy-mentor-participation";
 
