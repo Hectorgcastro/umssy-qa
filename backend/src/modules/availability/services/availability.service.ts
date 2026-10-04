@@ -37,11 +37,12 @@ export class AvailabilityService {
   ) {}
 
   async create(mentorId: string, payload: CreateBlockPayload): Promise<AvailabilityBlockResponse> {
-    const startAt = new Date(payload.startAt);
-    const endAt = new Date(payload.endAt);
-
     try {
-      const block = await this.availabilityRepository.create(mentorId, startAt, endAt);
+      const block = await this.availabilityRepository.create(
+        mentorId,
+        payload.startAt,
+        payload.endAt,
+      );
       return this.availabilityMapper.toResponse(block);
     } catch (error) {
       if (hasOverlapErrorCode(error)) {

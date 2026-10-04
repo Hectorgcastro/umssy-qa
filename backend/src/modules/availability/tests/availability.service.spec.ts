@@ -9,14 +9,14 @@ describe('AvailabilityService', () => {
   const availabilityMapper = new AvailabilityMapper();
   const mentorId = 'ed9934b9-1a4e-4b8d-bbed-b8772154cba8';
   const payload: CreateBlockPayload = {
-    startAt: '2026-11-03T22:00:00.000Z',
-    endAt: '2026-11-04T00:00:00.000Z',
+    startAt: new Date('2026-11-03T22:00:00.000Z'),
+    endAt: new Date('2026-11-04T00:00:00.000Z'),
   };
   const savedBlock = {
     id: 'a3f1c2d4-0000-4000-8000-000000000001',
     mentorId,
-    startAt: new Date(payload.startAt),
-    endAt: new Date(payload.endAt),
+    startAt: payload.startAt,
+    endAt: payload.endAt,
     seriesId: null,
     repeatUntil: null,
     createdAt: new Date('2026-11-01T12:00:00.000Z'),
@@ -44,14 +44,15 @@ describe('AvailabilityService', () => {
     });
   });
 
-  it('pasa al repositorio el mentor y las fechas convertidas a Date', async () => {
+  it('pasa al repositorio el mentor y las fechas ya convertidas a Date', async () => {
     await service.create(mentorId, payload);
 
     expect(availabilityRepository.create).toHaveBeenCalledWith(
       mentorId,
-      new Date(payload.startAt),
-      new Date(payload.endAt),
+      payload.startAt,
+      payload.endAt,
     );
+    expect(payload.startAt).toBeInstanceOf(Date);
   });
 
   it.each([

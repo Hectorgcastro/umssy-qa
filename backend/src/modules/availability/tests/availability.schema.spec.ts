@@ -20,6 +20,18 @@ describe('createBlockSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('devuelve las fechas ya convertidas a Date', () => {
+    const result = schema.safeParse({
+      startAt: '2026-10-10T19:00:00Z',
+      endAt: '2026-10-10T20:00:00Z',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.startAt).toBeInstanceOf(Date);
+      expect(result.data.endAt).toBeInstanceOf(Date);
+    }
+  });
+
   it('acepta horas con desfase explícito -04:00', () => {
     expect(
       getMessages({ startAt: '2026-10-10T15:00:00-04:00', endAt: '2026-10-10T16:00:00-04:00' }),
