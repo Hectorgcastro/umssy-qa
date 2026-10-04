@@ -5,9 +5,11 @@ import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js'
 import {
   registeredUsersFiltersSchema,
   registeredUsersQuerySchema,
+  rejectedUsersFiltersSchema,
   rejectedUsersQuerySchema,
   type RegisteredUsersFilters,
   type RegisteredUsersQuery,
+  type RejectedUsersFilters,
   type RejectedUsersQuery,
 } from '../requests/report-users.schema.js';
 import {
@@ -16,6 +18,14 @@ import {
 } from '../requests/report-history.schema.js';
 import { ReportHistoryService } from '../services/report-history.service.js';
 import { ReportsService } from '../services/reports.service.js';
+import type { ReportCsvFile } from '../types/report-user.types.js';
+
+function toCsvFile({ fileName, content }: ReportCsvFile): StreamableFile {
+  return new StreamableFile(Buffer.from(content, 'utf-8'), {
+    type: 'text/csv; charset=utf-8',
+    disposition: `attachment; filename="${fileName}"`,
+  });
+}
 
 @ApiTags('Reportes')
 @Controller('reports')
@@ -40,13 +50,7 @@ export class ReportsController {
     @Query(new ZodValidationPipe(registeredUsersFiltersSchema))
     filters: RegisteredUsersFilters,
   ): StreamableFile {
-    const { fileName, content } =
-      this.reportsService.exportRegisteredUsersCsv(filters);
-
-    return new StreamableFile(Buffer.from(content, 'utf-8'), {
-      type: 'text/csv; charset=utf-8',
-      disposition: `attachment; filename="${fileName}"`,
-    });
+    return toCsvFile(this.reportsService.exportRegisteredUsersCsv(filters));
   }
 
   @Get('rejected-users')
@@ -56,6 +60,15 @@ export class ReportsController {
     query: RejectedUsersQuery,
   ) {
     return this.reportsService.getRejectedUsers(query);
+  }
+
+  @Get('rejected-users/export')
+  @ApiProduces('text/csv')
+  exportRejectedUsersCsv(
+    @Query(new ZodValidationPipe(rejectedUsersFiltersSchema))
+    filters: RejectedUsersFilters,
+  ): StreamableFile {
+    return toCsvFile(this.reportsService.exportRejectedUsersCsv(filters));
   }
 
   @Get('history')

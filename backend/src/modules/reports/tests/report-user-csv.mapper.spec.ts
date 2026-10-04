@@ -1,6 +1,7 @@
 import {
   formatReportDate,
   toRegisteredUserCsvRow,
+  toRejectedUserCsvRow,
 } from '../mappers/report-user-csv.mapper.js';
 
 describe('report-user-csv.mapper', () => {
@@ -21,6 +22,26 @@ describe('report-user-csv.mapper', () => {
       'Titulado',
       '201942394',
       'Título en provisión nacional',
+      '15/03/2026',
+    ]);
+  });
+
+  it('convierte un usuario rechazado en la fila de su tabla', () => {
+    const row = toRejectedUserCsvRow({
+      id: 'user-2',
+      fullName: 'Elena Soto',
+      email: 'elena@example.com',
+      identifier: '201912345',
+      documentType: 'NIT',
+      rejectionReason: 'Documento ilegible',
+      registeredAt: '2026-03-15T14:00:00.000Z',
+    });
+
+    expect(row).toEqual([
+      'Elena Soto',
+      'elena@example.com',
+      '201912345',
+      'NIT',
       '15/03/2026',
     ]);
   });

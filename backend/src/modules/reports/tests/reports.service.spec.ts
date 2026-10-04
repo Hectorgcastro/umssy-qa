@@ -3,6 +3,7 @@ import { CSV_BOM } from '../../../common/utils/csv.js';
 import {
   registeredUsersFiltersSchema,
   registeredUsersQuerySchema,
+  rejectedUsersFiltersSchema,
   rejectedUsersQuerySchema,
 } from '../requests/report-users.schema.js';
 import { ReportsService } from '../services/reports.service.js';
@@ -107,6 +108,60 @@ describe('ReportsService', () => {
       const { fileName } = buildService().exportRegisteredUsersCsv({});
 
       expect(fileName).toBe('usuarios-registrados-2026-10-03.csv');
+    });
+  });
+
+  describe('exportRejectedUsersCsv', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-10-03T15:00:00.000Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('exporta solo rechazados, del más reciente al más antiguo', () => {
+      const { content } = buildService().exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({}),
+      );
+
+      expect(content).toBe(
+        `${CSV_BOM}Usuario,Correo,Identificador,Documento,Fecha de Registro\r\n` +
+          'Fabio León,usuario@example.com,ID-1,Título académico,31/07/2026\r\n' +
+          'Elena Soto,usuario@example.com,ID-1,Título académico,31/12/2025\r\n',
+      );
+    });
+
+    it('aplica la búsqueda por correo', () => {
+      const users = [
+        buildUser({
+          id: 'x',
+          fullName: 'Xavier Luna',
+          email: 'xavier@example.com',
+          registrationStatus: 'REJECTED',
+        }),
+        buildUser({
+          id: 'y',
+          fullName: 'Yola Mar',
+          email: 'yola@example.com',
+          registrationStatus: 'REJECTED',
+        }),
+      ];
+
+      const { content } = buildService(users).exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({ search: 'yola' }),
+      );
+
+      expect(content.trim().split('\r\n')).toHaveLength(2);
+      expect(content).toContain('Yola Mar');
+      expect(content).not.toContain('Xavier Luna');
+    });
+
+    it('nombra el archivo con la fecha de exportación', () => {
+      const { fileName } = buildService().exportRejectedUsersCsv({});
+
+      expect(fileName).toBe('usuarios-rechazados-2026-10-03.csv');
     });
   });
 

@@ -72,6 +72,25 @@ describe('ReportsController (e2e)', () => {
     }
   });
 
+  it('GET /reports/rejected-users/export descarga el CSV de rechazados', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/reports/rejected-users/export')
+      .responseType('blob')
+      .expect(200);
+    const content = (response.body as Buffer).toString('utf-8');
+
+    expect(response.headers['content-type']).toContain('text/csv');
+    expect(response.headers['content-disposition']).toMatch(
+      /^attachment; filename="usuarios-rechazados-\d{4}-\d{2}-\d{2}\.csv"$/,
+    );
+
+    const [header, ...rows] = content.split('\r\n').slice(0, -1);
+    expect(header).toBe(
+      '\uFEFFUsuario,Correo,Identificador,Documento,Fecha de Registro',
+    );
+    expect(rows).toHaveLength(24);
+  });
+
   it('responde 400 con el formato estándar si los filtros no son válidos', async () => {
     const response = await request(app.getHttpServer())
       .get('/reports/registered-users')
