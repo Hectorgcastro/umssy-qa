@@ -1,43 +1,67 @@
 import { Button } from "@/components/ui/button";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../config/education-feedback.config";
 import type { EducationListCardProps } from "../types/education-list-card-props.types";
+import { formatEducationPeriod } from "../utils/format-education-period";
+import { FeedbackMessage } from "./feedback-message";
 import { SectionCard } from "./section-card";
 
-export function EducationListCard({ educations = [] }: EducationListCardProps) {
+export function EducationListCard({
+  educations = [],
+  isLoading = false,
+  error = null,
+}: EducationListCardProps) {
   return (
     <SectionCard
       title="Formación registrada"
       description="Puedes agregar varias entradas y actualizar cada una."
     >
-      <ul className="divide-y divide-border">
-        {educations.map((education) => (
-          <li key={education.id} className="flex items-center justify-between gap-4 py-4 first:pt-0">
-            <div>
-              <h3 className="text-[15px] font-bold text-ink">{education.degree}</h3>
-              <p className="mt-0.5 text-[13px] text-text-secondary">
-                {education.institution} · {education.periodLabel}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                aria-label={`Editar ${education.degree}`}
-                className={`h-8 px-2 text-[13px] font-semibold text-ink`}
-              >
-                Editar
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                aria-label={`Eliminar ${education.degree}`}
-                className={`h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent`}
-              >
-                Eliminar
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {isLoading ? (
+        <p role="status" className="text-[14px] text-text-secondary">
+          {EDUCATION_FEEDBACK_MESSAGES.loading}
+        </p>
+      ) : error ? (
+        <FeedbackMessage feedback={{ type: "error", message: error }} />
+      ) : educations.length === 0 ? (
+        <p role="status" className="text-[14px] text-text-secondary">
+          {EDUCATION_FEEDBACK_MESSAGES.empty}
+        </p>
+      ) : (
+        <ul aria-label="Formación registrada" className="divide-y divide-border">
+          {educations.map((education) => (
+            <li key={education.id} className="flex items-center justify-between gap-4 py-4 first:pt-0">
+              <div className="min-w-0 break-words">
+                <h3 className="text-[15px] font-bold text-ink">{education.degree}</h3>
+                <p className="mt-0.5 text-[13px] text-text-secondary">
+                  {education.institution} · {formatEducationPeriod(education.startDate, education.endDate)}
+                </p>
+                {education.description ? (
+                  <p className="mt-2 whitespace-pre-line text-[13px] text-text-secondary">
+                    {education.description}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-label={`Editar ${education.degree}`}
+                  className="h-8 px-2 text-[13px] font-semibold text-ink"
+                >
+                  Editar
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-label={`Eliminar ${education.degree}`}
+                  className="h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent"
+                >
+                  Eliminar
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <p className="mt-4 border-t border-border pt-4 text-[13px] text-text-secondary">
         Los nuevos estudios aparecerán aquí después de guardar.
