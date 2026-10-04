@@ -44,7 +44,7 @@ export function MyPassesView() {
         {isLoading ? <p role="status">Cargando tus inscripciones...</p> : error ? (
           <div role="alert" className="space-y-3">
             <p>{error}</p>
-            <Link href="/login" className="underline mr-4">Iniciar sesión</Link>
+            <Link href="/login?next=/events/my-passes" className="underline mr-4">Iniciar sesión</Link>
             <button onClick={() => { setError(null); setIsLoading(true); setReload((value) => value + 1); }}>Reintentar</button>
           </div>
         ) : registrations.length === 0 ? (
