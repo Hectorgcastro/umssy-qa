@@ -1,3 +1,10 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ORIENTATION_TYPES } from "../../data/orientation-types";
 import { TECHNICAL_AREAS } from "../../data/technical-areas";
 
@@ -40,82 +47,108 @@ export function ConfirmationStep({
         </p>
       </div>
 
-      <section className="rounded-lg border border-border bg-surface p-4">
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-ink">
+      <Card className="gap-0 overflow-visible rounded-lg border border-border bg-surface py-0 ring-0">
+        <CardHeader className="px-4 pt-4">
+          <CardTitle
+            role="heading"
+            aria-level={3}
+            className="text-sm font-semibold text-ink"
+          >
             Participación
-          </h3>
-        </div>
+          </CardTitle>
+        </CardHeader>
 
-        <p className="mt-2 text-sm text-text-secondary">
-          {wantsToParticipate
-            ? "Participar como mentor"
-            : "No participar como mentor"}
-        </p>
-      </section>
+        <CardContent className="px-4 pb-4 pt-2">
+          <p className="text-sm text-text-secondary">
+            {wantsToParticipate
+              ? "Participar como mentor"
+              : "No participar como mentor"}
+          </p>
+        </CardContent>
+      </Card>
 
-      <section className="rounded-lg border border-border bg-surface p-4">
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-ink">
-            Áreas técnicas
-          </h3>
-
-          <button
-            type="button"
-            onClick={onEditTechnicalAreas}
-            className="text-sm font-semibold text-accent"
-          >
-            Editar
-          </button>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {selectedTechnicalAreas.map((area) => (
-            <span
-              key={area.id}
-              className="rounded-full border border-border px-3 py-1 text-sm text-ink"
+      <Card className="gap-0 overflow-visible rounded-lg border border-border bg-surface py-0 ring-0">
+        <CardHeader className="px-4 pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle
+              role="heading"
+              aria-level={3}
+              className="text-sm font-semibold text-ink"
             >
-              {area.name}
-            </span>
-          ))}
-        </div>
-      </section>
+              Áreas técnicas
+            </CardTitle>
 
-      <section className="rounded-lg border border-border bg-surface p-4">
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-ink">
-            Tipos de orientación
-          </h3>
-
-          <button
-            type="button"
-            onClick={onEditOrientationTypes}
-            className="text-sm font-semibold text-accent"
-          >
-            Editar
-          </button>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {selectedOrientationTypes.map((orientation) => (
-            <span
-              key={orientation.id}
-              className="rounded-full border border-border px-3 py-1 text-sm text-ink"
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onEditTechnicalAreas}
+              className="h-auto p-0 text-sm font-semibold text-accent hover:bg-transparent hover:text-accent active:translate-y-0"
             >
-              {orientation.label}
-            </span>
-          ))}
-        </div>
-      </section>
+              Editar
+            </Button>
+          </div>
+        </CardHeader>
 
-      <button
+        <CardContent className="px-4 pb-4 pt-3">
+          <div className="flex flex-wrap gap-2">
+            {selectedTechnicalAreas.map((area) => (
+              <span
+                key={area.id}
+                className="rounded-full border border-border px-3 py-1 text-sm text-ink"
+              >
+                {area.name}
+              </span>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="gap-0 overflow-visible rounded-lg border border-border bg-surface py-0 ring-0">
+        <CardHeader className="px-4 pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle
+              role="heading"
+              aria-level={3}
+              className="text-sm font-semibold text-ink"
+            >
+              Tipos de orientación
+            </CardTitle>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onEditOrientationTypes}
+              className="h-auto p-0 text-sm font-semibold text-accent hover:bg-transparent hover:text-accent active:translate-y-0"
+            >
+              Editar
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-4 pb-4 pt-3">
+          <div className="flex flex-wrap gap-2">
+            {selectedOrientationTypes.map((orientation) => (
+              <span
+                key={orientation.id}
+                className="rounded-full border border-border px-3 py-1 text-sm text-ink"
+              >
+                {orientation.label}
+              </span>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Button
         type="button"
         onClick={onActivate}
         disabled={isActivating}
-        className="w-full rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+        className="h-auto w-full rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent active:translate-y-0 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isActivating ? "Activando..." : "Activar participación"}
-      </button>
+      </Button>
     </div>
   );
 }

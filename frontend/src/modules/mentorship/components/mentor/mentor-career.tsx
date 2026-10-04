@@ -1,4 +1,11 @@
 import { BriefcaseBusiness } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import type { MentorProfile } from "../../types/mentor-profile.types";
 
 interface MentorCareerProps {
@@ -7,16 +14,24 @@ interface MentorCareerProps {
 
 export function MentorCareer({ mentor }: MentorCareerProps) {
   return (
-    <section className="rounded-xl border border-border bg-white p-6 shadow-sm">
-      <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-soft text-ink">
-          <BriefcaseBusiness size={20} />
+    <Card className="gap-0 overflow-visible rounded-xl border border-border bg-white py-0 text-base shadow-sm ring-0">
+      <CardHeader className="px-6 pt-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-soft text-ink">
+            <BriefcaseBusiness size={20} />
+          </div>
+
+          <CardTitle
+            role="heading"
+            aria-level={2}
+            className="text-xl font-bold text-ink"
+          >
+            Trayectoria actual
+          </CardTitle>
         </div>
+      </CardHeader>
 
-        <h2 className="text-xl font-bold text-ink">Trayectoria actual</h2>
-      </div>
-
-      <div className="space-y-5">
+      <CardContent className="space-y-5 px-6 pb-6 pt-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
             Cargo actual
@@ -43,14 +58,16 @@ export function MentorCareer({ mentor }: MentorCareerProps) {
           </p>
         </div>
 
-        <div className="border-t border-border pt-4">
+        <div>
+          <Separator className="mb-4" />
+
           <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
             Facultad de egreso
           </p>
 
           <p className="mt-1 text-ink">{mentor.faculty}</p>
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
