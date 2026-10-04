@@ -1,5 +1,9 @@
 import { apiClient } from "@/shared/services/api-client";
-import { CERTIFICATIONS_ENDPOINT } from "../config/certification-api.config";
+import {
+  CERTIFICATION_DOCUMENT_FIELD_NAME,
+  CERTIFICATIONS_ENDPOINT,
+  getCertificationDocumentEndpoint,
+} from "../config/certification-api.config";
 import type { ApiResponse } from "../types/api-response.types";
 import type {
   Certification,
@@ -12,6 +16,18 @@ const NOT_FOUND_STATUS = 404;
 
 // Sample data until the endpoints are connected (issue #94)
 let sampleCertifications: Certification[] = [];
+const sampleDocuments = new Map<string, Blob>();
+
+function setSampleDocument(id: string, document: Blob | null) {
+  if (document) {
+    sampleDocuments.set(id, document);
+  } else {
+    sampleDocuments.delete(id);
+  }
+  sampleCertifications = sampleCertifications.map((certification) =>
+    certification.id === id ? { ...certification, hasDocument: document !== null } : certification,
+  );
+}
 
 function isEndpointUnavailable(error: unknown): boolean {
   const status = getHttpStatus(error);
@@ -98,6 +114,45 @@ export const certificationsService = {
       sampleCertifications = sampleCertifications.filter(
         (certification) => certification.id !== id,
       );
+      sampleDocuments.delete(id);
+    }
+  },
+
+  uploadDocument: async (id: string, file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append(CERTIFICATION_DOCUMENT_FIELD_NAME, file);
+    try {
+      await apiClient.put(getCertificationDocumentEndpoint(id), formData);
+    } catch (error) {
+      if (!isEndpointUnavailable(error)) {
+        throw error;
+      }
+      setSampleDocument(id, file);
+    }
+  },
+
+  getDocument: async (id: string): Promise<Blob | null> => {
+    try {
+      const response = await apiClient.get<Blob>(getCertificationDocumentEndpoint(id), {
+        responseType: "blob",
+      });
+      return response.data;
+    } catch (error) {
+      if (isEndpointUnavailable(error)) {
+        return sampleDocuments.get(id) ?? null;
+      }
+      throw error;
+    }
+  },
+
+  deleteDocument: async (id: string): Promise<void> => {
+    try {
+      await apiClient.delete(getCertificationDocumentEndpoint(id));
+    } catch (error) {
+      if (!isEndpointUnavailable(error)) {
+        throw error;
+      }
+      setSampleDocument(id, null);
     }
   },
 };
