@@ -1,0 +1,6 @@
+export const CERTIFICATION_FEEDBACK_MESSAGES = {
+  createSuccess: "Certificación agregada correctamente.",
+  createError: "No se pudo agregar la certificación. Inténtalo de nuevo.",
+  updateSuccess: "Certificación actualizada correctamente.",
+  updateError: "No se pudo actualizar la certificación. Inténtalo de nuevo.",
+};
