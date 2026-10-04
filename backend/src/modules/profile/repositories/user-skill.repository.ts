@@ -12,8 +12,19 @@ export class UserSkillRepository {
   findByUserId(userId: string): Promise<UserSkillRecord[]> {
     return this.prisma.userSkill.findMany({
       where: { userId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { skill: { name: 'asc' } },
       select: userSkillSelect,
     });
+  }
+
+  async replaceForUser(userId: string, skillIds: string[]): Promise<UserSkillRecord[]> {
+    await this.prisma.$transaction([
+      this.prisma.userSkill.deleteMany({ where: { userId } }),
+      this.prisma.userSkill.createMany({
+        data: skillIds.map((skillId) => ({ userId, skillId })),
+      }),
+    ]);
+
+    return this.findByUserId(userId);
   }
 }

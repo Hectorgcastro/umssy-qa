@@ -7,6 +7,8 @@ import { CvFileController } from '../controllers/cv-file.controller.js';
 import { CvController } from '../controllers/cv.controller.js';
 import { ProfilePhotoController } from '../controllers/profile-photo.controller.js';
 import { ProfileController } from '../controllers/profile.controller.js';
+import { SkillController } from '../controllers/skill.controller.js';
+import { UserSkillController } from '../controllers/user-skill.controller.js';
 import { CvMapper } from '../mappers/cv.mapper.js';
 import { ProfilePhotoMapper } from '../mappers/profile-photo.mapper.js';
 import { ProfileMapper } from '../mappers/profile.mapper.js';
@@ -23,6 +25,7 @@ import { CvService } from '../services/cv.service.js';
 import { FileValidationService } from '../services/file-validation.service.js';
 import { ProfilePhotoService } from '../services/profile-photo.service.js';
 import { ProfileService } from '../services/profile.service.js';
+import { SkillService } from '../services/skill.service.js';
 import { FileStorage } from '../types/file-storage.type.js';
 
 describe('ProfileModule', () => {
@@ -56,6 +59,9 @@ describe('ProfileModule', () => {
     SkillRepository,
     UserSkillRepository,
     SkillMapper,
+    SkillService,
+    SkillController,
+    UserSkillController,
     JwtAuthGuard,
   ])('resolves %o', (provider) => {
     expect(moduleRef.get(provider)).toBeInstanceOf(provider);
