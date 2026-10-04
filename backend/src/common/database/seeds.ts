@@ -4,32 +4,21 @@ import { pathToFileURL } from 'node:url';
 
 import { Logger } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { z } from 'zod';
 
 import { seedAvailability } from '../../modules/availability/seeds/availability.seed.js';
 import { SEED_USERS } from '../../modules/users/constants/seed-users.constants.js';
 import { hashSeedPassword, seedUsers } from '../../modules/users/seeds/users.seed.js';
 import { PrismaClient } from '../../prisma/client.js';
+import { SEED_TRANSACTION_OPTIONS } from '../constants/seed.constants.js';
 import { buildDatabaseConnectionString } from '../prisma/build-connection-string.js';
+import type { SeedEnv } from '../types/seed-env.types.js';
 import type { SeedSummary } from '../types/seed-summary.types.js';
+import { SeedEnvSchema } from './seed-env.schema.js';
 
 // REGLA DE ORDEN: los seeds se ejecutan en secuencia porque cada uno usa datos de los anteriores.
 // 1. users: roles y usuarios de prueba.
 // 2. availability: bloques y citas de los mentores y el titulado creados en users.
 // Un seed nuevo se agrega después de todos los seeds de los que depende.
-
-const SEED_TRANSACTION_OPTIONS = { maxWait: 5_000, timeout: 30_000 };
-
-const SeedEnvSchema = z.object({
-  DB_USER: z.string().min(1),
-  DB_PASSWORD: z.string().min(1),
-  DB_NAME: z.string().min(1),
-  DB_HOST: z.string().min(1),
-  DB_PORT: z.coerce.number().int().positive(),
-  DB_SCHEMA: z.string().min(1).optional(),
-});
-
-type SeedEnv = z.infer<typeof SeedEnvSchema>;
 
 export function loadSeedEnv(source: NodeJS.ProcessEnv = process.env): SeedEnv {
   const parsed = SeedEnvSchema.safeParse(source);
