@@ -24,24 +24,27 @@ export function getTodayIsoDate(): string {
 
 export function validateCertification(values: CreateCertificationDto): CertificationErrors {
   const errors: CertificationErrors = {};
+  const name = (values.name ?? "").trim();
+  const issuingOrganization = (values.issuingOrganization ?? "").trim();
+  const issueDate = (values.issueDate ?? "").trim();
 
-  if (!values.name) {
+  if (!name) {
     errors.name = CERTIFICATION_VALIDATION_MESSAGES.required;
-  } else if (values.name.length > CERTIFICATION_NAME_MAX_LENGTH) {
+  } else if (name.length > CERTIFICATION_NAME_MAX_LENGTH) {
     errors.name = CERTIFICATION_VALIDATION_MESSAGES.nameTooLong;
   }
 
-  if (!values.issuingOrganization) {
+  if (!issuingOrganization) {
     errors.issuingOrganization = CERTIFICATION_VALIDATION_MESSAGES.required;
-  } else if (values.issuingOrganization.length > ISSUING_ORGANIZATION_MAX_LENGTH) {
+  } else if (issuingOrganization.length > ISSUING_ORGANIZATION_MAX_LENGTH) {
     errors.issuingOrganization = CERTIFICATION_VALIDATION_MESSAGES.organizationTooLong;
   }
 
-  if (!values.issueDate) {
+  if (!issueDate) {
     errors.issueDate = CERTIFICATION_VALIDATION_MESSAGES.required;
-  } else if (!isValidIsoDate(values.issueDate)) {
+  } else if (!isValidIsoDate(issueDate)) {
     errors.issueDate = CERTIFICATION_VALIDATION_MESSAGES.invalidDate;
-  } else if (values.issueDate > getTodayIsoDate()) {
+  } else if (issueDate > getTodayIsoDate()) {
     errors.issueDate = CERTIFICATION_VALIDATION_MESSAGES.futureDate;
   }
 
