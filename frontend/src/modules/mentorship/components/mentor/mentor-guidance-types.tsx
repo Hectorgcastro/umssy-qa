@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { MentorGuidanceType } from "../types/mentor-guidance-type.types";
+import type { MentorGuidanceType } from "../../types/mentor-guidance-type.types";
 
 interface MentorGuidanceTypesProps {
   guidanceTypes: MentorGuidanceType[];

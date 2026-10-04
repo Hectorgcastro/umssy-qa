@@ -1,5 +1,5 @@
 import { BriefcaseBusiness } from "lucide-react";
-import type { MentorProfile } from "../types/mentor-profile.types";
+import type { MentorProfile } from "../../types/mentor-profile.types";
 
 interface MentorCareerProps {
   mentor: MentorProfile;

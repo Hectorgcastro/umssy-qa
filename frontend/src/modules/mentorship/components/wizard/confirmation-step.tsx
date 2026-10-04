@@ -1,5 +1,5 @@
-import { ORIENTATION_TYPES } from "../data/orientation-types";
-import { TECHNICAL_AREAS } from "../data/technical-areas";
+import { ORIENTATION_TYPES } from "../../data/orientation-types";
+import { TECHNICAL_AREAS } from "../../data/technical-areas";
 
 interface ConfirmationStepProps {
   wantsToParticipate: boolean;

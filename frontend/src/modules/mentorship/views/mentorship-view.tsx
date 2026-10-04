@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { saveMentorParticipation } from "@/shared/services/mentor-participation.service";
-import { ConfirmationStep } from "../components/confirmation-step";
-import { OrientationStep } from "../components/orientation-step";
-import { ParticipationStep } from "../components/participation-step";
-import { ProgressStepper } from "../components/progress-stepper";
-import { StepTechnicalAreas } from "../components/step-technical-areas";
+import { ConfirmationStep } from "../components/wizard/confirmation-step";
+import { OrientationStep } from "../components/orientation/orientation-step";
+import { ParticipationStep } from "../components/participation/participation-step";
+import { ProgressStepper } from "../components/wizard/progress-stepper";
+import { StepTechnicalAreas } from "../components/wizard/step-technical-areas";
 import { ORIENTATION_TYPES } from "../data/orientation-types";
 import { TECHNICAL_AREAS } from "../data/technical-areas";
 import { useMentorshipWizard } from "../hooks/use-mentorship-wizard";

@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle } from "lucide-react";
-import { ORIENTATION_TYPES } from "../data/orientation-types";
+import { ORIENTATION_TYPES } from "../../data/orientation-types";
 
 interface OrientationStepProps {
   selectedOrientationTypeIds: string[];

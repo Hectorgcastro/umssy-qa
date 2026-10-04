@@ -1,6 +1,6 @@
 "use client";
 
-import { TECHNICAL_AREAS } from "../data/technical-areas";
+import { TECHNICAL_AREAS } from "../../data/technical-areas";
 import { TechnicalAreaCard } from "./technical-area-card";
 
 interface StepTechnicalAreasProps {

@@ -1,14 +1,14 @@
 "use client";
 
-import { MentorProfileHeader } from "../components/mentor-profile-header";
-import { MentorAbout } from "../components/mentor-about";
-import { MentorCareer } from "../components/mentor-career";
-import { MentorGuidanceTypes } from "../components/mentor-guidance-types";
-import { MentorTechnicalAreas } from "../components/mentor-technical-areas";
+import { MentorProfileHeader } from "../components/mentor/mentor-profile-header";
+import { MentorAbout } from "../components/mentor/mentor-about";
+import { MentorCareer } from "../components/mentor/mentor-career";
+import { MentorGuidanceTypes } from "../components/mentor/mentor-guidance-types";
+import { MentorTechnicalAreas } from "../components/mentor/mentor-technical-areas";
 import { useMentorProfile } from "../hooks/use-mentor-profile";
-import { MentorQueryFeedback } from "../components/mentor-query-feedback";
-import { MentorQuerySkeleton } from "../components/mentor-query-skeleton";
-import { MentorProfileNavigation } from "../components/mentor-profile-navigation";
+import { MentorQueryFeedback } from "../components/mentor/mentor-query-feedback";
+import { MentorQuerySkeleton } from "../components/mentor/mentor-query-skeleton";
+import { MentorProfileNavigation } from "../components/mentor/mentor-profile-navigation";
 
 interface MentorProfileViewProps {
   mentorId: string;

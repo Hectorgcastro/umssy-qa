@@ -1,8 +1,8 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { MENTORSHIP_STEPS } from "../constants/mentorship-steps.constants";
-import type { MentorshipStep } from "../types/mentorship-step.types";
+import { MENTORSHIP_STEPS } from "../../constants/mentorship-steps.constants";
+import type { MentorshipStep } from "../../types/mentorship-step.types";
 
 interface ProgressStepperProps {
   currentStep: MentorshipStep;

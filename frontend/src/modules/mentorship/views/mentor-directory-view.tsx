@@ -1,8 +1,8 @@
 "use client";
 
-import { MentorDirectoryGrid } from "../components/mentor-directory-grid";
-import { MentorQueryFeedback } from "../components/mentor-query-feedback";
-import { MentorQuerySkeleton } from "../components/mentor-query-skeleton";
+import { MentorDirectoryGrid } from "../components/mentor/mentor-directory-grid";
+import { MentorQueryFeedback } from "../components/mentor/mentor-query-feedback";
+import { MentorQuerySkeleton } from "../components/mentor/mentor-query-skeleton";
 import { useMentorDirectory } from "../hooks/use-mentor-directory";
 
 export function MentorDirectoryView() {

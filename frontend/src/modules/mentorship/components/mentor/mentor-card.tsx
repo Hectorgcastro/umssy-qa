@@ -5,7 +5,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import type { MentorDirectoryItem } from "../types/mentor-directory.types";
+import type { MentorDirectoryItem } from "../../types/mentor-directory.types";
 
 interface MentorCardProps {
   mentor: MentorDirectoryItem;
