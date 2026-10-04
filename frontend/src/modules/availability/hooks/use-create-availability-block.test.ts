@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { renderHook, act } from "@testing-library/react"
 import { useCreateAvailabilityBlock } from "./use-create-availability-block"
 import { availabilityApi } from "../services/availability.api"
-import type { AvailabilityBlock } from "../types/availability"
+import type { AvailabilityBlock } from "../types/availability-block.types"
 
 const input = { startAt: "2024-01-15T10:00", endAt: "2024-01-15T11:00" }
 

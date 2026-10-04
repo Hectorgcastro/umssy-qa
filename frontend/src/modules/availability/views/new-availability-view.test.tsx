@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { NewAvailabilityView } from "./new-availability-view"
 import { availabilityApi } from "../services/availability.api"
-import type { AvailabilityBlock } from "../types/availability"
+import type { AvailabilityBlock } from "../types/availability-block.types"
 
 const mockBlock: AvailabilityBlock = {
   id: "1",

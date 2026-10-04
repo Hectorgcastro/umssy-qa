@@ -1,32 +1,13 @@
-// Bolivia no usa horario de verano: siempre UTC-4.
-export const BOLIVIA_UTC_OFFSET_MINUTES = -240;
-
-const MINUTE_MS = 60_000;
-const DAY_MS = 24 * 60 * MINUTE_MS;
-const WEEK_MS = 7 * DAY_MS;
-const BOLIVIA_OFFSET_MS = BOLIVIA_UTC_OFFSET_MINUTES * MINUTE_MS;
-
-const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
-const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
-
-export type DateInput = Date | string;
-
-export interface BoliviaDateTime {
-  year: number;
-  month: number;
-  day: number;
-  hours: number;
-  minutes: number;
-  // ISO 8601: 1 = lunes, 7 = domingo.
-  weekday: number;
-  date: string;
-  time: string;
-}
-
-export interface WeekRange {
-  startAt: string;
-  endAt: string;
-}
+import {
+  BOLIVIA_OFFSET_MS,
+  DATE_PATTERN,
+  DAY_MS,
+  TIME_PATTERN,
+  WEEK_MS,
+} from '../constants/date-time.constants.js';
+import type { BoliviaDateTime } from '../types/bolivia-date-time.types.js';
+import type { DateInput } from '../types/date-input.types.js';
+import type { WeekRange } from '../types/week-range.types.js';
 
 const pad = (value: number): string => String(value).padStart(2, '0');
 
@@ -38,7 +19,6 @@ const toTimestamp = (value: DateInput): number => {
   return timestamp;
 };
 
-// Desplaza el instante para que los getters UTC devuelvan la hora de Bolivia.
 const toBoliviaShifted = (value: DateInput): Date =>
   new Date(toTimestamp(value) + BOLIVIA_OFFSET_MS);
 
@@ -76,7 +56,6 @@ export const toUtcIso = (boliviaDate: string, boliviaTime: string): string => {
   const [, hours, minutes] = timeMatch.map(Number);
   const shifted = new Date(Date.UTC(year, month - 1, day, hours, minutes));
 
-  // Date.UTC acepta valores fuera de rango (ej. 31 de febrero) y los desborda.
   const isSameDate =
     shifted.getUTCFullYear() === year &&
     shifted.getUTCMonth() === month - 1 &&

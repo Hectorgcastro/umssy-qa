@@ -1,6 +1,6 @@
 -- Extensión necesaria para combinar la igualdad de "mentor_id" con el solapamiento
 -- de rangos dentro de una restricción EXCLUDE.
-CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 
 -- El fin del bloque debe ser posterior al inicio.
 ALTER TABLE "availability_blocks"

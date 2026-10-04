@@ -7,6 +7,6 @@
     "sourceMap": false,
     "incremental": false
   },
-  "include": ["prisma/**/*.ts", "src/prisma/**/*.ts"],
+  "include": ["src/common/database/seeds.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

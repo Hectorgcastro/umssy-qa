@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect } from "vitest"
 import { AvailabilityBlockList } from "./availability-block-list"
-import type { AvailabilityBlock } from "../types/availability"
+import type { AvailabilityBlock } from "../types/availability-block.types"
 
 const mockBlock: AvailabilityBlock = {
   id: "1",

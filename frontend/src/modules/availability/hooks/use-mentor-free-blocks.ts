@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { availabilityApi } from "../services/availability.api";
-import type { AvailabilityBlock } from "../types/availability";
+import type { AvailabilityBlock } from "../types/availability-block.types";
 
 export function useMentorFreeBlocks(mentorId: string) {
   const [currentMentorId, setCurrentMentorId] = useState(mentorId);
