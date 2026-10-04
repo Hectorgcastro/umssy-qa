@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { CalendarDays, Ticket } from "lucide-react";
 import { AppShell } from "@/shared/components/layout";
 import type { NavigationItem } from "@/shared/types/navigation-item.types";
@@ -11,5 +12,7 @@ const EVENTS_NAVIGATION: NavigationItem[] = [
 ];
 
 export function EventsAppShell({ children }: { children: ReactNode }) {
-  return <AppShell items={EVENTS_NAVIGATION}>{children}</AppShell>;
+  const pathname = usePathname();
+
+  return <AppShell items={EVENTS_NAVIGATION} fullBleed={pathname === "/events"}>{children}</AppShell>;
 }
