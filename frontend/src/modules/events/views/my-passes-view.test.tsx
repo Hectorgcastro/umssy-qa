@@ -14,6 +14,7 @@ describe('Mis pases', () => {
     getMine.mockResolvedValue([pass, { ...pass, id: 'reg-2', eventName: 'Prisma', location: 'Lab 2' }]);
     render(<MyPassesView />);
     expect(screen.getByRole('status')).toHaveTextContent('Cargando');
+    expect(screen.queryByRole('region', { name: 'Aún no tienes inscripciones.' })).not.toBeInTheDocument();
     await screen.findByText('reg-1');
     expect(screen.getByText('Aula 101')).toBeInTheDocument();
     expect(screen.getByText(/09:00 - 12:00/)).toBeInTheDocument();
@@ -25,7 +26,10 @@ describe('Mis pases', () => {
   it('muestra el estado vacío y acceso al catálogo', async () => {
     getMine.mockResolvedValue([]);
     render(<MyPassesView />);
-    await screen.findByText('Aún no tienes inscripciones.');
+    expect(await screen.findByRole('region', { name: 'Aún no tienes inscripciones.' })).toBeInTheDocument();
+    expect(screen.getByText('0 pases')).toBeInTheDocument();
+    expect(screen.queryByText('ID Inscripción')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Vista ilustrativa de QR')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Explorar talleres disponibles' })).toHaveAttribute('href', '/events');
   });
   it('permite reintentar y muestra un único pase después de recuperarse', async () => {
@@ -47,6 +51,7 @@ describe('Mis pases', () => {
     getMine.mockRejectedValue(cause);
     render(<MyPassesView />);
     expect(await screen.findByRole('alert')).toHaveTextContent(message);
+    expect(screen.queryByRole('region', { name: 'Aún no tienes inscripciones.' })).not.toBeInTheDocument();
     expect(screen.queryByText('ID Inscripción')).not.toBeInTheDocument();
   });
   it.each([true, false])('cancela la consulta al desmontar sin actualizar la vista: %s', async (success) => {
