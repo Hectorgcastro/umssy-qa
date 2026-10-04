@@ -1,5 +1,5 @@
 import { TechnicalAreasView } from "@/modules/mentors";
 
 export default function Page() {
-  return <TechnicalAreasView mode="edit" />;
+  return <TechnicalAreasView />;
 }
