@@ -6,13 +6,15 @@ import { useConversations } from '../hooks/use-conversations';
 import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
+import { User } from '../types/user.types';
+import { UserSummary } from '../types/conversation.types';
 
 export function ChatView() {
-  // Estado para controlar cuándo se abre y cierra el modal
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const {
     conversations,
+    selectedConversation,
     hasMore,
     loadMore,
     selectedId,
@@ -23,18 +25,25 @@ export function ChatView() {
     setSearchQuery,
     handleSelectConversation,
     clearSelectedConversation,
-    startConversationWithContact, // <--- Nueva función para iniciar chat
+    startConversationWithContact,
   } = useConversations();
-
-  const selectedConversation = conversations.find((item) => item.id === selectedId);
 
   const handleBackToList = () => {
     clearSelectedConversation();
   };
 
-  // Función que abre el modal
   const handleStartNewChat = () => {
+    if (activeFilter !== 'all') {
+      setActiveFilter('all');
+    }
     setIsSearchModalOpen(true);
+  };
+
+  const handleSelectContact = (contact: User | UserSummary) => {
+    if (activeFilter !== 'all') {
+      setActiveFilter('all');
+    }
+    startConversationWithContact(contact);
   };
 
   return (
@@ -55,7 +64,7 @@ export function ChatView() {
           onFilterChange={setActiveFilter}
           onSearchChange={setSearchQuery}
           onLoadMore={loadMore}
-          onStartNewChat={handleStartNewChat} // <--- Conectado al botón flotante/sidebar
+          onStartNewChat={handleStartNewChat}
         />
       </aside>
 
@@ -127,16 +136,15 @@ export function ChatView() {
           <EmptyChatState
             description="Selecciona una conversacion existente en el panel izquierdo o inicia una nueva para comenzar a comunicarte."
             actionLabel="Iniciar una nueva conversacion"
-            onAction={handleStartNewChat} // <--- Conectado al botón central
+            onAction={handleStartNewChat}
           />
         )}
       </main>
 
-      {/* Renderizado del Modal conectado a los estados y funciones */}
       <ContactSearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
-        onSelectContact={startConversationWithContact}
+        onSelectContact={handleSelectContact}
       />
     </div>
   );
