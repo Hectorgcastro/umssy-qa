@@ -5,6 +5,7 @@ import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { UserSearchInput } from "../components/user-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
+import { ExportErrorMessage } from "../components/export-error-message";
 import { RefreshButton } from "../components/refresh-button";
 import { RejectedUsersTable } from "../components/rejected-users-table";
 import { TablePagination } from "../components/table-pagination";
@@ -49,18 +50,14 @@ export function RejectedUsersReportView() {
         </div>
       </div>
 
-      {exportErrorMessage && (
-        <p role="alert" className="text-sm text-accent">
-          {exportErrorMessage}
-        </p>
-      )}
-
       <RejectedUsersTable
         users={users}
         isLoading={isLoading}
         errorMessage={errorMessage}
         searchTerm={search}
       />
+
+      <ExportErrorMessage message={exportErrorMessage} />
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
         <p className="text-sm text-text-secondary">

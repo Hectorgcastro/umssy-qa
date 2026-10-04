@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
+import { ExportErrorMessage } from "../components/export-error-message";
 import { RefreshButton } from "../components/refresh-button";
 import { RegisteredUsersTable } from "../components/registered-users-table";
 import { ReportActions } from "../components/report-actions";
@@ -43,13 +44,9 @@ export function RegisteredUsersReportView() {
         <ReportActions onExport={exportCsv} isExporting={isExporting} />
       </div>
 
-      {exportErrorMessage && (
-        <p role="alert" className="text-sm text-accent">
-          {exportErrorMessage}
-        </p>
-      )}
-
       <RegisteredUsersTable users={users} isLoading={isLoading} errorMessage={errorMessage} />
+
+      <ExportErrorMessage message={exportErrorMessage} />
 
       <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
         <p className="text-center text-sm text-text-secondary md:text-left">
