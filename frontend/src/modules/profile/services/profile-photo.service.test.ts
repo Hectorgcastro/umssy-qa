@@ -19,7 +19,10 @@ describe("profilePhotoService", () => {
     vi.mocked(apiClient.get).mockResolvedValue({ data: photo });
 
     await expect(profilePhotoService.getPhoto()).resolves.toBe(photo);
-    expect(apiClient.get).toHaveBeenCalledWith("/profile/me/photo", { responseType: "blob" });
+    expect(apiClient.get).toHaveBeenCalledWith("/profile/me/photo", {
+      responseType: "blob",
+      headers: {},
+    });
   });
 
   it("returns null when the user has no photo", async () => {
@@ -41,7 +44,12 @@ describe("profilePhotoService", () => {
 
     await profilePhotoService.uploadPhoto(photo);
 
-    const [endpoint, body] = vi.mocked(apiClient.put).mock.calls[0] as [string, FormData];
+    const [endpoint, body, config] = vi.mocked(apiClient.put).mock.calls[0] as [
+      string,
+      FormData,
+      { headers: Record<string, string> },
+    ];
+    expect(config.headers).toEqual({});
     expect(endpoint).toBe("/profile/me/photo");
     expect(body.get("file")).toBe(photo);
   });
