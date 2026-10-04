@@ -1,13 +1,10 @@
 import { Module } from '@nestjs/common';
-import { OrientationTypesController } from './orientation-types.controller.js';
-import { OrientationTypesService } from './orientation-types.service.js';
-import { OrientationTypesRepository } from './orientation-types.repository.js';
-import { PrismaModule } from '../../common/prisma/prisma.module.js';
+import { OrientationTypesController } from './controllers/orientation-types.controller.js';
+import { OrientationTypesRepository } from './repositories/orientation-types.repository.js';
+import { OrientationTypesService } from './services/orientation-types.service.js';
 
 @Module({
-  imports: [PrismaModule],
   controllers: [OrientationTypesController],
   providers: [OrientationTypesService, OrientationTypesRepository],
-  exports: [OrientationTypesService],
 })
 export class OrientationTypesModule {}
