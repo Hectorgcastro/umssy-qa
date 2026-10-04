@@ -40,7 +40,7 @@ export function RegisteredUsersReportView() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <UserTypeFilter value={userType} onChange={handleUserTypeChange} />
-        <ReportActions onExport={exportCsv} isExporting={isExporting} />
+        <ReportActions onExport={exportCsv} isExporting={isExporting} hasActiveFilters={userType !== undefined} />
       </div>
 
       {exportErrorMessage && (

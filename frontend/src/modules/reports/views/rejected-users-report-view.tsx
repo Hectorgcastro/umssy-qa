@@ -45,7 +45,7 @@ export function RejectedUsersReportView() {
         <UserSearchInput value={searchInput} onChange={handleSearchChange} />
         <div className="flex flex-wrap items-center gap-3">
           <RefreshButton label="Actualizar" onClick={refresh} isRefreshing={isLoading} />
-          <ExportCsvButton onClick={exportCsv} isExporting={isExporting} />
+          <ExportCsvButton onExport={exportCsv} isExporting={isExporting} hasActiveFilters={search !== ""} />
         </div>
       </div>
 

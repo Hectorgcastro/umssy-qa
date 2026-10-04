@@ -187,9 +187,10 @@ describe("RejectedUsersReportView", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Exportar según filtros" }));
 
     const exportingButton = screen.getByRole("button", { name: "Exportando..." }) as HTMLButtonElement;
-    expect(exportingButton.disabled).toBe(true);
+    expect(exportingButton.getAttribute("aria-busy")).toBe("true");
     expect(exportSpy).toHaveBeenCalledWith({ search: "juan.perez@" });
 
     resolveExport({ file, fileName: "usuarios-rechazados-2026-10-04.csv" });
@@ -200,12 +201,34 @@ describe("RejectedUsersReportView", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("exporta todos los rechazados aunque haya una búsqueda activa", async () => {
+    const file = new Blob(["Usuario"], { type: "text/csv" });
+    const exportSpy = vi
+      .spyOn(reportsService, "exportRejectedUsersCsv")
+      .mockResolvedValueOnce({ file, fileName: "usuarios-rechazados.csv" });
+    vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
+    render(<RejectedUsersReportView />);
+
+    fireEvent.change(screen.getByPlaceholderText("Buscar por nombre, correo o identificador"), {
+      target: { value: "juan.perez@" },
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 1-1 de 1 usuarios")).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Exportar todo" }));
+
+    expect(exportSpy).toHaveBeenCalledWith({});
+  });
+
   it("muestra un mensaje si falla la exportación", async () => {
     vi.spyOn(reportsService, "exportRejectedUsersCsv").mockRejectedValueOnce(new Error("Network error"));
     const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile");
     render(<RejectedUsersReportView />);
 
     fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Exportar todo" }));
 
     expect((await screen.findByRole("alert")).textContent).toBe("No se pudo exportar el reporte. Inténtalo de nuevo.");
     expect(downloadSpy).not.toHaveBeenCalled();

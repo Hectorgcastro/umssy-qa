@@ -192,9 +192,10 @@ describe("RegisteredUsersReportView", () => {
     await selectUserType(user, "Empresa");
 
     await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Exportar según filtros" }));
 
     const exportingButton = screen.getByRole("button", { name: "Exportando..." }) as HTMLButtonElement;
-    expect(exportingButton.disabled).toBe(true);
+    expect(exportingButton.getAttribute("aria-busy")).toBe("true");
     expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY" });
 
     resolveExport({ file, fileName: "usuarios-registrados-2026-10-03.csv" });
@@ -205,12 +206,29 @@ describe("RegisteredUsersReportView", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("exporta todos los usuarios aunque haya un filtro seleccionado", async () => {
+    const user = userEvent.setup();
+    const file = new Blob(["Usuario"], { type: "text/csv" });
+    const exportSpy = vi
+      .spyOn(reportsService, "exportRegisteredUsersCsv")
+      .mockResolvedValueOnce({ file, fileName: "usuarios-registrados.csv" });
+    vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
+    await renderLoadedView();
+    await selectUserType(user, "Empresa");
+
+    await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Exportar todo" }));
+
+    expect(exportSpy).toHaveBeenCalledWith({});
+  });
+
   it("muestra un mensaje si falla la exportación", async () => {
     vi.spyOn(reportsService, "exportRegisteredUsersCsv").mockRejectedValueOnce(new Error("Network error"));
     const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile");
     await renderLoadedView();
 
     fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Exportar todo" }));
 
     expect((await screen.findByRole("alert")).textContent).toBe("No se pudo exportar el reporte. Inténtalo de nuevo.");
     expect(downloadSpy).not.toHaveBeenCalled();

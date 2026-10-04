@@ -26,6 +26,8 @@ export interface RegisteredUsersParams {
 
 export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType">;
 
+export type ExportScope = "all" | "filtered";
+
 export interface ExportedFile {
   file: Blob;
   fileName: string;
