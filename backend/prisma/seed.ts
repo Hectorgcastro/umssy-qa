@@ -302,6 +302,77 @@ async function main() {
     });
   }
   console.log('Published events ensured: 6 events with varied capacity');
+
+  // --- Commit 5: registrations for full, partial and cancelled cases ---
+  const registrationsConfig: Array<{
+    eventId: string;
+    userIndex: number;
+    cancelled?: boolean;
+  }> = [
+    // React (6 active)
+    { eventId: EVENT_REACT_ID, userIndex: 0 },
+    { eventId: EVENT_REACT_ID, userIndex: 1 },
+    { eventId: EVENT_REACT_ID, userIndex: 2 },
+    { eventId: EVENT_REACT_ID, userIndex: 3 },
+    { eventId: EVENT_REACT_ID, userIndex: 4 },
+    { eventId: EVENT_REACT_ID, userIndex: 5 },
+
+    // IA Aplicada (3 active)
+    { eventId: EVENT_IA_APLICADA_ID, userIndex: 0 },
+    { eventId: EVENT_IA_APLICADA_ID, userIndex: 1 },
+    { eventId: EVENT_IA_APLICADA_ID, userIndex: 2 },
+
+    // Data Science (4 active, 1 cancelled)
+    { eventId: EVENT_DATA_SCIENCE_ID, userIndex: 0 },
+    { eventId: EVENT_DATA_SCIENCE_ID, userIndex: 1 },
+    { eventId: EVENT_DATA_SCIENCE_ID, userIndex: 2 },
+    { eventId: EVENT_DATA_SCIENCE_ID, userIndex: 3 },
+    { eventId: EVENT_DATA_SCIENCE_ID, userIndex: 4, cancelled: true },
+
+    // UI/UX (2 active -> FULL 2/2)
+    { eventId: EVENT_UI_UX_ID, userIndex: 0 },
+    { eventId: EVENT_UI_UX_ID, userIndex: 1 },
+
+    // Seguridad Básica (4 active -> capacity null)
+    { eventId: EVENT_SEGURIDAD_BASICA_ID, userIndex: 0 },
+    { eventId: EVENT_SEGURIDAD_BASICA_ID, userIndex: 1 },
+    { eventId: EVENT_SEGURIDAD_BASICA_ID, userIndex: 2 },
+    { eventId: EVENT_SEGURIDAD_BASICA_ID, userIndex: 3 },
+
+    // NoSQL (5 active)
+    { eventId: EVENT_NOSQL_ID, userIndex: 0 },
+    { eventId: EVENT_NOSQL_ID, userIndex: 1 },
+    { eventId: EVENT_NOSQL_ID, userIndex: 2 },
+    { eventId: EVENT_NOSQL_ID, userIndex: 3 },
+    { eventId: EVENT_NOSQL_ID, userIndex: 4 },
+  ];
+
+  for (const reg of registrationsConfig) {
+    const user = seedUsers[reg.userIndex];
+    const qrToken = `qr-seed-${reg.eventId.slice(-4)}-u${reg.userIndex + 1}`;
+    const cancelledAt = reg.cancelled ? new Date('2026-10-01T10:00:00.000Z') : null;
+
+    await prisma.eventRegistration.upsert({
+      where: {
+        eventId_userId: {
+          eventId: reg.eventId,
+          userId: user.id,
+        },
+      },
+      update: {
+        statusId: REG_STATUS_CONFIRMADA_ID,
+        cancelledAt,
+      },
+      create: {
+        eventId: reg.eventId,
+        userId: user.id,
+        statusId: REG_STATUS_CONFIRMADA_ID,
+        qrToken,
+        cancelledAt,
+      },
+    });
+  }
+  console.log('Event registrations ensured: 24 active, 1 cancelled');
 }
 
 main()
