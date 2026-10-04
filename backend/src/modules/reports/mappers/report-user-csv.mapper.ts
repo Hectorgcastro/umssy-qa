@@ -8,7 +8,6 @@ import type {
 // Mismas etiquetas que muestra la tabla del frontend (modules/reports/constants).
 export const USER_TYPE_LABELS: Record<ReportUserType, string> = {
   STUDENT: 'Estudiante',
-  GRADUATE: 'Egresado',
   DEGREE_HOLDER: 'Titulado',
   MENTOR: 'Mentor',
   COMPANY: 'Empresa',

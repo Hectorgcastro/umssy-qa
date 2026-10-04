@@ -1,4 +1,4 @@
-export type UserType = "STUDENT" | "GRADUATE" | "DEGREE_HOLDER" | "MENTOR" | "COMPANY" | "ADMIN";
+export type UserType = "STUDENT" | "DEGREE_HOLDER" | "MENTOR" | "COMPANY" | "ADMIN";
 
 export type UserDocumentType =
   | "ACADEMIC_DEGREE"

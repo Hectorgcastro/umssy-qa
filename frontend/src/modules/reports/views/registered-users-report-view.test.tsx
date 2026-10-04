@@ -10,14 +10,14 @@ import { RegisteredUsersReportView } from "./registered-users-report-view";
 const REGISTERED_USERS: RegisteredUser[] = [
   { id: "1", fullName: "Juan Carlos Peres Rojas", email: "jc.peraz@gmail.com", userType: "DEGREE_HOLDER", identifier: "201942394", documentType: "ACADEMIC_DEGREE", registeredAt: "2026-03-15T10:00:00" },
   { id: "2", fullName: "Maria Quispe Mamani", email: "maria.qui@gmail.com", userType: "DEGREE_HOLDER", identifier: "201902277", documentType: "NATIONAL_DEGREE", registeredAt: "2026-02-20T10:00:00" },
-  { id: "3", fullName: "Luis Fernando Vargaz Saliz", email: "lf.vargas.ct@gmail.com", userType: "GRADUATE", identifier: "201701190", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2025-01-10T10:00:00" },
-  { id: "4", fullName: "Andrea Camacho Torrez", email: "andrea.ct@gmail.com", userType: "GRADUATE", identifier: "201905853", documentType: "ACADEMIC_DIPLOMA", registeredAt: "2025-01-10T10:00:00" },
+  { id: "3", fullName: "Luis Fernando Vargaz Saliz", email: "lf.vargas.ct@gmail.com", userType: "STUDENT", identifier: "201701190", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-01-10T10:00:00" },
+  { id: "4", fullName: "Andrea Camacho Torrez", email: "andrea.ct@gmail.com", userType: "STUDENT", identifier: "201905853", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-01-10T10:00:00" },
   { id: "5", fullName: "Rodrigo Gutiérrez Arce", email: "r.rutiereer@outlook.com", userType: "DEGREE_HOLDER", identifier: "201603348", documentType: "NATIONAL_DEGREE", registeredAt: "2025-01-10T10:00:00" },
   { id: "6", fullName: "Sofia Fernandez Claras", email: "sofia.fo@gmail.com", userType: "DEGREE_HOLDER", identifier: "201909731", documentType: "ACADEMIC_DIPLOMA", registeredAt: "2025-01-10T10:00:00" },
   { id: "7", fullName: "Diego Mercado Rocha", email: "dmercado@gmail.com", userType: "COMPANY", identifier: "1029964756", documentType: "NIT", registeredAt: "2025-01-10T10:00:00" },
   { id: "8", fullName: "Valeria Amez Lima", email: "vale.amez@gmail.com", userType: "ADMIN", identifier: "201902214", documentType: "ACADEMIC_DIPLOMA", registeredAt: "2026-03-15T10:00:00" },
   { id: "9", fullName: "Stephanie Mamani Choque", email: "stephanie.mamani@gmail.com", userType: "DEGREE_HOLDER", identifier: "202004667", documentType: "NATIONAL_DEGREE", registeredAt: "2026-03-15T10:00:00" },
-  { id: "10", fullName: "Carlos Rivera Quispe", email: "carlos.rivera@gmail.com", userType: "GRADUATE", identifier: "201702345", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2026-03-15T10:00:00" },
+  { id: "10", fullName: "Carlos Rivera Quispe", email: "carlos.rivera@gmail.com", userType: "STUDENT", identifier: "201702345", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2026-03-15T10:00:00" },
   { id: "11", fullName: "Ana Lucia Rojas Vera", email: "ana.rojas@gmail.com", userType: "STUDENT", identifier: "201801122", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-11-04T10:00:00" },
   { id: "12", fullName: "Marco Antonio Flores Paz", email: "marco.flores@gmail.com", userType: "DEGREE_HOLDER", identifier: "201604587", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-10-22T10:00:00" },
   { id: "13", fullName: "Tecnologías Andinas SRL", email: "rrhh@tecandinas.com", userType: "COMPANY", identifier: "3012457018", documentType: "NIT", registeredAt: "2025-10-15T10:00:00" },
@@ -31,7 +31,7 @@ const REGISTERED_USERS: RegisteredUser[] = [
   { id: "21", fullName: "Lucía Herrera Pinto", email: "lucia.herrera@gmail.com", userType: "MENTOR", identifier: "202102204", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-05-27T10:00:00" },
   { id: "22", fullName: "Mauricio Zeballos Durán", email: "mauricio.z@outlook.com", userType: "DEGREE_HOLDER", identifier: "201609935", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-05-06T10:00:00" },
   { id: "23", fullName: "Datalab Bolivia SRL", email: "info@datalab.bo", userType: "COMPANY", identifier: "4015862011", documentType: "NIT", registeredAt: "2025-04-15T10:00:00" },
-  { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "GRADUATE", identifier: "202003376", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2025-03-20T10:00:00" },
+  { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "STUDENT", identifier: "202003376", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-03-20T10:00:00" },
 ];
 
 // "1-2025" agrupa enero a junio y "2-2025" julio a diciembre.
@@ -115,7 +115,7 @@ describe("RegisteredUsersReportView", () => {
 
     await screen.findByRole("listbox");
     const options = screen.getAllByRole("option").map((option) => option.textContent);
-    expect(options).toEqual(["Todos", "Estudiante", "Egresado", "Titulado", "Mentor", "Empresa", "Administrador"]);
+    expect(options).toEqual(["Todos", "Estudiante", "Titulado", "Mentor", "Empresa", "Administrador"]);
   });
 
   it("vuelve a cargar los datos al presionar actualizar", async () => {
@@ -342,18 +342,37 @@ describe("RegisteredUsersReportView", () => {
         .slice(1)
         .map((row) => row.querySelectorAll("td")[2].textContent);
 
-    it("CA 4 y CA 5: al elegir Egresado consulta GRADUATE y solo muestra egresados", async () => {
-      const user = userEvent.setup();
-      const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
-      await renderLoadedView();
+    it.each([
+      { label: "Estudiante", userType: "STUDENT", total: 6 },
+      { label: "Titulado", userType: "DEGREE_HOLDER", total: 10 },
+      { label: "Mentor", userType: "MENTOR", total: 2 },
+      { label: "Empresa", userType: "COMPANY", total: 4 },
+      { label: "Administrador", userType: "ADMIN", total: 2 },
+    ])(
+      "CA 4 y CA 5: al elegir $label consulta $userType y solo muestra ese tipo",
+      async ({ label, userType, total }) => {
+        const user = userEvent.setup();
+        const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
+        await renderLoadedView();
 
-      await selectUserType(user, "Egresado");
+        await selectUserType(user, label);
 
-      await waitFor(() => {
-        expect(screen.getByText("Mostrando 1-4 de 4 usuarios")).toBeDefined();
-      });
-      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({ page: 1, limit: 10, userType: "GRADUATE" });
-      expect(userTypeColumn()).toEqual(["Egresado", "Egresado", "Egresado", "Egresado"]);
+        await waitFor(() => {
+          expect(screen.getByText(`Mostrando 1-${total} de ${total} usuarios`)).toBeDefined();
+        });
+        expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({ page: 1, limit: 10, userType });
+        expect(userTypeColumn()).toEqual(Array.from({ length: total }, () => label));
+      },
+    );
+
+    it("no ofrece Egresado como tipo de usuario", async () => {
+      render(<RegisteredUsersReportView />);
+
+      await userEvent.setup().click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
+
+      await screen.findByRole("listbox");
+      expect(screen.getAllByRole("option")).toHaveLength(6);
+      expect(screen.queryByRole("option", { name: "Egresado" })).toBeNull();
     });
 
     it("CA 3 y CA 11: con Todos no envía tipo de usuario", async () => {
