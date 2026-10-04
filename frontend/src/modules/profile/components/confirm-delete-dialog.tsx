@@ -1,6 +1,14 @@
-import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { LoaderCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { ConfirmDeleteDialogProps } from "../types/confirm-delete-dialog-props.types";
 
 export function ConfirmDeleteDialog({
@@ -12,36 +20,30 @@ export function ConfirmDeleteDialog({
   onCancel,
 }: ConfirmDeleteDialogProps) {
   return (
-    <AlertDialog.Root open={isOpen} onOpenChange={isDeleting ? undefined : onCancel}>
-      <AlertDialog.Portal>
-        <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-ink/40 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <AlertDialog.Popup className="fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-surface p-8 text-ink shadow-lg transition duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0">
-          <AlertDialog.Title className="font-tight text-[22px] font-bold text-ink">{title}</AlertDialog.Title>
-          <AlertDialog.Description className="mt-2 text-[15px] text-text-secondary">{message}</AlertDialog.Description>
-          <div className="mt-8 flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
-              disabled={isDeleting}
-              onClick={onCancel}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              className="h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger"
-              disabled={isDeleting}
-              onClick={onConfirm}
-            >
-              {isDeleting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
-              {isDeleting
-                ? "Eliminando..."
-                : "Eliminar"}
-            </Button>
-          </div>
-        </AlertDialog.Popup>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+    <AlertDialog open={isOpen} onOpenChange={isDeleting ? undefined : onCancel}>
+      <AlertDialogContent className="max-w-md gap-0 rounded-2xl border border-border bg-surface p-8 text-ink shadow-lg ring-0 data-[size=default]:max-w-md data-[size=default]:sm:max-w-md">
+        <AlertDialogHeader className="place-items-start text-left">
+          <AlertDialogTitle className="font-tight text-[22px] font-bold text-ink">{title}</AlertDialogTitle>
+          <AlertDialogDescription className="mt-2 text-[15px] text-text-secondary">{message}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="mx-0 mb-0 mt-8 flex-row justify-end gap-3 border-t-0 bg-transparent p-0">
+          <AlertDialogCancel
+            className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
+            disabled={isDeleting}
+          >
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction
+            type="button"
+            className="h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger"
+            disabled={isDeleting}
+            onClick={onConfirm}
+          >
+            {isDeleting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+            {isDeleting ? "Eliminando..." : "Eliminar"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

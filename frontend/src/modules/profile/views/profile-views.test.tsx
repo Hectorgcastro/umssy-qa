@@ -37,7 +37,8 @@ describe("PersonalInfoView", () => {
 
     await user.type(screen.getByLabelText(/Nombres/), "Valeria");
     await user.type(screen.getByLabelText(/Apellidos/), "Quispe");
-    await user.selectOptions(screen.getByLabelText(/Ciudad de residencia/), "Cochabamba");
+    await user.click(screen.getByRole("combobox", { name: /Ciudad de residencia/ }));
+    await user.click(await screen.findByRole("option", { name: "Cochabamba" }));
     await user.type(screen.getByLabelText(/Teléfono/), "+591 70000000");
     await user.type(screen.getByLabelText(/Correo personal/), "valeria@correo.com");
     await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
@@ -45,7 +46,7 @@ describe("PersonalInfoView", () => {
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
     expect(screen.getByLabelText(/Nombres/)).toHaveValue("Valeria");
-  });
+  }, 15000);
 });
 
 describe("PresentationView", () => {

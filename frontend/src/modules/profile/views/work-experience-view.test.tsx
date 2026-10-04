@@ -82,7 +82,7 @@ describe("WorkExperienceView", () => {
 
     await user.type(screen.getByLabelText(/Empresa/), "Synapse Labs");
     await user.type(screen.getByLabelText(/Cargo/), "Desarrolladora web junior");
-    await user.click(screen.getByLabelText("Trabajo actualmente aquí"));
+    await user.click(screen.getByRole("checkbox", { name: "Trabajo actualmente aquí" }));
     await user.click(screen.getByRole("button", { name: "Guardar experiencia" }));
 
     expect(workExperienceService.createWorkExperience).toHaveBeenCalledWith(
