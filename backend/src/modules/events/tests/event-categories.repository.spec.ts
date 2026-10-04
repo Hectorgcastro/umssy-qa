@@ -73,7 +73,7 @@ describe('EventCategoriesRepository', () => {
     );
   });
 
-  it('orders by name asc then id asc', async () => {
+  it('orders by createdAt asc then id asc', async () => {
     prismaMock.eventCategory.findMany.mockResolvedValue([]);
     prismaMock.eventCategory.count.mockResolvedValue(0);
 
@@ -81,7 +81,7 @@ describe('EventCategoriesRepository', () => {
 
     expect(prismaMock.eventCategory.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       }),
     );
   });

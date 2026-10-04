@@ -33,7 +33,7 @@ export class EventCategoriesRepository {
       this.prisma.eventCategory.findMany({
         select,
         where,
-        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         skip,
         take,
       }),
