@@ -24,6 +24,16 @@ const CATEGORY_IA_DATOS_ID = '22222222-2222-2222-2222-222222222226';
 const CATEGORY_DISENO_ID = '22222222-2222-2222-2222-222222222227';
 const CATEGORY_SEGURIDAD_ID = '22222222-2222-2222-2222-222222222228';
 
+// --- Commit 3: seed user UUIDs ---
+const SEED_USERS_DATA = [
+  { id: '11111111-1111-1111-1111-111111111111', firstName: 'Seed', lastName: 'User One', email: 'seed.user1@example.test' },
+  { id: '11111111-1111-1111-1111-111111111112', firstName: 'Seed', lastName: 'User Two', email: 'seed.user2@example.test' },
+  { id: '11111111-1111-1111-1111-111111111113', firstName: 'Seed', lastName: 'User Three', email: 'seed.user3@example.test' },
+  { id: '11111111-1111-1111-1111-111111111114', firstName: 'Seed', lastName: 'User Four', email: 'seed.user4@example.test' },
+  { id: '11111111-1111-1111-1111-111111111115', firstName: 'Seed', lastName: 'User Five', email: 'seed.user5@example.test' },
+  { id: '11111111-1111-1111-1111-111111111116', firstName: 'Seed', lastName: 'User Six', email: 'seed.user6@example.test' },
+];
+
 async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
@@ -151,6 +161,24 @@ async function main() {
     create: { id: CATEGORY_SEGURIDAD_ID, name: 'Seguridad' },
   });
   console.log('Event categories ensured: Tecnología, IA & Datos, Diseño, Seguridad');
+
+  // --- Commit 3: 6 seed users ---
+  const seedUsers = [];
+  for (const u of SEED_USERS_DATA) {
+    const user = await prisma.user.upsert({
+      where: { id: u.id },
+      update: { firstName: u.firstName, lastName: u.lastName, email: u.email, password },
+      create: {
+        id: u.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        email: u.email,
+        password,
+      },
+    });
+    seedUsers.push(user);
+  }
+  console.log('Seed users ensured: 6 users');
 }
 
 main()
