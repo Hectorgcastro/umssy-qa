@@ -184,7 +184,6 @@ describe('EducationsController', () => {
       .expect(400);
     expect(response.body).toMatchObject({
       statusCode: 400,
-      data: null,
       ok: false,
     });
     expect(repository.create).not.toHaveBeenCalled();

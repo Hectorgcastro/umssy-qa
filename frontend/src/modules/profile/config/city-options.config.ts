@@ -1,6 +1,5 @@
 import type { CityOption } from "../types/city-option.types";
 
-// Sample cities until the profile endpoints are connected (issue #63).
 export const SAMPLE_CITIES: CityOption[] = [
   { id: "city-cochabamba", title: "Cochabamba" },
   { id: "city-la-paz", title: "La Paz" },

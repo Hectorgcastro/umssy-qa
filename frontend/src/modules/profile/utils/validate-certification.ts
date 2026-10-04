@@ -4,7 +4,7 @@ import {
   ISSUING_ORGANIZATION_MAX_LENGTH,
 } from "../config/certification-validation.config";
 import type { CertificationErrors } from "../types/certification-errors.types";
-import type { CreateCertificationDto } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 

@@ -3,12 +3,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  INPUT_CLASS,
-  PRIMARY_BUTTON_CLASS,
-  SECONDARY_BUTTON_CLASS,
-  TEXTAREA_CLASS,
-} from "../config/form-styles.config";
+import { Input } from "@/components/ui/input";
 import type { PresentationErrors } from "../types/presentation-errors.types";
 import type { PresentationFormProps } from "../types/presentation-form-props.types";
 import type { PresentationValues } from "../types/presentation-values.types";
@@ -61,7 +56,7 @@ export function PresentationForm({
       >
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
           <FormField id="headline" label="Titular profesional" isRequired error={errors.headline}>
-            <input
+            <Input
               id="headline"
               name="headline"
               type="text"
@@ -69,7 +64,7 @@ export function PresentationForm({
               value={values.headline}
               disabled={isSaving}
               onChange={handleChange}
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("headline", errors.headline)}
             />
           </FormField>
@@ -82,7 +77,7 @@ export function PresentationForm({
               value={values.aboutMe}
               disabled={isSaving}
               onChange={handleChange}
-              className={TEXTAREA_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3"
               {...getFieldErrorProps("aboutMe", errors.aboutMe)}
             />
           </FormField>
@@ -95,7 +90,7 @@ export function PresentationForm({
               value={values.interestedOpportunities}
               disabled={isSaving}
               onChange={handleChange}
-              className={TEXTAREA_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3"
             />
           </FormField>
 
@@ -107,13 +102,13 @@ export function PresentationForm({
               <Button
                 type="button"
                 variant="outline"
-                className={SECONDARY_BUTTON_CLASS}
+                className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
                 disabled={isSaving}
                 onClick={handleCancel}
               >
                 Cancelar
               </Button>
-              <Button type="submit" className={cn(PRIMARY_BUTTON_CLASS, "min-w-52")} disabled={isSaving}>
+              <Button type="submit" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-52")} disabled={isSaving}>
                 {isSaving ? "Guardando..." : "Guardar presentación"}
               </Button>
             </div>

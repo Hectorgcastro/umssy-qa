@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-texts.config";
+import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-messages.config";
 import type { SkillItem } from "../types/skill-item.types";
 import type { SkillsSelectorProps } from "../types/skills-selector-props.types";
 import { SkillsSelector } from "./skills-selector";

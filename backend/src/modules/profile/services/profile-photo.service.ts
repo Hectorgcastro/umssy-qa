@@ -10,7 +10,6 @@ import type { MulterFile } from '../types/multer-file.type.js';
 import type { PhotoFileDownload } from '../types/photo-file-download.type.js';
 import { FileValidationService } from './file-validation.service.js';
 
-// Same 5 MB limit as the other profile files (frontend MAX_FILE_SIZE_MB).
 const photoValidationRules: FileValidationRules = {
   allowedTypes: ['jpg', 'png'],
   maxSizeBytes: 5 * 1024 * 1024,

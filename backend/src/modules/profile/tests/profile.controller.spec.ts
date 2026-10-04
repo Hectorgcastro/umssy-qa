@@ -32,7 +32,6 @@ const personalInfo = {
   personalEmail: 'valeria@mail.com',
 };
 
-// Runs the real guard, validation pipe, interceptor and exception filter over HTTP.
 describe('ProfileController', () => {
   let app: INestApplication;
   let token: string;

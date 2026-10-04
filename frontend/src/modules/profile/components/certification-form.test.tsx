@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { CERTIFICATION_VALIDATION_MESSAGES } from "../config/certification-validation.config";
 import { FILE_VALIDATION_MESSAGES } from "../config/file-validation-messages.config";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
-import type { CreateCertificationDto } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { CertificationForm } from "./certification-form";
 
 const SAVED_VALUES: CreateCertificationDto = {

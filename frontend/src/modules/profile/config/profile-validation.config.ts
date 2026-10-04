@@ -1,4 +1,3 @@
-// Matches the VarChar(100) limit of users.first_name and users.last_name.
 export const NAME_MAX_LENGTH = 100;
 
 export const PHONE_MIN_DIGITS = 7;

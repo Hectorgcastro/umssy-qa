@@ -7,12 +7,7 @@ import { FeedbackMessage } from "../components/feedback-message";
 import { ProfilePageLayout } from "../components/profile-page-layout";
 import { SavedCvCard } from "../components/saved-cv-card";
 import { CV_ERROR_MESSAGES } from "../config/cv-error-messages.config";
-import {
-  CV_DELETE_DIALOG_TEXTS,
-  CV_FEEDBACK_MESSAGES,
-  CV_FILE_INPUT_ACCEPT,
-  CV_UPLOAD_LABELS,
-} from "../config/cv-upload.config";
+import { CV_FEEDBACK_MESSAGES, CV_FILE_INPUT_ACCEPT } from "../config/cv-upload.config";
 import { useCvDocument } from "../hooks/use-cv-document";
 import type { Feedback } from "../types/feedback.types";
 import { getCvErrorMessage } from "../utils/get-cv-error-message";
@@ -107,7 +102,7 @@ export function DocumentsCvView() {
         ref={fileInputRef}
         type="file"
         accept={CV_FILE_INPUT_ACCEPT}
-        aria-label={CV_UPLOAD_LABELS.fileInput}
+        aria-label="Archivo PDF del CV"
         hidden
         onChange={handleFileChange}
       />
@@ -128,8 +123,8 @@ export function DocumentsCvView() {
       </div>
       <ConfirmDeleteDialog
         isOpen={isDeleteDialogOpen}
-        title={CV_DELETE_DIALOG_TEXTS.title}
-        message={CV_DELETE_DIALOG_TEXTS.message}
+        title="¿Eliminar tu CV?"
+        message="El archivo dejará de estar disponible en tu perfil."
         isDeleting={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={closeDeleteDialog}

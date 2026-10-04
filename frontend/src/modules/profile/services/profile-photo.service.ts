@@ -5,7 +5,6 @@ import { getHttpStatus } from "../utils/get-http-status";
 const NOT_FOUND_STATUS = 404;
 
 export const profilePhotoService = {
-  // Loaded as a blob because an <img src> request cannot send the access token.
   getPhoto: async (): Promise<Blob | null> => {
     try {
       const response = await apiClient.get<Blob>(PHOTO_ENDPOINT, { responseType: "blob" });

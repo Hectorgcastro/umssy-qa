@@ -13,7 +13,6 @@ export function WorkExperienceView() {
       <TrajectorySteps activeStep="experience" />
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <WorkExperienceListCard experiences={SAMPLE_WORK_EXPERIENCES} />
-        {/* El formulario "Agregar experiencia" se agrega en la tarea #79 */}
       </div>
     </ProfilePageLayout>
   );

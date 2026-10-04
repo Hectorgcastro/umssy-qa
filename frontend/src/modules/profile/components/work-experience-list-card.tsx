@@ -4,9 +4,7 @@ import { formatWorkPeriod } from "../utils/format-work-period";
 import { sortWorkExperiences } from "../utils/sort-work-experiences";
 import { SectionCard } from "./section-card";
 
-const ACTION_BUTTON_CLASS = "h-8 px-2 text-[13px] font-semibold";
-
-export function WorkExperienceListCard({ experiences }: WorkExperienceListCardProps) {
+export function WorkExperienceListCard({ experiences = [] }: WorkExperienceListCardProps) {
   const sortedExperiences = sortWorkExperiences(experiences);
 
   return (
@@ -32,7 +30,7 @@ export function WorkExperienceListCard({ experiences }: WorkExperienceListCardPr
                   type="button"
                   variant="ghost"
                   aria-label={`Editar ${experience.position}`}
-                  className={`${ACTION_BUTTON_CLASS} text-ink`}
+                  className={`h-8 px-2 text-[13px] font-semibold text-ink`}
                 >
                   Editar
                 </Button>
@@ -40,7 +38,7 @@ export function WorkExperienceListCard({ experiences }: WorkExperienceListCardPr
                   type="button"
                   variant="ghost"
                   aria-label={`Eliminar ${experience.position}`}
-                  className={`${ACTION_BUTTON_CLASS} text-accent hover:bg-interaction hover:text-accent`}
+                  className={`h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent`}
                 >
                   Eliminar
                 </Button>

@@ -2,7 +2,6 @@ import type { ProfilePageLayoutProps } from "../types/profile-page-layout-props.
 import { ProfileHeader } from "./profile-header";
 import { ProfileTabs } from "./profile-tabs";
 
-// Shared "Mi perfil" template: each section (user story) only provides its active tab and content.
 export function ProfilePageLayout({ activeTab, title, description, children }: ProfilePageLayoutProps) {
   return (
     <div className="flex min-h-screen w-full flex-1 flex-col bg-surface-soft text-ink">

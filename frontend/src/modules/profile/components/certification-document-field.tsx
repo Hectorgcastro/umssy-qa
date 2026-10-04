@@ -7,7 +7,6 @@ import {
   CERTIFICATE_FILE_ACCEPT,
   CERTIFICATION_DOCUMENT_LABELS,
 } from "../config/certification-document.config";
-import { SECONDARY_BUTTON_CLASS } from "../config/form-styles.config";
 import type { CertificationDocumentFieldProps } from "../types/certification-document-field-props.types";
 import { formatFileSize } from "../utils/format-file-size";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
@@ -76,7 +75,7 @@ export function CertificationDocumentField({
           <Button
             type="button"
             variant="outline"
-            className={`${SECONDARY_BUTTON_CLASS} h-10 px-4 text-[13px]`}
+            className="h-10 border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
           >

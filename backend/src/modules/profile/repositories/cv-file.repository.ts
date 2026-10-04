@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { mapRecordNotFound } from '../../../common/utils/map-record-not-found.js';
+import { ProfileNotFoundException } from '../exceptions/profile-not-found.exception.js';
 import type { FileStorage } from '../types/file-storage.type.js';
 
 const cvContentSelect = { cvPdfUrl: true } as const;
@@ -11,11 +13,14 @@ export class CvFileRepository implements FileStorage {
   constructor(private readonly prisma: PrismaService) {}
 
   async save(ownerId: string, content: Buffer): Promise<void> {
-    await this.prisma.user.update({
-      where: { id: ownerId },
-      data: { cvPdfUrl: new Uint8Array(content) },
-      select: userIdSelect,
-    });
+    await mapRecordNotFound(
+      this.prisma.user.update({
+        where: { id: ownerId },
+        data: { cvPdfUrl: new Uint8Array(content) },
+        select: userIdSelect,
+      }),
+      () => new ProfileNotFoundException(),
+    );
   }
 
   async read(ownerId: string): Promise<Buffer | null> {
@@ -28,10 +33,13 @@ export class CvFileRepository implements FileStorage {
   }
 
   async remove(ownerId: string): Promise<void> {
-    await this.prisma.user.update({
-      where: { id: ownerId },
-      data: { cvPdfUrl: null },
-      select: userIdSelect,
-    });
+    await mapRecordNotFound(
+      this.prisma.user.update({
+        where: { id: ownerId },
+        data: { cvPdfUrl: null },
+        select: userIdSelect,
+      }),
+      () => new ProfileNotFoundException(),
+    );
   }
 }

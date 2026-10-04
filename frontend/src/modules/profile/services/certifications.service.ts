@@ -5,16 +5,13 @@ import {
   getCertificationDocumentEndpoint,
 } from "../config/certification-api.config";
 import type { ApiResponse } from "../types/api-response.types";
-import type {
-  Certification,
-  CreateCertificationDto,
-  UpdateCertificationDto,
-} from "../types/certification.types";
+import type { Certification } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
+import type { UpdateCertificationDto } from "../types/update-certification-dto.types";
 import { getHttpStatus } from "../utils/get-http-status";
 
 const NOT_FOUND_STATUS = 404;
 
-// Sample data until the endpoints are connected (issue #94)
 let sampleCertifications: Certification[] = [];
 const sampleDocuments = new Map<string, Blob>();
 

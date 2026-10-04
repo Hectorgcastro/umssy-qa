@@ -26,4 +26,10 @@ describe("FeedbackMessage", () => {
     expect(message.querySelector("svg.lucide-circle-alert")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
+
+  it("renders nothing when there is no feedback", () => {
+    const { container } = render(<FeedbackMessage feedback={null} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });
