@@ -11,10 +11,11 @@ describe('SkillRepository', () => {
   let skill: {
     findMany: ReturnType<typeof vi.fn>;
     findFirst: ReturnType<typeof vi.fn>;
+    upsert: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
-    skill = { findMany: vi.fn(), findFirst: vi.fn() };
+    skill = { findMany: vi.fn(), findFirst: vi.fn(), upsert: vi.fn() };
     repository = new SkillRepository({ skill } as unknown as PrismaService);
   });
 
@@ -61,6 +62,19 @@ describe('SkillRepository', () => {
     await expect(repository.findByName('kotlin')).resolves.toBeNull();
     expect(skill.findFirst).toHaveBeenCalledWith({
       where: { name: { equals: 'docker', mode: 'insensitive' } },
+      select,
+    });
+  });
+
+  it('creates a custom skill or keeps the one with the same name', async () => {
+    const record = { id: skillId, name: 'Kubernetes', isCustom: true };
+    skill.upsert.mockResolvedValue(record);
+
+    await expect(repository.createCustom('Kubernetes')).resolves.toBe(record);
+    expect(skill.upsert).toHaveBeenCalledWith({
+      where: { name: 'Kubernetes' },
+      create: { name: 'Kubernetes', isCustom: true },
+      update: {},
       select,
     });
   });
