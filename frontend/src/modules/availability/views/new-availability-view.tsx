@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { EMPTY_FORM } from "../constants/availability.constants";
 import { useCreateAvailabilityBlock } from "../hooks/use-create-availability-block";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
-
-const EMPTY_FORM: CreateAvailabilityBlockInput = { startAt: "", endAt: "" };
 
 export function NewAvailabilityView() {
   const { createBlock, isSubmitting, error: createError } = useCreateAvailabilityBlock();

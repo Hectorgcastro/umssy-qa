@@ -1,6 +1,5 @@
+import { DATE_LOCALE } from "../constants/availability.constants";
 import type { AvailabilityBlockListProps } from "../types/availability-block-list-props.types";
-
-const DATE_LOCALE = "es-BO";
 
 export function AvailabilityBlockList({ blocks, emptyMessage }: AvailabilityBlockListProps) {
   if (blocks.length === 0) {
