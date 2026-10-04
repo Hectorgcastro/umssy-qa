@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DomainExceptionFilter } from '../../../common/filters/domain-exception.filter.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { CertificationsModule } from '../certifications.module.js';
+import { CertificationDocumentsRepository } from '../repositories/certification-documents.repository.js';
 import { CertificationsRepository } from '../repositories/certifications.repository.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
@@ -38,6 +39,13 @@ describe('Certifications API', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const documentsRepository = {
+    save: vi.fn(),
+    read: vi.fn(),
+    remove: vi.fn(),
+    hasDocument: vi.fn(),
+    findIdsWithDocument: vi.fn(),
+  };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -46,6 +54,8 @@ describe('Certifications API', () => {
     repository.create.mockResolvedValue(record);
     repository.update.mockResolvedValue(record);
     repository.delete.mockResolvedValue(undefined);
+    documentsRepository.hasDocument.mockResolvedValue(false);
+    documentsRepository.findIdsWithDocument.mockResolvedValue(new Set());
 
     const moduleRef = await Test.createTestingModule({
       imports: [CertificationsModule],
@@ -57,6 +67,8 @@ describe('Certifications API', () => {
       .useValue(jwt)
       .overrideProvider(CertificationsRepository)
       .useValue(repository)
+      .overrideProvider(CertificationDocumentsRepository)
+      .useValue(documentsRepository)
       .compile();
 
     app = moduleRef.createNestApplication();
@@ -83,6 +95,7 @@ describe('Certifications API', () => {
         name: 'AWS Solutions Architect',
         issuingOrganization: 'Amazon',
         issueDate: '2024-05-10',
+        hasDocument: false,
       },
     });
     expect(created.body.data).not.toHaveProperty('userId');
