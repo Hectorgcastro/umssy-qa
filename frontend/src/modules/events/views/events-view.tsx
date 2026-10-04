@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Info, Search } from 'lucide-react';
 import { EventCard } from '../components/event-card';
+import { EventDetailPanel } from '../components/event-detail-panel';
 import { useEvents } from '../hooks/use-events';
 import type { EventItem } from '../types/event.types';
 
@@ -24,10 +25,12 @@ export function EventsView() {
     setSelectedEventId(selectedEvent.id);
   };
 
+  const selectedEvent = events.find((event) => event.id === selectedEventId);
+
   return (
-    <div className="min-h-full w-full flex-1 bg-surface-soft text-foreground flex flex-col lg:flex-row">
+    <div className="flex min-h-svh w-full flex-1 flex-col bg-surface-soft text-foreground lg:flex-row">
       {/* Columna central: Catalogo de talleres disponibles */}
-      <div className="flex-1 px-6 sm:px-10 py-8 flex flex-col gap-6 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pb-8 pt-20 sm:px-10">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
             Talleres disponibles
@@ -118,23 +121,26 @@ export function EventsView() {
         </section>
       </div>
 
-      {/* Columna derecha del mockup: Panel de detalle */}
-      <aside
-        aria-label="Detalle del taller seleccionado"
-        className="w-full lg:w-80 xl:w-96 bg-surface border-t lg:border-t-0 lg:border-l border-border p-8 flex flex-col items-center justify-center text-center shrink-0"
-      >
-        <div className="max-w-xs flex flex-col items-center gap-3">
-          <h2 className="text-lg font-bold text-ink">
-            Selecciona un taller
-          </h2>
-          <p className="text-xs text-text-secondary leading-relaxed">
-            Elige un taller de la lista para ver su informacion y opciones de inscripcion
-          </p>
-          <div className="mt-2 w-12 h-12 rounded-2xl bg-surface-soft border border-border flex items-center justify-center text-text-secondary">
-            <Info className="w-5 h-5" aria-hidden="true" />
+      {/* Franja de detalle junto al listado en escritorio. */}
+      {selectedEvent ? (
+        <EventDetailPanel event={selectedEvent} />
+      ) : (
+        <aside
+          aria-label="Detalle del taller seleccionado"
+          className="w-full shrink-0 border-t border-border bg-surface p-8 text-center lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
+        >
+          <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
+            <h2 className="text-lg font-bold text-ink">Selecciona un taller</h2>
+            <p className="text-xs leading-relaxed text-text-secondary">
+              Elige un taller de la lista para ver su información y opciones de
+              inscripción.
+            </p>
+            <div className="mt-2 flex size-12 items-center justify-center rounded-2xl border border-border bg-surface-soft text-text-secondary">
+              <Info aria-hidden="true" className="size-5" />
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      )}
     </div>
   );
 }
