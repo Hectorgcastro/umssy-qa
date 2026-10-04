@@ -19,6 +19,11 @@ const REG_STATUS_CONFIRMADA_ID = '22222222-2222-2222-2222-222222222225';
 // --- Commit 1: missing reference rows ---
 const EVENT_STATUS_BORRADOR_ID = '22222222-2222-2222-2222-222222222229';
 
+// --- Commit 2: additional event category UUIDs ---
+const CATEGORY_IA_DATOS_ID = '22222222-2222-2222-2222-222222222226';
+const CATEGORY_DISENO_ID = '22222222-2222-2222-2222-222222222227';
+const CATEGORY_SEGURIDAD_ID = '22222222-2222-2222-2222-222222222228';
+
 async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
@@ -127,6 +132,25 @@ async function main() {
     create: { id: EVENT_STATUS_BORRADOR_ID, title: 'Borrador' },
   });
   console.log('Reference rows ensured: EventStatus(Borrador)');
+
+  // --- Commit 2: event categories in contract order ---
+  // Tecnología already exists (CATEGORY_TECNOLOGIA_ID). Create the remaining three sequentially.
+  await prisma.eventCategory.upsert({
+    where: { id: CATEGORY_IA_DATOS_ID },
+    update: {},
+    create: { id: CATEGORY_IA_DATOS_ID, name: 'IA & Datos' },
+  });
+  await prisma.eventCategory.upsert({
+    where: { id: CATEGORY_DISENO_ID },
+    update: {},
+    create: { id: CATEGORY_DISENO_ID, name: 'Diseño' },
+  });
+  await prisma.eventCategory.upsert({
+    where: { id: CATEGORY_SEGURIDAD_ID },
+    update: {},
+    create: { id: CATEGORY_SEGURIDAD_ID, name: 'Seguridad' },
+  });
+  console.log('Event categories ensured: Tecnología, IA & Datos, Diseño, Seguridad');
 }
 
 main()
