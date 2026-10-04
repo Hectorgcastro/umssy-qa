@@ -1,22 +1,18 @@
 import { X } from "lucide-react";
-import { SkillItem } from "../types/skill-item.types";
-
-interface SkillBadgeProps {
-  skill: SkillItem;
-  onRemove: (id: string) => void;
-}
+import { SKILLS_TEXTS } from "../config/skills-texts.config";
+import type { SkillBadgeProps } from "../types/skill-badge-props.types";
 
 export function SkillBadge({ skill, onRemove }: SkillBadgeProps) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-secondary text-secondary-foreground border border-border">
+    <span className="inline-flex items-center gap-2 rounded-md border border-border-strong bg-surface px-3 py-1.5 text-[13px] font-semibold text-ink">
       {skill.name}
       <button
         type="button"
         onClick={() => onRemove(skill.id)}
-        className="text-muted-foreground hover:text-foreground focus:outline-none"
-        aria-label={`Eliminar ${skill.name}`}
+        aria-label={`${SKILLS_TEXTS.removeSkillLabelPrefix} ${skill.name}`}
+        className="text-text-secondary hover:text-accent focus:outline-none"
       >
-        <X className="w-3.5 h-3.5" />
+        <X aria-hidden="true" className="size-3.5" />
       </button>
     </span>
   );

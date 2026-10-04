@@ -6,7 +6,7 @@ import { SectionCard } from "./section-card";
 const SECTION_LABEL_CLASS = "mt-5 text-[11px] font-semibold tracking-wide text-text-secondary uppercase";
 const SECTION_TEXT_CLASS = "mt-1 text-[13px] break-words whitespace-pre-line text-ink-soft";
 
-export function ProfilePreviewCard({ fullName, presentation }: ProfilePreviewCardProps) {
+export function ProfilePreviewCard({ fullName, photoUrl, presentation }: ProfilePreviewCardProps) {
   const name = fullName.trim() || "Tu nombre";
   const headline = presentation.headline.trim();
   const aboutMe = presentation.aboutMe.trim();
@@ -15,7 +15,7 @@ export function ProfilePreviewCard({ fullName, presentation }: ProfilePreviewCar
   return (
     <SectionCard title="Así se verá en tu perfil">
       <div className="flex items-center gap-3 border-b border-border pb-4">
-        <ProfileAvatar label={getInitials(name)} size="sm" />
+        <ProfileAvatar label={getInitials(name)} size="sm" photoUrl={photoUrl} />
         <div className="min-w-0">
           <p className="truncate text-[13px] font-semibold text-ink">{name}</p>
           <p className="truncate text-[12px] text-text-secondary">

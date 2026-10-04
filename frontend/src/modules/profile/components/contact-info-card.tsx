@@ -5,7 +5,7 @@ import { ProfileAvatar } from "./profile-avatar";
 import { ProfileInfoItem } from "./profile-info-item";
 import { SectionCard } from "./section-card";
 
-export function ContactInfoCard({ profile }: ContactInfoCardProps) {
+export function ContactInfoCard({ profile, photoUrl }: ContactInfoCardProps) {
   const fullName = profile.fullName.trim();
   const headline = profile.headline.trim();
 
@@ -15,7 +15,7 @@ export function ContactInfoCard({ profile }: ContactInfoCardProps) {
       action={<EditSectionLink href="/profile/personal-info" sectionName="datos personales" />}
     >
       <div className="flex items-start gap-8">
-        <ProfileAvatar label={fullName ? getInitials(fullName) : "Foto"} />
+        <ProfileAvatar label={fullName ? getInitials(fullName) : "Foto"} photoUrl={photoUrl} />
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div>
             <p className="font-tight text-[26px] font-bold text-ink">{fullName || "Tu nombre"}</p>

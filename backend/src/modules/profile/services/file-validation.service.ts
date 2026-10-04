@@ -40,6 +40,11 @@ export class FileValidationService {
     };
   }
 
+  // Returns the real mime type of stored content, for example to serve a saved photo.
+  detectMimeType(buffer: Buffer): string | undefined {
+    return this.detectSignature(buffer)?.mimeType;
+  }
+
   private detectSignature(buffer: Buffer): FileSignature | undefined {
     return fileSignatures.find((signature) =>
       signature.bytes.every((byte, index) => buffer[index] === byte),
