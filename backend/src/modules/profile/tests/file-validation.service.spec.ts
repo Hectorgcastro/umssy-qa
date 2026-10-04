@@ -134,4 +134,13 @@ describe('FileValidationService', () => {
       InvalidFileTypeException,
     );
   });
+
+  it.each([
+    [[0x89, 0x50, 0x4e, 0x47], 'image/png'],
+    [[0xff, 0xd8, 0xff, 0xe0], 'image/jpeg'],
+    [[0x25, 0x50, 0x44, 0x46], 'application/pdf'],
+    [[0x00, 0x01, 0x02], undefined],
+  ])('detects the mime type of stored content %j', (bytes, mimeType) => {
+    expect(service.detectMimeType(Buffer.from(bytes))).toBe(mimeType);
+  });
 });
