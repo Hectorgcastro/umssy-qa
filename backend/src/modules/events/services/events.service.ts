@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventsRepository } from '../repositories/events.repository.js';
 import { mapEventsToListResponse } from '../mappers/events.mapper.js';
 import type { GetEventsPayload } from '../requests/get-events.request.js';
@@ -21,5 +21,15 @@ export class EventsService {
     });
 
     return mapEventsToListResponse(items, total, page, limit);
+  }
+
+  async findOne(id: string) {
+    const event = await this.eventsRepository.findById(id);
+
+    if (!event) {
+      throw new NotFoundException(`El evento con el id ${id} no fue encontrado`);
+    }
+
+    return event;
   }
 }

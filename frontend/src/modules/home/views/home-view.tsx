@@ -1,31 +1,20 @@
 "use client";
 
-import { useHome } from "../hooks/use-home";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import Link from "next/link";
 
 export function HomeView() {
-  const { backendMessage } = useHome();
-
   return (
-    <div className="flex flex-1 items-center justify-center bg-surface-soft p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>PWA Egresados UMSS</CardTitle>
-          <CardDescription>
-            Respuesta del backend: <strong>{backendMessage}</strong>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button>Botón de ejemplo</Button>
-        </CardContent>
-      </Card>
+    <div className="min-h-full w-full flex-1 bg-surface-soft text-foreground flex flex-col items-center justify-center px-6 gap-6">
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink text-center">
+        Bienvenido a UMSSY
+      </h1>
+
+      <Link
+        href="/login"
+        className="inline-flex items-center justify-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink/90"
+      >
+        Iniciar sesión
+      </Link>
     </div>
   );
 }
