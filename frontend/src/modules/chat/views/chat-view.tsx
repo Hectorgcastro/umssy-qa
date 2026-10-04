@@ -7,7 +7,6 @@ import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
 import { User } from '../types/user.types';
-import { UserSummary } from '../types/conversation.types';
 
 export function ChatView() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -39,7 +38,7 @@ export function ChatView() {
     setIsSearchModalOpen(true);
   };
 
-  const handleSelectContact = (contact: User | UserSummary) => {
+  const handleSelectContact = (contact: User) => {
     if (activeFilter !== 'all') {
       setActiveFilter('all');
     }
