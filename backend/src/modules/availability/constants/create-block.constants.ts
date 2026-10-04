@@ -11,3 +11,6 @@ export const CREATE_BLOCK_MESSAGES = {
   invalidStep: `Las horas deben ir en intervalos de ${BLOCK_STEP_MINUTES} minutos`,
   differentDays: 'El bloque debe empezar y terminar el mismo día',
 } as const;
+
+// prisma no tiene codigo propio para la restriccion exclude: el 23p01 llega dentro del error.
+export const OVERLAP_ERROR_CODE = '23P01';

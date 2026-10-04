@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { AvailabilityRepository } from '../repositories/availability.repository.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
+import { OVERLAP_ERROR_CODE } from '../constants/create-block.constants.js';
 import { BlockOverlapException } from '../exceptions/index.js';
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
 import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
 import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
-
-// prisma no tiene codigo propio para la restriccion exclude: el 23p01 llega dentro del error.
-const OVERLAP_ERROR_CODE = '23P01';
 
 const hasOverlapErrorCode = (error: unknown): boolean => {
   if (typeof error !== 'object' || error === null) {
