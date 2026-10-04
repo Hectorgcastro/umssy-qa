@@ -14,7 +14,7 @@ export function AppShell({ children, items, user }: AppShellProps) {
         <header className="flex items-center px-4 py-3">
           <SidebarToggleButton />
         </header>
-        <div className="flex-1 px-8 pb-8">{children}</div>
+        <div className="flex flex-1 flex-col px-8 pb-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
