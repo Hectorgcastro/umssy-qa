@@ -100,5 +100,3 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
     });
 
 export const createBlockSchema = buildCreateBlockSchema();
-
-export type CreateBlockPayload = z.infer<typeof createBlockSchema>;

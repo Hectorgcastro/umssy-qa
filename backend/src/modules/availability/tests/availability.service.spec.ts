@@ -3,7 +3,7 @@ import { APPOINTMENT_STATUS_PENDING } from '../constants/appointment-status.cons
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import { AvailabilityService } from '../services/availability.service.js';
 import { BlockOverlapException } from '../exceptions/index.js';
-import type { CreateBlockPayload } from '../requests/create-block.request.js';
+import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
 
 const QUERY = { from: '2026-10-05T04:00:00.000Z', to: '2026-10-12T03:59:59.999Z' };
 

@@ -6,10 +6,11 @@ import { ProvisionalSessionGuard } from '../../../common/guards/provisional.guar
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { CREATE_BLOCK_DOCS, FIND_MY_BLOCKS_DOCS } from '../constants/availability-docs.constants.js';
-import { createBlockSchema, type CreateBlockPayload } from '../requests/create-block.request.js';
+import { createBlockSchema } from '../requests/create-block.request.js';
 import { weekQuerySchema } from '../requests/week-query.request.js';
 import { AvailabilityService } from '../services/availability.service.js';
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
+import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
 import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
 
 @Controller('availability-blocks')
