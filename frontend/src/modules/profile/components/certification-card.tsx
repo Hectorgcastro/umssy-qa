@@ -1,4 +1,4 @@
-import { Award, Edit, Trash2 } from "lucide-react";
+import { Award, Edit, FileText, Paperclip, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CertificationCardProps } from "../types/certification-card-props.types";
 import { formatIssueDate } from "../utils/format-issue-date";
@@ -8,6 +8,7 @@ export function CertificationCard({
   isBusy = false,
   onEdit,
   onDelete,
+  onViewDocument,
 }: CertificationCardProps) {
   return (
     <article className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface px-5 py-4">
@@ -26,9 +27,28 @@ export function CertificationCard({
               {formatIssueDate(certification.issueDate)}
             </time>
           </p>
+          {certification.hasDocument ? (
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 text-[12px] font-semibold text-ink-soft">
+              <Paperclip aria-hidden="true" className="size-3.5" />
+              Documento adjunto
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {certification.hasDocument && onViewDocument ? (
+          <Button
+            type="button"
+            variant="ghost"
+            aria-label={`Ver documento de ${certification.name}`}
+            disabled={isBusy}
+            onClick={() => onViewDocument(certification)}
+            className="h-8 gap-1.5 px-2 text-[13px] font-semibold text-ink"
+          >
+            <FileText aria-hidden="true" className="size-4" />
+            Ver documento
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant="ghost"

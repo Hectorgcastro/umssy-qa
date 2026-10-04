@@ -13,18 +13,20 @@ const CERTIFICATION: Certification = {
   updatedAt: "2025-03-08T10:00:00.000Z",
 };
 
-function renderCard(isBusy = false) {
+function renderCard(isBusy = false, certification = CERTIFICATION) {
   const onEdit = vi.fn();
   const onDelete = vi.fn();
+  const onViewDocument = vi.fn();
   render(
     <CertificationCard
-      certification={CERTIFICATION}
+      certification={certification}
       isBusy={isBusy}
       onEdit={onEdit}
       onDelete={onDelete}
+      onViewDocument={onViewDocument}
     />,
   );
-  return { onEdit, onDelete, user: userEvent.setup() };
+  return { onEdit, onDelete, onViewDocument, user: userEvent.setup() };
 }
 
 describe("CertificationCard", () => {
@@ -71,5 +73,40 @@ describe("CertificationCard", () => {
     expect(
       screen.getByRole("button", { name: "Eliminar AWS Certified Cloud Practitioner" }),
     ).toBeDisabled();
+  });
+
+  it("does not show document actions when there is no document", () => {
+    renderCard();
+
+    expect(screen.queryByText("Documento adjunto")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ver documento/ })).not.toBeInTheDocument();
+  });
+
+  it("shows the attached document and opens it", async () => {
+    const withDocument = { ...CERTIFICATION, hasDocument: true };
+    const { onViewDocument, user } = renderCard(false, withDocument);
+
+    expect(screen.getByText("Documento adjunto")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Ver documento de AWS Certified Cloud Practitioner",
+      }),
+    );
+
+    expect(onViewDocument).toHaveBeenCalledWith(withDocument);
+  });
+
+  it("hides the view action when no handler is provided", () => {
+    render(
+      <CertificationCard
+        certification={{ ...CERTIFICATION, hasDocument: true }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Documento adjunto")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ver documento/ })).not.toBeInTheDocument();
   });
 });

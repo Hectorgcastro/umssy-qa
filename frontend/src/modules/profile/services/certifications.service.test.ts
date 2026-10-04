@@ -7,6 +7,7 @@ vi.mock("@/shared/services/api-client", () => ({
   apiClient: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
   },
@@ -40,6 +41,7 @@ function makeEndpointsUnavailable() {
   vi.mocked(apiClient.get).mockRejectedValue(NOT_FOUND_ERROR);
   vi.mocked(apiClient.post).mockRejectedValue(NOT_FOUND_ERROR);
   vi.mocked(apiClient.patch).mockRejectedValue(NOT_FOUND_ERROR);
+  vi.mocked(apiClient.put).mockRejectedValue(NOT_FOUND_ERROR);
   vi.mocked(apiClient.delete).mockRejectedValue(NOT_FOUND_ERROR);
 }
 
@@ -160,6 +162,94 @@ describe("certificationsService", () => {
       await expect(service.updateCertification("missing", { name: "CCNA" })).rejects.toThrow(
         "Certification missing not found",
       );
+    });
+  });
+
+  describe("certification documents", () => {
+    const DOCUMENT = new File(["certificate"], "certificate.pdf", { type: "application/pdf" });
+
+    it("uploads the document as multipart form data", async () => {
+      vi.mocked(apiClient.put).mockResolvedValue({});
+      const service = await loadService();
+
+      await service.uploadDocument("certification-1", DOCUMENT);
+
+      const [endpoint, body] = vi.mocked(apiClient.put).mock.calls[0] as [string, FormData];
+      expect(endpoint).toBe("/certifications/certification-1/document");
+      expect(body.get("file")).toBe(DOCUMENT);
+    });
+
+    it("gets the document as a blob", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ data: DOCUMENT });
+      const service = await loadService();
+
+      await expect(service.getDocument("certification-1")).resolves.toBe(DOCUMENT);
+      expect(apiClient.get).toHaveBeenCalledWith("/certifications/certification-1/document", {
+        responseType: "blob",
+      });
+    });
+
+    it("returns null when the certification has no document", async () => {
+      vi.mocked(apiClient.get).mockRejectedValue(NOT_FOUND_ERROR);
+      const service = await loadService();
+
+      await expect(service.getDocument("certification-1")).resolves.toBeNull();
+    });
+
+    it("deletes the document", async () => {
+      vi.mocked(apiClient.delete).mockResolvedValue({});
+      const service = await loadService();
+
+      await service.deleteDocument("certification-1");
+
+      expect(apiClient.delete).toHaveBeenCalledWith("/certifications/certification-1/document");
+    });
+
+    it.each<[string, (service: CertificationsService) => Promise<unknown>]>([
+      ["uploadDocument", (service) => service.uploadDocument("certification-1", DOCUMENT)],
+      ["getDocument", (service) => service.getDocument("certification-1")],
+      ["deleteDocument", (service) => service.deleteDocument("certification-1")],
+    ])("rethrows server errors from %s", async (_name, call) => {
+      vi.mocked(apiClient.get).mockRejectedValue(SERVER_ERROR);
+      vi.mocked(apiClient.put).mockRejectedValue(SERVER_ERROR);
+      vi.mocked(apiClient.delete).mockRejectedValue(SERVER_ERROR);
+      const service = await loadService();
+
+      await expect(call(service)).rejects.toBe(SERVER_ERROR);
+    });
+
+    it("keeps sample documents in memory while the endpoints are unavailable", async () => {
+      makeEndpointsUnavailable();
+      const service = await loadService();
+      const created = await service.createCertification(NEW_CERTIFICATION);
+      const other = await service.createCertification({ ...NEW_CERTIFICATION, name: "CCNA" });
+
+      await service.uploadDocument(created.id, DOCUMENT);
+
+      await expect(service.getDocument(created.id)).resolves.toBe(DOCUMENT);
+      await expect(service.getCertifications()).resolves.toEqual([
+        { ...created, hasDocument: true },
+        other,
+      ]);
+
+      await service.deleteDocument(created.id);
+
+      await expect(service.getDocument(created.id)).resolves.toBeNull();
+      await expect(service.getCertifications()).resolves.toEqual([
+        { ...created, hasDocument: false },
+        other,
+      ]);
+    });
+
+    it("removes the sample document when the certification is deleted", async () => {
+      makeEndpointsUnavailable();
+      const service = await loadService();
+      const created = await service.createCertification(NEW_CERTIFICATION);
+      await service.uploadDocument(created.id, DOCUMENT);
+
+      await service.deleteCertification(created.id);
+
+      await expect(service.getDocument(created.id)).resolves.toBeNull();
     });
   });
 });

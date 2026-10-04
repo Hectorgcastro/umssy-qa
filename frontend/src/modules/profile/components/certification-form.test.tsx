@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CERTIFICATION_VALIDATION_MESSAGES } from "../config/certification-validation.config";
+import { FILE_VALIDATION_MESSAGES } from "../config/file-validation-messages.config";
+import type { CertificationFormProps } from "../types/certification-form-props.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { CertificationForm } from "./certification-form";
 
@@ -11,19 +13,24 @@ const SAVED_VALUES: CreateCertificationDto = {
   issueDate: "2025-03-10",
 };
 
+const CERTIFICATE_PDF = new File(["certificate"], "certificate.pdf", { type: "application/pdf" });
+
 function renderForm({
   initialData,
+  hasDocument = false,
   isPending = false,
   onSubmit = vi.fn(),
 }: {
   initialData?: CreateCertificationDto;
+  hasDocument?: boolean;
   isPending?: boolean;
-  onSubmit?: (values: CreateCertificationDto) => void | Promise<void>;
+  onSubmit?: CertificationFormProps["onSubmit"];
 } = {}) {
   const onCancel = vi.fn();
   render(
     <CertificationForm
       initialData={initialData}
+      hasDocument={hasDocument}
       isPending={isPending}
       onSubmit={onSubmit}
       onCancel={onCancel}
@@ -38,6 +45,10 @@ function getNameInput() {
 
 function getOrganizationInput() {
   return screen.getByLabelText(/Organización emisora/);
+}
+
+function getFileInput(): HTMLInputElement {
+  return screen.getByLabelText("Archivo del certificado");
 }
 
 function getIssueDateInput() {
@@ -110,11 +121,14 @@ describe("CertificationForm", () => {
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
     await user.click(screen.getByRole("button", { name: "Guardar" }));
 
-    expect(onSubmit).toHaveBeenCalledWith({
-      name: "Scrum Master",
-      issuingOrganization: "Scrum Alliance",
-      issueDate: "2025-04-20",
-    });
+    expect(onSubmit).toHaveBeenCalledWith(
+      {
+        name: "Scrum Master",
+        issuingOrganization: "Scrum Alliance",
+        issueDate: "2025-04-20",
+      },
+      { type: "keep" },
+    );
   });
 
   it("disables the inputs and buttons while the submit is in progress", async () => {
@@ -155,5 +169,123 @@ describe("CertificationForm", () => {
     expect(getNameInput()).toHaveValue(SAVED_VALUES.name);
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  describe("document field", () => {
+    it("shows the accepted formats when there is no document", () => {
+      renderForm();
+
+      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Seleccionar archivo" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Quitar" })).not.toBeInTheDocument();
+      expect(getFileInput()).toHaveAttribute("accept", ".pdf,.png,.jpg,.jpeg");
+    });
+
+    it("opens the file picker from the select button", async () => {
+      const { user } = renderForm();
+      const clickSpy = vi.spyOn(getFileInput(), "click");
+
+      await user.click(screen.getByRole("button", { name: "Seleccionar archivo" }));
+
+      expect(clickSpy).toHaveBeenCalled();
+    });
+
+    it("submits a new document with the certification", async () => {
+      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
+
+      await user.upload(getFileInput(), CERTIFICATE_PDF);
+
+      expect(screen.getByText(/certificate\.pdf/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Reemplazar archivo" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, {
+        type: "replace",
+        file: CERTIFICATE_PDF,
+      });
+    });
+
+    it("shows an inline error for a file with an invalid type", () => {
+      renderForm();
+
+      fireEvent.change(getFileInput(), {
+        target: { files: [new File(["text"], "notes.txt", { type: "text/plain" })] },
+      });
+
+      expect(screen.getByText(FILE_VALIDATION_MESSAGES.invalidCertificateType)).toBeInTheDocument();
+      expect(getFileInput()).toHaveAttribute("aria-invalid", "true");
+      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
+    });
+
+    it("shows an inline error for a file that is too large", () => {
+      renderForm();
+      const largeFile = new File(["x"], "large.pdf", { type: "application/pdf" });
+      Object.defineProperty(largeFile, "size", { value: 6 * 1024 * 1024 });
+
+      fireEvent.change(getFileInput(), { target: { files: [largeFile] } });
+
+      expect(screen.getByText(FILE_VALIDATION_MESSAGES.fileTooLarge)).toBeInTheDocument();
+    });
+
+    it("ignores an empty file selection", () => {
+      renderForm();
+
+      fireEvent.change(getFileInput(), { target: { files: [] } });
+
+      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
+    });
+
+    it("discards a selected file before saving", async () => {
+      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
+
+      await user.upload(getFileInput(), CERTIFICATE_PDF);
+      await user.click(screen.getByRole("button", { name: "Quitar" }));
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(screen.queryByText(/certificate\.pdf/)).not.toBeInTheDocument();
+      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, { type: "keep" });
+    });
+
+    it("shows the current document when editing", () => {
+      renderForm({ initialData: SAVED_VALUES, hasDocument: true });
+
+      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Reemplazar archivo" })).toBeInTheDocument();
+    });
+
+    it("removes the current document when editing", async () => {
+      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES, hasDocument: true });
+
+      await user.click(screen.getByRole("button", { name: "Quitar" }));
+
+      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, { type: "remove" });
+    });
+
+    it("keeps the current document when a new selection is discarded", async () => {
+      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES, hasDocument: true });
+
+      await user.upload(getFileInput(), CERTIFICATE_PDF);
+      await user.click(screen.getByRole("button", { name: "Quitar" }));
+
+      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, { type: "keep" });
+    });
+
+    it("restores the document state when cancelled", async () => {
+      const { user } = renderForm({ initialData: SAVED_VALUES, hasDocument: true });
+
+      await user.click(screen.getByRole("button", { name: "Quitar" }));
+      await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
+    });
   });
 });
