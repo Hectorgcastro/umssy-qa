@@ -1,4 +1,8 @@
 export const SKILLS_TEXTS = {
+  pageTitle: "Trayectoria",
+  pageDescription: "Selecciona tecnologías y herramientas que dominas o agrega las tuyas.",
+  sectionTitle: "Habilidades técnicas",
+  loading: "Cargando habilidades...",
   mySkillsTitle: "Mis habilidades",
   emptySelection: "No tienes habilidades seleccionadas aún.",
   searchLabel: "Buscar en el catálogo",
