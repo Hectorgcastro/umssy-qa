@@ -309,5 +309,37 @@ describe("CertificationsView", () => {
       );
       expect(certificationsService.uploadDocument).not.toHaveBeenCalled();
     });
+
+    it("opens the attached document from the card", async () => {
+      const withDocument = { ...SCRUM, hasDocument: true };
+      vi.mocked(certificationsService.getCertifications).mockResolvedValue([withDocument, AWS]);
+      vi.mocked(certificationsService.getDocument).mockResolvedValue(CERTIFICATE_PDF);
+      const documentTab = { close: vi.fn(), location: { href: "" } } as unknown as Window;
+      const openSpy = vi.spyOn(window, "open").mockReturnValue(documentTab);
+      vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:certificate");
+      const user = await renderView();
+
+      await user.click(screen.getByRole("button", { name: "Ver documento de Scrum Master" }));
+
+      await waitFor(() => expect(documentTab.location.href).toBe("blob:certificate"));
+      expect(certificationsService.getDocument).toHaveBeenCalledWith("scrum");
+      openSpy.mockRestore();
+    });
+
+    it("reports when the attached document cannot be opened", async () => {
+      vi.mocked(certificationsService.getCertifications).mockResolvedValue([
+        { ...SCRUM, hasDocument: true },
+      ]);
+      vi.mocked(certificationsService.getDocument).mockRejectedValue(new Error("failed"));
+      const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+      const user = await renderView();
+
+      await user.click(screen.getByRole("button", { name: "Ver documento de Scrum Master" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        CERTIFICATION_DOCUMENT_MESSAGES.openError,
+      );
+      openSpy.mockRestore();
+    });
   });
 });

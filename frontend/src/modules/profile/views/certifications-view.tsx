@@ -96,6 +96,11 @@ export function CertificationsView() {
     setPendingDelete(certification);
   };
 
+  const openDocument = (certification: Certification) => {
+    clearFeedback();
+    void certificationDocument.openDocument(certification);
+  };
+
   const closeDeleteDialog = () => {
     setPendingDelete(null);
   };
@@ -140,9 +145,10 @@ export function CertificationsView() {
           <li key={certification.id}>
             <CertificationCard
               certification={certification}
-              isBusy={deleteMutation.isDeleting}
+              isBusy={deleteMutation.isDeleting || certificationDocument.isOpening}
               onEdit={openEditForm}
               onDelete={openDeleteDialog}
+              onViewDocument={openDocument}
             />
           </li>
         ))}
