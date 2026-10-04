@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Conversation, Message } from '../types/conversation.types';
 import { MessageInputBar } from './message-input-bar';
 import { getInitials } from '../utils/date-formatter';
+import { isContentValidForSend } from '../utils/unicode-counter';
 
 interface ChatRoomProps {
   conversation: Conversation;
@@ -36,10 +37,9 @@ export function ChatRoom({
   }, [messages.length]);
 
   const handleSend = () => {
-    const trimmed = inputText.trim();
-    if (!trimmed || isSending) return;
+    if (!isContentValidForSend(inputText) || isSending) return;
 
-    onSendMessage(trimmed);
+    onSendMessage(inputText.trim());
     setInputText('');
   };
 

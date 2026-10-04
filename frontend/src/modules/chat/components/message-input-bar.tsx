@@ -1,6 +1,12 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import {
+  countCharacters,
+  truncateToMaxCharacters,
+  isWhitespaceOnly,
+  MAX_MESSAGE_LENGTH,
+} from '../utils/unicode-counter';
 
 interface MessageInputBarProps {
   value: string;
@@ -19,7 +25,7 @@ export function MessageInputBar({
   onSend,
   disabled = false,
   isSending = false,
-  maxLength = 500,
+  maxLength = MAX_MESSAGE_LENGTH,
   placeholder = 'Escribe un mensaje...',
   onKeyDown,
 }: MessageInputBarProps) {
@@ -35,8 +41,15 @@ export function MessageInputBar({
     textarea.style.height = `${Math.max(newHeight, 40)}px`;
   }, [value]);
 
-  const characterCount = value.length;
-  const isSendDisabled = disabled || isSending || value.trim().length === 0;
+  const characterCount = countCharacters(value);
+  const isSendDisabled =
+    disabled || isSending || isWhitespaceOnly(value) || characterCount > maxLength;
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const rawValue = e.target.value;
+    const truncatedValue = truncateToMaxCharacters(rawValue, maxLength);
+    onChange(truncatedValue);
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -56,12 +69,11 @@ export function MessageInputBar({
             ref={textareaRef}
             data-testid="message-textarea"
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleChange}
             onKeyDown={onKeyDown}
             disabled={disabled || isSending}
             placeholder={placeholder}
             rows={1}
-            maxLength={maxLength}
             className="flex-1 min-w-0 w-full bg-transparent border-0 resize-none text-sm text-[#0B1F2E] placeholder-[#5B6470] focus:outline-none leading-relaxed py-1 px-1 min-h-[40px] max-h-[120px] overflow-y-auto break-words [overflow-wrap:anywhere]"
             aria-label="Campo de redaccion de mensaje"
           />
