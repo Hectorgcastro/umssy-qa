@@ -7,9 +7,9 @@ import {
 } from "@/components/ui/card";
 import type { MentorDirectoryItem } from "../../types/mentor-directory.types";
 
-interface MentorCardProps {
+type MentorCardProps = {
   mentor: MentorDirectoryItem;
-}
+};
 
 export function MentorCard({ mentor }: MentorCardProps) {
   const hasTechnicalAreas = mentor.technicalAreas.length > 0;

@@ -4,11 +4,11 @@ import { CheckCircle, Server } from "lucide-react";
 import { TECHNICAL_AREA_ICON_MAP } from "../../constants/technical-area-icon-map.constants";
 import type { TechnicalArea } from "../../types/technical-area.types";
 
-interface TechnicalAreaCardProps {
+type TechnicalAreaCardProps = {
   area: TechnicalArea;
   isSelected: boolean;
   onToggle: (id: string) => void;
-}
+};
 
 export function TechnicalAreaCard({
   area,

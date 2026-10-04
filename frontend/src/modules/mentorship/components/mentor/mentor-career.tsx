@@ -8,9 +8,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { MentorProfile } from "../../types/mentor-profile.types";
 
-interface MentorCareerProps {
+type MentorCareerProps = {
   mentor: MentorProfile;
-}
+};
 
 export function MentorCareer({ mentor }: MentorCareerProps) {
   return (
@@ -37,7 +37,9 @@ export function MentorCareer({ mentor }: MentorCareerProps) {
             Cargo actual
           </p>
 
-          <p className="mt-1 break-words font-semibold text-ink">{mentor.position || "Cargo no registrado"}</p>
+          <p className="mt-1 break-words font-semibold text-ink">
+            {mentor.position || "Cargo no registrado"}
+          </p>
         </div>
 
         <div>

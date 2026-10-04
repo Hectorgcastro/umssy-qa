@@ -3,9 +3,9 @@ import { GraduationCap, UserPlus } from "lucide-react";
 
 import type { MentorProfile } from "../../types/mentor-profile.types";
 
-interface MentorProfileHeaderProps {
+type MentorProfileHeaderProps = {
   mentor: MentorProfile;
-}
+};
 
 function getInitials(name: string) {
   return name

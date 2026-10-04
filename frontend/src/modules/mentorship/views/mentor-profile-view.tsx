@@ -10,25 +10,45 @@ import { MentorQueryFeedback } from "../components/mentor/mentor-query-feedback"
 import { MentorQuerySkeleton } from "../components/mentor/mentor-query-skeleton";
 import { MentorProfileNavigation } from "../components/mentor/mentor-profile-navigation";
 
-interface MentorProfileViewProps {
+type MentorProfileViewProps = {
   mentorId: string;
-}
+};
 
 export function MentorProfileView({ mentorId }: MentorProfileViewProps) {
-  const { data: mentor, isPending, isError, isFetching, refetch } = useMentorProfile(mentorId);
+  const { data: mentor, isPending, isError, isFetching, refetch } =
+    useMentorProfile(mentorId);
 
   if (isPending || (isError && isFetching)) {
-    return <main className="mx-auto w-full max-w-7xl p-4 sm:p-8"><MentorQuerySkeleton isProfile /></main>;
+    return (
+      <main className="mx-auto w-full max-w-7xl p-4 sm:p-8">
+        <MentorQuerySkeleton isProfile />
+      </main>
+    );
   }
 
   if (isError) {
-    return <main className="mx-auto w-full max-w-7xl p-4 sm:p-8"><MentorQueryFeedback title="No pudimos cargar el perfil" description="Ocurrió un problema al consultar este perfil. Puedes reintentar o volver al directorio." onRetry={() => { void refetch(); }} showDirectoryLink /></main>;
+    return (
+      <main className="mx-auto w-full max-w-7xl p-4 sm:p-8">
+        <MentorQueryFeedback
+          title="No pudimos cargar el perfil"
+          description="Ocurrió un problema al consultar este perfil. Puedes reintentar o volver al directorio."
+          onRetry={() => {
+            void refetch();
+          }}
+          showDirectoryLink
+        />
+      </main>
+    );
   }
 
   if (!mentor) {
     return (
       <main className="min-h-screen bg-surface-soft p-8">
-        <MentorQueryFeedback title="Mentor no encontrado" description="No se pudo encontrar el perfil solicitado." showDirectoryLink />
+        <MentorQueryFeedback
+          title="Mentor no encontrado"
+          description="No se pudo encontrar el perfil solicitado."
+          showDirectoryLink
+        />
       </main>
     );
   }

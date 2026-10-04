@@ -1,7 +1,4 @@
-export interface OrientationType {
-  id: string;
-  label: string;
-}
+import type { OrientationType } from "../types/orientation-type.types";
 
 export const ORIENTATION_TYPES: OrientationType[] = [
   {

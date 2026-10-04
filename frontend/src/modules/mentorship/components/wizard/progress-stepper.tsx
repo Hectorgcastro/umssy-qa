@@ -4,9 +4,9 @@ import { Check } from "lucide-react";
 import { MENTORSHIP_STEPS } from "../../constants/mentorship-steps.constants";
 import type { MentorshipStep } from "../../types/mentorship-step.types";
 
-interface ProgressStepperProps {
+type ProgressStepperProps = {
   currentStep: MentorshipStep;
-}
+};
 
 export function ProgressStepper({ currentStep }: ProgressStepperProps) {
   return (
@@ -18,7 +18,10 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
           const isLast = index === MENTORSHIP_STEPS.length - 1;
 
           return (
-            <li key={step.id} className="relative flex items-start gap-3 sm:flex-col sm:items-center sm:text-center">
+            <li
+              key={step.id}
+              className="relative flex items-start gap-3 sm:flex-col sm:items-center sm:text-center"
+            >
               <div
                 className={[
                   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",

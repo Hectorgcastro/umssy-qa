@@ -8,7 +8,7 @@ import {
 import { ORIENTATION_TYPES } from "../../data/orientation-types";
 import { TECHNICAL_AREAS } from "../../data/technical-areas";
 
-interface ConfirmationStepProps {
+type ConfirmationStepProps = {
   wantsToParticipate: boolean;
   selectedTechnicalAreaIds: string[];
   selectedOrientationTypeIds: string[];
@@ -16,7 +16,7 @@ interface ConfirmationStepProps {
   onEditTechnicalAreas: () => void;
   onEditOrientationTypes: () => void;
   onActivate: () => void;
-}
+};
 
 export function ConfirmationStep({
   wantsToParticipate,

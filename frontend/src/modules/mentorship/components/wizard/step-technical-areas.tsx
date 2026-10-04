@@ -3,10 +3,10 @@
 import { TECHNICAL_AREAS } from "../../data/technical-areas";
 import { TechnicalAreaCard } from "./technical-area-card";
 
-interface StepTechnicalAreasProps {
+type StepTechnicalAreasProps = {
   selectedIds: string[];
   onToggle: (id: string) => void;
-}
+};
 
 export function StepTechnicalAreas({
   selectedIds,

@@ -6,9 +6,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-interface MentorAboutProps {
+type MentorAboutProps = {
   description: string;
-}
+};
 
 export function MentorAbout({ description }: MentorAboutProps) {
   return (
