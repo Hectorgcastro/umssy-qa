@@ -1,15 +1,20 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useConversations } from '../hooks/use-conversations';
 import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
+import { ChatRoom } from '../components/chat-room';
+import { Message } from '../types/conversation.types';
+import { getMessages, sendMessage } from '../services/chat-api';
+import { CURRENT_USER_ID } from '../mocks/mock-users';
 
 export function ChatView() {
-  // Estado para controlar cuándo se abre y cierra el modal
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const {
     conversations,
@@ -23,24 +28,75 @@ export function ChatView() {
     setSearchQuery,
     handleSelectConversation,
     clearSelectedConversation,
-    startConversationWithContact, // <--- Nueva función para iniciar chat
+    startConversationWithContact,
   } = useConversations();
 
   const selectedConversation = conversations.find((item) => item.id === selectedId);
+
+  // Carga de mensajes de la conversacion seleccionada
+  useEffect(() => {
+    if (!selectedId) return;
+
+    let isMounted = true;
+
+    getMessages(selectedId)
+      .then((data) => {
+        if (isMounted) {
+          setMessages(data);
+          setIsLoadingMessages(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsLoadingMessages(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedId]);
+
+  const handleSelectChat = (conversation: Conversation) => {
+    setIsLoadingMessages(true);
+    handleSelectConversation(conversation);
+  };
+
+  const handleStartChatWithContact = async (contactUser: Parameters<typeof startConversationWithContact>[0]) => {
+    setIsLoadingMessages(true);
+    await startConversationWithContact(contactUser);
+  };
 
   const handleBackToList = () => {
     clearSelectedConversation();
   };
 
-  // Función que abre el modal
   const handleStartNewChat = () => {
     setIsSearchModalOpen(true);
   };
 
+  const handleSendMessage = async (content: string) => {
+    if (!selectedId || isSending) return;
+    setIsSending(true);
+
+    try {
+      const response = await sendMessage({
+        conversationId: selectedId,
+        senderId: CURRENT_USER_ID,
+        content,
+      });
+      setMessages((prev) => [...prev, response.data]);
+    } catch {
+      // Manejo de errores
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
-    <div className="flex h-screen w-full bg-slate-50 overflow-hidden font-sans">
+    <div className="flex h-screen h-[100dvh] w-full max-w-full bg-slate-50 overflow-hidden font-sans">
       <aside
-        className={`w-full md:w-80 lg:w-96 h-full shrink-0 ${
+        className={`w-full md:w-80 lg:w-96 h-full shrink-0 overflow-hidden ${
           selectedId ? 'hidden md:block' : 'block'
         }`}
       >
@@ -51,92 +107,42 @@ export function ChatView() {
           hasMore={hasMore}
           activeFilter={activeFilter}
           searchQuery={searchQuery}
-          onSelectConversation={handleSelectConversation}
+          onSelectConversation={handleSelectChat}
           onFilterChange={setActiveFilter}
           onSearchChange={setSearchQuery}
           onLoadMore={loadMore}
-          onStartNewChat={handleStartNewChat} // <--- Conectado al botón flotante/sidebar
+          onStartNewChat={handleStartNewChat}
         />
       </aside>
 
       <main
-        className={`flex-1 h-full bg-white flex flex-col ${
+        className={`flex-1 h-full min-w-0 min-h-0 bg-white flex flex-col overflow-hidden ${
           !selectedId ? 'hidden md:flex' : 'flex'
         }`}
       >
         {selectedConversation ? (
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleBackToList}
-                  className="md:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
-                  aria-label="Volver a la lista de chats"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                <div className="relative">
-                  {selectedConversation.contact.avatarUrl ? (
-                    <img
-                      src={selectedConversation.contact.avatarUrl}
-                      alt={selectedConversation.contact.fullName}
-                      className="w-10 h-10 rounded-full object-cover border border-slate-200"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs border border-slate-300">
-                      {selectedConversation.contact.fullName.substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  {selectedConversation.contact.isOnline && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
-                    {selectedConversation.contact.fullName}
-                  </h3>
-                  <span className="text-xs text-emerald-600 font-medium">
-                    {selectedConversation.contact.isOnline ? 'En linea' : 'Desconectado'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 p-6 bg-slate-50 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-blue-50 text-[#0B2545] flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-medium text-slate-600">
-                  Sala de chat con {selectedConversation.contact.fullName}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Envio e historial de mensajes
-                </p>
-              </div>
-            </div>
-          </div>
+          <ChatRoom
+            conversation={selectedConversation}
+            messages={messages}
+            currentUserId={CURRENT_USER_ID}
+            onBack={handleBackToList}
+            onSendMessage={handleSendMessage}
+            isLoadingMessages={isLoadingMessages}
+            isSending={isSending}
+          />
         ) : (
           <EmptyChatState
             description="Selecciona una conversacion existente en el panel izquierdo o inicia una nueva para comenzar a comunicarte."
             actionLabel="Iniciar una nueva conversacion"
-            onAction={handleStartNewChat} // <--- Conectado al botón central
+            onAction={handleStartNewChat}
           />
         )}
       </main>
 
-      {/* Renderizado del Modal conectado a los estados y funciones */}
       <ContactSearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
-        onSelectContact={startConversationWithContact}
+        onSelectContact={handleStartChatWithContact}
       />
     </div>
   );
