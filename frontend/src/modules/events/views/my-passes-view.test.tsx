@@ -32,7 +32,7 @@ describe('Mis pases', () => {
     getMine.mockRejectedValueOnce(new Error('Debes iniciar sesión')).mockResolvedValueOnce([pass]);
     render(<MyPassesView />);
     await screen.findByRole('alert');
-    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/login');
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/login?next=/events/my-passes');
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
     await screen.findByText('reg-1');
     expect(screen.getByText('1 pase')).toBeInTheDocument();

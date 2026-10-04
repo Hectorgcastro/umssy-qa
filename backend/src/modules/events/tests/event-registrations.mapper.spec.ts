@@ -7,6 +7,8 @@ const entity = {
   event: {
     title: 'Taller de NestJS',
     eventDate: new Date('2026-10-20T00:00:00.000Z'),
+    startTime: new Date('1970-01-01T09:00:00Z'),
+    endTime: new Date('1970-01-01T12:00:00Z'),
     location: 'Aula 101',
   },
 };
@@ -17,7 +19,9 @@ describe('EventRegistrationsMapper', () => {
       id: 'reg-1',
       eventName: 'Taller de NestJS',
       date: new Date('2026-10-20T00:00:00.000Z'),
-      location: 'Aula 101',
+      startTime: new Date('1970-01-01T09:00:00Z'),
+    endTime: new Date('1970-01-01T12:00:00Z'),
+    location: 'Aula 101',
       status: 'Confirmada',
     });
   });

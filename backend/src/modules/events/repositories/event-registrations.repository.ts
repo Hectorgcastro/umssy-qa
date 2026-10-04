@@ -15,6 +15,8 @@ export class EventRegistrationsRepository {
           select: {
             title: true,
             eventDate: true,
+            startTime: true,
+            endTime: true,
             location: true,
           },
         },

@@ -24,7 +24,7 @@ describe('EventRegistrationsRepository', () => {
         id: true,
         status: { select: { title: true } },
         event: {
-          select: { title: true, eventDate: true, location: true },
+          select: { title: true, eventDate: true, startTime: true, endTime: true, location: true },
         },
       },
       orderBy: { event: { eventDate: 'asc' } },
