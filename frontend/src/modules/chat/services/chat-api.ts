@@ -2,7 +2,7 @@ import { Conversation, Message } from '../types/conversation.types';
 import { MOCK_CONVERSATIONS } from '../mocks/mock-conversations';
 import { User } from '../types/user.types';
 import { MOCK_USERS, CURRENT_USER_ID, MOCK_USER_BY_ID } from '../mocks/mock-users';
-import { MOCK_MESSAGES } from '../mocks/mock-messages';
+import { getMessagesByConversation } from './message-storage';
 
 const MIN_SEARCH_CHARS = 2;
 
@@ -60,9 +60,7 @@ export async function searchUsers(rawQuery: string): Promise<User[]> {
 export async function getMessages(conversationId: string): Promise<Message[]> {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  return MOCK_MESSAGES
-    .filter((message) => message.conversationId === conversationId)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  return getMessagesByConversation(conversationId);
 }
 
 /**
