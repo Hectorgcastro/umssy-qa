@@ -3,10 +3,20 @@
 import { useEffect, useState } from 'react';
 import { eventsService } from '../services/events.service';
 import type { EventItem } from '../types/event.types';
+import type { EventFiltersPayload } from '../types/event-filters.types';
 
 const EVENTS_PAGE_SIZE = 50;
 
-export function useEvents() {
+const NO_FILTERS: EventFiltersPayload = {
+  search: '',
+  categoryId: null,
+};
+
+export function useEvents(filters: EventFiltersPayload = NO_FILTERS) {
+  const { search, categoryId } = filters;
+  const trimmedSearch = search.trim();
+  const filtersKey = JSON.stringify([trimmedSearch, categoryId]);
+
   const [events, setEvents] = useState<EventItem[]>([]);
   const [page, setPage] = useState(1);
   const [reloadVersion, setReloadVersion] = useState(0);
@@ -14,24 +24,44 @@ export function useEvents() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appliedFiltersKey, setAppliedFiltersKey] = useState(filtersKey);
+
+  if (appliedFiltersKey !== filtersKey) {
+    setAppliedFiltersKey(filtersKey);
+    setPage(1);
+    setHasMore(false);
+    setError(null);
+    setIsLoading(true);
+  }
 
   useEffect(() => {
     const controller = new AbortController();
     const isFirstPage = page === 1;
 
     eventsService
-      .getEvents({ page, limit: EVENTS_PAGE_SIZE }, controller.signal)
+      .getEvents(
+        {
+          page,
+          limit: EVENTS_PAGE_SIZE,
+          ...(trimmedSearch && { search: trimmedSearch }),
+          ...(categoryId && { categoryId }),
+        },
+        controller.signal,
+      )
       .then((response) => {
         if (controller.signal.aborted) return;
 
         setEvents((currentEvents) =>
           isFirstPage ? response.data : [...currentEvents, ...response.data],
         );
+
         setHasMore(response.data.length === EVENTS_PAGE_SIZE);
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setError('No se pudieron cargar los talleres. Revisa la conexión e inténtalo de nuevo.');
+          setError(
+            'No se pudieron cargar los talleres. Revisa la conexión e inténtalo de nuevo.',
+          );
         }
       })
       .finally(() => {
@@ -42,7 +72,7 @@ export function useEvents() {
       });
 
     return () => controller.abort();
-  }, [page, reloadVersion]);
+  }, [page, reloadVersion, trimmedSearch, categoryId]);
 
   const retry = () => {
     setEvents([]);
