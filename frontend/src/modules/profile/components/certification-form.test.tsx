@@ -92,6 +92,65 @@ describe("CertificationForm", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it("shows the error only next to the field that is empty", async () => {
+    const { onSubmit, user } = renderForm({
+      initialData: { ...SAVED_VALUES, issueDate: "" },
+    });
+
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    expect(screen.getAllByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toHaveLength(1);
+    expect(getIssueDateInput()).toHaveAttribute("aria-invalid", "true");
+    expect(getNameInput()).toHaveAttribute("aria-invalid", "false");
+    expect(getOrganizationInput()).toHaveAttribute("aria-invalid", "false");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("rejects a name made only of spaces", async () => {
+    const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
+
+    await user.clear(getNameInput());
+    await user.type(getNameInput(), "    ");
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    expect(screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("applies the length limits when editing", async () => {
+    const { onSubmit, user } = renderForm({
+      initialData: {
+        ...SAVED_VALUES,
+        name: "a".repeat(151),
+        issuingOrganization: "b".repeat(101),
+      },
+    });
+
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    expect(screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.nameTooLong)).toBeInTheDocument();
+    expect(
+      screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.organizationTooLong),
+    ).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("submits special characters without altering them", async () => {
+    const { onSubmit, user } = renderForm();
+    const name = "<script>alert(1)</script>";
+    const issuingOrganization = "O'Reilly \"Media\"";
+
+    fireEvent.change(getNameInput(), { target: { value: name } });
+    fireEvent.change(getOrganizationInput(), { target: { value: issuingOrganization } });
+    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      { name, issuingOrganization, issueDate: "2025-04-20" },
+      { type: "keep" },
+    );
+  });
+
   it("shows an inline error for a future issue date", async () => {
     const { onSubmit, user } = renderForm({
       initialData: { ...SAVED_VALUES, issueDate: "2999-01-01" },
