@@ -7,16 +7,22 @@ import type {
   EventWithRelations,
 } from '../types/events.types.js';
 
+export const PUBLISHED_STATUS_TITLE = 'Publicado';
+
 @Injectable()
 export class EventsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAndCount(payload: FindEventsPayload): Promise<FindEventsResponse> {
-    const { categoryId, statusId, search, skip, take } = payload;
+    const { categoryId, statusId, isPublishedOnly, search, skip, take } = payload;
 
     const where: Prisma.EventWhereInput = {
       ...(categoryId !== undefined && { categoryId }),
-      ...(statusId !== undefined && { statusId }),
+      ...(statusId !== undefined
+        ? { statusId }
+        : isPublishedOnly
+          ? { status: { title: PUBLISHED_STATUS_TITLE } }
+          : {}),
       ...(search !== undefined && {
         title: {
           contains: search,

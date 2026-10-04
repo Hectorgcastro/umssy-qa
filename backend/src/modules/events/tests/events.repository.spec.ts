@@ -33,6 +33,22 @@ describe('EventsRepository', () => {
     expect(result).toEqual({ items: [], total: 0 });
   });
 
+  it('applies published status filter when isPublishedOnly is true and statusId is undefined', async () => {
+    prismaMock.event.findMany.mockResolvedValue([]);
+    prismaMock.event.count.mockResolvedValue(0);
+
+    await repository.findAndCount({ isPublishedOnly: true, skip: 0, take: 10 });
+
+    const expectedWhere = {
+      status: { title: 'Publicado' },
+    };
+
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expectedWhere }),
+    );
+    expect(prismaMock.event.count).toHaveBeenCalledWith({ where: expectedWhere });
+  });
+
   it('applies only search filter with case-insensitive partial match to where', async () => {
     prismaMock.event.findMany.mockResolvedValue([]);
     prismaMock.event.count.mockResolvedValue(0);
