@@ -16,7 +16,6 @@ function validateName(name: string): string | undefined {
   return undefined;
 }
 
-// Expects trimmed values and returns only the fields that have an error.
 export function validatePersonalInfo(values: PersonalInfoValues): PersonalInfoErrors {
   const errors: PersonalInfoErrors = {};
 

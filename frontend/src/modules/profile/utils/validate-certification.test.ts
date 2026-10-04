@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CERTIFICATION_VALIDATION_MESSAGES } from "../config/certification-validation.config";
-import type { CreateCertificationDto } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { getTodayIsoDate, validateCertification } from "./validate-certification";
 
 const VALID_VALUES: CreateCertificationDto = {

@@ -4,17 +4,16 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  INPUT_CLASS,
-  PRIMARY_BUTTON_CLASS,
-  SECONDARY_BUTTON_CLASS,
-} from "../config/form-styles.config";
+import { Input } from "@/components/ui/input";
+import type { CertificationDocumentChange } from "../types/certification-document-change.types";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
-import type { CreateCertificationDto } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
+import { validateCertificateFile } from "../utils/validate-certificate-file";
 import { getTodayIsoDate, validateCertification } from "../utils/validate-certification";
+import { CertificationDocumentField } from "./certification-document-field";
 import { FormField } from "./form-field";
 import { SectionCard } from "./section-card";
 
@@ -26,6 +25,7 @@ const EMPTY_CERTIFICATION_VALUES: CreateCertificationDto = {
 
 export function CertificationForm({
   initialData,
+  hasDocument = false,
   isPending = false,
   onSubmit,
   onCancel,
@@ -35,9 +35,39 @@ export function CertificationForm({
   );
   const [errors, setErrors] = useState<CertificationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCurrentDocumentRemoved, setIsCurrentDocumentRemoved] = useState(false);
+  const [fileError, setFileError] = useState<string | undefined>();
   const isEditing = Boolean(initialData);
   const isBusy = isPending || isSubmitting;
   const title = isEditing ? "Editar certificación" : "Agregar certificación";
+  const hasCurrentDocument = hasDocument && !isCurrentDocumentRemoved;
+
+  const getDocumentChange = (): CertificationDocumentChange => {
+    if (selectedFile) {
+      return { type: "replace", file: selectedFile };
+    }
+    return hasDocument && isCurrentDocumentRemoved ? { type: "remove" } : { type: "keep" };
+  };
+
+  const handleSelectFile = (file: File) => {
+    const validationError = validateCertificateFile(file);
+    if (validationError) {
+      setFileError(validationError);
+      return;
+    }
+    setSelectedFile(file);
+    setFileError(undefined);
+  };
+
+  const handleRemoveDocument = () => {
+    if (selectedFile) {
+      setSelectedFile(null);
+    } else {
+      setIsCurrentDocumentRemoved(true);
+    }
+    setFileError(undefined);
+  };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const field = event.target.name as keyof CreateCertificationDto;
@@ -49,6 +79,9 @@ export function CertificationForm({
   const handleCancel = () => {
     setValues(initialData ?? EMPTY_CERTIFICATION_VALUES);
     setErrors({});
+    setSelectedFile(null);
+    setIsCurrentDocumentRemoved(false);
+    setFileError(undefined);
     onCancel();
   };
 
@@ -64,7 +97,7 @@ export function CertificationForm({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(trimmedValues);
+      await onSubmit(trimmedValues, getDocumentChange());
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +112,7 @@ export function CertificationForm({
           isRequired
           error={errors.name}
         >
-          <input
+          <Input
             id="certification-name"
             name="name"
             type="text"
@@ -87,7 +120,7 @@ export function CertificationForm({
             value={values.name}
             disabled={isBusy}
             onChange={handleChange}
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             {...getFieldErrorProps("certification-name", errors.name)}
           />
         </FormField>
@@ -97,7 +130,7 @@ export function CertificationForm({
           isRequired
           error={errors.issuingOrganization}
         >
-          <input
+          <Input
             id="certification-issuingOrganization"
             name="issuingOrganization"
             type="text"
@@ -105,7 +138,7 @@ export function CertificationForm({
             value={values.issuingOrganization}
             disabled={isBusy}
             onChange={handleChange}
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             {...getFieldErrorProps("certification-issuingOrganization", errors.issuingOrganization)}
           />
         </FormField>
@@ -115,7 +148,7 @@ export function CertificationForm({
           isRequired
           error={errors.issueDate}
         >
-          <input
+          <Input
             id="certification-issueDate"
             name="issueDate"
             type="date"
@@ -123,22 +156,30 @@ export function CertificationForm({
             value={values.issueDate}
             disabled={isBusy}
             onChange={handleChange}
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             {...getFieldErrorProps("certification-issueDate", errors.issueDate)}
           />
         </FormField>
+        <CertificationDocumentField
+          selectedFile={selectedFile}
+          hasCurrentDocument={hasCurrentDocument}
+          error={fileError}
+          disabled={isBusy}
+          onSelectFile={handleSelectFile}
+          onRemove={handleRemoveDocument}
+        />
 
         <div className="flex justify-end gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
-            className={SECONDARY_BUTTON_CLASS}
+            className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
             disabled={isBusy}
             onClick={handleCancel}
           >
             Cancelar
           </Button>
-          <Button type="submit" className={cn(PRIMARY_BUTTON_CLASS, "min-w-44")} disabled={isBusy}>
+          <Button type="submit" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-44")} disabled={isBusy}>
             {isBusy ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
             {isBusy ? "Guardando..." : "Guardar"}
           </Button>

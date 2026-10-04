@@ -1,7 +1,5 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DANGER_OUTLINE_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../config/form-styles.config";
-import { UNAVAILABLE_ACTION_TITLE } from "../config/unavailable-action.config";
 import type { SavedCvCardProps } from "../types/saved-cv-card-props.types";
 import { formatFileSize } from "../utils/format-file-size";
 import { formatUploadDate } from "../utils/format-upload-date";
@@ -25,9 +23,9 @@ export function SavedCvCard({ savedCv, isBusy = false, onReplace, onDelete }: Sa
             <Button
               type="button"
               variant="outline"
-              className={SECONDARY_BUTTON_CLASS}
+              className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
               disabled={!onReplace || isBusy}
-              title={onReplace ? undefined : UNAVAILABLE_ACTION_TITLE}
+              title={onReplace ? undefined : "Disponible próximamente"}
               onClick={onReplace}
             >
               Reemplazar CV
@@ -35,9 +33,9 @@ export function SavedCvCard({ savedCv, isBusy = false, onReplace, onDelete }: Sa
             <Button
               type="button"
               variant="outline"
-              className={DANGER_OUTLINE_BUTTON_CLASS}
+              className="h-12 border-accent bg-surface px-6 text-[14px] font-semibold text-accent hover:bg-interaction hover:text-accent"
               disabled={!onDelete || isBusy}
-              title={onDelete ? undefined : UNAVAILABLE_ACTION_TITLE}
+              title={onDelete ? undefined : "Disponible próximamente"}
               onClick={onDelete}
             >
               Eliminar CV

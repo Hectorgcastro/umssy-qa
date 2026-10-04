@@ -1,5 +1,7 @@
 import type { WorkExperienceItem } from "./work-experience-item.types";
 
 export interface WorkExperienceListCardProps {
-  experiences: WorkExperienceItem[];
+  experiences?: WorkExperienceItem[];
+  isLoading?: boolean;
+  onEdit?: (experience: WorkExperienceItem) => void;
 }

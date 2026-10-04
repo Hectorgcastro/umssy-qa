@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Prisma } from '../../../prisma/client.js';
+import { ProfileNotFoundException } from '../exceptions/profile-not-found.exception.js';
 import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { ProfileRepository } from '../repositories/profile.repository.js';
+
+const recordNotFoundError = new Prisma.PrismaClientKnownRequestError('Record not found', {
+  code: 'P2025',
+  clientVersion: 'test',
+});
 
 const userId = '11111111-1111-4111-8111-111111111111';
 
@@ -73,5 +80,13 @@ describe('ProfileRepository', () => {
     expect(args.where).toEqual({ id: userId });
     expect(args.data).toBe(data);
     expect(args.select).not.toHaveProperty('password');
+  });
+
+  it('fails with a domain exception when the user to update does not exist', async () => {
+    user.update.mockRejectedValue(recordNotFoundError);
+
+    await expect(
+      repository.update(userId, { headline: 'Junior web developer', aboutMe: 'Graduate.' }),
+    ).rejects.toBeInstanceOf(ProfileNotFoundException);
   });
 });

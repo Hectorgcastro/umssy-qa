@@ -7,9 +7,3 @@ export const CERTIFICATION_FEEDBACK_MESSAGES = {
   deleteSuccess: "Certificación eliminada correctamente.",
   deleteError: "No se pudo eliminar la certificación. Inténtalo de nuevo.",
 };
-
-export const CERTIFICATION_DELETE_DIALOG_TEXTS = {
-  title: "Eliminar certificación",
-  getMessage: (name: string) =>
-    `Se eliminará "${name}" de tu perfil. Esta acción no se puede deshacer.`,
-};

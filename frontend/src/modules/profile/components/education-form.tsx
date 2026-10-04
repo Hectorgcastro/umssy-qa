@@ -3,12 +3,7 @@
 import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  INPUT_CLASS,
-  PRIMARY_BUTTON_CLASS,
-  SECONDARY_BUTTON_CLASS,
-  TEXTAREA_CLASS,
-} from "../config/form-styles.config";
+import { Input } from "@/components/ui/input";
 import { FormField } from "./form-field";
 import { SectionCard } from "./section-card";
 
@@ -26,44 +21,44 @@ export function EducationForm() {
         className="flex flex-col gap-5"
       >
         <FormField id="education-institution" label="Institución" isRequired>
-          <input
+          <Input
             id="education-institution"
             name="institution"
             type="text"
             required
             placeholder="Nombre de la institución"
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
           />
         </FormField>
         <FormField id="education-degree" label="Título o carrera" isRequired>
-          <input
+          <Input
             id="education-degree"
             name="degree"
             type="text"
             required
             placeholder="Ej. Licenciatura en Informática"
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
           />
         </FormField>
         <div className="grid grid-cols-2 gap-5">
           <FormField id="education-startDate" label="Desde" isRequired>
-            <input
+            <Input
               id="education-startDate"
               name="startDate"
               type="text"
               required
               placeholder="Mes y año"
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             />
           </FormField>
           <FormField id="education-endDate" label="Hasta" isRequired>
-            <input
+            <Input
               id="education-endDate"
               name="endDate"
               type="text"
               required
               placeholder="Mes y año"
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             />
           </FormField>
         </div>
@@ -73,15 +68,15 @@ export function EducationForm() {
             name="description"
             rows={3}
             placeholder="Agrega un detalle relevante de tus estudios"
-            className={TEXTAREA_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3"
           />
         </FormField>
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" className={SECONDARY_BUTTON_CLASS}>
+          <Button type="button" variant="outline" className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft">
             Cancelar
           </Button>
-          <Button type="submit" className={cn(PRIMARY_BUTTON_CLASS, "min-w-44")}>
+          <Button type="submit" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-44")}>
             Guardar formación
           </Button>
         </div>

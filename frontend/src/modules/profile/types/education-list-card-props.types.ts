@@ -1,7 +1,7 @@
 import type { EducationItem } from "./education-item.types";
 
 export interface EducationListCardProps {
-  educations: EducationItem[];
-  isLoading: boolean;
-  error: string | null;
+  educations?: EducationItem[];
+  isLoading?: boolean;
+  error?: string | null;
 }

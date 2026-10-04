@@ -1,7 +1,5 @@
 import type { TrajectoryStep } from "../types/trajectory-step.types";
 
-export const TRAJECTORY_STEPS_LABEL = "Sub-secciones de trayectoria";
-
 export const TRAJECTORY_STEPS: TrajectoryStep[] = [
   {
     id: "education",

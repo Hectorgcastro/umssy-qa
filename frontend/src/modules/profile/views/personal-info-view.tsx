@@ -9,7 +9,6 @@ import { useProfilePhoto } from "../hooks/use-profile-photo";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 
 export function PersonalInfoView() {
-  // Values are kept in memory until the forms are connected to the profile endpoints (issue #68).
   const [savedValues, setSavedValues] = useState<PersonalInfoValues>(EMPTY_PERSONAL_INFO_VALUES);
   const { photoUrl, isUploading, error, uploadPhoto } = useProfilePhoto();
 

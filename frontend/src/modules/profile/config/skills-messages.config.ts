@@ -13,3 +13,8 @@ export const SKILLS_ERROR_MESSAGES_BY_STATUS: Record<number, string> = {
 export const SKILLS_SUCCESS_MESSAGES = {
   saved: "Tus habilidades se guardaron correctamente.",
 };
+
+export const SKILLS_VALIDATION_MESSAGES = {
+  emptyName: "El nombre no puede estar vacío.",
+  duplicated: "Esta habilidad ya existe en el catálogo o en tus habilidades.",
+};

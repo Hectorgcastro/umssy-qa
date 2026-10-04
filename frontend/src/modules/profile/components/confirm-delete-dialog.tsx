@@ -1,14 +1,6 @@
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CONFIRM_DELETE_DIALOG_LABELS } from "../config/confirm-delete-dialog.config";
-import {
-  DIALOG_BACKDROP_CLASS,
-  DIALOG_MESSAGE_CLASS,
-  DIALOG_POPUP_CLASS,
-  DIALOG_TITLE_CLASS,
-} from "../config/dialog-styles.config";
-import { PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../config/form-styles.config";
 import type { ConfirmDeleteDialogProps } from "../types/confirm-delete-dialog-props.types";
 
 export function ConfirmDeleteDialog({
@@ -22,30 +14,30 @@ export function ConfirmDeleteDialog({
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={isDeleting ? undefined : onCancel}>
       <AlertDialog.Portal>
-        <AlertDialog.Backdrop className={DIALOG_BACKDROP_CLASS} />
-        <AlertDialog.Popup className={DIALOG_POPUP_CLASS}>
-          <AlertDialog.Title className={DIALOG_TITLE_CLASS}>{title}</AlertDialog.Title>
-          <AlertDialog.Description className={DIALOG_MESSAGE_CLASS}>{message}</AlertDialog.Description>
+        <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-ink/40 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <AlertDialog.Popup className="fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-surface p-8 text-ink shadow-lg transition duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0">
+          <AlertDialog.Title className="font-tight text-[22px] font-bold text-ink">{title}</AlertDialog.Title>
+          <AlertDialog.Description className="mt-2 text-[15px] text-text-secondary">{message}</AlertDialog.Description>
           <div className="mt-8 flex justify-end gap-3">
             <Button
               type="button"
               variant="outline"
-              className={SECONDARY_BUTTON_CLASS}
+              className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
               disabled={isDeleting}
               onClick={onCancel}
             >
-              {CONFIRM_DELETE_DIALOG_LABELS.cancel}
+              Cancelar
             </Button>
             <Button
               type="button"
-              className={PRIMARY_BUTTON_CLASS}
+              className="h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger"
               disabled={isDeleting}
               onClick={onConfirm}
             >
               {isDeleting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
               {isDeleting
-                ? CONFIRM_DELETE_DIALOG_LABELS.confirming
-                : CONFIRM_DELETE_DIALOG_LABELS.confirm}
+                ? "Eliminando..."
+                : "Eliminar"}
             </Button>
           </div>
         </AlertDialog.Popup>

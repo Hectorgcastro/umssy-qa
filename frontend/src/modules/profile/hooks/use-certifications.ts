@@ -4,11 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CERTIFICATION_FEEDBACK_MESSAGES } from "../config/certification-feedback.config";
 import { certificationsService } from "../services/certifications.service";
 import type { Certification } from "../types/certification.types";
+import type { CertificationsResult } from "../types/certifications-result.types";
 import { sortCertifications } from "../utils/sort-certifications";
-
-type CertificationsResult =
-  | { certifications: Certification[]; error: null }
-  | { certifications: null; error: string };
 
 async function requestCertifications(): Promise<CertificationsResult> {
   try {

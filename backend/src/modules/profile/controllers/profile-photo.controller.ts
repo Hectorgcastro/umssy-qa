@@ -26,7 +26,6 @@ import type { MulterFile } from '../types/multer-file.type.js';
 
 const uploadFieldName = 'file';
 
-// Multer stops bigger uploads early; the service applies the real 5 MB rule.
 const uploadSizeLimitBytes = 10 * 1024 * 1024;
 
 @ApiTags('profile')
@@ -36,7 +35,6 @@ const uploadSizeLimitBytes = 10 * 1024 * 1024;
 export class ProfilePhotoController {
   constructor(private readonly profilePhotoService: ProfilePhotoService) {}
 
-  // Not wrapped by ResponseInterceptor: it returns the image itself.
   @Get()
   @ApiProduces('image/png', 'image/jpeg')
   async download(@CurrentUserId() userId: string): Promise<StreamableFile> {

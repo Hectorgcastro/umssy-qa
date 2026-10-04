@@ -4,7 +4,7 @@ import type { ProfilePhotoFieldProps } from "./profile-photo-field-props.types";
 
 export interface PersonalInfoFormProps {
   initialValues: PersonalInfoValues;
-  cities: CityOption[];
+  cities?: CityOption[];
   isSaving?: boolean;
   photo?: ProfilePhotoFieldProps;
   onSubmit: (values: PersonalInfoValues) => void;

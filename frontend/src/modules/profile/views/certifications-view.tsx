@@ -11,13 +11,14 @@ import { FeedbackMessage } from "../components/feedback-message";
 import { ProfilePageLayout } from "../components/profile-page-layout";
 import { SectionCard } from "../components/section-card";
 import { TrajectorySteps } from "../components/trajectory-steps";
-import { CERTIFICATIONS_VIEW_TEXTS } from "../config/certifications-view.config";
-import { PRIMARY_BUTTON_CLASS } from "../config/form-styles.config";
 import { useCreateCertification, useUpdateCertification } from "../hooks/use-certification-mutations";
+import { useCertificationDocument } from "../hooks/use-certification-document";
 import { useCertifications } from "../hooks/use-certifications";
 import { useDeleteCertification } from "../hooks/use-delete-certification";
+import type { CertificationDocumentChange } from "../types/certification-document-change.types";
 import type { CertificationFormState } from "../types/certification-form-state.types";
-import type { Certification, CreateCertificationDto } from "../types/certification.types";
+import type { Certification } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import type { Feedback } from "../types/feedback.types";
 
 function toFormValues(certification: Certification): CreateCertificationDto {
@@ -33,20 +34,18 @@ export function CertificationsView() {
   const [formState, setFormState] = useState<CertificationFormState>({ mode: "closed" });
   const [pendingDelete, setPendingDelete] = useState<Certification | null>(null);
 
-  const handleSaved = () => {
-    setFormState({ mode: "closed" });
-    void reload();
-  };
-
-  const createMutation = useCreateCertification({ onSuccess: handleSaved });
-  const updateMutation = useUpdateCertification({ onSuccess: handleSaved });
+  const createMutation = useCreateCertification();
+  const updateMutation = useUpdateCertification();
   const deleteMutation = useDeleteCertification(() => {
     void reload();
   });
+  const certificationDocument = useCertificationDocument();
 
   const isFormOpen = formState.mode !== "closed";
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving =
+    createMutation.isPending || updateMutation.isPending || certificationDocument.isSaving;
   const visibleFeedback: Feedback | null =
+    certificationDocument.feedback ??
     createMutation.feedback ??
     updateMutation.feedback ??
     deleteMutation.feedback ??
@@ -56,6 +55,7 @@ export function CertificationsView() {
     createMutation.clearFeedback();
     updateMutation.clearFeedback();
     deleteMutation.clearFeedback();
+    certificationDocument.clearFeedback();
   };
 
   const openCreateForm = () => {
@@ -72,17 +72,32 @@ export function CertificationsView() {
     setFormState({ mode: "closed" });
   };
 
-  const handleSubmit = async (values: CreateCertificationDto) => {
-    if (formState.mode === "edit") {
-      await updateMutation.mutate({ id: formState.certification.id, data: values });
+  const handleSubmit = async (
+    values: CreateCertificationDto,
+    documentChange: CertificationDocumentChange,
+  ) => {
+    const savedCertification =
+      formState.mode === "edit"
+        ? await updateMutation.mutate({ id: formState.certification.id, data: values })
+        : await createMutation.mutate(values);
+
+    if (!savedCertification) {
       return;
     }
-    await createMutation.mutate(values);
+
+    await certificationDocument.applyDocumentChange(savedCertification.id, documentChange);
+    setFormState({ mode: "closed" });
+    void reload();
   };
 
   const openDeleteDialog = (certification: Certification) => {
     clearFeedback();
     setPendingDelete(certification);
+  };
+
+  const openDocument = (certification: Certification) => {
+    clearFeedback();
+    void certificationDocument.openDocument(certification);
   };
 
   const closeDeleteDialog = () => {
@@ -95,15 +110,15 @@ export function CertificationsView() {
   };
 
   const addButton = (
-    <Button type="button" className={cn(PRIMARY_BUTTON_CLASS, "gap-2")} onClick={openCreateForm}>
+    <Button type="button" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "gap-2")} onClick={openCreateForm}>
       <Plus aria-hidden="true" className="size-4" />
-      {CERTIFICATIONS_VIEW_TEXTS.addButton}
+      Agregar certificación
     </Button>
   );
 
   const renderList = () => {
     if (isLoading) {
-      return <p className="text-[14px] text-text-secondary">{CERTIFICATIONS_VIEW_TEXTS.loading}</p>;
+      return <p className="text-[14px] text-text-secondary">Cargando certificaciones...</p>;
     }
 
     if (certifications.length === 0) {
@@ -113,9 +128,9 @@ export function CertificationsView() {
             <Award aria-hidden="true" className="size-6" />
           </span>
           <div className="flex flex-col gap-1">
-            <h3 className="text-[16px] font-bold text-ink">{CERTIFICATIONS_VIEW_TEXTS.emptyTitle}</h3>
+            <h3 className="text-[16px] font-bold text-ink">Aún no has agregado certificaciones</h3>
             <p className="max-w-md text-[14px] text-text-secondary">
-              {CERTIFICATIONS_VIEW_TEXTS.emptyDescription}
+              Suma los cursos y certificaciones que respaldan tus conocimientos para fortalecer tu perfil.
             </p>
           </div>
           {addButton}
@@ -124,14 +139,15 @@ export function CertificationsView() {
     }
 
     return (
-      <ul aria-label={CERTIFICATIONS_VIEW_TEXTS.sectionTitle} className="flex flex-col gap-3">
+      <ul aria-label="Certificaciones" className="flex flex-col gap-3">
         {certifications.map((certification) => (
           <li key={certification.id}>
             <CertificationCard
               certification={certification}
-              isBusy={deleteMutation.isDeleting}
+              isBusy={deleteMutation.isDeleting || certificationDocument.isOpening}
               onEdit={openEditForm}
               onDelete={openDeleteDialog}
+              onViewDocument={openDocument}
             />
           </li>
         ))}
@@ -142,8 +158,8 @@ export function CertificationsView() {
   return (
     <ProfilePageLayout
       activeTab="trajectory"
-      title={CERTIFICATIONS_VIEW_TEXTS.pageTitle}
-      description={CERTIFICATIONS_VIEW_TEXTS.pageDescription}
+      title="Trayectoria"
+      description="Muestra tus estudios, experiencia, habilidades y certificaciones"
     >
       <TrajectorySteps activeStep="certifications" />
       {visibleFeedback ? <FeedbackMessage feedback={visibleFeedback} /> : null}
@@ -154,6 +170,9 @@ export function CertificationsView() {
             initialData={
               formState.mode === "edit" ? toFormValues(formState.certification) : undefined
             }
+            hasDocument={
+              formState.mode === "edit" ? Boolean(formState.certification.hasDocument) : false
+            }
             isPending={isSaving}
             onSubmit={handleSubmit}
             onCancel={closeForm}
@@ -161,8 +180,8 @@ export function CertificationsView() {
         </div>
       ) : (
         <SectionCard
-          title={CERTIFICATIONS_VIEW_TEXTS.sectionTitle}
-          description={CERTIFICATIONS_VIEW_TEXTS.sectionDescription}
+          title="Certificaciones"
+          description="Ordenadas de la más reciente a la más antigua."
           action={certifications.length > 0 ? addButton : undefined}
         >
           {renderList()}

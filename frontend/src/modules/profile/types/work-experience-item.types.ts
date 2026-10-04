@@ -1,9 +1,9 @@
 export interface WorkExperienceItem {
   id: string;
+  companyName: string;
   position: string;
-  company: string;
-  startDate: string; // formato "YYYY-MM"
+  startDate: string;
   endDate: string | null;
   isCurrent: boolean;
-  description: string;
+  description: string | null;
 }

@@ -7,7 +7,6 @@ export function ProfileHeader({ title }: ProfileHeaderProps) {
         <p className="text-[12.5px] font-semibold text-text-secondary">Comunidad / Mi perfil</p>
         <p className="font-tight text-[20px] font-bold text-ink">{title}</p>
       </div>
-      {/* The role will come from the session once Epic 1 delivers authentication. */}
       <span className="text-[12.5px] font-semibold text-ink-soft">Egresado aprobado</span>
     </header>
   );

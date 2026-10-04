@@ -5,9 +5,11 @@ import { formatEducationPeriod } from "../utils/format-education-period";
 import { FeedbackMessage } from "./feedback-message";
 import { SectionCard } from "./section-card";
 
-const ACTION_BUTTON_CLASS = "h-8 px-2 text-[13px] font-semibold";
-
-export function EducationListCard({ educations, isLoading, error }: EducationListCardProps) {
+export function EducationListCard({
+  educations = [],
+  isLoading = false,
+  error = null,
+}: EducationListCardProps) {
   return (
     <SectionCard
       title="Formación registrada"
@@ -43,7 +45,7 @@ export function EducationListCard({ educations, isLoading, error }: EducationLis
                   type="button"
                   variant="ghost"
                   aria-label={`Editar ${education.degree}`}
-                  className={`${ACTION_BUTTON_CLASS} text-ink`}
+                  className="h-8 px-2 text-[13px] font-semibold text-ink"
                 >
                   Editar
                 </Button>
@@ -51,7 +53,7 @@ export function EducationListCard({ educations, isLoading, error }: EducationLis
                   type="button"
                   variant="ghost"
                   aria-label={`Eliminar ${education.degree}`}
-                  className={`${ACTION_BUTTON_CLASS} text-accent hover:bg-interaction hover:text-accent`}
+                  className="h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent"
                 >
                   Eliminar
                 </Button>
