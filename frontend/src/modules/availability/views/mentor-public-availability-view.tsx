@@ -2,10 +2,7 @@
 
 import { useMentorFreeBlocks } from "../hooks/use-mentor-free-blocks";
 import { AvailabilityBlockList } from "../components/availability-block-list";
-
-interface MentorPublicAvailabilityViewProps {
-  mentorId: string;
-}
+import type { MentorPublicAvailabilityViewProps } from "../types/mentor-public-availability-view-props.types";
 
 export function MentorPublicAvailabilityView({ mentorId }: MentorPublicAvailabilityViewProps) {
   const { blocks, isLoading, error } = useMentorFreeBlocks(mentorId);

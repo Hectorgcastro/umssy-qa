@@ -1,11 +1,6 @@
-import type { AvailabilityBlock } from "../types/availability-block.types";
+import type { AvailabilityBlockListProps } from "../types/availability-block-list-props.types";
 
 const DATE_LOCALE = "es-BO";
-
-interface AvailabilityBlockListProps {
-  blocks: AvailabilityBlock[];
-  emptyMessage: string;
-}
 
 export function AvailabilityBlockList({ blocks, emptyMessage }: AvailabilityBlockListProps) {
   if (blocks.length === 0) {
