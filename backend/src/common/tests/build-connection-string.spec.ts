@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildDatabaseConnectionString } from '../prisma/build-connection-string.js';
 
+// Función auxiliar para simular las variables de entorno de forma limpia
 function stubDbEnv(overrides: Record<string, string> = {}): void {
   vi.stubEnv('DB_USER', 'user');
   vi.stubEnv('DB_PASSWORD', 'password_db');
@@ -14,6 +15,7 @@ function stubDbEnv(overrides: Record<string, string> = {}): void {
   }
 }
 
+// Limpia los entornos clonados después de cada prueba
 afterEach(() => {
   vi.unstubAllEnvs();
 });
@@ -68,3 +70,4 @@ describe('buildDatabaseConnectionString', () => {
     );
   });
 });
+
