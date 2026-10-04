@@ -4,7 +4,7 @@ import type { EducationItem } from "../types/education-item.types";
 import { educationsService } from "./educations.service";
 
 vi.mock("@/shared/services/api-client", () => ({
-  apiClient: { get: vi.fn() },
+  apiClient: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
 }));
 
 const EDUCATION: EducationItem = {
@@ -77,5 +77,51 @@ describe("educationsService", () => {
     vi.mocked(apiClient.get).mockRejectedValue(error);
 
     await expect(educationsService.getEducations()).rejects.toBe(error);
+  });
+
+  describe("mutations", () => {
+    const PAYLOAD = {
+      institution: "Example University",
+      degree: "Computer Science",
+      startDate: "2021-02-01",
+      endDate: null,
+      description: null,
+    };
+    const HEADERS = { headers: { Authorization: "Bearer test-access-token" } };
+
+    it("creates an education record", async () => {
+      vi.mocked(apiClient.post).mockResolvedValue({ data: { data: EDUCATION } });
+
+      await expect(educationsService.createEducation(PAYLOAD)).resolves.toEqual(EDUCATION);
+      expect(apiClient.post).toHaveBeenCalledWith("/educations", PAYLOAD, HEADERS);
+    });
+
+    it("updates an education record", async () => {
+      vi.mocked(apiClient.patch).mockResolvedValue({ data: { data: EDUCATION } });
+
+      await expect(educationsService.updateEducation(EDUCATION.id, PAYLOAD)).resolves.toEqual(
+        EDUCATION,
+      );
+      expect(apiClient.patch).toHaveBeenCalledWith(`/educations/${EDUCATION.id}`, PAYLOAD, HEADERS);
+    });
+
+    it("deletes an education record", async () => {
+      vi.mocked(apiClient.delete).mockResolvedValue({});
+
+      await educationsService.deleteEducation(EDUCATION.id);
+
+      expect(apiClient.delete).toHaveBeenCalledWith(`/educations/${EDUCATION.id}`, HEADERS);
+    });
+
+    it("propagates mutation errors without local data", async () => {
+      const error = { response: { status: 404 } };
+      vi.mocked(apiClient.post).mockRejectedValue(error);
+      vi.mocked(apiClient.patch).mockRejectedValue(error);
+      vi.mocked(apiClient.delete).mockRejectedValue(error);
+
+      await expect(educationsService.createEducation(PAYLOAD)).rejects.toBe(error);
+      await expect(educationsService.updateEducation(EDUCATION.id, PAYLOAD)).rejects.toBe(error);
+      await expect(educationsService.deleteEducation(EDUCATION.id)).rejects.toBe(error);
+    });
   });
 });

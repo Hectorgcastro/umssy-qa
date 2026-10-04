@@ -91,4 +91,18 @@ describe("useEducations", () => {
     expect(result.current.error).toBeNull();
     expect(result.current.isLoading).toBe(true);
   });
+
+  it("reloads the records on demand", async () => {
+    vi.mocked(educationsService.getEducations).mockResolvedValueOnce([]);
+    const { result } = renderHook(() => useEducations());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    vi.mocked(educationsService.getEducations).mockResolvedValueOnce([EDUCATION]);
+    await act(async () => {
+      await result.current.reload();
+    });
+
+    expect(result.current.educations).toEqual([EDUCATION]);
+    expect(result.current.error).toBeNull();
+  });
 });

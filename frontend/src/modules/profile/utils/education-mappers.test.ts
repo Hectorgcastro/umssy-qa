@@ -1,0 +1,65 @@
+import { describe, expect, it } from "vitest";
+import type { EducationItem } from "../types/education-item.types";
+import { toEducationFormValues } from "./to-education-form-values";
+import { toEducationPayload } from "./to-education-payload";
+
+const EDUCATION: EducationItem = {
+  id: "11111111-1111-4111-8111-111111111111",
+  institution: "Example University",
+  degree: "Computer Science",
+  startDate: "2021-02-01T00:00:00.000Z",
+  endDate: null,
+  description: null,
+  createdAt: "2025-12-01T00:00:00.000Z",
+  updatedAt: "2025-12-01T00:00:00.000Z",
+};
+
+describe("toEducationFormValues", () => {
+  it("maps nullable fields to empty strings and keeps only the date part", () => {
+    expect(toEducationFormValues(EDUCATION)).toEqual({
+      institution: "Example University",
+      degree: "Computer Science",
+      startDate: "2021-02-01",
+      endDate: "",
+      description: "",
+    });
+  });
+
+  it("keeps the end date and the description when present", () => {
+    expect(
+      toEducationFormValues({ ...EDUCATION, endDate: "2025-11-30", description: "Studies" }),
+    ).toMatchObject({ endDate: "2025-11-30", description: "Studies" });
+  });
+});
+
+describe("toEducationPayload", () => {
+  it("trims the text fields and sends null for empty optional values", () => {
+    expect(
+      toEducationPayload({
+        institution: " Example University ",
+        degree: " Computer Science ",
+        startDate: "2021-02-01",
+        endDate: "",
+        description: "  ",
+      }),
+    ).toEqual({
+      institution: "Example University",
+      degree: "Computer Science",
+      startDate: "2021-02-01",
+      endDate: null,
+      description: null,
+    });
+  });
+
+  it("keeps the end date and the trimmed description", () => {
+    expect(
+      toEducationPayload({
+        institution: "Example University",
+        degree: "Computer Science",
+        startDate: "2021-02-01",
+        endDate: "2025-11-30",
+        description: " Studies ",
+      }),
+    ).toMatchObject({ endDate: "2025-11-30", description: "Studies" });
+  });
+});

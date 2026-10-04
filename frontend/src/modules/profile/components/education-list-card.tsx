@@ -9,6 +9,8 @@ export function EducationListCard({
   educations = [],
   isLoading = false,
   error = null,
+  onEdit,
+  onDelete,
 }: EducationListCardProps) {
   return (
     <SectionCard
@@ -45,6 +47,7 @@ export function EducationListCard({
                   type="button"
                   variant="ghost"
                   aria-label={`Editar ${education.degree}`}
+                  onClick={() => onEdit?.(education)}
                   className="h-8 px-2 text-[13px] font-semibold text-ink"
                 >
                   Editar
@@ -53,6 +56,7 @@ export function EducationListCard({
                   type="button"
                   variant="ghost"
                   aria-label={`Eliminar ${education.degree}`}
+                  onClick={() => onDelete?.(education)}
                   className="h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent"
                 >
                   Eliminar

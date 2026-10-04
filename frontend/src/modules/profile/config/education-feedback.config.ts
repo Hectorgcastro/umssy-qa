@@ -3,4 +3,10 @@ export const EDUCATION_FEEDBACK_MESSAGES = {
   empty: "Todavía no tienes formación académica registrada.",
   loadError: "No se pudo cargar tu formación académica. Recarga la página para intentarlo de nuevo.",
   missingEndDate: "Fecha de fin no registrada",
+  createSuccess: "Formación académica agregada correctamente.",
+  createError: "No se pudo agregar la formación académica. Inténtalo de nuevo.",
+  updateSuccess: "Formación académica actualizada correctamente.",
+  updateError: "No se pudo actualizar la formación académica. Inténtalo de nuevo.",
+  deleteSuccess: "Formación académica eliminada correctamente.",
+  deleteError: "No se pudo eliminar la formación académica. Inténtalo de nuevo.",
 };
