@@ -9,6 +9,16 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: buildDatabaseConnectionString() }),
 });
 
+// --- Existing reference UUIDs (HU-08-03 original seed) ---
+const CATEGORY_TECNOLOGIA_ID = '22222222-2222-2222-2222-222222222221';
+const MODALITY_PRESENCIAL_ID = '22222222-2222-2222-2222-222222222222';
+const ORIGIN_INSTITUCIONAL_ID = '22222222-2222-2222-2222-222222222223';
+const EVENT_STATUS_PUBLICADO_ID = '22222222-2222-2222-2222-222222222224';
+const REG_STATUS_CONFIRMADA_ID = '22222222-2222-2222-2222-222222222225';
+
+// --- Commit 1: missing reference rows ---
+const EVENT_STATUS_BORRADOR_ID = '22222222-2222-2222-2222-222222222229';
+
 async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
@@ -38,40 +48,40 @@ async function main() {
   console.log('Roles creados:', ROLE_NAMES.join(', '));
   console.log('Usuario de prueba: prueba@umss.edu.bo / Prueba123 (rol: titulado)');
 
-    // --- Eventos & pases (HU-08-03) ---
+  // --- Eventos & pases (HU-08-03) ---
   const category = await prisma.eventCategory.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222221' },
+    where: { id: CATEGORY_TECNOLOGIA_ID },
     update: {},
-    create: { id: '22222222-2222-2222-2222-222222222221', name: 'Tecnología' },
+    create: { id: CATEGORY_TECNOLOGIA_ID, name: 'Tecnología' },
   });
   const modality = await prisma.eventModality.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222222' },
+    where: { id: MODALITY_PRESENCIAL_ID },
     update: {},
-    create: { id: '22222222-2222-2222-2222-222222222222', title: 'Presencial' },
+    create: { id: MODALITY_PRESENCIAL_ID, title: 'Presencial' },
   });
   const origin = await prisma.eventOrigin.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222223' },
+    where: { id: ORIGIN_INSTITUCIONAL_ID },
     update: {},
-    create: { id: '22222222-2222-2222-2222-222222222223', title: 'Institucional' },
+    create: { id: ORIGIN_INSTITUCIONAL_ID, title: 'Institucional' },
   });
   const eventStatus = await prisma.eventStatus.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222224' },
+    where: { id: EVENT_STATUS_PUBLICADO_ID },
     update: {},
-    create: { id: '22222222-2222-2222-2222-222222222224', title: 'Publicado' },
+    create: { id: EVENT_STATUS_PUBLICADO_ID, title: 'Publicado' },
   });
   const regStatus = await prisma.registrationStatus.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222225' },
+    where: { id: REG_STATUS_CONFIRMADA_ID },
     update: {},
-    create: { id: '22222222-2222-2222-2222-222222222225', title: 'Confirmada' },
+    create: { id: REG_STATUS_CONFIRMADA_ID, title: 'Confirmada' },
   });
 
-  const events = [
+  const legacyEvents = [
     { id: '33333333-3333-3333-3333-333333333331', title: 'Taller de NestJS', date: '2026-10-20', location: 'Aula 101', enroll: true },
     { id: '33333333-3333-3333-3333-333333333332', title: 'Taller de Prisma', date: '2026-10-25', location: 'Laboratorio 2', enroll: true },
     { id: '33333333-3333-3333-3333-333333333333', title: 'Taller de Vitest', date: '2026-11-02', location: 'Aula 203', enroll: false },
   ];
 
-  for (const e of events) {
+  for (const e of legacyEvents) {
     await prisma.event.upsert({
       where: { id: e.id },
       update: {},
@@ -108,7 +118,15 @@ async function main() {
     }
   }
 
-    console.log('Eventos de prueba creados; usuario inscrito en 2 de 3');
+  console.log('Eventos de prueba creados; usuario inscrito en 2 de 3');
+
+  // --- Commit 1: missing reference rows ---
+  await prisma.eventStatus.upsert({
+    where: { id: EVENT_STATUS_BORRADOR_ID },
+    update: {},
+    create: { id: EVENT_STATUS_BORRADOR_ID, title: 'Borrador' },
+  });
+  console.log('Reference rows ensured: EventStatus(Borrador)');
 }
 
 main()
