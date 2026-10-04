@@ -127,7 +127,7 @@ export function EventsView() {
       ) : (
         <aside
           aria-label="Detalle del taller seleccionado"
-          className="w-full shrink-0 border-t border-border bg-surface p-8 text-center lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
+          className="flex min-h-80 w-full shrink-0 items-center justify-center border-t border-border bg-surface p-8 text-center lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
         >
           <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
             <h2 className="text-lg font-bold text-ink">Selecciona un taller</h2>

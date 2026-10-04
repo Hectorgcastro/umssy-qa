@@ -117,13 +117,12 @@ export function EventCard({
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'bg-surface border rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-2xs transition-colors cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'border rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-2xs transition-colors cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isSelected
-          ? 'border-ink ring-1 ring-ink'
-          : 'border-border hover:border-border-strong',
+          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+          : 'border-border bg-surface hover:border-border-strong',
       )}
     >
-      {/* Cabecera de la tarjeta: Categoria e insignia condicional de estado "Lleno" */}
       <div className="flex items-center justify-between gap-2">
         <span
           className={cn(
@@ -144,7 +143,6 @@ export function EventCard({
         )}
       </div>
 
-      {/* Cuerpo central: Titulo del taller y metadatos de fecha y horario */}
       <div className="flex flex-col gap-2.5">
         <h2 className="text-base font-bold text-ink leading-snug">
           {event.title}
@@ -162,7 +160,6 @@ export function EventCard({
         </div>
       </div>
 
-      {/* Pie de la tarjeta: Barra de progreso de cupo (dorada disponible / roja lleno) + contador */}
       <div className="flex items-center gap-3 pt-1">
         {progressPercentage === null ? (
           <span className="flex-1 text-xs text-text-secondary">
