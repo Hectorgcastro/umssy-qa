@@ -3,14 +3,11 @@ import { getInitials } from "../utils/get-initials";
 import { ProfileAvatar } from "./profile-avatar";
 import { SectionCard } from "./section-card";
 
-const SECTION_LABEL_CLASS = "mt-5 text-[11px] font-semibold tracking-wide text-text-secondary uppercase";
-const SECTION_TEXT_CLASS = "mt-1 text-[13px] break-words whitespace-pre-line text-ink-soft";
-
 export function ProfilePreviewCard({ fullName, photoUrl, presentation }: ProfilePreviewCardProps) {
-  const name = fullName.trim() || "Tu nombre";
-  const headline = presentation.headline.trim();
-  const aboutMe = presentation.aboutMe.trim();
-  const opportunities = presentation.interestedOpportunities.trim();
+  const name = (fullName ?? "").trim() || "Tu nombre";
+  const headline = (presentation.headline ?? "").trim();
+  const aboutMe = (presentation.aboutMe ?? "").trim();
+  const opportunities = (presentation.interestedOpportunities ?? "").trim();
 
   return (
     <SectionCard title="Así se verá en tu perfil">
@@ -24,15 +21,15 @@ export function ProfilePreviewCard({ fullName, photoUrl, presentation }: Profile
         </div>
       </div>
 
-      <p className={SECTION_LABEL_CLASS}>Acerca de</p>
-      <p className={SECTION_TEXT_CLASS}>
+      <p className="mt-5 text-[11px] font-semibold tracking-wide text-text-secondary uppercase">Acerca de</p>
+      <p className="mt-1 text-[13px] break-words whitespace-pre-line text-ink-soft">
         {aboutMe || "Aquí se mostrará tu presentación una vez que la guardes."}
       </p>
 
       {opportunities ? (
         <>
-          <p className={SECTION_LABEL_CLASS}>Oportunidades que me interesan</p>
-          <p className={SECTION_TEXT_CLASS}>{opportunities}</p>
+          <p className="mt-5 text-[11px] font-semibold tracking-wide text-text-secondary uppercase">Oportunidades que me interesan</p>
+          <p className="mt-1 text-[13px] break-words whitespace-pre-line text-ink-soft">{opportunities}</p>
         </>
       ) : null}
     </SectionCard>

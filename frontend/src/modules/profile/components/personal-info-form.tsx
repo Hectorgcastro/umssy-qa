@@ -3,11 +3,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  INPUT_CLASS,
-  PRIMARY_BUTTON_CLASS,
-  SECONDARY_BUTTON_CLASS,
-} from "../config/form-styles.config";
+import { Input } from "@/components/ui/input";
 import type { PersonalInfoErrors } from "../types/personal-info-errors.types";
 import type { PersonalInfoFormProps } from "../types/personal-info-form-props.types";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
@@ -20,7 +16,7 @@ import { SectionCard } from "./section-card";
 
 export function PersonalInfoForm({
   initialValues,
-  cities,
+  cities = [],
   isSaving = false,
   photo,
   onSubmit,
@@ -61,7 +57,7 @@ export function PersonalInfoForm({
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-8 pt-8">
         <div className="grid grid-cols-2 gap-x-8 gap-y-5">
           <FormField id="firstName" label="Nombres" isRequired error={errors.firstName}>
-            <input
+            <Input
               id="firstName"
               name="firstName"
               type="text"
@@ -70,12 +66,12 @@ export function PersonalInfoForm({
               value={values.firstName}
               disabled={isSaving}
               onChange={handleChange}
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("firstName", errors.firstName)}
             />
           </FormField>
           <FormField id="lastName" label="Apellidos" isRequired error={errors.lastName}>
-            <input
+            <Input
               id="lastName"
               name="lastName"
               type="text"
@@ -84,7 +80,7 @@ export function PersonalInfoForm({
               value={values.lastName}
               disabled={isSaving}
               onChange={handleChange}
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("lastName", errors.lastName)}
             />
           </FormField>
@@ -95,7 +91,7 @@ export function PersonalInfoForm({
               value={values.cityId}
               disabled={isSaving}
               onChange={handleChange}
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12"
               {...getFieldErrorProps("cityId", errors.cityId)}
             >
               <option value="">Selecciona tu ciudad</option>
@@ -107,7 +103,7 @@ export function PersonalInfoForm({
             </select>
           </FormField>
           <FormField id="phone" label="Teléfono" isRequired error={errors.phone}>
-            <input
+            <Input
               id="phone"
               name="phone"
               type="tel"
@@ -116,7 +112,7 @@ export function PersonalInfoForm({
               value={values.phone}
               disabled={isSaving}
               onChange={handleChange}
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("phone", errors.phone)}
             />
           </FormField>
@@ -126,7 +122,7 @@ export function PersonalInfoForm({
             isRequired
             error={errors.personalEmail}
           >
-            <input
+            <Input
               id="personalEmail"
               name="personalEmail"
               type="email"
@@ -135,7 +131,7 @@ export function PersonalInfoForm({
               value={values.personalEmail}
               disabled={isSaving}
               onChange={handleChange}
-              className={INPUT_CLASS}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("personalEmail", errors.personalEmail)}
             />
           </FormField>
@@ -147,13 +143,13 @@ export function PersonalInfoForm({
             <Button
               type="button"
               variant="outline"
-              className={SECONDARY_BUTTON_CLASS}
+              className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
               disabled={isSaving}
               onClick={handleCancel}
             >
               Cancelar
             </Button>
-            <Button type="submit" className={cn(PRIMARY_BUTTON_CLASS, "min-w-44")} disabled={isSaving}>
+            <Button type="submit" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-44")} disabled={isSaving}>
               {isSaving ? "Guardando..." : "Guardar perfil"}
             </Button>
           </div>

@@ -4,11 +4,8 @@ import { useRef, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PHOTO_ACCEPT } from "../config/file-upload.config";
-import { FIELD_ERROR_CLASS, SECONDARY_BUTTON_CLASS } from "../config/form-styles.config";
 import type { ProfilePhotoFieldProps } from "../types/profile-photo-field-props.types";
 import { ProfileAvatar } from "./profile-avatar";
-
-const PHOTO_INPUT_ID = "profilePhoto";
 
 export function ProfilePhotoField({
   photoUrl,
@@ -38,7 +35,7 @@ export function ProfilePhotoField({
         </p>
         <input
           ref={inputRef}
-          id={PHOTO_INPUT_ID}
+          id="profilePhoto"
           type="file"
           accept={PHOTO_ACCEPT}
           aria-label="Seleccionar fotografía de perfil"
@@ -49,14 +46,14 @@ export function ProfilePhotoField({
         <Button
           type="button"
           variant="outline"
-          className={cn(SECONDARY_BUTTON_CLASS, "mt-3 w-fit")}
+          className={cn("h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft", "mt-3 w-fit")}
           disabled={!onSelectPhoto || isUploading}
           onClick={() => inputRef.current?.click()}
         >
           {isUploading ? "Subiendo..." : buttonLabel}
         </Button>
         {error ? (
-          <p role="alert" className={cn(FIELD_ERROR_CLASS, "mt-2")}>
+          <p role="alert" className={cn("text-[13px] text-danger", "mt-2")}>
             {error}
           </p>
         ) : null}

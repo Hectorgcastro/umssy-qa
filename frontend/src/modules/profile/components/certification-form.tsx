@@ -4,11 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  INPUT_CLASS,
-  PRIMARY_BUTTON_CLASS,
-  SECONDARY_BUTTON_CLASS,
-} from "../config/form-styles.config";
+import { Input } from "@/components/ui/input";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
@@ -79,7 +75,7 @@ export function CertificationForm({
           isRequired
           error={errors.name}
         >
-          <input
+          <Input
             id="certification-name"
             name="name"
             type="text"
@@ -87,7 +83,7 @@ export function CertificationForm({
             value={values.name}
             disabled={isBusy}
             onChange={handleChange}
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             {...getFieldErrorProps("certification-name", errors.name)}
           />
         </FormField>
@@ -97,7 +93,7 @@ export function CertificationForm({
           isRequired
           error={errors.issuingOrganization}
         >
-          <input
+          <Input
             id="certification-issuingOrganization"
             name="issuingOrganization"
             type="text"
@@ -105,7 +101,7 @@ export function CertificationForm({
             value={values.issuingOrganization}
             disabled={isBusy}
             onChange={handleChange}
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             {...getFieldErrorProps("certification-issuingOrganization", errors.issuingOrganization)}
           />
         </FormField>
@@ -115,7 +111,7 @@ export function CertificationForm({
           isRequired
           error={errors.issueDate}
         >
-          <input
+          <Input
             id="certification-issueDate"
             name="issueDate"
             type="date"
@@ -123,7 +119,7 @@ export function CertificationForm({
             value={values.issueDate}
             disabled={isBusy}
             onChange={handleChange}
-            className={INPUT_CLASS}
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             {...getFieldErrorProps("certification-issueDate", errors.issueDate)}
           />
         </FormField>
@@ -132,13 +128,13 @@ export function CertificationForm({
           <Button
             type="button"
             variant="outline"
-            className={SECONDARY_BUTTON_CLASS}
+            className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
             disabled={isBusy}
             onClick={handleCancel}
           >
             Cancelar
           </Button>
-          <Button type="submit" className={cn(PRIMARY_BUTTON_CLASS, "min-w-44")} disabled={isBusy}>
+          <Button type="submit" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-44")} disabled={isBusy}>
             {isBusy ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
             {isBusy ? "Guardando..." : "Guardar"}
           </Button>

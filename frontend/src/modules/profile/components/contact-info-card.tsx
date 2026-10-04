@@ -6,8 +6,8 @@ import { ProfileInfoItem } from "./profile-info-item";
 import { SectionCard } from "./section-card";
 
 export function ContactInfoCard({ profile, photoUrl }: ContactInfoCardProps) {
-  const fullName = profile.fullName.trim();
-  const headline = profile.headline.trim();
+  const fullName = (profile.fullName ?? "").trim();
+  const headline = (profile.headline ?? "").trim();
 
   return (
     <SectionCard

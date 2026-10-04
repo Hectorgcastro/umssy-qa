@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 import type { CertificationCardProps } from "../types/certification-card-props.types";
 import { formatIssueDate } from "../utils/format-issue-date";
 
-const ACTION_BUTTON_CLASS = "h-8 gap-1.5 px-2 text-[13px] font-semibold";
-
 export function CertificationCard({
   certification,
   isBusy = false,
@@ -37,7 +35,7 @@ export function CertificationCard({
           aria-label={`Editar ${certification.name}`}
           disabled={isBusy}
           onClick={() => onEdit(certification)}
-          className={`${ACTION_BUTTON_CLASS} text-ink`}
+          className={`h-8 gap-1.5 px-2 text-[13px] font-semibold text-ink`}
         >
           <Edit aria-hidden="true" className="size-4" />
           Editar
@@ -48,7 +46,7 @@ export function CertificationCard({
           aria-label={`Eliminar ${certification.name}`}
           disabled={isBusy}
           onClick={() => onDelete(certification)}
-          className={`${ACTION_BUTTON_CLASS} text-accent hover:bg-interaction hover:text-accent`}
+          className={`h-8 gap-1.5 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent`}
         >
           <Trash2 aria-hidden="true" className="size-4" />
           Eliminar

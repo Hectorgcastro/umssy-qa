@@ -1,4 +1,4 @@
-import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-texts.config";
+import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-messages.config";
 import type { SkillItem } from "../types/skill-item.types";
 
 function normalizeSkillName(name: string): string {

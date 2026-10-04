@@ -11,8 +11,6 @@ import { FeedbackMessage } from "../components/feedback-message";
 import { ProfilePageLayout } from "../components/profile-page-layout";
 import { SectionCard } from "../components/section-card";
 import { TrajectorySteps } from "../components/trajectory-steps";
-import { CERTIFICATIONS_VIEW_TEXTS } from "../config/certifications-view.config";
-import { PRIMARY_BUTTON_CLASS } from "../config/form-styles.config";
 import { useCreateCertification, useUpdateCertification } from "../hooks/use-certification-mutations";
 import { useCertifications } from "../hooks/use-certifications";
 import { useDeleteCertification } from "../hooks/use-delete-certification";
@@ -96,15 +94,15 @@ export function CertificationsView() {
   };
 
   const addButton = (
-    <Button type="button" className={cn(PRIMARY_BUTTON_CLASS, "gap-2")} onClick={openCreateForm}>
+    <Button type="button" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "gap-2")} onClick={openCreateForm}>
       <Plus aria-hidden="true" className="size-4" />
-      {CERTIFICATIONS_VIEW_TEXTS.addButton}
+      Agregar certificación
     </Button>
   );
 
   const renderList = () => {
     if (isLoading) {
-      return <p className="text-[14px] text-text-secondary">{CERTIFICATIONS_VIEW_TEXTS.loading}</p>;
+      return <p className="text-[14px] text-text-secondary">Cargando certificaciones...</p>;
     }
 
     if (certifications.length === 0) {
@@ -114,9 +112,9 @@ export function CertificationsView() {
             <Award aria-hidden="true" className="size-6" />
           </span>
           <div className="flex flex-col gap-1">
-            <h3 className="text-[16px] font-bold text-ink">{CERTIFICATIONS_VIEW_TEXTS.emptyTitle}</h3>
+            <h3 className="text-[16px] font-bold text-ink">Aún no has agregado certificaciones</h3>
             <p className="max-w-md text-[14px] text-text-secondary">
-              {CERTIFICATIONS_VIEW_TEXTS.emptyDescription}
+              Suma los cursos y certificaciones que respaldan tus conocimientos para fortalecer tu perfil.
             </p>
           </div>
           {addButton}
@@ -125,7 +123,7 @@ export function CertificationsView() {
     }
 
     return (
-      <ul aria-label={CERTIFICATIONS_VIEW_TEXTS.sectionTitle} className="flex flex-col gap-3">
+      <ul aria-label="Certificaciones" className="flex flex-col gap-3">
         {certifications.map((certification) => (
           <li key={certification.id}>
             <CertificationCard
@@ -143,8 +141,8 @@ export function CertificationsView() {
   return (
     <ProfilePageLayout
       activeTab="trajectory"
-      title={CERTIFICATIONS_VIEW_TEXTS.pageTitle}
-      description={CERTIFICATIONS_VIEW_TEXTS.pageDescription}
+      title="Trayectoria"
+      description="Muestra tus estudios, experiencia, habilidades y certificaciones"
     >
       <TrajectorySteps activeStep="certifications" />
       {visibleFeedback ? <FeedbackMessage feedback={visibleFeedback} /> : null}
@@ -162,8 +160,8 @@ export function CertificationsView() {
         </div>
       ) : (
         <SectionCard
-          title={CERTIFICATIONS_VIEW_TEXTS.sectionTitle}
-          description={CERTIFICATIONS_VIEW_TEXTS.sectionDescription}
+          title="Certificaciones"
+          description="Ordenadas de la más reciente a la más antigua."
           action={certifications.length > 0 ? addButton : undefined}
         >
           {renderList()}
