@@ -1,27 +1,45 @@
 "use client";
 
 import { ContactInfoCard } from "../components/contact-info-card";
+import { FeedbackMessage } from "../components/feedback-message";
 import { PresentationSummaryCard } from "../components/presentation-summary-card";
 import { ProfileCompletionBanner } from "../components/profile-completion-banner";
 import { ProfilePageLayout } from "../components/profile-page-layout";
-import { EMPTY_PROFILE_SUMMARY } from "../config/profile-summary-defaults.config";
+import { PROFILE_FEEDBACK_MESSAGES } from "../config/profile-feedback.config";
+import { useProfile } from "../hooks/use-profile";
 import { useProfilePhoto } from "../hooks/use-profile-photo";
-import type { ProfileOverviewViewProps } from "../types/profile-overview-view-props.types";
 import { isProfileComplete } from "../utils/is-profile-complete";
+import { toProfileSummary } from "../utils/to-profile-summary";
 
-export function ProfileOverviewView({ profile = EMPTY_PROFILE_SUMMARY }: ProfileOverviewViewProps) {
+export function ProfileOverviewView() {
+  const { profile, isLoading, error: loadError } = useProfile();
   const { photoUrl } = useProfilePhoto();
+  const summary = profile ? toProfileSummary(profile) : null;
 
   return (
     <ProfilePageLayout
       title="Mi perfil"
       description="Así ven tu perfil los egresados, mentores y empresas de la comunidad."
     >
-      <div className="flex flex-col gap-6">
-        {isProfileComplete(profile) ? null : <ProfileCompletionBanner />}
-        <ContactInfoCard profile={profile} photoUrl={photoUrl} />
-        <PresentationSummaryCard profile={profile} />
-      </div>
+      {isLoading ? (
+        <p role="status" className="text-[15px] text-text-secondary">
+          {PROFILE_FEEDBACK_MESSAGES.loading}
+        </p>
+      ) : null}
+
+      {!isLoading && !summary ? (
+        <FeedbackMessage
+          feedback={{ type: "error", message: loadError ?? PROFILE_FEEDBACK_MESSAGES.loadError }}
+        />
+      ) : null}
+
+      {summary ? (
+        <div className="flex flex-col gap-6">
+          {isProfileComplete(summary) ? null : <ProfileCompletionBanner />}
+          <ContactInfoCard profile={summary} photoUrl={photoUrl} />
+          <PresentationSummaryCard profile={summary} />
+        </div>
+      ) : null}
     </ProfilePageLayout>
   );
 }

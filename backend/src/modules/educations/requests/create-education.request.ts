@@ -10,7 +10,7 @@ export const createEducationSchema = z.strictObject({
   institution: institutionSchema,
   degree: degreeSchema,
   startDate: educationDateSchema,
-  endDate: educationDateSchema.nullable().optional(),
+  endDate: educationDateSchema,
   description: educationDescriptionSchema,
 });
 

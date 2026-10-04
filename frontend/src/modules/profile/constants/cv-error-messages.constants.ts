@@ -1,4 +1,4 @@
-import { FILE_VALIDATION_MESSAGES } from "./file-validation-messages.config";
+import { FILE_VALIDATION_MESSAGES } from "../config/file-validation-messages.config";
 
 export const CV_ERROR_MESSAGES = {
   load: "No se pudo cargar tu CV. Intenta de nuevo más tarde.",

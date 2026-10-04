@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { PersonalInfoErrors } from "../types/personal-info-errors.types";
 import type { PersonalInfoFormProps } from "../types/personal-info-form-props.types";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
@@ -24,11 +25,17 @@ export function PersonalInfoForm({
   const [values, setValues] = useState<PersonalInfoValues>(initialValues);
   const [errors, setErrors] = useState<PersonalInfoErrors>({});
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const field = event.target.name as keyof PersonalInfoValues;
-    const { value } = event.target;
+  const updateField = (field: keyof PersonalInfoValues, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    updateField(event.target.name as keyof PersonalInfoValues, event.target.value);
+  };
+
+  const handleCityChange = (cityId: string | null) => {
+    updateField("cityId", cityId ?? "");
   };
 
   const handleCancel = () => {
@@ -85,22 +92,28 @@ export function PersonalInfoForm({
             />
           </FormField>
           <FormField id="cityId" label="Ciudad de residencia" isRequired error={errors.cityId}>
-            <select
-              id="cityId"
+            <Select
               name="cityId"
-              value={values.cityId}
+              value={values.cityId || null}
+              items={cities.map((city) => ({ value: city.id, label: city.title }))}
               disabled={isSaving}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12"
-              {...getFieldErrorProps("cityId", errors.cityId)}
+              onValueChange={handleCityChange}
             >
-              <option value="">Selecciona tu ciudad</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.title}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                id="cityId"
+                className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 data-[size=default]:h-12 data-placeholder:text-text-secondary/70 focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
+                {...getFieldErrorProps("cityId", errors.cityId)}
+              >
+                <SelectValue placeholder="Selecciona tu ciudad" />
+              </SelectTrigger>
+              <SelectContent>
+                {cities.map((city) => (
+                  <SelectItem key={city.id} value={city.id} className="text-[15px]">
+                    {city.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormField>
           <FormField id="phone" label="Teléfono" isRequired error={errors.phone}>
             <Input

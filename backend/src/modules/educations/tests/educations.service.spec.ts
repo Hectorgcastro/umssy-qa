@@ -56,18 +56,12 @@ describe('EducationsService', () => {
     expect(repository.create).not.toHaveBeenCalled();
   });
 
-  it.each([null, undefined, data.startDate])(
-    'accepts an open or same-day education ending on %s',
-    async (endDate) => {
-      repository.create.mockResolvedValue({
-        ...record,
-        endDate: endDate ?? null,
-      });
-      await expect(
-        service.create(userId, { ...data, endDate }),
-      ).resolves.toHaveProperty('id', educationId);
-    },
-  );
+  it('accepts same-day education', async () => {
+    repository.create.mockResolvedValue({ ...record, endDate: data.startDate });
+    await expect(
+      service.create(userId, { ...data, endDate: data.startDate }),
+    ).resolves.toHaveProperty('id', educationId);
+  });
 
   it('lists multiple records in repository order without exposing owners', async () => {
     const secondId = '44444444-4444-4444-8444-444444444444';
@@ -128,17 +122,15 @@ describe('EducationsService', () => {
     });
   });
 
-  it('allows clearing the stored end date and description', async () => {
+  it('allows clearing the optional description while preserving the end date', async () => {
     const changes = {
-      startDate: new Date('2025-01-01'),
-      endDate: null,
       description: null,
     };
     repository.findByIdAndUserId.mockResolvedValue(record);
     repository.update.mockResolvedValue({ ...record, ...changes });
     await expect(
       service.update(userId, educationId, changes),
-    ).resolves.toMatchObject({ endDate: null, description: null });
+    ).resolves.toMatchObject({ endDate: '2024-01-01', description: null });
   });
 
   it('rejects edits when no record belongs to the requester', async () => {

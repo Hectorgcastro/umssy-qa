@@ -1,11 +1,30 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { SavedCvCardProps } from "../types/saved-cv-card-props.types";
 import { formatFileSize } from "../utils/format-file-size";
 import { formatUploadDate } from "../utils/format-upload-date";
 import { SectionCard } from "./section-card";
 
-export function SavedCvCard({ savedCv, isBusy = false, onReplace, onDelete }: SavedCvCardProps) {
+export function SavedCvCard({
+  savedCv,
+  isLoading = false,
+  isBusy = false,
+  onReplace,
+  onDelete,
+}: SavedCvCardProps) {
+  if (isLoading) {
+    return (
+      <SectionCard title="Archivo guardado">
+        <div aria-busy="true" className="flex flex-col gap-3">
+          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="h-4 w-1/2" />
+          <span className="sr-only">Cargando tu CV...</span>
+        </div>
+      </SectionCard>
+    );
+  }
+
   return (
     <SectionCard title="Archivo guardado">
       {savedCv ? (
@@ -24,8 +43,7 @@ export function SavedCvCard({ savedCv, isBusy = false, onReplace, onDelete }: Sa
               type="button"
               variant="outline"
               className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
-              disabled={!onReplace || isBusy}
-              title={onReplace ? undefined : "Disponible próximamente"}
+              disabled={isBusy}
               onClick={onReplace}
             >
               Reemplazar CV
@@ -34,8 +52,7 @@ export function SavedCvCard({ savedCv, isBusy = false, onReplace, onDelete }: Sa
               type="button"
               variant="outline"
               className="h-12 border-accent bg-surface px-6 text-[14px] font-semibold text-accent hover:bg-interaction hover:text-accent"
-              disabled={!onDelete || isBusy}
-              title={onDelete ? undefined : "Disponible próximamente"}
+              disabled={isBusy}
               onClick={onDelete}
             >
               Eliminar CV

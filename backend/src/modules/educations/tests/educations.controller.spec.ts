@@ -173,6 +173,11 @@ describe('EducationsController', () => {
 
   it.each([
     { ...body, institution: ' ' },
+    { ...body, degree: '' },
+    { ...body, startDate: undefined },
+    { ...body, endDate: undefined },
+    { ...body, endDate: null },
+    { ...body, endDate: '' },
     { ...body, startDate: '2023-02-29' },
     { ...body, endDate: '2019-01-01' },
     { ...body, userId: otherUserId },
@@ -194,6 +199,20 @@ describe('EducationsController', () => {
       .patch(`/api/educations/${educationId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({})
+      .expect(400);
+    expect(repository.update).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { institution: ' ' }, { degree: '' }, { startDate: null },
+    { endDate: null }, { endDate: '' }, { endDate: '2023-02-29' },
+    { startDate: '2025-01-01', endDate: '2024-01-01' },
+    { userId: otherUserId },
+  ])('rejects invalid partial edits without persisting', async (input) => {
+    await request(app.getHttpServer())
+      .patch(`/api/educations/${educationId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(input)
       .expect(400);
     expect(repository.update).not.toHaveBeenCalled();
   });
@@ -265,7 +284,7 @@ describe('EducationsController', () => {
         content: {
           'application/json': {
             schema: {
-              required: ['institution', 'degree', 'startDate'],
+              required: ['institution', 'degree', 'startDate', 'endDate'],
               properties: { startDate: { type: 'string', format: 'date' } },
             },
           },

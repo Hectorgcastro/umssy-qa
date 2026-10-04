@@ -8,6 +8,7 @@ import { AvailabilityModule } from './modules/availability/availability.module.j
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { ProfileModule } from './modules/profile/profile.module.js';
+import { CertificationsModule } from './modules/certifications/certifications.module.js';
 import { EducationsModule } from './modules/educations/educations.module.js';
 import { WorkExperienceModule } from './modules/work-experience/work-experience.module.js';
 
@@ -22,6 +23,7 @@ import { WorkExperienceModule } from './modules/work-experience/work-experience.
     ProfileModule,
     EducationsModule,
     WorkExperienceModule,
+    CertificationsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -70,7 +70,7 @@ describe("WorkExperienceForm", () => {
     await user.type(screen.getByLabelText(/Empresa/), "S");
 
     expect(screen.getByLabelText(/Empresa/)).toHaveAttribute("aria-invalid", "false");
-    await user.click(screen.getByLabelText("Trabajo actualmente aquí"));
+    await user.click(screen.getByRole("checkbox", { name: "Trabajo actualmente aquí" }));
     expect(
       screen.queryByText(WORK_EXPERIENCE_VALIDATION_MESSAGES.endDateRequired),
     ).not.toBeInTheDocument();
@@ -96,7 +96,7 @@ describe("WorkExperienceForm", () => {
     const endDate = screen.getByLabelText("Hasta");
     expect(endDate).toHaveValue("2024-12-31");
 
-    await user.click(screen.getByLabelText("Trabajo actualmente aquí"));
+    await user.click(screen.getByRole("checkbox", { name: "Trabajo actualmente aquí" }));
 
     expect(endDate).toBeDisabled();
     expect(endDate).toHaveValue("");
@@ -120,7 +120,7 @@ describe("WorkExperienceForm", () => {
 
     expect(screen.getByRole("form", { name: "Editar experiencia" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Empresa/)).toHaveValue("Synapse Labs");
-    expect(screen.getByLabelText("Trabajo actualmente aquí")).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Trabajo actualmente aquí" })).toBeChecked();
   });
 
   it("cancels and disables the buttons while saving", async () => {

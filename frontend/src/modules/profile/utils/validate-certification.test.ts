@@ -49,6 +49,52 @@ describe("validateCertification", () => {
     ).toEqual({ issuingOrganization: CERTIFICATION_VALIDATION_MESSAGES.organizationTooLong });
   });
 
+  it("reports only the empty field and leaves the valid ones without errors", () => {
+    expect(validateCertification({ ...VALID_VALUES, issueDate: "" })).toEqual({
+      issueDate: CERTIFICATION_VALIDATION_MESSAGES.required,
+    });
+    expect(validateCertification({ ...VALID_VALUES, name: "" })).toEqual({
+      name: CERTIFICATION_VALIDATION_MESSAGES.required,
+    });
+  });
+
+  it("treats values made only of spaces as empty", () => {
+    expect(
+      validateCertification({ name: "   ", issuingOrganization: "\t ", issueDate: "  " }),
+    ).toEqual({
+      name: CERTIFICATION_VALIDATION_MESSAGES.required,
+      issuingOrganization: CERTIFICATION_VALIDATION_MESSAGES.required,
+      issueDate: CERTIFICATION_VALIDATION_MESSAGES.required,
+    });
+  });
+
+  it("counts the length after trimming the spaces", () => {
+    expect(validateCertification({ ...VALID_VALUES, name: ` ${"a".repeat(150)} ` })).toEqual({});
+    expect(
+      validateCertification({ ...VALID_VALUES, issuingOrganization: ` ${"a".repeat(100)} ` }),
+    ).toEqual({});
+  });
+
+  it("does not fail when a field is missing", () => {
+    const missing = {} as CreateCertificationDto;
+
+    expect(validateCertification(missing)).toEqual({
+      name: CERTIFICATION_VALIDATION_MESSAGES.required,
+      issuingOrganization: CERTIFICATION_VALIDATION_MESSAGES.required,
+      issueDate: CERTIFICATION_VALIDATION_MESSAGES.required,
+    });
+  });
+
+  it("accepts special characters because they are rendered as plain text", () => {
+    expect(
+      validateCertification({
+        name: "<script>alert(1)</script>",
+        issuingOrganization: "O'Reilly \"Media\"; DROP TABLE",
+        issueDate: "2025-03-10",
+      }),
+    ).toEqual({});
+  });
+
   it.each(["10/03/2025", "2025-13-01", "2025-02-30", "not-a-date"])(
     "rejects the invalid date %s",
     (issueDate) => {

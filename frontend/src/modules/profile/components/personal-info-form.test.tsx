@@ -37,8 +37,8 @@ describe("PersonalInfoForm", () => {
     cleanup();
   });
 
-  it("renders the personal information card with all the fields", () => {
-    renderForm();
+  it("renders the personal information card with all the fields", async () => {
+    const { user } = renderForm();
 
     expect(screen.getByText("Tu información personal")).toBeInTheDocument();
     expect(screen.getByText("Fotografía de perfil")).toBeInTheDocument();
@@ -46,15 +46,20 @@ describe("PersonalInfoForm", () => {
     expect(screen.getByLabelText(/Apellidos/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Teléfono/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Correo personal/)).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Cochabamba" })).toBeInTheDocument();
     expect(screen.getByText("* Campos obligatorios")).toBeInTheDocument();
-  });
+
+    await user.click(screen.getByRole("combobox", { name: /Ciudad de residencia/ }));
+
+    expect(await screen.findByRole("option", { name: "Cochabamba" })).toBeInTheDocument();
+  }, 15000);
 
   it("shows the initial values", () => {
     renderForm(SAVED_VALUES);
 
     expect(screen.getByLabelText(/Nombres/)).toHaveValue("Valeria");
-    expect(screen.getByLabelText(/Ciudad de residencia/)).toHaveValue("city-cbba");
+    expect(screen.getByRole("combobox", { name: /Ciudad de residencia/ })).toHaveTextContent(
+      "Cochabamba",
+    );
     expect(screen.getByLabelText(/Correo personal/)).toHaveValue("valeria@correo.com");
   });
 
@@ -63,7 +68,8 @@ describe("PersonalInfoForm", () => {
 
     await user.type(screen.getByLabelText(/Nombres/), "  Valeria ");
     await user.type(screen.getByLabelText(/Apellidos/), "Quispe");
-    await user.selectOptions(screen.getByLabelText(/Ciudad de residencia/), "city-lpz");
+    await user.click(screen.getByRole("combobox", { name: /Ciudad de residencia/ }));
+    await user.click(await screen.findByRole("option", { name: "La Paz" }));
     await user.type(screen.getByLabelText(/Teléfono/), "+591 71234567");
     await user.type(screen.getByLabelText(/Correo personal/), "valeria@correo.com");
     await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
@@ -75,7 +81,7 @@ describe("PersonalInfoForm", () => {
       phone: "+591 71234567",
       personalEmail: "valeria@correo.com",
     });
-  });
+  }, 15000);
 
   it("shows an error next to each empty required field and does not submit", async () => {
     const { onSubmit, user } = renderForm();

@@ -17,13 +17,13 @@ import {
 import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { ResponseInterceptor } from '../../../common/interceptors/response.interceptor.js';
+import {
+  CV_FIELD_NAME,
+  CV_UPLOAD_LIMIT_BYTES,
+} from '../constants/cv.constants.js';
 import type { CvResponse } from '../responses/cv.response.js';
 import { CvService } from '../services/cv.service.js';
 import type { MulterFile } from '../types/multer-file.type.js';
-
-const uploadFieldName = 'file';
-
-const uploadSizeLimitBytes = 10 * 1024 * 1024;
 
 @ApiTags('profile')
 @ApiBearerAuth()
@@ -40,17 +40,17 @@ export class CvController {
 
   @Put()
   @UseInterceptors(
-    FileInterceptor(uploadFieldName, {
-      limits: { fileSize: uploadSizeLimitBytes, files: 1 },
+    FileInterceptor(CV_FIELD_NAME, {
+      limits: { fileSize: CV_UPLOAD_LIMIT_BYTES, files: 1 },
     }),
   )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
-      required: [uploadFieldName],
+      required: [CV_FIELD_NAME],
       properties: {
-        [uploadFieldName]: { type: 'string', format: 'binary' },
+        [CV_FIELD_NAME]: { type: 'string', format: 'binary' },
       },
     },
   })

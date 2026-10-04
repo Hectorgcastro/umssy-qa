@@ -1,6 +1,5 @@
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { CvUploadCardProps } from "../types/cv-upload-card-props.types";
 import { formatFileSize } from "../utils/format-file-size";
 import { SectionCard } from "./section-card";
@@ -19,7 +18,7 @@ export function CvUploadCard({
         <Button
           type="button"
           variant="outline"
-          className={cn("h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft", "mt-3")}
+          className="mt-3 h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
           disabled={isBusy}
           onClick={onSelectFile}
         >

@@ -3,7 +3,6 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
@@ -12,7 +11,6 @@ import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
 import { getTodayIsoDate, validateCertification } from "../utils/validate-certification";
 import { FormField } from "./form-field";
-import { SectionCard } from "./section-card";
 
 const EMPTY_CERTIFICATION_VALUES: CreateCertificationDto = {
   name: "",
@@ -43,7 +41,7 @@ export function CertificationForm({
   };
 
   const handleCancel = () => {
-    setValues(initialData ?? EMPTY_CERTIFICATION_VALUES);
+    setValues(EMPTY_CERTIFICATION_VALUES);
     setErrors({});
     onCancel();
   };
@@ -67,29 +65,30 @@ export function CertificationForm({
   };
 
   return (
-    <SectionCard title={title}>
-      <form aria-label={title} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <FormField
+    <form aria-label={title} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <h3 className="font-tight text-[18px] font-bold text-ink">{title}</h3>
+      <FormField
+        id="certification-name"
+        label="Nombre de la certificación"
+        isRequired
+        error={errors.name}
+      >
+        <Input
           id="certification-name"
-          label="Nombre de la certificación"
-          isRequired
-          error={errors.name}
-        >
-          <Input
-            id="certification-name"
-            name="name"
-            type="text"
-            placeholder="Ej. AWS Certified Cloud Practitioner"
-            value={values.name}
-            disabled={isBusy}
-            onChange={handleChange}
-            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
-            {...getFieldErrorProps("certification-name", errors.name)}
-          />
-        </FormField>
+          name="name"
+          type="text"
+          placeholder="Ej. AWS Certified Cloud Practitioner"
+          value={values.name}
+          disabled={isBusy}
+          onChange={handleChange}
+          className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
+          {...getFieldErrorProps("certification-name", errors.name)}
+        />
+      </FormField>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <FormField
           id="certification-issuingOrganization"
-          label="Organización emisora"
+          label="Entidad emisora"
           isRequired
           error={errors.issuingOrganization}
         >
@@ -107,7 +106,7 @@ export function CertificationForm({
         </FormField>
         <FormField
           id="certification-issueDate"
-          label="Fecha de emisión"
+          label="Fecha de obtención"
           isRequired
           error={errors.issueDate}
         >
@@ -123,23 +122,31 @@ export function CertificationForm({
             {...getFieldErrorProps("certification-issueDate", errors.issueDate)}
           />
         </FormField>
-
-        <div className="flex justify-end gap-3 pt-2">
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <p className="text-[13px] text-text-secondary">* Campos obligatorios</p>
+        <div className="flex gap-3">
+          {isEditing ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
+              disabled={isBusy}
+              onClick={handleCancel}
+            >
+              Cancelar
+            </Button>
+          ) : null}
           <Button
-            type="button"
-            variant="outline"
-            className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft"
+            type="submit"
+            className="h-12 min-w-44 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger"
             disabled={isBusy}
-            onClick={handleCancel}
           >
-            Cancelar
-          </Button>
-          <Button type="submit" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-44")} disabled={isBusy}>
             {isBusy ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
-            {isBusy ? "Guardando..." : "Guardar"}
+            {isBusy ? "Guardando..." : "Guardar certificación"}
           </Button>
         </div>
-      </form>
-    </SectionCard>
+      </div>
+    </form>
   );
 }

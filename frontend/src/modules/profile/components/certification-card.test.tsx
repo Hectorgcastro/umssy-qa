@@ -32,13 +32,31 @@ describe("CertificationCard", () => {
     cleanup();
   });
 
-  it("renders the name, the issuing organization and the formatted issue date", () => {
+  it("renders markup in the name as plain text", () => {
+    const { container } = render(
+      <CertificationCard
+        certification={{
+          ...CERTIFICATION,
+          name: "<script>alert(1)</script>",
+          issuingOrganization: "O'Reilly \"Media\"",
+        }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("<script>alert(1)</script>")).toBeInTheDocument();
+    expect(screen.getByText(/O'Reilly "Media"/)).toBeInTheDocument();
+    expect(container.querySelector("script")).toBeNull();
+  });
+
+  it("renders the name, the organization and the issue date", () => {
     renderCard();
 
     expect(
       screen.getByRole("heading", { name: "AWS Certified Cloud Practitioner" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Amazon Web Services")).toBeInTheDocument();
+    expect(screen.getByText(/Amazon Web Services · Obtenida el/)).toBeInTheDocument();
     expect(screen.getByText("7 mar 2025")).toHaveAttribute("dateTime", "2025-03-07");
   });
 

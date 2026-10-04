@@ -117,10 +117,13 @@ describe("DocumentsCvView", () => {
     render(<DocumentsCvView />);
 
     expect(screen.getByRole("button", { name: "Seleccionar PDF" })).toBeEnabled();
+    expect(screen.getByText("Cargando tu CV...")).toBeInTheDocument();
 
     await act(async () => {
       pendingLoad.resolve(UPLOADED_CV);
     });
+
+    expect(screen.queryByText("Cargando tu CV...")).not.toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: "Seleccionar PDF" })).toBeEnabled();
     expect(screen.getByText("CV_Valeria_Quispe.pdf")).toBeInTheDocument();
@@ -217,7 +220,7 @@ describe("DocumentsCvView", () => {
     },
   );
 
-  it("shows an error and keeps the previous selection for a file that is not a pdf", async () => {
+  it("shows an error and returns to the initial state for a file that is not a pdf", async () => {
     const user = userEvent.setup({ applyAccept: false });
     await renderView();
 
@@ -225,7 +228,8 @@ describe("DocumentsCvView", () => {
     await user.upload(getFileInput(), createFile("foto.png", "image/png"));
 
     expect(screen.getByRole("alert")).toHaveTextContent("El CV debe estar en formato PDF.");
-    expect(screen.getByText("CV_Valeria_Quispe.pdf · 1.2 MB")).toBeInTheDocument();
+    expect(screen.queryByText("CV_Valeria_Quispe.pdf · 1.2 MB")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirmar carga" })).toBeDisabled();
     expect(
       screen.getByText("Al confirmar la carga, el archivo se mostrará aquí."),
     ).toBeInTheDocument();
