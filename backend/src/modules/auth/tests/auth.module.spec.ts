@@ -6,6 +6,7 @@ import { AuthService } from '../services/auth.service.js';
 import { AuthRepository } from '../repositories/auth.repository.js';
 import { PrismaModule } from '../../../common/prisma/prisma.module.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 
 describe('AuthModule', () => {
   let moduleRef: TestingModule;
@@ -19,7 +20,10 @@ describe('AuthModule', () => {
       .compile();
   });
 
-  it.each([AuthController, AuthService, AuthRepository])('resuelve %o', (provider) => {
-    expect(moduleRef.get(provider)).toBeInstanceOf(provider);
-  });
+  it.each([AuthController, AuthService, AuthRepository, JwtAuthGuard])(
+    'resuelve %o',
+    (provider) => {
+      expect(moduleRef.get(provider)).toBeInstanceOf(provider);
+    },
+  );
 });
