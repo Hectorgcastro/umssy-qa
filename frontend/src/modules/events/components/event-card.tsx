@@ -3,14 +3,12 @@
 import { Calendar, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { EventCardProps, EventItem } from '../types/event.types';
-
-const CATEGORY_BADGE_STYLES: Record<string, string> = {
-  tecnologia: 'bg-slate-200/80 text-ink',
-  'ia & datos': 'bg-amber-100/80 text-amber-800',
-  diseno: 'bg-slate-200/80 text-ink',
-  seguridad: 'bg-interaction text-danger',
-};
+import { CATEGORY_BADGE_STYLES } from '../constants/event-card.constants';
+import type {
+  EventCapacityStatus,
+  EventCardProps,
+  EventItem,
+} from '../types/event.types';
 
 function getCategoryBadgeClasses(categoryName: string): string {
   const normalizedKey = categoryName
@@ -19,13 +17,6 @@ function getCategoryBadgeClasses(categoryName: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 
   return CATEGORY_BADGE_STYLES[normalizedKey] ?? 'bg-slate-200/80 text-ink';
-}
-
-export interface EventCapacityStatus {
-  enrolledCount: number;
-  capacity: number | null;
-  progressPercentage: number | null;
-  isFull: boolean;
 }
 
 export function calculateEventCapacityStatus(
@@ -123,7 +114,7 @@ export function EventCard({
           : 'border-border hover:border-border-strong',
       )}
     >
-      {/* Cabecera de la tarjeta: Categoria e insignia condicional de estado "Lleno" */}
+      {}
       <div className="flex items-center justify-between gap-2">
         <span
           className={cn(
@@ -144,7 +135,6 @@ export function EventCard({
         )}
       </div>
 
-      {/* Cuerpo central: Titulo del taller y metadatos de fecha y horario */}
       <div className="flex flex-col gap-2.5">
         <h2 className="text-base font-bold text-ink leading-snug">
           {event.title}
@@ -162,7 +152,6 @@ export function EventCard({
         </div>
       </div>
 
-      {/* Pie de la tarjeta: Barra de progreso de cupo (dorada disponible / roja lleno) + contador */}
       <div className="flex items-center gap-3 pt-1">
         {progressPercentage === null ? (
           <span className="flex-1 text-xs text-text-secondary">

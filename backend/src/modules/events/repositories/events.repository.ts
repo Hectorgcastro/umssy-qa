@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { escapePgWildcards } from '../../../common/utils/escape-pg-wildcards.js';
 import type { Prisma } from '../../../prisma/client.js';
 import type {
   FindEventsPayload,
@@ -7,19 +8,25 @@ import type {
   EventWithRelations,
 } from '../types/events.types.js';
 
+export const PUBLISHED_STATUS_TITLE = 'Publicado';
+
 @Injectable()
 export class EventsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAndCount(payload: FindEventsPayload): Promise<FindEventsResponse> {
-    const { categoryId, statusId, search, skip, take } = payload;
+    const { categoryId, statusId, isPublishedOnly, search, skip, take } = payload;
 
     const where: Prisma.EventWhereInput = {
       ...(categoryId !== undefined && { categoryId }),
-      ...(statusId !== undefined && { statusId }),
+      ...(statusId !== undefined
+        ? { statusId }
+        : isPublishedOnly
+          ? { status: { title: PUBLISHED_STATUS_TITLE } }
+          : {}),
       ...(search !== undefined && {
         title: {
-          contains: search,
+          contains: escapePgWildcards(search),
           mode: 'insensitive',
         },
       }),
