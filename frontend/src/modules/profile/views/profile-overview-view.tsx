@@ -1,12 +1,17 @@
+"use client";
+
 import { ContactInfoCard } from "../components/contact-info-card";
 import { PresentationSummaryCard } from "../components/presentation-summary-card";
 import { ProfileCompletionBanner } from "../components/profile-completion-banner";
 import { ProfilePageLayout } from "../components/profile-page-layout";
 import { EMPTY_PROFILE_SUMMARY } from "../config/profile-summary-defaults.config";
+import { useProfilePhoto } from "../hooks/use-profile-photo";
 import type { ProfileOverviewViewProps } from "../types/profile-overview-view-props.types";
 import { isProfileComplete } from "../utils/is-profile-complete";
 
 export function ProfileOverviewView({ profile = EMPTY_PROFILE_SUMMARY }: ProfileOverviewViewProps) {
+  const { photoUrl } = useProfilePhoto();
+
   return (
     <ProfilePageLayout
       title="Mi perfil"
@@ -14,7 +19,7 @@ export function ProfileOverviewView({ profile = EMPTY_PROFILE_SUMMARY }: Profile
     >
       <div className="flex flex-col gap-6">
         {isProfileComplete(profile) ? null : <ProfileCompletionBanner />}
-        <ContactInfoCard profile={profile} />
+        <ContactInfoCard profile={profile} photoUrl={photoUrl} />
         <PresentationSummaryCard profile={profile} />
       </div>
     </ProfilePageLayout>

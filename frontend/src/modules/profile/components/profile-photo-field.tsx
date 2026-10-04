@@ -1,27 +1,66 @@
+"use client";
+
+import { useRef, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SECONDARY_BUTTON_CLASS } from "../config/form-styles.config";
+import { PHOTO_ACCEPT } from "../config/file-upload.config";
+import { FIELD_ERROR_CLASS, SECONDARY_BUTTON_CLASS } from "../config/form-styles.config";
 import type { ProfilePhotoFieldProps } from "../types/profile-photo-field-props.types";
 import { ProfileAvatar } from "./profile-avatar";
 
-// The actual photo upload is implemented in issue #64.
-export function ProfilePhotoField({ onSelectPhoto }: ProfilePhotoFieldProps) {
+const PHOTO_INPUT_ID = "profilePhoto";
+
+export function ProfilePhotoField({
+  photoUrl,
+  isUploading = false,
+  error,
+  onSelectPhoto,
+}: ProfilePhotoFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Reset so the same file can be selected again after an error.
+    event.target.value = "";
+    if (file && onSelectPhoto) {
+      onSelectPhoto(file);
+    }
+  };
+
+  const buttonLabel = photoUrl ? "Cambiar fotografía" : "Subir fotografía";
+
   return (
     <div className="flex items-center gap-8 border-b border-border pb-8">
-      <ProfileAvatar label="Foto" />
+      <ProfileAvatar label="Foto" photoUrl={photoUrl} />
       <div className="flex flex-col gap-1">
         <p className="text-[15px] font-semibold text-ink">Fotografía de perfil</p>
-        <p className="text-[13px] text-text-secondary">Ayuda a que otras personas te reconozcan.</p>
+        <p className="text-[13px] text-text-secondary">
+          Ayuda a que otras personas te reconozcan. Formato JPG o PNG, hasta 5 MB.
+        </p>
+        <input
+          ref={inputRef}
+          id={PHOTO_INPUT_ID}
+          type="file"
+          accept={PHOTO_ACCEPT}
+          aria-label="Seleccionar fotografía de perfil"
+          className="hidden"
+          disabled={!onSelectPhoto || isUploading}
+          onChange={handleChange}
+        />
         <Button
           type="button"
           variant="outline"
           className={cn(SECONDARY_BUTTON_CLASS, "mt-3 w-fit")}
-          disabled={!onSelectPhoto}
-          title={onSelectPhoto ? undefined : "Disponible próximamente"}
-          onClick={onSelectPhoto}
+          disabled={!onSelectPhoto || isUploading}
+          onClick={() => inputRef.current?.click()}
         >
-          Subir fotografía
+          {isUploading ? "Subiendo..." : buttonLabel}
         </Button>
+        {error ? (
+          <p role="alert" className={cn(FIELD_ERROR_CLASS, "mt-2")}>
+            {error}
+          </p>
+        ) : null}
       </div>
     </div>
   );
