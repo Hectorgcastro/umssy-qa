@@ -21,7 +21,6 @@ const getBoliviaParts = (date: Date) => {
 
 const isoDateTime = z.iso.datetime({ offset: true, error: CREATE_BLOCK_MESSAGES.invalidDate });
 
-// Se recibe "now" para poder probar el esquema con una fecha fija.
 export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
   z
     .strictObject({
