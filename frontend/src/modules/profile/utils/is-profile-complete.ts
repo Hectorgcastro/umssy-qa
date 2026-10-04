@@ -10,5 +10,5 @@ export function isProfileComplete(profile: ProfileSummary): boolean {
     profile.aboutMe,
   ];
 
-  return requiredValues.every((value) => value.trim().length > 0);
+  return requiredValues.every((value) => (value ?? "").trim().length > 0);
 }

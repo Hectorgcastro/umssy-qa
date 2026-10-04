@@ -1,6 +1,8 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { profileService } from "../services/profile.service";
+import type { ProfileResponse } from "../types/profile-response.types";
 import { PersonalInfoView } from "./personal-info-view";
 import { PresentationView } from "./presentation-view";
 
@@ -11,12 +13,43 @@ vi.mock("../services/profile-photo.service", () => ({
   },
 }));
 
-describe("PersonalInfoView", () => {
-  afterEach(() => {
-    cleanup();
-  });
+vi.mock("../services/profile.service", () => ({
+  profileService: {
+    getProfile: vi.fn(),
+    getCities: vi.fn(),
+    updatePersonalInfo: vi.fn(),
+    updatePresentation: vi.fn(),
+  },
+}));
 
-  it("renders the personal information section", () => {
+const COCHABAMBA = { id: "22222222-2222-4222-8222-222222222222", title: "Cochabamba" };
+const LA_PAZ = { id: "33333333-3333-4333-8333-333333333333", title: "La Paz" };
+
+const SAVED_PROFILE: ProfileResponse = {
+  id: "11111111-1111-4111-8111-111111111111",
+  firstName: "Valeria",
+  lastName: "Quispe",
+  institutionalEmail: "valeria.quispe@umss.edu.bo",
+  personalEmail: "valeria@correo.com",
+  phone: "+591 70000000",
+  city: COCHABAMBA,
+  headline: "Desarrolladora web junior",
+  aboutMe: "Systems engineering graduate from UMSS.",
+  updatedAt: "2026-10-04T12:00:00.000Z",
+};
+
+beforeEach(() => {
+  vi.mocked(profileService.getProfile).mockResolvedValue(SAVED_PROFILE);
+  vi.mocked(profileService.getCities).mockResolvedValue([COCHABAMBA, LA_PAZ]);
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+describe("PersonalInfoView", () => {
+  it("loads the saved personal information of the user", async () => {
     render(<PersonalInfoView />);
 
     expect(
@@ -26,35 +59,94 @@ describe("PersonalInfoView", () => {
       "aria-current",
       "page",
     );
-    expect(
-      screen.getByText("Al guardar, verás una confirmación de que tus datos quedaron registrados."),
-    ).toBeInTheDocument();
+    expect(await screen.findByLabelText(/Nombres/)).toHaveValue("Valeria");
+    expect(screen.getByLabelText(/Teléfono/)).toHaveValue("+591 70000000");
+    expect(screen.getByLabelText(/Correo personal/)).toHaveValue("valeria@correo.com");
   });
 
-  it("keeps the saved values when cancelling after saving", async () => {
+  it("saves the edited data and shows a confirmation", async () => {
     const user = userEvent.setup();
+    vi.mocked(profileService.updatePersonalInfo).mockResolvedValue({
+      ...SAVED_PROFILE,
+      phone: "+591 71111111",
+      city: LA_PAZ,
+    });
     render(<PersonalInfoView />);
 
-    await user.type(screen.getByLabelText(/Nombres/), "Valeria");
-    await user.type(screen.getByLabelText(/Apellidos/), "Quispe");
+    const phoneInput = await screen.findByLabelText(/Teléfono/);
+    await user.clear(phoneInput);
+    await user.type(phoneInput, "+591 71111111");
     await user.click(screen.getByRole("combobox", { name: /Ciudad de residencia/ }));
-    await user.click(await screen.findByRole("option", { name: "Cochabamba" }));
-    await user.type(screen.getByLabelText(/Teléfono/), "+591 70000000");
-    await user.type(screen.getByLabelText(/Correo personal/), "valeria@correo.com");
+    await user.click(await screen.findByRole("option", { name: "La Paz" }));
     await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
-    await user.type(screen.getByLabelText(/Nombres/), " changed");
+
+    expect(profileService.updatePersonalInfo).toHaveBeenCalledWith({
+      firstName: "Valeria",
+      lastName: "Quispe",
+      cityId: LA_PAZ.id,
+      phone: "+591 71111111",
+      personalEmail: "valeria@correo.com",
+    });
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Tus datos personales se guardaron correctamente.",
+    );
+  }, 15000);
+
+  it("restores the saved values when cancelling after saving", async () => {
+    const user = userEvent.setup();
+    vi.mocked(profileService.updatePersonalInfo).mockResolvedValue({
+      ...SAVED_PROFILE,
+      firstName: "Valeria Andrea",
+    });
+    render(<PersonalInfoView />);
+
+    const firstNameInput = await screen.findByLabelText(/Nombres/);
+    await user.type(firstNameInput, " Andrea");
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
+    await screen.findByText("Tus datos personales se guardaron correctamente.");
+    await user.type(firstNameInput, " changed");
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
-    expect(screen.getByLabelText(/Nombres/)).toHaveValue("Valeria");
-  }, 15000);
+    expect(firstNameInput).toHaveValue("Valeria Andrea");
+  });
+
+  it("shows the server error when saving fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(profileService.updatePersonalInfo).mockRejectedValue({ response: { status: 404 } });
+    render(<PersonalInfoView />);
+
+    await screen.findByLabelText(/Nombres/);
+    await user.click(screen.getByRole("button", { name: "Guardar perfil" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No encontramos tu perfil o la ciudad elegida. Recarga la página.",
+    );
+  });
+
+  it("shows an error instead of the form when the profile cannot be loaded", async () => {
+    vi.mocked(profileService.getProfile).mockRejectedValue(new Error("Network error"));
+
+    render(<PersonalInfoView />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudo cargar tu perfil. Recarga la página para intentarlo de nuevo.",
+    );
+    expect(screen.queryByRole("button", { name: "Guardar perfil" })).not.toBeInTheDocument();
+  });
+
+  it("warns when the cities cannot be loaded", async () => {
+    vi.mocked(profileService.getCities).mockRejectedValue(new Error("Network error"));
+
+    render(<PersonalInfoView />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudieron cargar las ciudades. Recarga la página para intentarlo de nuevo.",
+    );
+  });
 });
 
 describe("PresentationView", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("renders the professional presentation section", () => {
+  it("loads the saved presentation with the name of the user", async () => {
     render(<PresentationView />);
 
     expect(
@@ -64,18 +156,70 @@ describe("PresentationView", () => {
       "aria-current",
       "page",
     );
+    expect(await screen.findByLabelText(/Titular profesional/)).toHaveValue(
+      "Desarrolladora web junior",
+    );
+    expect(screen.getByText("Valeria Quispe")).toBeInTheDocument();
   });
 
-  it("keeps the saved values when cancelling after saving", async () => {
+  it("saves only the stored fields and shows a confirmation", async () => {
     const user = userEvent.setup();
+    vi.mocked(profileService.updatePresentation).mockResolvedValue({
+      ...SAVED_PROFILE,
+      headline: "Desarrolladora frontend",
+    });
     render(<PresentationView />);
 
-    await user.type(screen.getByLabelText(/Titular profesional/), "Desarrolladora");
-    await user.type(screen.getByLabelText(/Acerca de/), "Graduate from UMSS.");
+    const headlineInput = await screen.findByLabelText(/Titular profesional/);
+    await user.clear(headlineInput);
+    await user.type(headlineInput, "Desarrolladora frontend");
+    await user.type(screen.getByLabelText(/Oportunidades que me interesan/), "Remote work");
     await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
-    await user.type(screen.getByLabelText(/Titular profesional/), " web");
+
+    expect(profileService.updatePresentation).toHaveBeenCalledWith({
+      headline: "Desarrolladora frontend",
+      aboutMe: "Systems engineering graduate from UMSS.",
+    });
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Tu presentación se guardó correctamente.",
+    );
+    expect(screen.getByLabelText(/Oportunidades que me interesan/)).toHaveValue("Remote work");
+  });
+
+  it("restores the saved values when cancelling after saving", async () => {
+    const user = userEvent.setup();
+    vi.mocked(profileService.updatePresentation).mockResolvedValue(SAVED_PROFILE);
+    render(<PresentationView />);
+
+    const headlineInput = await screen.findByLabelText(/Titular profesional/);
+    await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
+    await screen.findByText("Tu presentación se guardó correctamente.");
+    await user.type(headlineInput, " changed");
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
-    expect(screen.getByLabelText(/Titular profesional/)).toHaveValue("Desarrolladora");
+    expect(headlineInput).toHaveValue("Desarrolladora web junior");
+  });
+
+  it("shows a generic error when saving fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(profileService.updatePresentation).mockRejectedValue(new Error("Network error"));
+    render(<PresentationView />);
+
+    await screen.findByLabelText(/Titular profesional/);
+    await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudieron guardar tus datos. Inténtalo de nuevo.",
+    );
+  });
+
+  it("shows an error when the profile cannot be loaded", async () => {
+    vi.mocked(profileService.getProfile).mockRejectedValue(new Error("Network error"));
+
+    render(<PresentationView />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudo cargar tu perfil. Recarga la página para intentarlo de nuevo.",
+    );
   });
 });
