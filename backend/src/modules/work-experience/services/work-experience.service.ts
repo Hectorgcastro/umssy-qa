@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { InvalidWorkExperienceDateRangeException } from '../exceptions/invalid-work-experience-date-range.exception.js';
+import { WorkExperienceEndDateRequiredException } from '../exceptions/work-experience-end-date-required.exception.js';
 import { WorkExperienceNotFoundException } from '../exceptions/work-experience-not-found.exception.js';
 import { WorkExperienceMapper } from '../mappers/work-experience.mapper.js';
 import { WorkExperienceRepository } from '../repositories/work-experience.repository.js';
@@ -23,9 +25,11 @@ export class WorkExperienceService {
     userId: string,
     request: CreateWorkExperienceRequest,
   ): Promise<WorkExperienceResponse> {
+    const endDate = request.isCurrent ? null : (request.endDate ?? null);
+    this.ensureValidPeriod(request.startDate, endDate, request.isCurrent);
     const record = await this.repository.create(userId, {
       ...request,
-      endDate: request.endDate ?? null,
+      endDate,
       description: request.description ?? null,
     });
     return this.mapper.toResponse(record);
@@ -36,7 +40,21 @@ export class WorkExperienceService {
     id: string,
     request: UpdateWorkExperienceRequest,
   ): Promise<WorkExperienceResponse> {
-    const updated = await this.repository.update(id, userId, request);
+    const current = await this.repository.findByIdAndUserId(id, userId);
+    if (!current) {
+      throw new WorkExperienceNotFoundException();
+    }
+    const isCurrent = request.isCurrent ?? current.isCurrent;
+    const startDate = request.startDate ?? current.startDate;
+    const requestedEndDate =
+      request.endDate === undefined ? current.endDate : request.endDate;
+    const endDate = isCurrent ? null : requestedEndDate;
+    this.ensureValidPeriod(startDate, endDate, isCurrent);
+
+    const updated = await this.repository.update(id, userId, {
+      ...request,
+      ...(isCurrent ? { endDate: null } : {}),
+    });
     if (!updated) {
       throw new WorkExperienceNotFoundException();
     }
@@ -47,6 +65,19 @@ export class WorkExperienceService {
     const deleted = await this.repository.delete(id, userId);
     if (!deleted) {
       throw new WorkExperienceNotFoundException();
+    }
+  }
+
+  private ensureValidPeriod(
+    startDate: Date,
+    endDate: Date | null,
+    isCurrent: boolean,
+  ): void {
+    if (!isCurrent && !endDate) {
+      throw new WorkExperienceEndDateRequiredException();
+    }
+    if (endDate && endDate < startDate) {
+      throw new InvalidWorkExperienceDateRangeException();
     }
   }
 }

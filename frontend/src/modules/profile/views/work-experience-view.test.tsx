@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WORK_EXPERIENCE_FEEDBACK_MESSAGES } from "../config/work-experience-feedback.config";
@@ -82,6 +82,7 @@ describe("WorkExperienceView", () => {
 
     await user.type(screen.getByLabelText(/Empresa/), "Synapse Labs");
     await user.type(screen.getByLabelText(/Cargo/), "Desarrolladora web junior");
+    fireEvent.change(screen.getByLabelText(/Desde/), { target: { value: "2025-03-01" } });
     await user.click(screen.getByRole("checkbox", { name: "Trabajo actualmente aquí" }));
     await user.click(screen.getByRole("button", { name: "Guardar experiencia" }));
 

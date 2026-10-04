@@ -53,6 +53,7 @@ describe('WorkExperienceController', () => {
     vi.resetAllMocks();
     repository.findManyByUserId.mockResolvedValue([record]);
     repository.create.mockResolvedValue(record);
+    repository.findByIdAndUserId.mockResolvedValue(record);
     repository.update.mockResolvedValue(record);
     repository.delete.mockResolvedValue(true);
 
@@ -203,7 +204,7 @@ describe('WorkExperienceController', () => {
 
   it('returns 404 on attempts to edit or delete another user record', async () => {
     const otherToken = jwt.sign({ sub: otherUserId, roleTag: 'titulado' });
-    repository.update.mockResolvedValue(null);
+    repository.findByIdAndUserId.mockResolvedValue(null);
     repository.delete.mockResolvedValue(false);
 
     const response = await request(app.getHttpServer())
@@ -217,11 +218,11 @@ describe('WorkExperienceController', () => {
       detail: 'Work experience not found',
       ok: false,
     });
-    expect(repository.update).toHaveBeenCalledWith(
+    expect(repository.findByIdAndUserId).toHaveBeenCalledWith(
       workExperienceId,
       otherUserId,
-      { position: 'Lead' },
     );
+    expect(repository.update).not.toHaveBeenCalled();
 
     await request(app.getHttpServer())
       .delete(`/api/work-experiences/${workExperienceId}`)
@@ -231,6 +232,20 @@ describe('WorkExperienceController', () => {
       workExperienceId,
       otherUserId,
     );
+  });
+
+  it('rejects an end date earlier than the start date with a business error', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/work-experiences')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ ...body, endDate: '2024-06-30' })
+      .expect(400);
+    expect(response.body).toMatchObject({
+      statusCode: 400,
+      detail: 'endDate cannot be earlier than startDate',
+      ok: false,
+    });
+    expect(repository.create).not.toHaveBeenCalled();
   });
 
   it('documents the four endpoints in Swagger', () => {
