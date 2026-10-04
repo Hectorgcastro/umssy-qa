@@ -30,6 +30,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
             disabled={currentPage <= 1}
             aria-label="Página anterior"
             className={NAV_BUTTON_CLASSES}
+            suppressHydrationWarning
           >
             <ChevronLeft className="size-4" aria-hidden="true" />
           </Button>
@@ -48,6 +49,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
                 aria-current={isCurrent ? "page" : undefined}
                 aria-label={`Página ${page}`}
                 className={isCurrent ? CURRENT_PAGE_CLASSES : PAGE_BUTTON_CLASSES}
+                suppressHydrationWarning
               >
                 {page}
               </Button>
@@ -64,6 +66,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
             disabled={currentPage >= totalPages}
             aria-label="Página siguiente"
             className={NAV_BUTTON_CLASSES}
+            suppressHydrationWarning
           >
             <ChevronRight className="size-4" aria-hidden="true" />
           </Button>
