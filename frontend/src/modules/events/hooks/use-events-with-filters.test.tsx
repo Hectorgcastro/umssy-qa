@@ -4,6 +4,11 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { useEvents } from './use-events';
 import { eventsService } from '../services/events.service';
 
+import type {
+  EventItem,
+  EventsListResponse,
+} from '../types/event.types';
+
 vi.mock('../services/events.service', () => ({
   eventsService: {
     getEvents: vi.fn(),
@@ -15,14 +20,21 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+const buildListResponse = (
+  items: EventItem[] = [],
+  page = 1,
+  offset = 0,
+): EventsListResponse => ({
+  data: items,
+  page,
+  offset,
+});
 
 describe('useEvents with filters', () => {
   it('sends search and categoryId when filters are provided', async () => {
-    vi.mocked(eventsService.getEvents).mockResolvedValue({
-        data: [],
-        page: 1,
-        offset: 0,
-    });
+    vi.mocked(eventsService.getEvents).mockResolvedValue(
+      buildListResponse(),
+    );
 
     renderHook(() =>
       useEvents({
@@ -45,11 +57,9 @@ describe('useEvents with filters', () => {
   });
 
   it('does not send empty filters', async () => {
-    vi.mocked(eventsService.getEvents).mockResolvedValue({
-        data: [],
-        page: 1,
-        offset: 0,
-    });
+    vi.mocked(eventsService.getEvents).mockResolvedValue(
+      buildListResponse(),
+    );
 
     renderHook(() =>
       useEvents({
@@ -70,11 +80,9 @@ describe('useEvents with filters', () => {
   });
 
   it('requests events again when filters change', async () => {
-    vi.mocked(eventsService.getEvents).mockResolvedValue({
-        data: [],
-        page: 1,
-        offset: 0,
-    });
+    vi.mocked(eventsService.getEvents).mockResolvedValue(
+      buildListResponse(),
+    );
 
     const { rerender } = renderHook(
       ({ search, categoryId }) =>
@@ -113,13 +121,32 @@ describe('useEvents with filters', () => {
   });
 
   it('resets pagination to page 1 when filters change', async () => {
-    vi.mocked(eventsService.getEvents).mockResolvedValue({
-        data: Array.from({ length: 50 }, (_, index) => ({
-        id: String(index),
-    })) as never[],
-    page: 1,
-    offset: 0,
-});
+    const eventItems: EventItem[] = Array.from(
+      { length: 50 },
+      (_, index) => ({
+        id: `event-${index}`,
+        title: `Event ${index}`,
+        category: {
+          id: 'category-1',
+          name: 'Tecnología',
+        },
+        description: `Description ${index}`,
+        instructorName: 'Instructor Test',
+        eventDate: '2026-10-04',
+        startTime: '10:00',
+        endTime: '12:00',
+        location: 'UMSS',
+        capacity: 50,
+        availableSpots: 10,
+        registrationCount: 40,
+        statusId: 'published',
+        modalityId: 'presencial',
+      }),
+    );
+
+    vi.mocked(eventsService.getEvents).mockResolvedValue(
+      buildListResponse(eventItems),
+    );
 
     const { result, rerender } = renderHook(
       ({ search, categoryId }) =>
