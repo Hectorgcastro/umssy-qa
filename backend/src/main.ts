@@ -11,7 +11,11 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
 
-  app.enableCors(corsOrigins.length > 0 ? { origin: corsOrigins } : {});
+  // Content-Disposition expuesto para que el frontend lea el nombre de los archivos exportados.
+  app.enableCors({
+    ...(corsOrigins.length > 0 ? { origin: corsOrigins } : {}),
+    exposedHeaders: ['Content-Disposition'],
+  });
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()

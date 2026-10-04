@@ -36,6 +36,30 @@ describe('ReportsController (e2e)', () => {
     expect(response.body.data.items).toHaveLength(5);
   });
 
+  it('GET /reports/registered-users/export descarga el CSV con los filtros aplicados', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/reports/registered-users/export')
+      .query({ userType: 'COMPANY' })
+      .responseType('blob')
+      .expect(200);
+    const content = (response.body as Buffer).toString('utf-8');
+
+    expect(response.headers['content-type']).toContain('text/csv');
+    expect(response.headers['content-disposition']).toMatch(
+      /^attachment; filename="usuarios-registrados-\d{4}-\d{2}-\d{2}\.csv"$/,
+    );
+
+    // trim() también quitaría el BOM, por eso solo se descarta la última línea vacía.
+    const [header, ...rows] = content.split('\r\n').slice(0, -1);
+    expect(header).toBe(
+      '\uFEFFUsuario,Correo,Tipo de Usuario,Identificador,Documento,Fecha de Registro',
+    );
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row).toContain(',Empresa,');
+    }
+  });
+
   it('GET /reports/rejected-users devuelve solo rechazados con su motivo', async () => {
     const response = await request(app.getHttpServer())
       .get('/reports/rejected-users')

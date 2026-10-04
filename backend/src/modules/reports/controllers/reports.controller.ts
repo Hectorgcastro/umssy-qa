@@ -1,10 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, StreamableFile } from '@nestjs/common';
+import { ApiProduces, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from '../../../common/decorators/response-message.decorator.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import {
+  registeredUsersFiltersSchema,
   registeredUsersQuerySchema,
   rejectedUsersQuerySchema,
+  type RegisteredUsersFilters,
   type RegisteredUsersQuery,
   type RejectedUsersQuery,
 } from '../requests/report-users.schema.js';
@@ -30,6 +32,21 @@ export class ReportsController {
     query: RegisteredUsersQuery,
   ) {
     return this.reportsService.getRegisteredUsers(query);
+  }
+
+  @Get('registered-users/export')
+  @ApiProduces('text/csv')
+  exportRegisteredUsersCsv(
+    @Query(new ZodValidationPipe(registeredUsersFiltersSchema))
+    filters: RegisteredUsersFilters,
+  ): StreamableFile {
+    const { fileName, content } =
+      this.reportsService.exportRegisteredUsersCsv(filters);
+
+    return new StreamableFile(Buffer.from(content, 'utf-8'), {
+      type: 'text/csv; charset=utf-8',
+      disposition: `attachment; filename="${fileName}"`,
+    });
   }
 
   @Get('rejected-users')

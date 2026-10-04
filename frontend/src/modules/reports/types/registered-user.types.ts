@@ -23,3 +23,10 @@ export interface RegisteredUsersParams {
   limit: number;
   userType?: UserType;
 }
+
+export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType">;
+
+export interface ExportedFile {
+  file: Blob;
+  fileName: string;
+}

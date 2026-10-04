@@ -1,20 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import type { PaginatedResult } from '../../../common/types/api-response.types.js';
+import { buildCsv } from '../../../common/utils/csv.js';
 import { paginate } from '../../../common/utils/pagination.js';
+import {
+  REGISTERED_USERS_CSV_HEADERS,
+  toRegisteredUserCsvRow,
+} from '../mappers/report-user-csv.mapper.js';
 import {
   toRegisteredUserResponse,
   toRejectedUserResponse,
 } from '../mappers/report-user.mapper.js';
 import { ReportUsersRepository } from '../repositories/report-users.repository.js';
 import type {
+  RegisteredUsersFilters,
   RegisteredUsersQuery,
   RejectedUsersQuery,
 } from '../requests/report-users.schema.js';
 import type {
   RegisteredUserResponse,
   RejectedUserResponse,
+  ReportCsvFile,
   ReportUser,
 } from '../types/report-user.types.js';
+
+const REGISTERED_USERS_CSV_PREFIX = 'usuarios-registrados';
 
 // Ignora mayúsculas y tildes para que "perez" encuentre "Pérez".
 function normalizeText(text: string): string {
@@ -42,34 +51,21 @@ function sortByNewest(users: ReportUser[]): ReportUser[] {
 export class ReportsService {
   constructor(private readonly reportUsersRepository: ReportUsersRepository) {}
 
-  // Usuarios registrados: solo los registros aprobados.
   getRegisteredUsers(
     query: RegisteredUsersQuery,
   ): PaginatedResult<RegisteredUserResponse> {
-    const users = this.reportUsersRepository
-      .findAll()
-      .filter((user) => user.registrationStatus === 'APPROVED')
-      .filter(
-        (user) =>
-          query.userType === undefined || user.userType === query.userType,
-      )
-      .filter(
-        (user) =>
-          query.year === undefined ||
-          new Date(user.registeredAt).getUTCFullYear() === query.year,
-      )
-      .filter((user) =>
-        containsSearch(
-          [user.fullName, user.email, user.identifier],
-          query.search,
-        ),
-      );
+    return paginate(this.findRegisteredUsers(query), query.page, query.limit);
+  }
 
-    return paginate(
-      sortByNewest(users).map(toRegisteredUserResponse),
-      query.page,
-      query.limit,
-    );
+  // Exporta todas las filas que cumplen los filtros, no solo la página visible.
+  exportRegisteredUsersCsv(filters: RegisteredUsersFilters): ReportCsvFile {
+    const rows = this.findRegisteredUsers(filters).map(toRegisteredUserCsvRow);
+    const today = new Date().toISOString().slice(0, 10);
+
+    return {
+      fileName: `${REGISTERED_USERS_CSV_PREFIX}-${today}.csv`,
+      content: buildCsv(REGISTERED_USERS_CSV_HEADERS, rows),
+    };
   }
 
   // Usuarios rechazados: el buscador filtra solo por correo, según el diseño.
@@ -86,5 +82,31 @@ export class ReportsService {
       query.page,
       query.limit,
     );
+  }
+
+  // Usuarios registrados: solo los registros aprobados.
+  private findRegisteredUsers(
+    filters: RegisteredUsersFilters,
+  ): RegisteredUserResponse[] {
+    const users = this.reportUsersRepository
+      .findAll()
+      .filter((user) => user.registrationStatus === 'APPROVED')
+      .filter(
+        (user) =>
+          filters.userType === undefined || user.userType === filters.userType,
+      )
+      .filter(
+        (user) =>
+          filters.year === undefined ||
+          new Date(user.registeredAt).getUTCFullYear() === filters.year,
+      )
+      .filter((user) =>
+        containsSearch(
+          [user.fullName, user.email, user.identifier],
+          filters.search,
+        ),
+      );
+
+    return sortByNewest(users).map(toRegisteredUserResponse);
   }
 }

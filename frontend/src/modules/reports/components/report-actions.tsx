@@ -1,10 +1,15 @@
 import { ExportCsvButton } from "./export-csv-button";
 import { ManagementMenu } from "./management-menu";
 
-export function ReportActions() {
+interface ReportActionsProps {
+  onExport?: () => void;
+  isExporting?: boolean;
+}
+
+export function ReportActions({ onExport, isExporting }: ReportActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <ExportCsvButton />
+      <ExportCsvButton onClick={onExport} isExporting={isExporting} />
       <ManagementMenu />
     </div>
   );

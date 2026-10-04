@@ -1,6 +1,7 @@
 export { RegisteredUsersReportView } from "./views/registered-users-report-view";
 export { RejectedUsersReportView } from "./views/rejected-users-report-view";
 export { ReportHistoryView } from "./views/report-history-view";
+export { useExportRegisteredUsersCsv } from "./hooks/use-export-registered-users-csv";
 export { useRegisteredUsers } from "./hooks/use-registered-users";
 export { useRejectedUsers } from "./hooks/use-rejected-users";
 export { useReportHistory } from "./hooks/use-report-history";

@@ -1,5 +1,7 @@
 import { ReportUsersRepository } from '../repositories/report-users.repository.js';
+import { CSV_BOM } from '../../../common/utils/csv.js';
 import {
+  registeredUsersFiltersSchema,
   registeredUsersQuerySchema,
   rejectedUsersQuerySchema,
 } from '../requests/report-users.schema.js';
@@ -67,6 +69,47 @@ const rejectedQuery = (input: Record<string, unknown> = {}) =>
   rejectedUsersQuerySchema.parse(input);
 
 describe('ReportsService', () => {
+  describe('exportRegisteredUsersCsv', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-10-03T15:00:00.000Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('exporta todos los aprobados sin paginar, del más reciente al más antiguo', () => {
+      const users = Array.from({ length: 15 }, (_, index) =>
+        buildUser({ id: `user-${index}`, fullName: `Usuario ${index}` }),
+      );
+
+      const { content } = buildService(users).exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({}),
+      );
+
+      expect(content.startsWith(CSV_BOM)).toBe(true);
+      expect(content.trim().split('\r\n')).toHaveLength(16);
+    });
+
+    it('aplica los filtros y usa las etiquetas de la tabla', () => {
+      const { content } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({ userType: 'COMPANY' }),
+      );
+
+      expect(content).toBe(
+        `${CSV_BOM}Usuario,Correo,Tipo de Usuario,Identificador,Documento,Fecha de Registro\r\n` +
+          'Bruno Díaz,usuario@example.com,Empresa,ID-1,Título académico,30/04/2026\r\n',
+      );
+    });
+
+    it('nombra el archivo con la fecha de exportación', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv({});
+
+      expect(fileName).toBe('usuarios-registrados-2026-10-03.csv');
+    });
+  });
+
   describe('getRegisteredUsers', () => {
     it('devuelve solo aprobados, del más reciente al más antiguo', () => {
       const result = buildService().getRegisteredUsers(registeredQuery());

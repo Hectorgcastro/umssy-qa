@@ -1,5 +1,6 @@
 import {
   Injectable,
+  StreamableFile,
   type CallHandler,
   type ExecutionContext,
   type NestInterceptor,
@@ -22,14 +23,14 @@ function getPage(data: unknown): number | undefined {
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<
   T,
-  ApiResponse<T>
+  ApiResponse<T> | StreamableFile
 > {
   constructor(private readonly reflector: Reflector) {}
 
   intercept(
     context: ExecutionContext,
     next: CallHandler<T>,
-  ): Observable<ApiResponse<T>> {
+  ): Observable<ApiResponse<T> | StreamableFile> {
     const detail =
       this.reflector.get<string | undefined>(
         RESPONSE_MESSAGE_KEY,
@@ -41,6 +42,11 @@ export class ResponseInterceptor<T> implements NestInterceptor<
 
     return next.handle().pipe(
       map((data) => {
+        // Los archivos (CSV, PDF...) se envían tal cual, sin el sobre JSON.
+        if (data instanceof StreamableFile) {
+          return data;
+        }
+
         const page = getPage(data);
         return {
           statusCode,

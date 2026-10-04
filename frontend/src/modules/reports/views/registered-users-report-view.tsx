@@ -7,6 +7,7 @@ import { RegisteredUsersTable } from "../components/registered-users-table";
 import { ReportActions } from "../components/report-actions";
 import { TablePagination } from "../components/table-pagination";
 import { UserTypeFilter } from "../components/user-type-filter";
+import { useExportRegisteredUsersCsv } from "../hooks/use-export-registered-users-csv";
 import { REGISTERED_USERS_PAGE_SIZE, useRegisteredUsers } from "../hooks/use-registered-users";
 import type { UserType } from "../types/registered-user.types";
 
@@ -20,6 +21,7 @@ export function RegisteredUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [userType, setUserType] = useState<UserType | undefined>(undefined);
   const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRegisteredUsers(currentPage, userType);
+  const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRegisteredUsersCsv(userType);
 
   const handleUserTypeChange = (selectedUserType?: UserType) => {
     setUserType(selectedUserType);
@@ -38,8 +40,14 @@ export function RegisteredUsersReportView() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <UserTypeFilter value={userType} onChange={handleUserTypeChange} />
-        <ReportActions />
+        <ReportActions onExport={exportCsv} isExporting={isExporting} />
       </div>
+
+      {exportErrorMessage && (
+        <p role="alert" className="text-sm text-accent">
+          {exportErrorMessage}
+        </p>
+      )}
 
       <RegisteredUsersTable users={users} isLoading={isLoading} errorMessage={errorMessage} />
 
