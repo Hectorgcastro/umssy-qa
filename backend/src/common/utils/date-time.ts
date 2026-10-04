@@ -1,3 +1,7 @@
+import type { BoliviaDateTime } from '../types/bolivia-date-time.types.js';
+import type { DateInput } from '../types/date-input.types.js';
+import type { WeekRange } from '../types/week-range.types.js';
+
 // Bolivia no usa horario de verano: siempre UTC-4.
 export const BOLIVIA_UTC_OFFSET_MINUTES = -240;
 
@@ -8,25 +12,6 @@ const BOLIVIA_OFFSET_MS = BOLIVIA_UTC_OFFSET_MINUTES * MINUTE_MS;
 
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
-
-export type DateInput = Date | string;
-
-export interface BoliviaDateTime {
-  year: number;
-  month: number;
-  day: number;
-  hours: number;
-  minutes: number;
-  // ISO 8601: 1 = lunes, 7 = domingo.
-  weekday: number;
-  date: string;
-  time: string;
-}
-
-export interface WeekRange {
-  startAt: string;
-  endAt: string;
-}
 
 const pad = (value: number): string => String(value).padStart(2, '0');
 
