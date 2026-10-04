@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-texts.config";
+import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-messages.config";
 import type { SkillItem } from "../types/skill-item.types";
 import { validateCustomSkill } from "./validate-custom-skill";
 

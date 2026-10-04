@@ -1,4 +1,3 @@
-// Returns up to two initials of the full name, for example "VQ".
 export function getInitials(fullName: string): string {
   return fullName
     .trim()

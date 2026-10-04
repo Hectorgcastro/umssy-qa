@@ -1,6 +1,5 @@
 import type { EducationItem } from "../types/education-item.types";
 
-// Sample records shown until the education endpoints are available.
 export const SAMPLE_EDUCATIONS: EducationItem[] = [
   {
     id: "sample-1",

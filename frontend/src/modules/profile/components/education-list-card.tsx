@@ -2,9 +2,7 @@ import { Button } from "@/components/ui/button";
 import type { EducationListCardProps } from "../types/education-list-card-props.types";
 import { SectionCard } from "./section-card";
 
-const ACTION_BUTTON_CLASS = "h-8 px-2 text-[13px] font-semibold";
-
-export function EducationListCard({ educations }: EducationListCardProps) {
+export function EducationListCard({ educations = [] }: EducationListCardProps) {
   return (
     <SectionCard
       title="Formación registrada"
@@ -24,7 +22,7 @@ export function EducationListCard({ educations }: EducationListCardProps) {
                 type="button"
                 variant="ghost"
                 aria-label={`Editar ${education.degree}`}
-                className={`${ACTION_BUTTON_CLASS} text-ink`}
+                className={`h-8 px-2 text-[13px] font-semibold text-ink`}
               >
                 Editar
               </Button>
@@ -32,7 +30,7 @@ export function EducationListCard({ educations }: EducationListCardProps) {
                 type="button"
                 variant="ghost"
                 aria-label={`Eliminar ${education.degree}`}
-                className={`${ACTION_BUTTON_CLASS} text-accent hover:bg-interaction hover:text-accent`}
+                className={`h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent`}
               >
                 Eliminar
               </Button>

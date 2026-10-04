@@ -4,7 +4,6 @@ import { ProfilePageLayout } from "../components/profile-page-layout";
 import { SectionCard } from "../components/section-card";
 import { SkillsSelector } from "../components/skills-selector";
 import { TrajectorySteps } from "../components/trajectory-steps";
-import { SKILLS_TEXTS } from "../config/skills-texts.config";
 import { useSkills } from "../hooks/use-skills";
 
 export function SkillsView() {
@@ -23,14 +22,14 @@ export function SkillsView() {
   return (
     <ProfilePageLayout
       activeTab="trajectory"
-      title={SKILLS_TEXTS.pageTitle}
-      description={SKILLS_TEXTS.pageDescription}
+      title="Trayectoria"
+      description="Selecciona tecnologías y herramientas que dominas o agrega las tuyas."
     >
       <TrajectorySteps activeStep="skills" />
-      <SectionCard title={SKILLS_TEXTS.sectionTitle}>
+      <SectionCard title="Habilidades técnicas">
         {isLoading ? (
           <p role="status" className="text-[13px] text-text-secondary">
-            {SKILLS_TEXTS.loading}
+            Cargando habilidades...
           </p>
         ) : (
           <SkillsSelector

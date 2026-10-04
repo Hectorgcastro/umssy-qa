@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiClient } from "@/shared/services/api-client";
-import type { Certification, CreateCertificationDto } from "../types/certification.types";
+import type { Certification } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 
 vi.mock("@/shared/services/api-client", () => ({
   apiClient: {

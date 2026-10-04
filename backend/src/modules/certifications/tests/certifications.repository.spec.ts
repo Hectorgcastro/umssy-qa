@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Prisma } from '../../../prisma/client.js';
+import { CertificationNotFoundException } from '../exceptions/certification-not-found.exception.js';
 import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { CertificationsRepository } from '../repositories/certifications.repository.js';
+
+const recordNotFoundError = new Prisma.PrismaClientKnownRequestError('Record not found', {
+  code: 'P2025',
+  clientVersion: 'test',
+});
 
 const userId = '11111111-1111-4111-8111-111111111111';
 const certificationId = '33333333-3333-4333-8333-333333333333';
@@ -96,5 +103,17 @@ describe('CertificationsRepository', () => {
     expect(certification.delete).toHaveBeenCalledWith({
       where: { id: certificationId },
     });
+  });
+
+  it('fails with a domain exception when the certification no longer exists', async () => {
+    certification.update.mockRejectedValue(recordNotFoundError);
+    certification.delete.mockRejectedValue(recordNotFoundError);
+
+    await expect(
+      repository.update(certificationId, { name: 'Updated' }),
+    ).rejects.toBeInstanceOf(CertificationNotFoundException);
+    await expect(repository.delete(certificationId)).rejects.toBeInstanceOf(
+      CertificationNotFoundException,
+    );
   });
 });

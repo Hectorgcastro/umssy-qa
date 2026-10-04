@@ -3,21 +3,12 @@
 import { useState } from "react";
 import { CERTIFICATION_FEEDBACK_MESSAGES } from "../config/certification-feedback.config";
 import { certificationsService } from "../services/certifications.service";
-import type {
-  Certification,
-  CreateCertificationDto,
-  UpdateCertificationDto,
-} from "../types/certification.types";
+import type { Certification } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
+import type { UpdateCertificationDto } from "../types/update-certification-dto.types";
+import type { CertificationMutationMessages } from "../types/certification-mutation-messages.types";
+import type { CertificationMutationOptions } from "../types/certification-mutation-options.types";
 import type { Feedback } from "../types/feedback.types";
-
-interface CertificationMutationOptions {
-  onSuccess?: (certification: Certification) => void;
-}
-
-interface CertificationMutationMessages {
-  success: string;
-  error: string;
-}
 
 function useCertificationMutation<TVariables>(
   mutationFn: (variables: TVariables) => Promise<Certification>,

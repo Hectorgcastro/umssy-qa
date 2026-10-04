@@ -1,4 +1,4 @@
-import type { CreateCertificationDto } from "./certification.types";
+import type { CreateCertificationDto } from "./create-certification-dto.types";
 
 export interface CertificationFormProps {
   initialData?: CreateCertificationDto;

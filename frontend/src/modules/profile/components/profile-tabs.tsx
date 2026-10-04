@@ -3,8 +3,6 @@ import { cn } from "@/lib/utils";
 import { PROFILE_TABS } from "../config/profile-tabs.config";
 import type { ProfileTabsProps } from "../types/profile-tabs-props.types";
 
-const TAB_BASE_CLASS = "-mb-px block border-b-2 pb-3 text-[15px] transition-colors";
-
 export function ProfileTabs({ activeTab }: ProfileTabsProps) {
   return (
     <nav aria-label="Secciones del perfil" className="mt-8 mb-8 border-b border-border">
@@ -19,7 +17,7 @@ export function ProfileTabs({ activeTab }: ProfileTabsProps) {
                   href={tab.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    TAB_BASE_CLASS,
+                    "-mb-px block border-b-2 pb-3 text-[15px] transition-colors",
                     isActive
                       ? "border-accent font-semibold text-accent"
                       : "border-transparent text-text-secondary hover:text-ink",
@@ -31,7 +29,7 @@ export function ProfileTabs({ activeTab }: ProfileTabsProps) {
                 <span
                   aria-disabled="true"
                   title="Disponible próximamente"
-                  className={cn(TAB_BASE_CLASS, "cursor-not-allowed border-transparent text-text-secondary")}
+                  className={cn("-mb-px block border-b-2 pb-3 text-[15px] transition-colors", "cursor-not-allowed border-transparent text-text-secondary")}
                 >
                   {tab.label}
                 </span>

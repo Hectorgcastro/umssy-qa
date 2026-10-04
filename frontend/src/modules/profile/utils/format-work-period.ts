@@ -2,7 +2,6 @@ import { SHORT_MONTH_LABELS } from "../config/short-month-labels.config";
 
 const CURRENT_JOB_LABEL = "Actualidad";
 
-// Convierte "2024-07" en { month: "Jul", year: "2024" }.
 function getMonthAndYear(yearMonth: string): { month: string; year: string } {
   const [year, month] = yearMonth.split("-");
   const label = SHORT_MONTH_LABELS[Number(month) - 1];

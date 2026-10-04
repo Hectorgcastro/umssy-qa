@@ -2,7 +2,6 @@ import { CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { PRIMARY_BUTTON_CLASS } from "../config/form-styles.config";
 
 export function ProfileCompletionBanner() {
   return (
@@ -18,7 +17,7 @@ export function ProfileCompletionBanner() {
       </div>
       <Link
         href="/profile/personal-info"
-        className={cn(buttonVariants(), PRIMARY_BUTTON_CLASS, "h-10 shrink-0 px-5")}
+        className={cn(buttonVariants(), "h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "h-10 shrink-0 px-5")}
       >
         Completar perfil
       </Link>

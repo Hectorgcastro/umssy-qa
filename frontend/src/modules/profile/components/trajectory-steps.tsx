@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { TRAJECTORY_STEPS, TRAJECTORY_STEPS_LABEL } from "../config/trajectory-steps.config";
+import { TRAJECTORY_STEPS } from "../config/trajectory-steps.config";
 import type { TrajectoryStepsProps } from "../types/trajectory-steps-props.types";
 
 export function TrajectorySteps({ activeStep = "education" }: TrajectoryStepsProps) {
   return (
-    <ol aria-label={TRAJECTORY_STEPS_LABEL} className="mb-8 flex gap-10">
+    <ol aria-label="Sub-secciones de trayectoria" className="mb-8 flex gap-10">
       {TRAJECTORY_STEPS.map((step) => {
         const isActive = step.id === activeStep;
 

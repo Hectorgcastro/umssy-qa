@@ -1,6 +1,5 @@
 import type { WorkExperienceItem } from "../types/work-experience-item.types";
 
-// Registros de ejemplo hasta que existan los endpoints de experiencia laboral (#78).
 export const SAMPLE_WORK_EXPERIENCES: WorkExperienceItem[] = [
   {
     id: "sample-1",

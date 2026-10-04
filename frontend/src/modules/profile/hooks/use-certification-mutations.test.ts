@@ -2,7 +2,8 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CERTIFICATION_FEEDBACK_MESSAGES } from "../config/certification-feedback.config";
 import { certificationsService } from "../services/certifications.service";
-import type { Certification, CreateCertificationDto } from "../types/certification.types";
+import type { Certification } from "../types/certification.types";
+import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { useCreateCertification, useUpdateCertification } from "./use-certification-mutations";
 
 vi.mock("../services/certifications.service", () => ({

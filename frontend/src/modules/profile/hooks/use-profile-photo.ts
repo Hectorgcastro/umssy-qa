@@ -15,7 +15,6 @@ export function useProfilePhoto() {
   const [error, setError] = useState<string | null>(null);
   const photoUrlRef = useRef<string | null>(null);
 
-  // Object URLs keep the image in memory until they are revoked.
   function showPhoto(blob: Blob) {
     if (photoUrlRef.current) {
       URL.revokeObjectURL(photoUrlRef.current);
@@ -34,7 +33,6 @@ export function useProfilePhoto() {
           showPhoto(photo);
         }
       } catch {
-        // Without a photo the initials are shown, so a failed load is not reported.
       }
     }
 

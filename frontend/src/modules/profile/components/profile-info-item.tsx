@@ -1,7 +1,7 @@
 import type { ProfileInfoItemProps } from "../types/profile-info-item-props.types";
 
 export function ProfileInfoItem({ label, value }: ProfileInfoItemProps) {
-  const text = value.trim();
+  const text = (value ?? "").trim();
 
   return (
     <div>

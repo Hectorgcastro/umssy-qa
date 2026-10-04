@@ -8,16 +8,10 @@ function formatPath(path: ValidationIssue['path']): string {
     .join('.');
 }
 
-// exceptionFactory for StandardSchemaValidationPipe: turns schema issues into a DomainException.
 export function buildRequestValidationException(
   issues: readonly ValidationIssue[],
 ): RequestValidationException {
-  const detail = issues
-    .map((issue) => {
-      const path = formatPath(issue.path);
-      return path ? `${path}: ${issue.message}` : issue.message;
-    })
-    .join('; ');
-
-  return new RequestValidationException(detail);
+  return new RequestValidationException(
+    issues.map((issue) => ({ field: formatPath(issue.path), message: issue.message })),
+  );
 }

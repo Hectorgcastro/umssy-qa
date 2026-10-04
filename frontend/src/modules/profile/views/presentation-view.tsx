@@ -8,7 +8,6 @@ import { useProfilePhoto } from "../hooks/use-profile-photo";
 import type { PresentationValues } from "../types/presentation-values.types";
 
 export function PresentationView() {
-  // Values are kept in memory until the forms are connected to the profile endpoints (issue #68).
   const [savedValues, setSavedValues] = useState<PresentationValues>(EMPTY_PRESENTATION_VALUES);
   const { photoUrl } = useProfilePhoto();
 
