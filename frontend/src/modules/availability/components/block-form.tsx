@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDaysIcon } from "lucide-react";
+import { CalendarDaysIcon, CircleAlertIcon } from "lucide-react";
 import { es } from "react-day-picker/locale";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { toBoliviaTime, toUtcIso } from "@/shared/utils/date-time";
@@ -83,17 +85,8 @@ const getBoliviaToday = (): Date => toCalendarDate(toBoliviaTime(new Date()).dat
 function RequiredMark() {
   return (
     <span aria-hidden="true" className="text-destructive">
-      {" *"}
+      *
     </span>
-  );
-}
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) return null;
-  return (
-    <p id={id} role="alert" className="text-sm text-destructive">
-      {message}
-    </p>
   );
 }
 
@@ -177,11 +170,11 @@ export function BlockForm({
       <form onSubmit={handleSubmit} noValidate className="contents">
         <CardContent className="flex flex-col gap-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="date" className="text-sm font-semibold">
+            <Field data-invalid={errors.date ? true : undefined}>
+              <FieldLabel htmlFor="date" className="font-semibold">
                 Fecha
                 <RequiredMark />
-              </label>
+              </FieldLabel>
               <div className="relative">
                 <Input
                   id="date"
@@ -206,18 +199,18 @@ export function BlockForm({
                 disabled={{ before: today }}
                 className="w-full rounded-lg border [--cell-size:--spacing(9)]"
               />
-              <p id="date-hint" className="text-xs text-muted-foreground">
+              <FieldDescription id="date-hint" className="text-xs">
                 Los días anteriores a hoy no se pueden elegir.
-              </p>
-              <FieldError id="date-error" message={errors.date} />
-            </div>
+              </FieldDescription>
+              {errors.date && <FieldError id="date-error">{errors.date}</FieldError>}
+            </Field>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="startAt" className="text-sm font-semibold">
+            <FieldGroup className="gap-4">
+              <Field data-invalid={errors.startAt ? true : undefined}>
+                <FieldLabel htmlFor="startAt" className="font-semibold">
                   Hora de inicio
                   <RequiredMark />
-                </label>
+                </FieldLabel>
                 <NativeSelect
                   id="startAt"
                   name="startAt"
@@ -234,14 +227,14 @@ export function BlockForm({
                     </NativeSelectOption>
                   ))}
                 </NativeSelect>
-                <FieldError id="startAt-error" message={errors.startAt} />
-              </div>
+                {errors.startAt && <FieldError id="startAt-error">{errors.startAt}</FieldError>}
+              </Field>
 
-              <div className="flex flex-col gap-2">
-                <label htmlFor="endAt" className="text-sm font-semibold">
+              <Field data-invalid={errors.endAt ? true : undefined}>
+                <FieldLabel htmlFor="endAt" className="font-semibold">
                   Hora de fin
                   <RequiredMark />
-                </label>
+                </FieldLabel>
                 <NativeSelect
                   id="endAt"
                   name="endAt"
@@ -258,19 +251,20 @@ export function BlockForm({
                     </NativeSelectOption>
                   ))}
                 </NativeSelect>
-                <FieldError id="endAt-error" message={errors.endAt} />
-              </div>
+                {errors.endAt && <FieldError id="endAt-error">{errors.endAt}</FieldError>}
+              </Field>
 
-              <p className="text-xs text-muted-foreground">
+              <FieldDescription className="text-xs">
                 La hora de fin debe ser posterior a la de inicio. Horario en hora de Bolivia (GMT-4).
-              </p>
-            </div>
+              </FieldDescription>
+            </FieldGroup>
           </div>
 
           {submitError && (
-            <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {submitError}
-            </p>
+            <Alert variant="destructive">
+              <CircleAlertIcon aria-hidden="true" />
+              <AlertTitle>{submitError}</AlertTitle>
+            </Alert>
           )}
         </CardContent>
 

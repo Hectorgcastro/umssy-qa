@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CircleCheckIcon } from "lucide-react";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { BlockForm } from "../components/block-form";
 import { useCreateAvailabilityBlock } from "../hooks/use-create-availability-block";
 import type { CreateAvailabilityBlockInput } from "../types/availability";
@@ -36,10 +37,10 @@ export function AddBlockView() {
       </header>
 
       {isSaved && (
-        <p role="status" className="flex items-center gap-2 rounded-xl border bg-card px-4 py-3 text-sm">
-          <CircleCheckIcon aria-hidden="true" className="size-4 shrink-0" />
-          <span className="font-semibold">Bloque guardado correctamente.</span>
-        </p>
+        <Alert role="status" className="rounded-xl px-4 py-3">
+          <CircleCheckIcon aria-hidden="true" />
+          <AlertTitle className="font-semibold">Bloque guardado correctamente.</AlertTitle>
+        </Alert>
       )}
 
       <div className="w-full max-w-3xl">
