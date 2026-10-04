@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { deleteDocument, uploadDocument } from '../services/document-upload.service';
 import { DocumentUploadSection } from './document-upload-section';
 
@@ -33,8 +34,8 @@ describe('DocumentUploadSection', () => {
 
   it('shows the card and the preview after a successful upload', async () => {
     vi.mocked(uploadDocument).mockResolvedValue(uploaded);
-
     const { container } = render(<DocumentUploadSection />);
+
     selectFile(container);
 
     expect(await screen.findByText('Listo')).toBeTruthy();
@@ -44,10 +45,9 @@ describe('DocumentUploadSection', () => {
 
   it('opens the document in a new tab with the Ver button', async () => {
     vi.mocked(uploadDocument).mockResolvedValue(uploaded);
-
     const { container } = render(<DocumentUploadSection />);
-    selectFile(container);
 
+    selectFile(container);
     fireEvent.click(await screen.findByText('Ver'));
 
     expect(window.open).toHaveBeenCalledWith('blob:test', '_blank', 'noopener');
@@ -56,10 +56,9 @@ describe('DocumentUploadSection', () => {
   it('removes the document and shows the upload zone again', async () => {
     vi.mocked(uploadDocument).mockResolvedValue(uploaded);
     vi.mocked(deleteDocument).mockResolvedValue(undefined);
-
     const { container } = render(<DocumentUploadSection />);
-    selectFile(container);
 
+    selectFile(container);
     fireEvent.click(await screen.findByText('Quitar'));
 
     expect(await screen.findByText(/Selecciona tu archivo/)).toBeTruthy();
@@ -68,8 +67,8 @@ describe('DocumentUploadSection', () => {
 
   it('shows an error message when the upload fails', async () => {
     vi.mocked(uploadDocument).mockRejectedValue(new Error('fallo'));
-
     const { container } = render(<DocumentUploadSection />);
+
     selectFile(container);
 
     expect(
@@ -80,10 +79,9 @@ describe('DocumentUploadSection', () => {
   it('shows an error message when the removal fails', async () => {
     vi.mocked(uploadDocument).mockResolvedValue(uploaded);
     vi.mocked(deleteDocument).mockRejectedValue(new Error('fallo'));
-
     const { container } = render(<DocumentUploadSection />);
-    selectFile(container);
 
+    selectFile(container);
     fireEvent.click(await screen.findByText('Quitar'));
 
     expect(

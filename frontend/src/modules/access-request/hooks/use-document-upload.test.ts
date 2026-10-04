@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { deleteDocument, uploadDocument } from '../services/document-upload.service';
 import { useDeleteDocument, useUploadDocument } from './use-document-upload';
 
@@ -21,7 +22,6 @@ describe('useUploadDocument', () => {
       onProgress(50);
       return uploaded;
     });
-
     const onSuccess = vi.fn();
     const { result } = renderHook(() => useUploadDocument());
 
@@ -36,7 +36,6 @@ describe('useUploadDocument', () => {
 
   it('calls onError when the upload fails', async () => {
     vi.mocked(uploadDocument).mockRejectedValue(new Error('fallo'));
-
     const onError = vi.fn();
     const { result } = renderHook(() => useUploadDocument());
 
@@ -53,13 +52,11 @@ describe('useUploadDocument', () => {
       onProgress(80);
       return uploaded;
     });
-
     const { result } = renderHook(() => useUploadDocument());
 
     await act(async () => {
       await result.current.mutate(file);
     });
-
     act(() => result.current.reset());
 
     expect(result.current.progress).toBe(0);
@@ -69,7 +66,6 @@ describe('useUploadDocument', () => {
 describe('useDeleteDocument', () => {
   it('calls onSuccess when the document is removed', async () => {
     vi.mocked(deleteDocument).mockResolvedValue(undefined);
-
     const onSuccess = vi.fn();
     const { result } = renderHook(() => useDeleteDocument());
 
@@ -83,7 +79,6 @@ describe('useDeleteDocument', () => {
 
   it('calls onError when the removal fails', async () => {
     vi.mocked(deleteDocument).mockRejectedValue(new Error('fallo'));
-
     const onError = vi.fn();
     const { result } = renderHook(() => useDeleteDocument());
 
