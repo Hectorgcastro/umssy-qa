@@ -9,6 +9,7 @@ import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { TechnicalAreasModule } from './modules/technical-areas/technical-areas.module.js';
 import { OrientationTypesModule } from './modules/orientation-types/orientation-types.module.js';
+import { MentorsModule } from './modules/mentors/mentors.module.js';
 
 @Module({
   imports: [
@@ -20,11 +21,15 @@ import { OrientationTypesModule } from './modules/orientation-types/orientation-
     AuthModule,
     TechnicalAreasModule,
     OrientationTypesModule,
+    MentorsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    { provide: APP_FILTER, useClass: DomainExceptionFilter },
+    {
+      provide: APP_FILTER,
+      useClass: DomainExceptionFilter,
+    },
   ],
 })
 export class AppModule {}
