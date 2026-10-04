@@ -34,6 +34,25 @@ describe("CertificationCard", () => {
     cleanup();
   });
 
+  it("renders markup in the name as plain text", () => {
+    const { container } = render(
+      <CertificationCard
+        certification={{
+          ...CERTIFICATION,
+          name: "<script>alert(1)</script>",
+          issuingOrganization: "O'Reilly \"Media\"",
+        }}
+        isBusy={false}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("<script>alert(1)</script>")).toBeInTheDocument();
+    expect(screen.getByText(/O'Reilly "Media"/)).toBeInTheDocument();
+    expect(container.querySelector("script")).toBeNull();
+  });
+
   it("renders the name, the issuing organization and the formatted issue date", () => {
     renderCard();
 
