@@ -9,6 +9,7 @@ import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { ProfileModule } from './modules/profile/profile.module.js';
 import { EducationsModule } from './modules/educations/educations.module.js';
+import { WorkExperienceModule } from './modules/work-experience/work-experience.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EducationsModule } from './modules/educations/educations.module.js';
     AuthModule,
     ProfileModule,
     EducationsModule,
+    WorkExperienceModule,
   ],
   controllers: [AppController],
   providers: [
