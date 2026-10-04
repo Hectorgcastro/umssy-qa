@@ -2,16 +2,14 @@ import 'dotenv/config';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { createSeedClient, runSeed } from '../src/common/database/seeds.js';
+import type { SeedSummary } from '../src/common/types/seed-summary.types.js';
 import {
-  createSeedClient,
-  getWeeks,
-  pastBlockRange,
-  runSeed,
-  SEED_USERS,
   STATUS_CONFIRMED,
   STATUS_PENDING,
-} from '../prisma/seed.js';
-import type { SeedSummary } from '../prisma/seed.js';
+} from '../src/modules/availability/constants/seed-availability.constants.js';
+import { getWeeks, pastBlockRange } from '../src/modules/availability/seeds/availability.seed.js';
+import { SEED_USERS } from '../src/modules/users/constants/seed-users.constants.js';
 import { ROLE_NAMES } from '../src/common/enums/roles.enum.js';
 import type { PrismaClient } from '../src/prisma/client.js';
 
