@@ -14,8 +14,10 @@ import { TrajectorySteps } from "../components/trajectory-steps";
 import { CERTIFICATIONS_VIEW_TEXTS } from "../config/certifications-view.config";
 import { PRIMARY_BUTTON_CLASS } from "../config/form-styles.config";
 import { useCreateCertification, useUpdateCertification } from "../hooks/use-certification-mutations";
+import { useCertificationDocument } from "../hooks/use-certification-document";
 import { useCertifications } from "../hooks/use-certifications";
 import { useDeleteCertification } from "../hooks/use-delete-certification";
+import type { CertificationDocumentChange } from "../types/certification-document-change.types";
 import type { CertificationFormState } from "../types/certification-form-state.types";
 import type { Certification, CreateCertificationDto } from "../types/certification.types";
 import type { Feedback } from "../types/feedback.types";
@@ -33,20 +35,18 @@ export function CertificationsView() {
   const [formState, setFormState] = useState<CertificationFormState>({ mode: "closed" });
   const [pendingDelete, setPendingDelete] = useState<Certification | null>(null);
 
-  const handleSaved = () => {
-    setFormState({ mode: "closed" });
-    void reload();
-  };
-
-  const createMutation = useCreateCertification({ onSuccess: handleSaved });
-  const updateMutation = useUpdateCertification({ onSuccess: handleSaved });
+  const createMutation = useCreateCertification();
+  const updateMutation = useUpdateCertification();
   const deleteMutation = useDeleteCertification(() => {
     void reload();
   });
+  const certificationDocument = useCertificationDocument();
 
   const isFormOpen = formState.mode !== "closed";
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving =
+    createMutation.isPending || updateMutation.isPending || certificationDocument.isSaving;
   const visibleFeedback: Feedback | null =
+    certificationDocument.feedback ??
     createMutation.feedback ??
     updateMutation.feedback ??
     deleteMutation.feedback ??
@@ -56,6 +56,7 @@ export function CertificationsView() {
     createMutation.clearFeedback();
     updateMutation.clearFeedback();
     deleteMutation.clearFeedback();
+    certificationDocument.clearFeedback();
   };
 
   const openCreateForm = () => {
@@ -72,12 +73,22 @@ export function CertificationsView() {
     setFormState({ mode: "closed" });
   };
 
-  const handleSubmit = async (values: CreateCertificationDto) => {
-    if (formState.mode === "edit") {
-      await updateMutation.mutate({ id: formState.certification.id, data: values });
+  const handleSubmit = async (
+    values: CreateCertificationDto,
+    documentChange: CertificationDocumentChange,
+  ) => {
+    const savedCertification =
+      formState.mode === "edit"
+        ? await updateMutation.mutate({ id: formState.certification.id, data: values })
+        : await createMutation.mutate(values);
+
+    if (!savedCertification) {
       return;
     }
-    await createMutation.mutate(values);
+
+    await certificationDocument.applyDocumentChange(savedCertification.id, documentChange);
+    setFormState({ mode: "closed" });
+    void reload();
   };
 
   const openDeleteDialog = (certification: Certification) => {
@@ -153,6 +164,9 @@ export function CertificationsView() {
             key={formState.mode === "edit" ? formState.certification.id : formState.mode}
             initialData={
               formState.mode === "edit" ? toFormValues(formState.certification) : undefined
+            }
+            hasDocument={
+              formState.mode === "edit" ? Boolean(formState.certification.hasDocument) : false
             }
             isPending={isSaving}
             onSubmit={handleSubmit}

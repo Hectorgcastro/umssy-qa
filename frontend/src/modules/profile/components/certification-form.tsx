@@ -9,12 +9,15 @@ import {
   PRIMARY_BUTTON_CLASS,
   SECONDARY_BUTTON_CLASS,
 } from "../config/form-styles.config";
+import type { CertificationDocumentChange } from "../types/certification-document-change.types";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
 import type { CreateCertificationDto } from "../types/certification.types";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
+import { validateCertificateFile } from "../utils/validate-certificate-file";
 import { getTodayIsoDate, validateCertification } from "../utils/validate-certification";
+import { CertificationDocumentField } from "./certification-document-field";
 import { FormField } from "./form-field";
 import { SectionCard } from "./section-card";
 
@@ -26,6 +29,7 @@ const EMPTY_CERTIFICATION_VALUES: CreateCertificationDto = {
 
 export function CertificationForm({
   initialData,
+  hasDocument = false,
   isPending = false,
   onSubmit,
   onCancel,
@@ -35,9 +39,39 @@ export function CertificationForm({
   );
   const [errors, setErrors] = useState<CertificationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCurrentDocumentRemoved, setIsCurrentDocumentRemoved] = useState(false);
+  const [fileError, setFileError] = useState<string | undefined>();
   const isEditing = Boolean(initialData);
   const isBusy = isPending || isSubmitting;
   const title = isEditing ? "Editar certificación" : "Agregar certificación";
+  const hasCurrentDocument = hasDocument && !isCurrentDocumentRemoved;
+
+  const getDocumentChange = (): CertificationDocumentChange => {
+    if (selectedFile) {
+      return { type: "replace", file: selectedFile };
+    }
+    return hasDocument && isCurrentDocumentRemoved ? { type: "remove" } : { type: "keep" };
+  };
+
+  const handleSelectFile = (file: File) => {
+    const validationError = validateCertificateFile(file);
+    if (validationError) {
+      setFileError(validationError);
+      return;
+    }
+    setSelectedFile(file);
+    setFileError(undefined);
+  };
+
+  const handleRemoveDocument = () => {
+    if (selectedFile) {
+      setSelectedFile(null);
+    } else {
+      setIsCurrentDocumentRemoved(true);
+    }
+    setFileError(undefined);
+  };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const field = event.target.name as keyof CreateCertificationDto;
@@ -49,6 +83,9 @@ export function CertificationForm({
   const handleCancel = () => {
     setValues(initialData ?? EMPTY_CERTIFICATION_VALUES);
     setErrors({});
+    setSelectedFile(null);
+    setIsCurrentDocumentRemoved(false);
+    setFileError(undefined);
     onCancel();
   };
 
@@ -64,7 +101,7 @@ export function CertificationForm({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(trimmedValues);
+      await onSubmit(trimmedValues, getDocumentChange());
     } finally {
       setIsSubmitting(false);
     }
@@ -127,6 +164,14 @@ export function CertificationForm({
             {...getFieldErrorProps("certification-issueDate", errors.issueDate)}
           />
         </FormField>
+        <CertificationDocumentField
+          selectedFile={selectedFile}
+          hasCurrentDocument={hasCurrentDocument}
+          error={fileError}
+          disabled={isBusy}
+          onSelectFile={handleSelectFile}
+          onRemove={handleRemoveDocument}
+        />
 
         <div className="flex justify-end gap-3 pt-2">
           <Button

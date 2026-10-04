@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CERTIFICATION_DOCUMENT_MESSAGES } from "../config/certification-document.config";
 import { CERTIFICATION_FEEDBACK_MESSAGES } from "../config/certification-feedback.config";
 import { certificationsService } from "../services/certifications.service";
 import type { Certification } from "../types/certification.types";
@@ -12,6 +13,9 @@ vi.mock("../services/certifications.service", () => ({
     createCertification: vi.fn(),
     updateCertification: vi.fn(),
     deleteCertification: vi.fn(),
+    uploadDocument: vi.fn(),
+    getDocument: vi.fn(),
+    deleteDocument: vi.fn(),
   },
 }));
 
@@ -228,5 +232,82 @@ describe("CertificationsView", () => {
       CERTIFICATION_FEEDBACK_MESSAGES.deleteError,
     );
     expect(getCertificationNames()).toEqual(["AWS Cloud Practitioner", "Scrum Master"]);
+  });
+
+  describe("certification documents", () => {
+    const CERTIFICATE_PDF = new File(["certificate"], "certificate.pdf", {
+      type: "application/pdf",
+    });
+
+    it("uploads the document after adding the certification", async () => {
+      const created = createCertification("ccna", "CCNA", "2024-01-15");
+      vi.mocked(certificationsService.createCertification).mockResolvedValue(created);
+      vi.mocked(certificationsService.uploadDocument).mockResolvedValue(undefined);
+      const user = await renderView();
+
+      await user.click(screen.getByRole("button", { name: "Agregar certificación" }));
+      await user.type(screen.getByLabelText(/Nombre de la certificación/), "CCNA");
+      await user.type(screen.getByLabelText(/Organización emisora/), "Cisco");
+      fireEvent.change(screen.getByLabelText(/Fecha de emisión/), {
+        target: { value: "2024-01-15" },
+      });
+      await user.upload(screen.getByLabelText("Archivo del certificado"), CERTIFICATE_PDF);
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(certificationsService.uploadDocument).toHaveBeenCalledWith("ccna", CERTIFICATE_PDF);
+      expect(await screen.findByRole("status")).toHaveTextContent(
+        CERTIFICATION_DOCUMENT_MESSAGES.uploadSuccess,
+      );
+      expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    });
+
+    it("removes the current document when editing", async () => {
+      const withDocument = { ...SCRUM, hasDocument: true };
+      vi.mocked(certificationsService.getCertifications).mockResolvedValue([withDocument, AWS]);
+      vi.mocked(certificationsService.updateCertification).mockResolvedValue(withDocument);
+      vi.mocked(certificationsService.deleteDocument).mockResolvedValue(undefined);
+      const user = await renderView();
+
+      await user.click(screen.getByRole("button", { name: "Editar Scrum Master" }));
+
+      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Quitar" }));
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(certificationsService.deleteDocument).toHaveBeenCalledWith("scrum");
+      expect(await screen.findByRole("status")).toHaveTextContent(
+        CERTIFICATION_DOCUMENT_MESSAGES.removeSuccess,
+      );
+    });
+
+    it("closes the form and reports when the document cannot be uploaded", async () => {
+      vi.mocked(certificationsService.updateCertification).mockResolvedValue(SCRUM);
+      vi.mocked(certificationsService.uploadDocument).mockRejectedValue(new Error("failed"));
+      const user = await renderView();
+
+      await user.click(screen.getByRole("button", { name: "Editar Scrum Master" }));
+      await user.upload(screen.getByLabelText("Archivo del certificado"), CERTIFICATE_PDF);
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        CERTIFICATION_DOCUMENT_MESSAGES.uploadError,
+      );
+      expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    });
+
+    it("does not touch the document when the certification cannot be saved", async () => {
+      vi.mocked(certificationsService.updateCertification).mockRejectedValue(new Error("failed"));
+      const user = await renderView();
+
+      await user.click(screen.getByRole("button", { name: "Editar Scrum Master" }));
+      await user.upload(screen.getByLabelText("Archivo del certificado"), CERTIFICATE_PDF);
+      await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        CERTIFICATION_FEEDBACK_MESSAGES.updateError,
+      );
+      expect(certificationsService.uploadDocument).not.toHaveBeenCalled();
+    });
   });
 });
