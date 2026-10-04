@@ -1,28 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { downloadFile } from "@/shared/utils/download-file";
+import { useCallback } from "react";
 import { reportsService } from "../services/reports.service";
 import type { UserType } from "../types/registered-user.types";
+import { useExportReportCsv } from "./use-export-report-csv";
 
-// Se migrará a useMutation cuando TanStack Query esté instalado en el proyecto.
 export function useExportRegisteredUsersCsv(userType?: UserType) {
-  const [isExporting, setIsExporting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const exportReport = useCallback(() => reportsService.exportRegisteredUsersCsv({ userType }), [userType]);
 
-  const exportCsv = useCallback(async () => {
-    setIsExporting(true);
-    setErrorMessage(undefined);
-
-    try {
-      const { file, fileName } = await reportsService.exportRegisteredUsersCsv({ userType });
-      downloadFile(file, fileName);
-    } catch {
-      setErrorMessage("No se pudo exportar el reporte. Inténtalo de nuevo.");
-    } finally {
-      setIsExporting(false);
-    }
-  }, [userType]);
-
-  return { exportCsv, isExporting, errorMessage };
+  return useExportReportCsv(exportReport);
 }

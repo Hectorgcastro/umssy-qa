@@ -14,3 +14,5 @@ export interface RejectedUsersParams {
   limit: number;
   search?: string;
 }
+
+export type RejectedUsersExportParams = Pick<RejectedUsersParams, "search">;

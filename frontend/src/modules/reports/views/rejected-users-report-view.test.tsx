@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiResponse, PaginatedData } from "@/shared/types/api-response.types";
+import * as downloadFileModule from "@/shared/utils/download-file";
 import { reportsService } from "../services/reports.service";
 import type { RejectedUser } from "../types/rejected-user.types";
 import { RejectedUsersReportView } from "./rejected-users-report-view";
@@ -233,5 +234,43 @@ describe("RejectedUsersReportView", () => {
     await waitFor(() => {
       expect(screen.getByText("No se pudo cargar el reporte de usuarios rechazados.")).toBeDefined();
     });
+  });
+
+  it("exporta en CSV los rechazados de la búsqueda actual y descarga el archivo", async () => {
+    const file = new Blob(["Usuario"], { type: "text/csv" });
+    let resolveExport: (value: { file: Blob; fileName: string }) => void = () => undefined;
+    const exportSpy = vi.spyOn(reportsService, "exportRejectedUsersCsv").mockImplementationOnce(
+      () => new Promise((resolve) => (resolveExport = resolve)),
+    );
+    const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
+    render(<RejectedUsersReportView />);
+    await searchFor("juan", "Mostrando 1-1 de 1 usuarios");
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+    const exportingButton = screen.getByRole("button", { name: "Exportando..." }) as HTMLButtonElement;
+    expect(exportingButton.disabled).toBe(true);
+    expect(exportSpy).toHaveBeenCalledWith({ search: "juan" });
+
+    resolveExport({ file, fileName: "usuarios-rechazados-2026-10-03.csv" });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Exportar CSV" })).toBeDefined();
+    });
+    expect(downloadSpy).toHaveBeenCalledWith(file, "usuarios-rechazados-2026-10-03.csv");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("muestra un mensaje si falla la exportación", async () => {
+    vi.spyOn(reportsService, "exportRejectedUsersCsv").mockRejectedValueOnce(new Error("Network error"));
+    const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile");
+    render(<RejectedUsersReportView />);
+    await waitFor(() => {
+      expect(screen.getByText("Juan Carlos Peres Rojas")).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe("No se pudo exportar el reporte. Inténtalo de nuevo.");
+    expect(downloadSpy).not.toHaveBeenCalled();
   });
 });
