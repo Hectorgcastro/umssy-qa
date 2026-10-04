@@ -2,6 +2,6 @@ export interface EducationPayload {
   institution: string;
   degree: string;
   startDate: string;
-  endDate: string | null;
+  endDate: string;
   description: string | null;
 }

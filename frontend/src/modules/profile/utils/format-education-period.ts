@@ -1,4 +1,4 @@
-import { EDUCATION_FEEDBACK_MESSAGES } from "../config/education-feedback.config";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../constants/education-feedback.constants";
 import { SHORT_MONTH_LABELS } from "../config/short-month-labels.config";
 
 function formatEducationDate(date: string): string {

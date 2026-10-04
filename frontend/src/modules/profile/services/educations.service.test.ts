@@ -84,7 +84,7 @@ describe("educationsService", () => {
       institution: "Example University",
       degree: "Computer Science",
       startDate: "2021-02-01",
-      endDate: null,
+      endDate: "2025-11-30",
       description: null,
     };
     const HEADERS = { headers: { Authorization: "Bearer test-access-token" } };

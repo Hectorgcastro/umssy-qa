@@ -101,6 +101,7 @@ describe('EducationsRepository', () => {
       institution: record.institution,
       degree: record.degree,
       startDate: record.startDate,
+      endDate: new Date('2024-01-01'),
     };
     education.create.mockResolvedValue(record);
 
@@ -112,7 +113,7 @@ describe('EducationsRepository', () => {
   });
 
   it('scopes updates to the owner and returns only selected fields', async () => {
-    const data = { degree: 'Updated degree', endDate: null };
+    const data = { degree: 'Updated degree', endDate: new Date('2024-01-01') };
     education.updateManyAndReturn.mockResolvedValue([{ ...record, ...data }]);
 
     await expect(repository.update(educationId, userId, data)).resolves.toEqual(
