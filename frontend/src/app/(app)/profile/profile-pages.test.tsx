@@ -5,8 +5,10 @@ import ProfilePage from "./page";
 import PersonalInfoPage from "./personal-info/page";
 import PresentationPage from "./presentation/page";
 import EducationPage from "./trajectory/education/page";
+import SkillsPage from "./trajectory/skills/page";
 
 vi.mock("@/modules/profile", () => ({
+  SkillsView: () => <p>skills-view</p>,
   DocumentsCvView: () => <p>documents-cv-view</p>,
   PersonalInfoView: () => <p>personal-info-view</p>,
   PresentationView: () => <p>presentation-view</p>,
@@ -17,6 +19,12 @@ vi.mock("@/modules/profile", () => ({
 describe("profile pages", () => {
   afterEach(() => {
     cleanup();
+  });
+
+  it("mounts the skills view", () => {
+    render(<SkillsPage />);
+
+    expect(screen.getByText("skills-view")).toBeInTheDocument();
   });
 
   it("mounts the profile overview view", () => {
