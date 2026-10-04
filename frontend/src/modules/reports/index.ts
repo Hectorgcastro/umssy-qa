@@ -4,6 +4,7 @@ export { ReportHistoryView } from "./views/report-history-view";
 export { useExportRegisteredUsersCsv } from "./hooks/use-export-registered-users-csv";
 export { useExportRejectedUsersCsv } from "./hooks/use-export-rejected-users-csv";
 export { useExportReportCsv } from "./hooks/use-export-report-csv";
+export { REPORT_PAGE_SIZE, usePaginatedReport } from "./hooks/use-paginated-report";
 export { useRegisteredUsers } from "./hooks/use-registered-users";
 export { useRejectedUsers } from "./hooks/use-rejected-users";
 export { useReportHistory } from "./hooks/use-report-history";

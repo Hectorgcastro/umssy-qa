@@ -61,7 +61,13 @@ describe('ReportsController', () => {
     const result = controller.getRejectedUsers(query);
 
     expect(spy).toHaveBeenCalledWith(query);
-    expect(result).toEqual({ items: [], totalItems: 0, page: 1, limit: 10 });
+    expect(result).toEqual({
+      items: [],
+      totalItems: 0,
+      totalPages: 0,
+      page: 1,
+      limit: 10,
+    });
   });
 
   it('devuelve el CSV de rechazados como archivo descargable', () => {
@@ -88,6 +94,12 @@ describe('ReportsController', () => {
     const result = controller.getReportHistory(query);
 
     expect(spy).toHaveBeenCalledWith(query);
-    expect(result).toEqual({ items: [], totalItems: 0, page: 1, limit: 10 });
+    expect(result).toEqual({
+      items: [],
+      totalItems: 0,
+      totalPages: 0,
+      page: 1,
+      limit: 10,
+    });
   });
 });

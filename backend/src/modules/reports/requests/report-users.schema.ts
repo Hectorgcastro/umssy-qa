@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { paginationSchema } from '../../../common/utils/pagination.js';
+import {
+  DEFAULT_PAGE_SIZE,
+  paginationSchema,
+} from '../../../common/utils/pagination.js';
 import { REPORT_USER_TYPES } from '../types/report-user.types.js';
 import {
   ACADEMIC_PERIOD_PATTERN,
@@ -23,17 +26,32 @@ const academicPeriodSchema = z
     `La gestión no puede ser anterior a ${FIRST_REPORT_YEAR}`,
   );
 
-// Sin userType se devuelven todos los tipos de usuario.
+// Valor de la opción "Todos" del filtro: equivale a no enviar userType.
+export const ALL_USER_TYPES = 'ALL';
+
+// Sin userType (o con "ALL") se devuelven todos los tipos de usuario.
+const userTypeSchema = z
+  .enum([...REPORT_USER_TYPES, ALL_USER_TYPES])
+  .transform((userType) => (userType === ALL_USER_TYPES ? undefined : userType))
+  .optional();
+
 export const registeredUsersFiltersSchema = z.object({
-  userType: z.enum(REPORT_USER_TYPES).optional(),
+  userType: userTypeSchema,
   year: z.coerce.number().int().min(FIRST_REPORT_YEAR).optional(),
   period: academicPeriodSchema.optional(),
   search: searchSchema,
 });
 
-export const registeredUsersQuerySchema = paginationSchema.extend(
-  registeredUsersFiltersSchema.shape,
-);
+// El reporte de registrados se entrega en lotes de máximo 10 registros.
+export const registeredUsersQuerySchema = paginationSchema.extend({
+  ...registeredUsersFiltersSchema.shape,
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(DEFAULT_PAGE_SIZE)
+    .default(DEFAULT_PAGE_SIZE),
+});
 
 // En rechazados el buscador filtra solo por correo.
 export const rejectedUsersFiltersSchema = z.object({

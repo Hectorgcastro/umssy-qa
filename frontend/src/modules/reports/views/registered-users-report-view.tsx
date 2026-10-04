@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
 import { ExportErrorMessage } from "../components/export-error-message";
-import { RefreshButton } from "../components/refresh-button";
 import { RegisteredUsersTable } from "../components/registered-users-table";
 import { ReportActions } from "../components/report-actions";
-import { TablePagination } from "../components/table-pagination";
+import { ReportTableFooter } from "../components/report-table-footer";
 import { UserTypeFilter } from "../components/user-type-filter";
 import { useExportRegisteredUsersCsv } from "../hooks/use-export-registered-users-csv";
-import { REGISTERED_USERS_PAGE_SIZE, useRegisteredUsers } from "../hooks/use-registered-users";
+import { useRegisteredUsers } from "../hooks/use-registered-users";
 import type { UserType } from "../types/registered-user.types";
 
 const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
@@ -39,11 +38,8 @@ export function RegisteredUsersReportView() {
     setCurrentPage(1);
   };
 
-  const firstVisibleItem = totalItems === 0 ? 0 : (currentPage - 1) * REGISTERED_USERS_PAGE_SIZE + 1;
-  const lastVisibleItem = Math.min(currentPage * REGISTERED_USERS_PAGE_SIZE, totalItems);
-
   return (
-    <section className="flex  flex-1 flex-col gap-6">
+    <section className="flex flex-1 flex-col gap-6">
       <header className="flex flex-col gap-2">
         <PageBreadcrumb items={BREADCRUMB_ITEMS} />
         <h1 className="font-tight text-3xl font-extrabold text-ink">Reporte de usuarios registrados</h1>
@@ -63,17 +59,14 @@ export function RegisteredUsersReportView() {
 
       <ExportErrorMessage message={exportErrorMessage} />
 
-      <div className="mt-auto grid grid-cols-1 items-center gap-4 md:grid-cols-3">
-        <p className="text-center text-sm text-text-secondary md:text-left">
-          {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
-        </p>
-        <div className="flex justify-center">
-          <RefreshButton onClick={refresh} isRefreshing={isLoading} />
-        </div>
-        <div className="flex justify-center md:justify-end">
-          <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        </div>
-      </div>
+      <ReportTableFooter
+        currentPage={currentPage}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        isLoading={isLoading}
+        onPageChange={setCurrentPage}
+        onRefresh={refresh}
+      />
     </section>
   );
 }

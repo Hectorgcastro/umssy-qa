@@ -5,7 +5,7 @@ import { downloadFile } from "@/shared/utils/download-file";
 import type { ExportedFile } from "../types/registered-user.types";
 
 // Lógica común de los botones "Exportar CSV": cada reporte pasa su propia función de exportación.
-// Se migrará a useMutation cuando TanStack Query esté instalado en el proyecto.
+// TODO: migrar a useMutation cuando TanStack Query esté instalado en el proyecto.
 export function useExportReportCsv(exportReport: () => Promise<ExportedFile>) {
   const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);

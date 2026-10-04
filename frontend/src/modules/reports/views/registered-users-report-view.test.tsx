@@ -45,8 +45,9 @@ function buildResponse(
   limit: number,
   userType?: UserType,
   period?: string,
+  users: RegisteredUser[] = REGISTERED_USERS,
 ): ApiResponse<PaginatedData<RegisteredUser>> {
-  const filteredUsers = REGISTERED_USERS.filter(
+  const filteredUsers = users.filter(
     (user) =>
       (!userType || user.userType === userType) && (!period || getPeriod(user.registeredAt) === period),
   );
@@ -114,7 +115,7 @@ describe("RegisteredUsersReportView", () => {
 
     await screen.findByRole("listbox");
     const options = screen.getAllByRole("option").map((option) => option.textContent);
-    expect(options).toEqual(["Todos", "Estudiante", "Titulado", "Mentor", "Empresa", "Administrador"]);
+    expect(options).toEqual(["Todos", "Estudiante", "Egresado", "Titulado", "Mentor", "Empresa", "Administrador"]);
   });
 
   it("vuelve a cargar los datos al presionar actualizar", async () => {
@@ -332,5 +333,164 @@ describe("RegisteredUsersReportView", () => {
     await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
 
     expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY", period: "1-2025" });
+  });
+
+  describe("HU02: filtro por tipo de usuario", () => {
+    const userTypeColumn = () =>
+      screen
+        .getAllByRole("row")
+        .slice(1)
+        .map((row) => row.querySelectorAll("td")[2].textContent);
+
+    it("CA 4 y CA 5: al elegir Egresado consulta GRADUATE y solo muestra egresados", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
+      await renderLoadedView();
+
+      await selectUserType(user, "Egresado");
+
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-4 de 4 usuarios")).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({ page: 1, limit: 10, userType: "GRADUATE" });
+      expect(userTypeColumn()).toEqual(["Egresado", "Egresado", "Egresado", "Egresado"]);
+    });
+
+    it("CA 3 y CA 11: con Todos no envía tipo de usuario", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
+      await renderLoadedView();
+      await selectUserType(user, "Mentor");
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-2 de 2 usuarios")).toBeDefined();
+      });
+
+      await selectUserType(user, "Todos");
+
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({ page: 1, limit: 10, userType: undefined });
+      expect(new Set(userTypeColumn()).size).toBeGreaterThan(1);
+    });
+
+    it("CA 6, CA 7 y CA 14: con exactamente 10 registros del tipo muestra una sola página", async () => {
+      const user = userEvent.setup();
+      await renderLoadedView();
+      expect(screen.getByRole("button", { name: "Página 3" })).toBeDefined();
+
+      await selectUserType(user, "Titulado");
+
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-10 de 10 usuarios")).toBeDefined();
+      });
+      expect(userTypeColumn()).toHaveLength(10);
+      expect(screen.getByRole("button", { name: "Página 1" })).toBeDefined();
+      expect(screen.queryByRole("button", { name: "Página 2" })).toBeNull();
+      expect(screen.getByRole<HTMLButtonElement>("button", { name: "Página siguiente" }).disabled).toBe(true);
+    });
+
+    it("CA 8: al cambiar de página conserva el filtro activo", async () => {
+      const elevenDegreeHolders = [
+        ...REGISTERED_USERS,
+        { ...REGISTERED_USERS[0], id: "25", fullName: "Nuevo Titulado", registeredAt: "2025-01-01T10:00:00" },
+      ];
+      const getRegisteredUsersSpy = vi
+        .spyOn(reportsService, "getRegisteredUsers")
+        .mockImplementation(async ({ page, limit, userType }) =>
+          buildResponse(page, limit, userType, undefined, elevenDegreeHolders),
+        );
+      const user = userEvent.setup();
+      await renderLoadedView();
+      await selectUserType(user, "Titulado");
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-10 de 11 usuarios")).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Página 2" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 11-11 de 11 usuarios")).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({ page: 2, limit: 10, userType: "DEGREE_HOLDER" });
+      expect(screen.getByText("Nuevo Titulado")).toBeDefined();
+      expect(userTypeColumn()).toEqual(["Titulado"]);
+      expect(screen.getByRole("combobox", { name: "Tipo de usuario" }).textContent).toContain("Titulado");
+    });
+
+    it("CA 10: un tipo sin registros muestra la tabla vacía sin usuarios de otros tipos", async () => {
+      vi.spyOn(reportsService, "getRegisteredUsers").mockImplementation(async ({ page, limit, userType }) =>
+        buildResponse(
+          page,
+          limit,
+          userType,
+          undefined,
+          REGISTERED_USERS.filter((registeredUser) => registeredUser.userType !== "COMPANY"),
+        ),
+      );
+      const user = userEvent.setup();
+      await renderLoadedView();
+
+      await selectUserType(user, "Empresa");
+
+      await waitFor(() => {
+        expect(screen.getByText("No hay usuarios registrados para este filtro.")).toBeDefined();
+      });
+      expect(screen.getByText("Mostrando 0-0 de 0 usuarios")).toBeDefined();
+      expect(screen.queryByText("Juan Carlos Peres Rojas")).toBeNull();
+      expect(screen.queryByRole("button", { name: "Página 2" })).toBeNull();
+    });
+
+    it("CA 15 y CA 16: cada fila muestra los 6 campos del mismo usuario", async () => {
+      await renderLoadedView();
+
+      const [header, ...rows] = screen.getAllByRole("row");
+      expect(Array.from(header.querySelectorAll("th"), (cell) => cell.textContent)).toEqual([
+        "Usuario",
+        "Correo",
+        "Tipo de Usuario",
+        "Identificador",
+        "Documento",
+        "Fecha de Registro",
+      ]);
+      expect(rows).toHaveLength(10);
+      rows.forEach((row, index) => {
+        const source = REGISTERED_USERS[index];
+        const cells = Array.from(row.querySelectorAll("td"), (cell) => cell.textContent);
+
+        expect(cells).toHaveLength(6);
+        expect([cells[0], cells[1], cells[3]]).toEqual([source.fullName, source.email, source.identifier]);
+      });
+      expect(Array.from(rows[6].querySelectorAll("td"), (cell) => cell.textContent)).toEqual([
+        "Diego Mercado Rocha",
+        "dmercado@gmail.com",
+        "Empresa",
+        "1029964756",
+        "NIT",
+        "10/01/2025",
+      ]);
+    });
+
+    it("CA 22 y CA 23: recorrer todas las páginas muestra cada usuario una sola vez", async () => {
+      await renderLoadedView();
+      const seenNames: string[] = [];
+
+      for (const page of [1, 2, 3]) {
+        fireEvent.click(screen.getByRole("button", { name: `Página ${page}` }));
+        await waitFor(() => {
+          expect(screen.getByRole("button", { name: `Página ${page}` }).getAttribute("aria-current")).toBe("page");
+          expect(screen.queryAllByTestId("skeleton-row")).toHaveLength(0);
+        });
+        seenNames.push(
+          ...screen
+            .getAllByRole("row")
+            .slice(1)
+            .map((row) => row.querySelector("td")?.textContent ?? ""),
+        );
+      }
+
+      expect(seenNames).toHaveLength(REGISTERED_USERS.length);
+      expect(new Set(seenNames).size).toBe(REGISTERED_USERS.length);
+    });
   });
 });

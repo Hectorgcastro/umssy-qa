@@ -6,11 +6,10 @@ import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { EmailSearchInput } from "../components/email-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
 import { ExportErrorMessage } from "../components/export-error-message";
-import { RefreshButton } from "../components/refresh-button";
 import { RejectedUsersTable } from "../components/rejected-users-table";
-import { TablePagination } from "../components/table-pagination";
+import { ReportTableFooter } from "../components/report-table-footer";
 import { useExportRejectedUsersCsv } from "../hooks/use-export-rejected-users-csv";
-import { REJECTED_USERS_PAGE_SIZE, useRejectedUsers } from "../hooks/use-rejected-users";
+import { useRejectedUsers } from "../hooks/use-rejected-users";
 
 const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
   { label: "Inicio", href: "/dashboard" },
@@ -31,9 +30,6 @@ export function RejectedUsersReportView() {
     setSearchInput(value);
     setCurrentPage(1);
   };
-
-  const firstVisibleItem = totalItems === 0 ? 0 : (currentPage - 1) * REJECTED_USERS_PAGE_SIZE + 1;
-  const lastVisibleItem = Math.min(currentPage * REJECTED_USERS_PAGE_SIZE, totalItems);
 
   return (
     <section className="flex flex-1 flex-col gap-6">
@@ -56,17 +52,15 @@ export function RejectedUsersReportView() {
 
       <ExportErrorMessage message={exportErrorMessage} />
 
-      <div className="mt-auto grid grid-cols-1 items-center gap-4 md:grid-cols-3">
-        <p className="text-center text-sm text-text-secondary md:text-left">
-          {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
-        </p>
-        <div className="flex justify-center">
-          <RefreshButton label="Actualizar" onClick={refresh} isRefreshing={isLoading} />
-        </div>
-        <div className="flex justify-center md:justify-end">
-          <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        </div>
-      </div>
+      <ReportTableFooter
+        currentPage={currentPage}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        isLoading={isLoading}
+        onPageChange={setCurrentPage}
+        onRefresh={refresh}
+        refreshLabel="Actualizar"
+      />
     </section>
   );
 }

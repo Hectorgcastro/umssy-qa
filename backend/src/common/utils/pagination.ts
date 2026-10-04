@@ -22,9 +22,12 @@ export function paginate<T>(
 ): PaginatedResult<T> {
   const start = (page - 1) * limit;
 
+  // Los totales se calculan sobre `items`, que ya viene filtrado: con 10 registros
+  // y límite 10 hay una sola página, y sin registros hay 0 páginas.
   return {
     items: items.slice(start, start + limit),
     totalItems: items.length,
+    totalPages: Math.ceil(items.length / limit),
     page,
     limit,
   };

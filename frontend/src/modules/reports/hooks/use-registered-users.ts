@@ -1,54 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { PaginatedData } from "@/shared/types/api-response.types";
+import { useCallback } from "react";
 import { reportsService } from "../services/reports.service";
-import type { RegisteredUser, UserType } from "../types/registered-user.types";
+import type { UserType } from "../types/registered-user.types";
+import { usePaginatedReport } from "./use-paginated-report";
 
-export const REGISTERED_USERS_PAGE_SIZE = 10;
+const LOAD_ERROR_MESSAGE = "No se pudo cargar el reporte de usuarios registrados.";
 
-interface RegisteredUsersState {
-  requestKey: string;
-  result?: PaginatedData<RegisteredUser>;
-  errorMessage?: string;
-}
-
-// Se migrará a useQuery cuando TanStack Query esté instalado en el proyecto.
 export function useRegisteredUsers(page: number, userType?: UserType, period?: string) {
-  const [state, setState] = useState<RegisteredUsersState | null>(null);
-  const [refreshCount, setRefreshCount] = useState(0);
-  const requestKey = `${page}-${userType ?? "ALL"}-${period ?? "ALL"}-${refreshCount}`;
+  const fetchPage = useCallback(
+    (requestedPage: number, limit: number) =>
+      reportsService.getRegisteredUsers({ page: requestedPage, limit, userType, period }),
+    [userType, period],
+  );
+  const { items, ...report } = usePaginatedReport(fetchPage, page, LOAD_ERROR_MESSAGE);
 
-  useEffect(() => {
-    let isCancelled = false;
-
-    reportsService
-      .getRegisteredUsers({ page, limit: REGISTERED_USERS_PAGE_SIZE, userType, period })
-      .then((response) => {
-        if (!isCancelled) setState({ requestKey, result: response.data });
-      })
-      .catch(() => {
-        if (!isCancelled) {
-          setState({ requestKey, errorMessage: "No se pudo cargar el reporte de usuarios registrados." });
-        }
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [page, userType, period, requestKey]);
-
-  const refresh = useCallback(() => setRefreshCount((count) => count + 1), []);
-
-  const isCurrentRequest = state?.requestKey === requestKey;
-  const totalItems = state?.result?.totalItems ?? 0;
-
-  return {
-    users: isCurrentRequest ? (state.result?.items ?? []) : [],
-    totalItems,
-    totalPages: Math.max(1, Math.ceil(totalItems / REGISTERED_USERS_PAGE_SIZE)),
-    isLoading: !isCurrentRequest,
-    errorMessage: isCurrentRequest ? state.errorMessage : undefined,
-    refresh,
-  };
+  return { users: items, ...report };
 }

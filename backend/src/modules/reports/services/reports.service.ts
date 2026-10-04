@@ -53,11 +53,14 @@ function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Del más reciente al más antiguo; con la misma fecha desempata por id para que el
+// orden sea siempre el mismo y ningún usuario se repita ni se omita entre páginas.
 function sortByNewest(users: ReportUser[]): ReportUser[] {
   return users.sort(
     (first, second) =>
       new Date(second.registeredAt).getTime() -
-      new Date(first.registeredAt).getTime(),
+        new Date(first.registeredAt).getTime() ||
+      first.id.localeCompare(second.id),
   );
 }
 

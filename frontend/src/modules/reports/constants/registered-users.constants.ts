@@ -10,7 +10,7 @@ export const USER_TYPE_LABELS: Record<UserType, string> = {
 };
 
 // Opciones del filtro "Tipo de usuario", en el orden en que se muestran.
-export const USER_TYPE_FILTER_OPTIONS: UserType[] = ["STUDENT", "DEGREE_HOLDER", "MENTOR", "COMPANY", "ADMIN"];
+export const USER_TYPE_FILTER_OPTIONS: UserType[] = ["STUDENT", "GRADUATE", "DEGREE_HOLDER", "MENTOR", "COMPANY", "ADMIN"];
 
 export const USER_DOCUMENT_LABELS: Record<UserDocumentType, string> = {
   ACADEMIC_DEGREE: "Título académico",
