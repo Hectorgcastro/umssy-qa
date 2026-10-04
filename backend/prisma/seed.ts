@@ -34,6 +34,14 @@ const SEED_USERS_DATA = [
   { id: '11111111-1111-1111-1111-111111111116', firstName: 'Seed', lastName: 'User Six', email: 'seed.user6@example.test' },
 ];
 
+// --- Commit 4: published event UUIDs ---
+const EVENT_REACT_ID = '33333333-3333-3333-3333-333333333341';
+const EVENT_IA_APLICADA_ID = '33333333-3333-3333-3333-333333333342';
+const EVENT_DATA_SCIENCE_ID = '33333333-3333-3333-3333-333333333343';
+const EVENT_UI_UX_ID = '33333333-3333-3333-3333-333333333344';
+const EVENT_SEGURIDAD_BASICA_ID = '33333333-3333-3333-3333-333333333345';
+const EVENT_NOSQL_ID = '33333333-3333-3333-3333-333333333346';
+
 async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
@@ -179,6 +187,121 @@ async function main() {
     seedUsers.push(user);
   }
   console.log('Seed users ensured: 6 users');
+
+  // --- Commit 4: 6 published events with varied capacity ---
+  const publishedEventsConfig = [
+    {
+      id: EVENT_REACT_ID,
+      title: 'Desarrollo Web con React',
+      description: 'Aprende desarrollo frontend moderno con React y Hooks.',
+      categoryId: CATEGORY_TECNOLOGIA_ID,
+      instructorName: 'Carlos Mendoza',
+      eventDate: '2026-10-15',
+      startTime: '09:00',
+      endTime: '13:00',
+      capacity: 10,
+      modalityId: MODALITY_PRESENCIAL_ID,
+    },
+    {
+      id: EVENT_IA_APLICADA_ID,
+      title: 'Inteligencia Artificial Aplicada',
+      description: 'Fundamentos de IA y modelos generativos para la industria.',
+      categoryId: CATEGORY_IA_DATOS_ID,
+      instructorName: 'Elena Rostova',
+      eventDate: '2026-10-17',
+      startTime: '14:00',
+      endTime: '18:00',
+      capacity: 8,
+      modalityId: MODALITY_PRESENCIAL_ID,
+    },
+    {
+      id: EVENT_DATA_SCIENCE_ID,
+      title: 'Data Science con Python',
+      description: 'Análisis de datos, pandas y visualización práctica.',
+      categoryId: CATEGORY_IA_DATOS_ID,
+      instructorName: null,
+      eventDate: '2026-10-22',
+      startTime: '09:00',
+      endTime: '12:00',
+      capacity: 6,
+      modalityId: null,
+    },
+    {
+      id: EVENT_UI_UX_ID,
+      title: 'Diseño UI/UX para Móviles',
+      description: 'Taller intensivo de diseño de interfaces móviles.',
+      categoryId: CATEGORY_DISENO_ID,
+      instructorName: 'Sofía Vargas',
+      eventDate: '2026-10-29',
+      startTime: '15:00',
+      endTime: '18:00',
+      capacity: 2,
+      modalityId: MODALITY_PRESENCIAL_ID,
+    },
+    {
+      id: EVENT_SEGURIDAD_BASICA_ID,
+      title: 'Seguridad Informática Básica',
+      description: 'Principios fundamentales de ciberseguridad y protección de datos.',
+      categoryId: CATEGORY_SEGURIDAD_ID,
+      instructorName: null,
+      eventDate: '2026-11-05',
+      startTime: '10:00',
+      endTime: '14:00',
+      capacity: null,
+      modalityId: null,
+    },
+    {
+      id: EVENT_NOSQL_ID,
+      title: 'Bases de Datos NoSQL',
+      description: 'Introducción a modelos de datos no relacionales y MongoDB.',
+      categoryId: CATEGORY_TECNOLOGIA_ID,
+      instructorName: 'Roberto Gómez',
+      eventDate: '2026-11-12',
+      startTime: '09:00',
+      endTime: '13:00',
+      capacity: 12,
+      modalityId: MODALITY_PRESENCIAL_ID,
+    },
+  ];
+
+  for (const item of publishedEventsConfig) {
+    const startTimeDate = new Date(`1970-01-01T${item.startTime}:00.000Z`);
+    const endTimeDate = new Date(`1970-01-01T${item.endTime}:00.000Z`);
+
+    await prisma.event.upsert({
+      where: { id: item.id },
+      update: {
+        title: item.title,
+        description: item.description,
+        instructorName: item.instructorName,
+        eventDate: new Date(item.eventDate),
+        startTime: startTimeDate,
+        endTime: endTimeDate,
+        capacity: item.capacity,
+        categoryId: item.categoryId,
+        modalityId: item.modalityId ?? MODALITY_PRESENCIAL_ID,
+        originId: ORIGIN_INSTITUCIONAL_ID,
+        statusId: EVENT_STATUS_PUBLICADO_ID,
+        createdById: seedUsers[0].id,
+      },
+      create: {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        instructorName: item.instructorName,
+        eventDate: new Date(item.eventDate),
+        startTime: startTimeDate,
+        endTime: endTimeDate,
+        capacity: item.capacity,
+        categoryId: item.categoryId,
+        modalityId: item.modalityId ?? MODALITY_PRESENCIAL_ID,
+        originId: ORIGIN_INSTITUCIONAL_ID,
+        statusId: EVENT_STATUS_PUBLICADO_ID,
+        createdById: seedUsers[0].id,
+      },
+    });
+  }
+  console.log('Published events ensured: 6 events with varied capacity');
 }
 
 main()
