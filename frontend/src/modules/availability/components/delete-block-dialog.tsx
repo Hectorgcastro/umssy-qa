@@ -1,0 +1,96 @@
+"use client";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { formatBlockRange, toBoliviaTime } from "@/shared/utils/date-time";
+import {
+  BOLIVIA_TIME_LABEL,
+  STATE_LABELS,
+} from "../constants/delete-block.constants";
+import { useDeleteBlock } from "../hooks/use-delete-block";
+import type { DeleteBlockDialogProps } from "../types/delete-block-dialog-props.types";
+import { formatLongDate } from "../utils/calendar-date";
+
+export function DeleteBlockDialog({
+  block,
+  open,
+  onOpenChange,
+  onDeleted,
+}: DeleteBlockDialogProps) {
+  const { deleteBlock, isDeleting, error, clearError } = useDeleteBlock();
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) clearError();
+    onOpenChange(nextOpen);
+  };
+
+  const handleConfirm = async () => {
+    if (!block) return;
+    const removed = await deleteBlock(block.id);
+    if (removed) {
+      onOpenChange(false);
+      onDeleted?.();
+    }
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+      <AlertDialogContent className="p-4">
+        <AlertDialogHeader className="text-left">
+          <span
+            aria-hidden="true"
+            className="mb-3 block h-[3px] w-[26px] bg-gold"
+          />
+          <AlertDialogTitle className="font-heading text-lg font-bold text-ink">
+            ¿Eliminar este bloque?
+          </AlertDialogTitle>
+          {block && (
+            <div className="w-full rounded-lg border border-border bg-surface-soft p-3">
+              <p className="text-[11px] font-semibold text-text-secondary">
+                {STATE_LABELS[block.state]}
+              </p>
+              <p className="font-tight text-base font-bold text-ink">
+                {formatLongDate(toBoliviaTime(block.startAt).date)}
+              </p>
+              <p className="text-xs text-text-secondary">
+                {formatBlockRange(block.startAt, block.endAt)} ·{" "}
+                {BOLIVIA_TIME_LABEL}
+              </p>
+            </div>
+          )}
+          <AlertDialogDescription className="text-sm text-text-secondary">
+            Los egresados dejarán de ver este horario al buscar mentorías. Esta
+            acción no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {error && (
+          <p role="alert" className="text-sm font-semibold text-danger">
+            {error}
+          </p>
+        )}
+        <div className="flex items-center justify-end gap-2">
+          <AlertDialogCancel
+            className="border-border-strong bg-surface p-5 text-ink hover:bg-surface-soft"
+            disabled={isDeleting}
+          >
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-danger p-5 text-surface hover:bg-danger/90"
+            disabled={isDeleting}
+            onClick={handleConfirm}
+          >
+            {isDeleting ? "Eliminando..." : "Eliminar bloque"}
+          </AlertDialogAction>
+        </div>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
