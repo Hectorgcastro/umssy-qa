@@ -3,6 +3,7 @@ import { CSV_BOM } from '../../../common/utils/csv.js';
 import {
   registeredUsersFiltersSchema,
   registeredUsersQuerySchema,
+  rejectedUsersFiltersSchema,
   rejectedUsersQuerySchema,
 } from '../requests/report-users.schema.js';
 import { ReportsService } from '../services/reports.service.js';
@@ -108,6 +109,20 @@ describe('ReportsService', () => {
 
       expect(fileName).toBe('usuarios-registrados-2026-10-03.csv');
     });
+
+    it('agrega al nombre del archivo los filtros usados', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({
+          userType: 'STUDENT',
+          year: '2026',
+          search: 'Ana Pérez',
+        }),
+      );
+
+      expect(fileName).toBe(
+        'usuarios-registrados-estudiante-2026-ana-perez-2026-10-03.csv',
+      );
+    });
   });
 
   describe('getRegisteredUsers', () => {
@@ -180,6 +195,57 @@ describe('ReportsService', () => {
 
       expect(result.items.map((user) => user.id)).toEqual(['c']);
       expect(result).toMatchObject({ totalItems: 3, page: 2, limit: 2 });
+    });
+  });
+
+  describe('exportRejectedUsersCsv', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-10-03T15:00:00.000Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('exporta todos los rechazados sin paginar, del más reciente al más antiguo', () => {
+      const users = Array.from({ length: 15 }, (_, index) =>
+        buildUser({ id: `user-${index}`, registrationStatus: 'REJECTED' }),
+      );
+
+      const { content } = buildService(users).exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({}),
+      );
+
+      expect(content.startsWith(CSV_BOM)).toBe(true);
+      expect(content.trim().split('\r\n')).toHaveLength(16);
+    });
+
+    it('aplica la búsqueda y usa las columnas de la tabla', () => {
+      const { content } = buildService().exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({ search: 'fabio' }),
+      );
+
+      expect(content).toBe(
+        `${CSV_BOM}Usuario,Correo,Identificador,Documento,Fecha de Registro\r\n` +
+          'Fabio León,usuario@example.com,ID-1,Título académico,31/07/2026\r\n',
+      );
+    });
+
+    it('nombra el archivo con la fecha de exportación', () => {
+      const { fileName } = buildService().exportRejectedUsersCsv({});
+
+      expect(fileName).toBe('usuarios-rechazados-2026-10-03.csv');
+    });
+
+    it('agrega al nombre del archivo lo que se buscó', () => {
+      const { fileName } = buildService().exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({ search: ' Juan.Perez@gmail.com ' }),
+      );
+
+      expect(fileName).toBe(
+        'usuarios-rechazados-juan.perez@gmail.com-2026-10-03.csv',
+      );
     });
   });
 

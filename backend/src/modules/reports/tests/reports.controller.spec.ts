@@ -54,4 +54,21 @@ describe('ReportsController', () => {
     expect(spy).toHaveBeenCalledWith(query);
     expect(result.items.length).toBeGreaterThan(0);
   });
+
+  it('devuelve el CSV de rechazados como archivo descargable', () => {
+    const filters = { search: 'juan' };
+    const spy = vi.spyOn(service, 'exportRejectedUsersCsv').mockReturnValue({
+      fileName: 'usuarios-rechazados-2026-10-04.csv',
+      content: 'Usuario\r\n',
+    });
+
+    const file = controller.exportRejectedUsersCsv(filters);
+
+    expect(spy).toHaveBeenCalledWith(filters);
+    expect(file).toBeInstanceOf(StreamableFile);
+    expect(file.getHeaders()).toMatchObject({
+      type: 'text/csv; charset=utf-8',
+      disposition: 'attachment; filename="usuarios-rechazados-2026-10-04.csv"',
+    });
+  });
 });

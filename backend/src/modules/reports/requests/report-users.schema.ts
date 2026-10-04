@@ -18,12 +18,17 @@ export const registeredUsersQuerySchema = paginationSchema.extend(
   registeredUsersFiltersSchema.shape,
 );
 
-export const rejectedUsersQuerySchema = paginationSchema.extend({
+export const rejectedUsersFiltersSchema = z.object({
   search: searchSchema,
 });
+
+export const rejectedUsersQuerySchema = paginationSchema.extend(
+  rejectedUsersFiltersSchema.shape,
+);
 
 export type RegisteredUsersFilters = z.infer<
   typeof registeredUsersFiltersSchema
 >;
 export type RegisteredUsersQuery = z.infer<typeof registeredUsersQuerySchema>;
+export type RejectedUsersFilters = z.infer<typeof rejectedUsersFiltersSchema>;
 export type RejectedUsersQuery = z.infer<typeof rejectedUsersQuerySchema>;

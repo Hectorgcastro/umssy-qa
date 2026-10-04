@@ -1,11 +1,12 @@
 import type {
   RegisteredUserResponse,
+  RejectedUserResponse,
   ReportDocumentType,
   ReportUserType,
 } from '../types/report-user.types.js';
 
 // Mismas etiquetas que muestra la tabla del frontend (modules/reports/constants).
-const USER_TYPE_LABELS: Record<ReportUserType, string> = {
+export const USER_TYPE_LABELS: Record<ReportUserType, string> = {
   STUDENT: 'Estudiante',
   GRADUATE: 'Egresado',
   DEGREE_HOLDER: 'Titulado',
@@ -42,6 +43,14 @@ export const REGISTERED_USERS_CSV_HEADERS = [
   'Fecha de Registro',
 ] as const;
 
+export const REJECTED_USERS_CSV_HEADERS = [
+  'Usuario',
+  'Correo',
+  'Identificador',
+  'Documento',
+  'Fecha de Registro',
+] as const;
+
 // Formato "DD/MM/AAAA", igual que la columna de la tabla.
 export function formatReportDate(isoDate: string): string {
   const date = new Date(isoDate);
@@ -62,6 +71,16 @@ export function toRegisteredUserCsvRow(user: RegisteredUserResponse): string[] {
     user.fullName,
     user.email,
     USER_TYPE_LABELS[user.userType],
+    user.identifier,
+    DOCUMENT_TYPE_LABELS[user.documentType],
+    formatReportDate(user.registeredAt),
+  ];
+}
+
+export function toRejectedUserCsvRow(user: RejectedUserResponse): string[] {
+  return [
+    user.fullName,
+    user.email,
     user.identifier,
     DOCUMENT_TYPE_LABELS[user.documentType],
     formatReportDate(user.registeredAt),
