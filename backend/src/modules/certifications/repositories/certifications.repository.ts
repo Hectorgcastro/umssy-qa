@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { mapRecordNotFound } from '../../../common/utils/map-record-not-found.js';
+import { CertificationNotFoundException } from '../exceptions/certification-not-found.exception.js';
 import type { CreateCertificationRequest } from '../requests/create-certification.request.js';
 import type { UpdateCertificationRequest } from '../requests/update-certification.request.js';
 import type { CertificationRecord } from '../types/certification-record.type.js';
@@ -47,14 +49,20 @@ export class CertificationsRepository {
     id: string,
     data: UpdateCertificationRequest,
   ): Promise<CertificationRecord> {
-    return this.prisma.certification.update({
-      where: { id },
-      data,
-      select: certificationSelect,
-    });
+    return mapRecordNotFound(
+      this.prisma.certification.update({
+        where: { id },
+        data,
+        select: certificationSelect,
+      }),
+      () => new CertificationNotFoundException(),
+    );
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.certification.delete({ where: { id } });
+    await mapRecordNotFound(
+      this.prisma.certification.delete({ where: { id } }),
+      () => new CertificationNotFoundException(),
+    );
   }
 }

@@ -16,7 +16,6 @@ const userId = '11111111-1111-4111-8111-111111111111';
 const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const pdfBytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31]);
 
-// Runs the real guard, upload handling, file validation and service over HTTP.
 describe('ProfilePhotoController', () => {
   let app: INestApplication;
   let token: string;

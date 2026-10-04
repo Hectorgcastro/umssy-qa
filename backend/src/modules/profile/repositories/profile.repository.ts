@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { mapRecordNotFound } from '../../../common/utils/map-record-not-found.js';
+import { ProfileNotFoundException } from '../exceptions/profile-not-found.exception.js';
 import type { UpdatePersonalInfoRequest } from '../requests/update-personal-info.request.js';
 import type { UpdatePresentationRequest } from '../requests/update-presentation.request.js';
 import type { ProfileRecord } from '../types/profile-record.type.js';
 
-// Only the profile columns of users; password and file columns are never read here.
 const profileSelect = {
   id: true,
   firstName: true,
@@ -33,10 +34,13 @@ export class ProfileRepository {
     userId: string,
     data: UpdatePersonalInfoRequest | UpdatePresentationRequest,
   ): Promise<ProfileRecord> {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data,
-      select: profileSelect,
-    });
+    return mapRecordNotFound(
+      this.prisma.user.update({
+        where: { id: userId },
+        data,
+        select: profileSelect,
+      }),
+      () => new ProfileNotFoundException(),
+    );
   }
 }
