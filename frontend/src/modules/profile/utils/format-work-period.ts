@@ -1,6 +1,5 @@
 import { SHORT_MONTH_LABELS } from "../config/short-month-labels.config";
-
-const CURRENT_JOB_LABEL = "Actualidad";
+import { CURRENT_JOB_LABEL } from "../constants/profile.constants";
 
 function getMonthAndYear(yearMonth: string): { month: string; year: string } {
   const [year, month] = yearMonth.split("-");

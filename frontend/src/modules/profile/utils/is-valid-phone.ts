@@ -1,6 +1,5 @@
 import { PHONE_MAX_DIGITS, PHONE_MIN_DIGITS } from "../config/profile-validation.config";
-
-const PHONE_PATTERN = /^\+?[\d\s-]+$/;
+import { PHONE_PATTERN } from "../constants/validation.constants";
 
 export function isValidPhone(phone: string): boolean {
   if (!PHONE_PATTERN.test(phone)) {

@@ -1,8 +1,7 @@
 import { apiClient } from "@/shared/services/api-client";
 import { PHOTO_ENDPOINT, PHOTO_UPLOAD_FIELD_NAME } from "../config/photo-api.config";
+import { NOT_FOUND_STATUS } from "../constants/http-status.constants";
 import { getHttpStatus } from "../utils/get-http-status";
-
-const NOT_FOUND_STATUS = 404;
 
 export const profilePhotoService = {
   getPhoto: async (): Promise<Blob | null> => {
