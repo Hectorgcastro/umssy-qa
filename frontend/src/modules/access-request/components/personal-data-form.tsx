@@ -186,11 +186,12 @@ export function PersonalDataForm() {
         </div>
 
         <div className="flex justify-end gap-3 md:col-span-2">
-          <Button variant="outline" asChild>
-            <Link href="/login">
-              Cancelar
-            </Link>
-          </Button>
+          <Link
+            href="/login"
+            className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            Cancelar
+          </Link>
 
           <Button
             type="button"
