@@ -123,7 +123,7 @@ export function EventsView() {
 
 
       {selectedEvent ? (
-        <EventDetailPanel event={selectedEvent} />
+        <EventDetailPanel key={selectedEvent.id} event={selectedEvent} />
       ) : (
         <aside
           aria-label="Detalle del taller seleccionado"
