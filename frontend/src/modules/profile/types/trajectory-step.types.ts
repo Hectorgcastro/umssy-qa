@@ -4,5 +4,5 @@ export interface TrajectoryStep {
   id: TrajectoryStepId;
   number: string;
   label: string;
+  href: string;
 }
-
