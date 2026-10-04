@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AvailabilityService } from '../services/availability.service.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import { BlockOverlapException } from '../exceptions/index.js';
-import type { CreateBlockPayload } from '../requests/create-block.request.js';
+import type { CreateBlockPayload } from '../requests/availability.schema.js';
 
 describe('AvailabilityService', () => {
   const availabilityRepository = { create: vi.fn() };

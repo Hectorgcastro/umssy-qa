@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AvailabilityService } from '../services/availability.service.js';
-import { createBlockSchema } from '../requests/create-block.request.js';
+import { createBlockSchema } from '../requests/availability.schema.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { ProvisionalSessionGuard } from '../../../common/guards/provisional.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
