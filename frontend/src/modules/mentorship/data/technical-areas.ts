@@ -1,4 +1,4 @@
-import type { TechnicalArea } from "../types/mentorship.types";
+import type { TechnicalArea } from "../types/technical-area.types";
 
 export const TECHNICAL_AREAS: TechnicalArea[] = [
   {

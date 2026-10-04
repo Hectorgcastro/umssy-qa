@@ -2,7 +2,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { mentorsMock } from "../services/mentor-profile.mock";
+import { mentorsMock } from "../../services/mentor-profile.mock";
 import { MentorGuidanceTypes } from "./mentor-guidance-types";
 import { MentorProfileHeader } from "./mentor-profile-header";
 import { MentorTechnicalAreas } from "./mentor-technical-areas";

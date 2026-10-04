@@ -1,8 +1,8 @@
 import { Terminal } from "lucide-react";
 
-interface MentorTechnicalAreasProps {
+type MentorTechnicalAreasProps = {
   areas: string[];
-}
+};
 
 export function MentorTechnicalAreas({ areas }: MentorTechnicalAreasProps) {
   return (

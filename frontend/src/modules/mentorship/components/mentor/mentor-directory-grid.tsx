@@ -1,9 +1,9 @@
 import { MentorCard } from "./mentor-card";
-import type { MentorDirectoryItem } from "../types/mentor-directory.types";
+import type { MentorDirectoryItem } from "../../types/mentor-directory.types";
 
-interface MentorDirectoryGridProps {
+type MentorDirectoryGridProps = {
   mentors: MentorDirectoryItem[];
-}
+};
 
 export function MentorDirectoryGrid({
   mentors,

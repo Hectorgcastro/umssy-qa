@@ -24,15 +24,12 @@ describe("ProgressStepper", () => {
   it("marca como completados los pasos anteriores al actual", () => {
     render(<ProgressStepper currentStep={3} />);
 
-    // Pasos completados (1 y 2) ya no muestran el número, muestran el icono Check
     expect(screen.queryByText("1")).toBeNull();
     expect(screen.queryByText("2")).toBeNull();
 
-    // Paso activo sigue mostrando el número
     const activeStep = screen.getByText("3");
     expect(activeStep.getAttribute("aria-current")).toBe("step");
 
-    // Exactamente 2 iconos de Check
     const checkIcons = document.querySelectorAll("svg");
     expect(checkIcons.length).toBe(2);
   });

@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-import type { MentorGuidanceType } from "../types/mentor-profile.types";
+import type { MentorGuidanceType } from "../../types/mentor-guidance-type.types";
 
-interface MentorGuidanceTypesProps {
+type MentorGuidanceTypesProps = {
   guidanceTypes: MentorGuidanceType[];
-}
+};
 
 export function MentorGuidanceTypes({
   guidanceTypes,

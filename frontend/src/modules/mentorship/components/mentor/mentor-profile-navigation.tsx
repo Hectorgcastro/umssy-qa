@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 
-interface MentorProfileNavigationProps {
+type MentorProfileNavigationProps = {
   mentorName: string;
-}
+};
 
 export function MentorProfileNavigation({
   mentorName,

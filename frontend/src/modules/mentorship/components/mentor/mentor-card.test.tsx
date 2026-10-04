@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import type { MentorDirectoryItem } from "../types/mentor-directory.types";
+import type { MentorDirectoryItem } from "../../types/mentor-directory.types";
 import { MentorCard } from "./mentor-card";
 
 const mentor: MentorDirectoryItem = {

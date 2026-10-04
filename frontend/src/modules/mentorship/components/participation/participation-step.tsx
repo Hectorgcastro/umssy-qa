@@ -1,9 +1,9 @@
 "use client";
 
-interface ParticipationStepProps {
+type ParticipationStepProps = {
   isParticipating: boolean;
   onParticipationChange: (value: boolean) => void;
-}
+};
 
 export function ParticipationStep({
   isParticipating,
