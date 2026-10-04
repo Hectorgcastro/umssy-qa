@@ -3,3 +3,11 @@ export const FIND_MY_BLOCKS_DOCS = {
   fromDescription: 'Inicio del rango en ISO 8601 UTC (por ejemplo, lunes 00:00 de Bolivia = 04:00Z)',
   toDescription: 'Fin del rango en ISO 8601 UTC; como máximo 7 días después de from',
 } as const;
+
+export const FIND_MENTOR_FREE_BLOCKS_DOCS = {
+  summary:
+    'Lista los bloques libres de un mentor dentro de un rango de hasta 7 días: sin bloques pasados ni con cita pendiente o confirmada',
+  idDescription: 'Identificador (UUID) del mentor',
+  fromDescription: FIND_MY_BLOCKS_DOCS.fromDescription,
+  toDescription: FIND_MY_BLOCKS_DOCS.toDescription,
+} as const;

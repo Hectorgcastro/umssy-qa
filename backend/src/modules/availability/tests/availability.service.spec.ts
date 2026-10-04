@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { APPOINTMENT_STATUS_PENDING } from '../constants/appointment-status.constants.js';
+import { MentorNotFoundException } from '../exceptions/mentor-not-found.exception.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import { AvailabilityService } from '../services/availability.service.js';
 
@@ -18,7 +19,11 @@ const block = (id: string, statuses: string[] = []) => ({
 });
 
 describe('AvailabilityService', () => {
-  const availabilityRepository = { findMentorBlocksInRange: vi.fn() };
+  const availabilityRepository = {
+    findMentorBlocksInRange: vi.fn(),
+    findMentorFreeBlocksInRange: vi.fn(),
+    isActiveMentor: vi.fn(),
+  };
   let service: AvailabilityService;
 
   beforeEach(() => {
@@ -56,5 +61,71 @@ describe('AvailabilityService', () => {
     availabilityRepository.findMentorBlocksInRange.mockResolvedValue([]);
 
     await expect(service.findMyBlocks('mentor-1', QUERY)).resolves.toEqual([]);
+  });
+
+  describe('findMentorFreeBlocks', () => {
+    beforeEach(() => {
+      availabilityRepository.isActiveMentor.mockResolvedValue(true);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('responde 404 sin consultar bloques si el mentor no existe o no está activo', async () => {
+      const now = new Date('2026-10-01T12:00:00.000Z');
+      vi.useFakeTimers({ now });
+      availabilityRepository.isActiveMentor.mockResolvedValue(false);
+
+      await expect(service.findMentorFreeBlocks('mentor-1', QUERY)).rejects.toBeInstanceOf(
+        MentorNotFoundException,
+      );
+      expect(availabilityRepository.isActiveMentor).toHaveBeenCalledWith('mentor-1', now);
+      expect(availabilityRepository.findMentorFreeBlocksInRange).not.toHaveBeenCalled();
+    });
+
+    it('consulta desde el inicio del rango cuando todavía no empezó', async () => {
+      vi.useFakeTimers({ now: new Date('2026-10-01T12:00:00.000Z') });
+      availabilityRepository.findMentorFreeBlocksInRange.mockResolvedValue([]);
+
+      await service.findMentorFreeBlocks('mentor-1', QUERY);
+
+      expect(availabilityRepository.findMentorFreeBlocksInRange).toHaveBeenCalledWith(
+        'mentor-1',
+        new Date(QUERY.from),
+        new Date(QUERY.to),
+      );
+    });
+
+    it('consulta desde ahora para no devolver bloques pasados', async () => {
+      const now = new Date('2026-10-07T15:30:00.000Z');
+      vi.useFakeTimers({ now });
+      availabilityRepository.findMentorFreeBlocksInRange.mockResolvedValue([]);
+
+      await service.findMentorFreeBlocks('mentor-1', QUERY);
+
+      expect(availabilityRepository.findMentorFreeBlocksInRange).toHaveBeenCalledWith(
+        'mentor-1',
+        now,
+        new Date(QUERY.to),
+      );
+    });
+
+    it('devuelve una lista vacía sin consultar si todo el rango ya pasó', async () => {
+      vi.useFakeTimers({ now: new Date('2026-10-20T12:00:00.000Z') });
+
+      await expect(service.findMentorFreeBlocks('mentor-1', QUERY)).resolves.toEqual([]);
+      expect(availabilityRepository.findMentorFreeBlocksInRange).not.toHaveBeenCalled();
+    });
+
+    it('devuelve los bloques libres mapeados sin datos de citas', async () => {
+      vi.useFakeTimers({ now: new Date('2026-10-01T12:00:00.000Z') });
+      availabilityRepository.findMentorFreeBlocksInRange.mockResolvedValue([block('block-1')]);
+
+      const [result] = await service.findMentorFreeBlocks('mentor-1', QUERY);
+
+      expect(result.state).toBe('free');
+      expect(result).not.toHaveProperty('appointments');
+    });
   });
 });
