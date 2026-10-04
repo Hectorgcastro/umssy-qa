@@ -48,6 +48,20 @@ describe('EventCategoriesRepository', () => {
     expect(prismaMock.eventCategory.count).toHaveBeenCalledWith({ where: expectedWhere });
   });
 
+  it('escapes wildcards in category search parameter', async () => {
+    prismaMock.eventCategory.findMany.mockResolvedValue([]);
+    prismaMock.eventCategory.count.mockResolvedValue(0);
+
+    await repository.findAndCount({ search: 'IA_%', skip: 0, take: 10 });
+
+    const expectedWhere = {
+      name: { contains: 'IA\\_\\%', mode: 'insensitive' },
+    };
+    expect(prismaMock.eventCategory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expectedWhere }),
+    );
+  });
+
   it('applies skip and take correctly for pagination', async () => {
     prismaMock.eventCategory.findMany.mockResolvedValue([]);
     prismaMock.eventCategory.count.mockResolvedValue(0);

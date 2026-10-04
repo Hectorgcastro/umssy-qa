@@ -68,6 +68,24 @@ describe('EventsRepository', () => {
     expect(prismaMock.event.count).toHaveBeenCalledWith({ where: expectedWhere });
   });
 
+  it('escapes wildcards percent (%) and underscore (_) in search', async () => {
+    prismaMock.event.findMany.mockResolvedValue([]);
+    prismaMock.event.count.mockResolvedValue(0);
+
+    await repository.findAndCount({ search: '100%_test', skip: 0, take: 10 });
+
+    const expectedWhere = {
+      title: {
+        contains: '100\\%\\_test',
+        mode: 'insensitive',
+      },
+    };
+
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expectedWhere }),
+    );
+  });
+
   it('applies categoryId filter to where in both queries', async () => {
     prismaMock.event.findMany.mockResolvedValue([]);
     prismaMock.event.count.mockResolvedValue(0);

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { escapePgWildcards } from '../../../common/utils/escape-pg-wildcards.js';
 import type { Prisma } from '../../../prisma/client.js';
 import type {
   FindEventCategoriesPayload,
@@ -17,7 +18,7 @@ export class EventCategoriesRepository {
     const where: Prisma.EventCategoryWhereInput = {
       ...(search !== undefined && {
         name: {
-          contains: search,
+          contains: escapePgWildcards(search),
           mode: 'insensitive',
         },
       }),
