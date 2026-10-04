@@ -1,5 +1,7 @@
 import { apiClient } from "@/shared/services/api-client";
-import type { AvailabilityBlock, CreateAvailabilityBlockInput, AvailabilityFilters } from "../types/availability";
+import type { AvailabilityBlock } from "../types/availability-block.types";
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
+import type { AvailabilityFilters } from "../types/availability-filters.types";
 
 function toISOString(value: string): string {
   return new Date(value).toISOString();

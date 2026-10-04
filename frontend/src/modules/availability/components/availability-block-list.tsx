@@ -1,4 +1,4 @@
-import type { AvailabilityBlock } from "../types/availability";
+import type { AvailabilityBlock } from "../types/availability-block.types";
 
 const DATE_LOCALE = "es-BO";
 

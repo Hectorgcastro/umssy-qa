@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useCreateAvailabilityBlock } from "../hooks/use-create-availability-block";
-import type { CreateAvailabilityBlockInput } from "../types/availability";
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 
 const EMPTY_FORM: CreateAvailabilityBlockInput = { startAt: "", endAt: "" };
 
