@@ -8,6 +8,7 @@ import { AvailabilityModule } from './modules/availability/availability.module.j
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { TechnicalAreasModule } from './modules/technical-areas/technical-areas.module.js';
+import { OrientationTypesModule } from './modules/orientation-types/orientation-types.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TechnicalAreasModule } from './modules/technical-areas/technical-areas.
     AvailabilityModule,
     AuthModule,
     TechnicalAreasModule,
+    OrientationTypesModule,
   ],
   controllers: [AppController],
   providers: [
