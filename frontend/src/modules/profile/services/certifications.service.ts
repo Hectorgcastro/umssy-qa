@@ -12,6 +12,7 @@ import { getHttpStatus } from "../utils/get-http-status";
 
 const NOT_FOUND_STATUS = 404;
 
+// Sample data until the endpoints are connected (issue #94)
 let sampleCertifications: Certification[] = [];
 const sampleDocuments = new Map<string, Blob>();
 

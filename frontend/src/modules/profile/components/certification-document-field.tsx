@@ -3,10 +3,8 @@
 import { useRef, type ChangeEvent } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  CERTIFICATE_FILE_ACCEPT,
-  CERTIFICATION_DOCUMENT_LABELS,
-} from "../config/certification-document.config";
+import { Input } from "@/components/ui/input";
+import { CERTIFICATE_FILE_ACCEPT } from "../config/certification-document.config";
 import type { CertificationDocumentFieldProps } from "../types/certification-document-field-props.types";
 import { formatFileSize } from "../utils/format-file-size";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
@@ -37,20 +35,18 @@ export function CertificationDocumentField({
     if (selectedFile) {
       return `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`;
     }
-    return hasCurrentDocument
-      ? CERTIFICATION_DOCUMENT_LABELS.currentDocument
-      : CERTIFICATION_DOCUMENT_LABELS.hint;
+    return hasCurrentDocument ? "Documento actual adjunto" : "PDF, PNG o JPG de hasta 5 MB.";
   };
 
   return (
-    <FormField id={DOCUMENT_INPUT_ID} label={CERTIFICATION_DOCUMENT_LABELS.field} error={error}>
-      <input
+    <FormField id={DOCUMENT_INPUT_ID} label="Documento de respaldo (opcional)" error={error}>
+      <Input
         ref={fileInputRef}
         id={DOCUMENT_INPUT_ID}
         type="file"
         accept={CERTIFICATE_FILE_ACCEPT}
-        aria-label={CERTIFICATION_DOCUMENT_LABELS.fileInput}
-        hidden
+        aria-label="Archivo del certificado"
+        className="hidden"
         disabled={disabled}
         onChange={handleFileChange}
         {...getFieldErrorProps(DOCUMENT_INPUT_ID, error)}
@@ -69,7 +65,7 @@ export function CertificationDocumentField({
               disabled={disabled}
               onClick={onRemove}
             >
-              {CERTIFICATION_DOCUMENT_LABELS.remove}
+              Quitar
             </Button>
           ) : null}
           <Button
@@ -79,7 +75,7 @@ export function CertificationDocumentField({
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
           >
-            {hasDocument ? CERTIFICATION_DOCUMENT_LABELS.replace : CERTIFICATION_DOCUMENT_LABELS.select}
+            {hasDocument ? "Reemplazar archivo" : "Seleccionar archivo"}
           </Button>
         </div>
       </div>

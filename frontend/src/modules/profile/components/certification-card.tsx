@@ -1,6 +1,5 @@
 import { Award, Edit, FileText, Paperclip, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CERTIFICATION_DOCUMENT_LABELS } from "../config/certification-document.config";
 import type { CertificationCardProps } from "../types/certification-card-props.types";
 import { formatIssueDate } from "../utils/format-issue-date";
 
@@ -31,7 +30,7 @@ export function CertificationCard({
           {certification.hasDocument ? (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 text-[12px] font-semibold text-ink-soft">
               <Paperclip aria-hidden="true" className="size-3.5" />
-              {CERTIFICATION_DOCUMENT_LABELS.attached}
+              Documento adjunto
             </p>
           ) : null}
         </div>
@@ -41,13 +40,13 @@ export function CertificationCard({
           <Button
             type="button"
             variant="ghost"
-            aria-label={`${CERTIFICATION_DOCUMENT_LABELS.view} de ${certification.name}`}
+            aria-label={`Ver documento de ${certification.name}`}
             disabled={isBusy}
             onClick={() => onViewDocument(certification)}
             className="h-8 gap-1.5 px-2 text-[13px] font-semibold text-ink"
           >
             <FileText aria-hidden="true" className="size-4" />
-            {CERTIFICATION_DOCUMENT_LABELS.view}
+            Ver documento
           </Button>
         ) : null}
         <Button

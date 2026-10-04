@@ -12,15 +12,3 @@ export const CERTIFICATION_DOCUMENT_MESSAGES = {
   openError: "No se pudo abrir el documento. Inténtalo de nuevo.",
   notFound: "Esta certificación no tiene un documento adjunto.",
 };
-
-export const CERTIFICATION_DOCUMENT_LABELS = {
-  field: "Documento de respaldo (opcional)",
-  hint: "PDF, PNG o JPG de hasta 5 MB.",
-  select: "Seleccionar archivo",
-  replace: "Reemplazar archivo",
-  remove: "Quitar",
-  currentDocument: "Documento actual adjunto",
-  fileInput: "Archivo del certificado",
-  attached: "Documento adjunto",
-  view: "Ver documento",
-};
