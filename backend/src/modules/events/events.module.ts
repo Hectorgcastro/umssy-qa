@@ -18,8 +18,8 @@ import { EventRegistrationsRepository } from './repositories/event-registrations
     EventRegistrationsRepository
   ],
   exports: [
+    EventsService,
     EventRegistrationsService
   ],
 })
 export class EventsModule {}
-
