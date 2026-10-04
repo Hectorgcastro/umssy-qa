@@ -2,7 +2,6 @@ import type { BoliviaDateTime } from '../types/bolivia-date-time.types.js';
 import type { DateInput } from '../types/date-input.types.js';
 import type { WeekRange } from '../types/week-range.types.js';
 
-// Bolivia no usa horario de verano: siempre UTC-4.
 export const BOLIVIA_UTC_OFFSET_MINUTES = -240;
 
 const MINUTE_MS = 60_000;
@@ -23,7 +22,6 @@ const toTimestamp = (value: DateInput): number => {
   return timestamp;
 };
 
-// Desplaza el instante para que los getters UTC devuelvan la hora de Bolivia.
 const toBoliviaShifted = (value: DateInput): Date =>
   new Date(toTimestamp(value) + BOLIVIA_OFFSET_MS);
 
@@ -61,7 +59,6 @@ export const toUtcIso = (boliviaDate: string, boliviaTime: string): string => {
   const [, hours, minutes] = timeMatch.map(Number);
   const shifted = new Date(Date.UTC(year, month - 1, day, hours, minutes));
 
-  // Date.UTC acepta valores fuera de rango (ej. 31 de febrero) y los desborda.
   const isSameDate =
     shifted.getUTCFullYear() === year &&
     shifted.getUTCMonth() === month - 1 &&
