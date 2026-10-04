@@ -11,9 +11,10 @@ import {
   PENDING_APPOINTMENT_MESSAGE,
   STATUS_CONFIRMED,
   STATUS_PENDING,
+  STEP_MS,
   TRIO_NEXT_WEEK_WARNING,
 } from '../constants/seed-availability.constants.js';
-import { BLOCK_MAX_HOUR, BLOCK_MIN_HOUR, BLOCK_STEP_MINUTES } from '../requests/create-block.request.js';
+import { BLOCK_MAX_HOUR, BLOCK_MIN_HOUR, BLOCK_STEP_MINUTES } from '../constants/create-block.constants.js';
 import type { AvailabilitySeedResult } from '../types/availability-seed-result.types.js';
 import type { AvailabilitySeedUsers } from '../types/availability-seed-users.types.js';
 import type { SeedBlockPlan } from '../types/seed-block-plan.types.js';
@@ -21,8 +22,6 @@ import type { SeedBlock } from '../types/seed-block.types.js';
 import type { SeedTrioPosition } from '../types/seed-trio-position.types.js';
 import type { SeedWeekRange } from '../types/seed-week-range.types.js';
 import type { SeedWeeks } from '../types/seed-weeks.types.js';
-
-const STEP_MS = BLOCK_STEP_MINUTES * MS_PER_MINUTE;
 
 const weekOf = (reference: Date): SeedWeekRange => {
   const range = getWeekRange(reference);

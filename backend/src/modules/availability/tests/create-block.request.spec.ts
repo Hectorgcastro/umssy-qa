@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildCreateBlockSchema,
-  CREATE_BLOCK_MESSAGES as MSG,
-} from '../requests/create-block.request.js';
+import { CREATE_BLOCK_MESSAGES as MSG } from '../constants/create-block.constants.js';
+import { buildCreateBlockSchema } from '../requests/create-block.request.js';
 
 // Ahora fijo: 1 de octubre de 2026, 08:00 en Bolivia (12:00 UTC).
 const FIXED_NOW = new Date('2026-10-01T12:00:00Z');
