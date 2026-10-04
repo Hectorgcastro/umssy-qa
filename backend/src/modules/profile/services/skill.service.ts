@@ -6,6 +6,7 @@ import { SkillMapper } from '../mappers/skill.mapper.js';
 import { ProfileRepository } from '../repositories/profile.repository.js';
 import { SkillRepository } from '../repositories/skill.repository.js';
 import { UserSkillRepository } from '../repositories/user-skill.repository.js';
+import type { CreateCustomSkillRequest } from '../requests/create-custom-skill.request.js';
 import type { SearchSkillsRequest } from '../requests/search-skills.request.js';
 import type { UpdateUserSkillsRequest } from '../requests/update-user-skills.request.js';
 import type { SkillResponse } from '../responses/skill.response.js';
@@ -22,6 +23,12 @@ export class SkillService {
   async listCatalog(request: SearchSkillsRequest): Promise<SkillResponse[]> {
     const skills = await this.skillRepository.findCatalog(request.search || undefined);
     return skills.map((skill) => this.skillMapper.toResponse(skill));
+  }
+
+  async createCustomSkill(request: CreateCustomSkillRequest): Promise<SkillResponse> {
+    const existingSkill = await this.skillRepository.findByName(request.name);
+    const skill = existingSkill ?? (await this.skillRepository.createCustom(request.name));
+    return this.skillMapper.toResponse(skill);
   }
 
   async getUserSkills(userId: string): Promise<SkillResponse[]> {

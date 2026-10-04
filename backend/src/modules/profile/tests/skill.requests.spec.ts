@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DomainException } from '../../../common/exceptions/domain.exception.js';
 import { DuplicateSkillException } from '../exceptions/duplicate-skill.exception.js';
 import { SkillNotFoundException } from '../exceptions/skill-not-found.exception.js';
+import { createCustomSkillSchema } from '../requests/create-custom-skill.request.js';
 import { searchSkillsSchema } from '../requests/search-skills.request.js';
 import {
   MAX_USER_SKILLS,
@@ -29,6 +30,20 @@ describe('updateUserSkillsSchema', () => {
     ['too many skills', { skillIds: Array.from({ length: MAX_USER_SKILLS + 1 }, () => skillId) }],
   ])('rejects %s', (_case, body) => {
     expect(updateUserSkillsSchema.safeParse(body).success).toBe(false);
+  });
+});
+
+describe('createCustomSkillSchema', () => {
+  it('trims the name', () => {
+    expect(createCustomSkillSchema.parse({ name: '  Kubernetes ' })).toEqual({ name: 'Kubernetes' });
+  });
+
+  it.each([
+    ['a missing name', {}],
+    ['an empty name', { name: '   ' }],
+    ['a name that is too long', { name: 'a'.repeat(101) }],
+  ])('rejects %s', (_case, body) => {
+    expect(createCustomSkillSchema.safeParse(body).success).toBe(false);
   });
 });
 

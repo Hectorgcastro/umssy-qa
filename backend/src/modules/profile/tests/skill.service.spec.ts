@@ -20,6 +20,8 @@ describe('SkillService', () => {
   let skillRepository: {
     findCatalog: ReturnType<typeof vi.fn>;
     findByIds: ReturnType<typeof vi.fn>;
+    findByName: ReturnType<typeof vi.fn>;
+    createCustom: ReturnType<typeof vi.fn>;
   };
   let userSkillRepository: {
     findByUserId: ReturnType<typeof vi.fn>;
@@ -28,7 +30,12 @@ describe('SkillService', () => {
   let profileRepository: { findByUserId: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    skillRepository = { findCatalog: vi.fn(), findByIds: vi.fn() };
+    skillRepository = {
+      findCatalog: vi.fn(),
+      findByIds: vi.fn(),
+      findByName: vi.fn(),
+      createCustom: vi.fn(),
+    };
     userSkillRepository = { findByUserId: vi.fn(), replaceForUser: vi.fn() };
     profileRepository = { findByUserId: vi.fn().mockResolvedValue({ id: userId }) };
     service = new SkillService(
@@ -52,6 +59,25 @@ describe('SkillService', () => {
 
       await expect(service.listCatalog({ search: '' })).resolves.toEqual([python, sql]);
       expect(skillRepository.findCatalog).toHaveBeenCalledWith(undefined);
+    });
+  });
+
+  describe('createCustomSkill', () => {
+    it('creates a custom skill when the name does not exist', async () => {
+      const kubernetes = { id: sqlId, name: 'Kubernetes', isCustom: true };
+      skillRepository.findByName.mockResolvedValue(null);
+      skillRepository.createCustom.mockResolvedValue(kubernetes);
+
+      await expect(service.createCustomSkill({ name: 'Kubernetes' })).resolves.toEqual(kubernetes);
+      expect(skillRepository.findByName).toHaveBeenCalledWith('Kubernetes');
+      expect(skillRepository.createCustom).toHaveBeenCalledWith('Kubernetes');
+    });
+
+    it('reuses the existing skill when the name is already in the catalog', async () => {
+      skillRepository.findByName.mockResolvedValue(python);
+
+      await expect(service.createCustomSkill({ name: 'python' })).resolves.toEqual(python);
+      expect(skillRepository.createCustom).not.toHaveBeenCalled();
     });
   });
 

@@ -32,4 +32,13 @@ export class SkillRepository {
       select: skillSelect,
     });
   }
+
+  createCustom(name: string): Promise<SkillRecord> {
+    return this.prisma.skill.upsert({
+      where: { name },
+      create: { name, isCustom: true },
+      update: {},
+      select: skillSelect,
+    });
+  }
 }

@@ -14,10 +14,16 @@ const python = { id: '33333333-3333-4333-8333-333333333333', name: 'Python', isC
 describe('SkillController', () => {
   let app: INestApplication;
   let token: string;
-  let service: { listCatalog: ReturnType<typeof vi.fn> };
+  let service: {
+    listCatalog: ReturnType<typeof vi.fn>;
+    createCustomSkill: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
-    service = { listCatalog: vi.fn().mockResolvedValue([python]) };
+    service = {
+      listCatalog: vi.fn().mockResolvedValue([python]),
+      createCustomSkill: vi.fn().mockResolvedValue(python),
+    };
 
     const moduleRef = await Test.createTestingModule({
       imports: [JwtModule.register({ global: true, secret: 'test-secret' })],
@@ -70,7 +76,31 @@ describe('SkillController', () => {
 
   it('rejects a request without a token', async () => {
     await request(app.getHttpServer()).get('/skills').expect(401);
+    await request(app.getHttpServer()).post('/skills/custom').send({ name: 'Python' }).expect(401);
 
     expect(service.listCatalog).not.toHaveBeenCalled();
+    expect(service.createCustomSkill).not.toHaveBeenCalled();
+  });
+
+  it('registers a custom skill with the trimmed name', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/skills/custom')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: '  Python ' })
+      .expect(201);
+
+    expect(response.body).toEqual({ statusCode: 201, data: python, detail: 'OK', ok: true });
+    expect(service.createCustomSkill).toHaveBeenCalledWith({ name: 'Python' });
+  });
+
+  it('rejects a custom skill with an empty name', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/skills/custom')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: '   ' })
+      .expect(400);
+
+    expect(response.body.detail).toContain('name');
+    expect(service.createCustomSkill).not.toHaveBeenCalled();
   });
 });
