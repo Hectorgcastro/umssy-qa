@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { availabilityApi } from "../services/availability.api";
-import type { AvailabilityBlock, CreateAvailabilityBlockInput } from "../types/availability";
+import type { AvailabilityBlock } from "../types/availability-block.types";
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 
 export function useCreateAvailabilityBlock() {
   const [isSubmitting, setIsSubmitting] = useState(false);

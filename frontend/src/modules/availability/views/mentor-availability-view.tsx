@@ -2,16 +2,17 @@
 
 import { useAvailability } from "../hooks/use-availability";
 import { AvailabilityBlockList } from "../components/availability-block-list";
+import { AvailabilityLoading } from "../components/availability-loading";
 
 export function MentorAvailabilityView() {
   const { blocks, isLoading, error } = useAvailability();
 
   if (isLoading) {
-    return <div className="p-6 text-center">Cargando disponibilidad...</div>;
+    return <AvailabilityLoading />;
   }
 
   if (error) {
-    return <div className="p-6 text-center text-red-500">{error}</div>;
+    return <p className="p-6 text-center text-destructive">{error}</p>;
   }
 
   return (

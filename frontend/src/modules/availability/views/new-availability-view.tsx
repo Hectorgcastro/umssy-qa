@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EMPTY_FORM } from "../constants/availability.constants";
 import { useCreateAvailabilityBlock } from "../hooks/use-create-availability-block";
-import type { CreateAvailabilityBlockInput } from "../types/availability";
-
-const EMPTY_FORM: CreateAvailabilityBlockInput = { startAt: "", endAt: "" };
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 
 export function NewAvailabilityView() {
   const { createBlock, isSubmitting, error: createError } = useCreateAvailabilityBlock();
@@ -53,8 +54,8 @@ export function NewAvailabilityView() {
       <h1 className="text-2xl font-bold mb-4">Crear Nuevo Bloque de Disponibilidad</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="startAt" className="block text-sm font-medium mb-1">Hora de Inicio</label>
-          <input
+          <label htmlFor="startAt" className="mb-1 block text-sm font-medium text-foreground">Hora de Inicio</label>
+          <Input
             type="datetime-local"
             id="startAt"
             data-testid="startAt-input"
@@ -62,12 +63,11 @@ export function NewAvailabilityView() {
             value={formData.startAt}
             onChange={handleChange}
             required
-            className="w-full p-2 border rounded"
           />
         </div>
         <div>
-          <label htmlFor="endAt" className="block text-sm font-medium mb-1">Hora de Fin</label>
-          <input
+          <label htmlFor="endAt" className="mb-1 block text-sm font-medium text-foreground">Hora de Fin</label>
+          <Input
             type="datetime-local"
             id="endAt"
             data-testid="endAt-input"
@@ -75,18 +75,13 @@ export function NewAvailabilityView() {
             value={formData.endAt}
             onChange={handleChange}
             required
-            className="w-full p-2 border rounded"
           />
         </div>
-        {submitError && <p className="text-red-500">{submitError}</p>}
-        {submitSuccess && <p className="text-green-500">¡Bloque de disponibilidad creado exitosamente!</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-        >
+        {submitError && <p className="text-sm text-destructive">{submitError}</p>}
+        {submitSuccess && <p className="text-sm text-primary">¡Bloque de disponibilidad creado exitosamente!</p>}
+        <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Creando..." : "Crear"}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { availabilityApi } from "./availability.api"
 import { apiClient } from "@/shared/services/api-client"
-import type { AvailabilityBlock } from "../types/availability"
+import type { AvailabilityBlock } from "../types/availability-block.types"
 
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
