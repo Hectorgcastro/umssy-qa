@@ -1,16 +1,13 @@
+import {
+  BOLIVIA_OFFSET_MS,
+  DATE_PATTERN,
+  DAY_MS,
+  TIME_PATTERN,
+  WEEK_MS,
+} from '../constants/date-time.constants.js';
 import type { BoliviaDateTime } from '../types/bolivia-date-time.types.js';
 import type { DateInput } from '../types/date-input.types.js';
 import type { WeekRange } from '../types/week-range.types.js';
-
-export const BOLIVIA_UTC_OFFSET_MINUTES = -240;
-
-const MINUTE_MS = 60_000;
-const DAY_MS = 24 * 60 * MINUTE_MS;
-const WEEK_MS = 7 * DAY_MS;
-const BOLIVIA_OFFSET_MS = BOLIVIA_UTC_OFFSET_MINUTES * MINUTE_MS;
-
-const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
-const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
 
 const pad = (value: number): string => String(value).padStart(2, '0');
 
