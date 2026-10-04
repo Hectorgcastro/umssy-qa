@@ -1,7 +1,14 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ProfileSummary } from "../types/profile-summary.types";
 import { ProfileOverviewView } from "./profile-overview-view";
+
+vi.mock("../services/profile-photo.service", () => ({
+  profilePhotoService: {
+    getPhoto: vi.fn().mockResolvedValue(null),
+    uploadPhoto: vi.fn(),
+  },
+}));
 
 const COMPLETE_PROFILE: ProfileSummary = {
   fullName: "Valeria Quispe",

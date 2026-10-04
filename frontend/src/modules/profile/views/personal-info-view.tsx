@@ -5,11 +5,13 @@ import { PersonalInfoForm } from "../components/personal-info-form";
 import { ProfilePageLayout } from "../components/profile-page-layout";
 import { SAMPLE_CITIES } from "../config/city-options.config";
 import { EMPTY_PERSONAL_INFO_VALUES } from "../config/profile-form-defaults.config";
+import { useProfilePhoto } from "../hooks/use-profile-photo";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 
 export function PersonalInfoView() {
-  // Values are kept in memory until the profile endpoints are connected (issue #63).
+  // Values are kept in memory until the forms are connected to the profile endpoints (issue #68).
   const [savedValues, setSavedValues] = useState<PersonalInfoValues>(EMPTY_PERSONAL_INFO_VALUES);
+  const { photoUrl, isUploading, error, uploadPhoto } = useProfilePhoto();
 
   return (
     <ProfilePageLayout
@@ -20,6 +22,7 @@ export function PersonalInfoView() {
       <PersonalInfoForm
         initialValues={savedValues}
         cities={SAMPLE_CITIES}
+        photo={{ photoUrl, isUploading, error, onSelectPhoto: uploadPhoto }}
         onSubmit={setSavedValues}
       />
       <p className="mt-4 text-[14px] text-text-secondary">

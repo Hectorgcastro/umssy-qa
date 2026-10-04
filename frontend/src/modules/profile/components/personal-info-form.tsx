@@ -22,6 +22,7 @@ export function PersonalInfoForm({
   initialValues,
   cities,
   isSaving = false,
+  photo,
   onSubmit,
 }: PersonalInfoFormProps) {
   const [values, setValues] = useState<PersonalInfoValues>(initialValues);
@@ -55,7 +56,7 @@ export function PersonalInfoForm({
       title="Tu información personal"
       description="Completa los campos para crear tu perfil. Podrás editarlos más adelante."
     >
-      <ProfilePhotoField />
+      <ProfilePhotoField {...photo} />
 
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-8 pt-8">
         <div className="grid grid-cols-2 gap-x-8 gap-y-5">
