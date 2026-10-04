@@ -1,5 +1,5 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EventsService } from '../services/events.service.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { GetEventsSchema, MAX_PAGE_SIZE, MAX_SEARCH_LENGTH } from '../requests/get-events.request.js';
@@ -26,5 +26,17 @@ export class EventsController {
     @Query(new ZodValidationPipe(GetEventsSchema)) query: GetEventsPayload,
   ) {
     return this.eventsService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Obtener un evento por ID',
+    description: 'Retorna los detalles de un evento específico según su ID.',
+  })
+  @ApiParam({ name: 'id', description: 'ID o UUID del evento', example: '123' })
+  @ApiResponse({ status: 200, description: 'Evento obtenido exitosamente' })
+  @ApiResponse({ status: 404, description: 'Evento no encontrado' })
+  findOne(@Param('id') id: string) {
+    return this.eventsService.findOne(id);
   }
 }

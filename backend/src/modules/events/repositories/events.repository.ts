@@ -68,4 +68,38 @@ export class EventsRepository {
       total,
     };
   }
+
+  async findById(id: string): Promise<EventWithRelations | null> {
+    const event = await this.prisma.event.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        eventDate: true,
+        startTime: true,
+        endTime: true,
+        location: true,
+        capacity: true,
+        statusId: true,
+        instructorName: true,
+        modalityId: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            registrations: {
+              where: { cancelledAt: null },
+            },
+          },
+        },
+      },
+    });
+
+    return event as unknown as EventWithRelations | null;
+  }
 }
