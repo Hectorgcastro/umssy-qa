@@ -32,12 +32,24 @@ export function ConversationList({
   onLoadMore,
   onStartNewChat,
 }: ConversationListProps) {
+  const isFiltered = Boolean(searchQuery.trim() || activeFilter === 'unread');
+
+  const getEmptyMessage = () => {
+    if (activeFilter === 'unread') {
+      return 'No tienes mensajes sin leer.';
+    }
+    if (searchQuery.trim().length > 0) {
+      return 'No se encontraron conversaciones que coincidan con tu busqueda.';
+    }
+    return 'Aun no tienes ninguna conversacion registrada.';
+  };
+
   return (
     <div className="relative flex flex-col h-full bg-white border-r border-slate-200">
       <div className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Chats</h2>
-          {onStartNewChat && (
+          {onStartNewChat && activeFilter !== 'unread' && (
             <button
               type="button"
               onClick={onStartNewChat}
@@ -102,13 +114,9 @@ export function ConversationList({
           <ConversationSkeleton />
         ) : conversations.length === 0 ? (
           <EmptyChatState
-            description={
-              searchQuery || activeFilter === 'unread'
-                ? 'No se encontraron conversaciones con el criterio seleccionado.'
-                : 'Aun no tienes ninguna conversacion registrada.'
-            }
+            description={getEmptyMessage()}
             actionLabel="Iniciar una nueva conversacion"
-            onAction={onStartNewChat}
+            onAction={isFiltered ? undefined : onStartNewChat}
           />
         ) : (
           <div className="divide-y divide-slate-100">
@@ -136,7 +144,7 @@ export function ConversationList({
         )}
       </div>
 
-      {onStartNewChat && (
+      {onStartNewChat && activeFilter !== 'unread' && (
         <button
           type="button"
           onClick={onStartNewChat}
