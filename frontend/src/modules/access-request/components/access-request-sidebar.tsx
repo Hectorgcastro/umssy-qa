@@ -7,9 +7,11 @@ const STEPS = [
 
 export function AccessRequestSidebar() {
   return (
-    <aside className="flex min-h-[220px] w-full flex-col bg-[#0B1F2E] px-6 py-8 text-white md:min-h-screen md:w-80 md:px-8">
+    <aside className="flex min-h-[220px] w-full flex-col bg-ink px-6 py-8 text-white md:min-h-screen md:w-80 md:px-8">
       <div className="mb-10">
-        <p className="text-sm font-semibold tracking-wide">UMSS</p>
+        <p className="text-sm font-semibold tracking-wide">
+          UMSS
+        </p>
 
         <h2 className="mt-2 text-2xl font-bold">
           Solicitud de acceso
@@ -29,14 +31,14 @@ export function AccessRequestSidebar() {
               key={step.number}
               className={`flex items-center gap-4 rounded-lg px-4 py-3 ${
                 isActive
-                  ? "bg-[#FDECED] text-[#0B1F2E]"
+                  ? "bg-interaction text-ink"
                   : "text-white/70"
               }`}
             >
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
                   isActive
-                    ? "bg-[#E30613] text-white"
+                    ? "bg-accent text-white"
                     : "border border-white/30"
                 }`}
               >

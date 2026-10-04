@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it } from "vitest"
 import { PersonalDataForm } from "./personal-data-form"
 
@@ -37,11 +38,25 @@ describe("PersonalDataForm", () => {
     ).toBeInTheDocument()
   })
 
-  it("renders expedition options", () => {
+  it("renders expedition options", async () => {
+    const user = userEvent.setup()
+
     render(<PersonalDataForm />)
 
-    expect(screen.getByRole("option", { name: "CB" })).toBeInTheDocument()
-    expect(screen.getByRole("option", { name: "LP" })).toBeInTheDocument()
-    expect(screen.getByRole("option", { name: "SC" })).toBeInTheDocument()
+    await user.click(
+      screen.getByRole("combobox", { name: /Expedido/i })
+    )
+
+    expect(
+      await screen.findByRole("option", { name: "CB" })
+    ).toBeInTheDocument()
+
+    expect(
+      screen.getByRole("option", { name: "LP" })
+    ).toBeInTheDocument()
+
+    expect(
+      screen.getByRole("option", { name: "SC" })
+    ).toBeInTheDocument()
   })
 })

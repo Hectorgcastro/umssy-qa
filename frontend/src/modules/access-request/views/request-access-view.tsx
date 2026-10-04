@@ -3,7 +3,7 @@ import { PersonalDataForm } from "../components/personal-data-form";
 
 export function RequestAccessView() {
   return (
-    <main className="min-h-screen bg-[#F6F7F9]">
+    <main className="min-h-screen bg-surface-soft">
       <div className="flex min-h-screen flex-col md:flex-row">
         <AccessRequestSidebar />
 

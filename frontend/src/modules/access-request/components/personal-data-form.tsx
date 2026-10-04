@@ -2,6 +2,14 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const expeditionOptions = [
   "CB",
@@ -19,27 +27,27 @@ export function PersonalDataForm() {
   return (
     <div className="w-full max-w-4xl">
       <div className="mb-8">
-        <p className="text-sm font-semibold text-[#E30613]">
+        <p className="text-sm font-semibold text-accent">
           Paso 1 de 4
         </p>
 
-        <h1 className="mt-2 text-3xl font-bold text-[#0B1F2E]">
+        <h1 className="mt-2 text-3xl font-bold text-ink">
           Tus datos personales
         </h1>
 
-        <p className="mt-2 text-sm text-[#5B6470]">
+        <p className="mt-2 text-sm text-text-secondary">
           Ingresa tus datos personales y académicos para iniciar tu solicitud.
         </p>
       </div>
 
       <form className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="firstNames"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Nombres <span className="text-[#E30613]">*</span>
-          </label>
+            Nombres <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="firstNames"
@@ -49,12 +57,12 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="lastNames"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Apellidos <span className="text-[#E30613]">*</span>
-          </label>
+            Apellidos <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="lastNames"
@@ -64,12 +72,12 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="identityCard"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Carnet de identidad <span className="text-[#E30613]">*</span>
-          </label>
+            Carnet de identidad <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="identityCard"
@@ -79,38 +87,35 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="expedition"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Expedido <span className="text-[#E30613]">*</span>
-          </label>
+            Expedido <span className="text-accent">*</span>
+          </Label>
 
-          <select
-            id="expedition"
-            name="expedition"
-            defaultValue=""
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          >
-            <option value="" disabled>
-              Selecciona
-            </option>
+          <Select>
+            <SelectTrigger id="expedition" className="w-full">
+              <SelectValue placeholder="Selecciona" />
+            </SelectTrigger>
 
-            {expeditionOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            <SelectContent>
+              {expeditionOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="sisCode"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Código SIS <span className="text-[#E30613]">*</span>
-          </label>
+            Código SIS <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="sisCode"
@@ -120,12 +125,12 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="email"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Correo electrónico <span className="text-[#E30613]">*</span>
-          </label>
+            Correo electrónico <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="email"
@@ -136,15 +141,15 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="phone"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
             Teléfono{" "}
-            <span className="font-normal text-[#5B6470]">
+            <span className="font-normal text-text-secondary">
               (opcional)
             </span>
-          </label>
+          </Label>
 
           <Input
             id="phone"
@@ -154,12 +159,12 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="birthDate"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
-            Fecha de nacimiento <span className="text-[#E30613]">*</span>
-          </label>
+            Fecha de nacimiento <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="birthDate"
@@ -169,13 +174,13 @@ export function PersonalDataForm() {
         </div>
 
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="admissionYear"
-            className="text-sm font-semibold text-[#0B1F2E]"
+            className="text-sm font-semibold text-ink"
           >
             Año de ingreso a la UMSS{" "}
-            <span className="text-[#E30613]">*</span>
-          </label>
+            <span className="text-accent">*</span>
+          </Label>
 
           <Input
             id="admissionYear"
@@ -195,7 +200,7 @@ export function PersonalDataForm() {
 
           <Button
             type="button"
-            className="bg-[#E30613] px-6 text-white hover:bg-[#B4050F]"
+            className="bg-accent px-6 text-white hover:bg-danger"
           >
             Continuar al siguiente paso
           </Button>
