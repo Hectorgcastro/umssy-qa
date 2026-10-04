@@ -1,10 +1,12 @@
-import { Controller, Get, StreamableFile } from '@nestjs/common';
+import { Controller, Get, StreamableFile, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiProduces, ApiTags } from '@nestjs/swagger';
 import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { CvService } from '../services/cv.service.js';
 
 @ApiTags('profile')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('profile/me/cv/file')
 export class CvFileController {
   constructor(private readonly cvService: CvService) {}

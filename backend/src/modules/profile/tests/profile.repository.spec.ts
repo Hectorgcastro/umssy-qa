@@ -6,10 +6,13 @@ const userId = '11111111-1111-4111-8111-111111111111';
 
 describe('ProfileRepository', () => {
   let repository: ProfileRepository;
-  let user: { findUnique: ReturnType<typeof vi.fn> };
+  let user: {
+    findUnique: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
-    user = { findUnique: vi.fn() };
+    user = { findUnique: vi.fn(), update: vi.fn() };
     repository = new ProfileRepository({ user } as unknown as PrismaService);
   });
 
@@ -57,5 +60,18 @@ describe('ProfileRepository', () => {
     user.findUnique.mockResolvedValue(null);
 
     await expect(repository.findByUserId(userId)).resolves.toBeNull();
+  });
+
+  it('updates the user and returns only the profile columns', async () => {
+    const data = { headline: 'Junior web developer', aboutMe: 'Graduate.' };
+    const record = { id: userId, ...data };
+    user.update.mockResolvedValue(record);
+
+    await expect(repository.update(userId, data)).resolves.toBe(record);
+
+    const [args] = user.update.mock.calls[0] as [{ where: object; data: object; select: object }];
+    expect(args.where).toEqual({ id: userId });
+    expect(args.data).toBe(data);
+    expect(args.select).not.toHaveProperty('password');
   });
 });
