@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { CERTIFICATE_FILE_ACCEPT } from "../config/certification-document.config";
 import type { CertificationDocumentFieldProps } from "../types/certification-document-field-props.types";
 import { formatFileSize } from "../utils/format-file-size";
-import { getFieldErrorProps } from "../utils/get-field-error-props";
-import { FormField } from "./form-field";
+import { getFieldErrorId, getFieldErrorProps } from "../utils/get-field-error-props";
 
 const DOCUMENT_INPUT_ID = "certification-document";
 
@@ -39,7 +38,7 @@ export function CertificationDocumentField({
   };
 
   return (
-    <FormField id={DOCUMENT_INPUT_ID} label="Documento de respaldo (opcional)" error={error}>
+    <div className="flex flex-col gap-2">
       <Input
         ref={fileInputRef}
         id={DOCUMENT_INPUT_ID}
@@ -51,7 +50,7 @@ export function CertificationDocumentField({
         onChange={handleFileChange}
         {...getFieldErrorProps(DOCUMENT_INPUT_ID, error)}
       />
-      <div className="flex items-center justify-between gap-4 rounded-lg border border-dashed border-border-strong bg-surface-soft px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-dashed border-border-strong bg-surface-soft px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <FileText aria-hidden="true" className="size-5 shrink-0 text-ink-soft" />
           <p className="text-[13px] break-all text-text-secondary">{getDescription()}</p>
@@ -79,6 +78,11 @@ export function CertificationDocumentField({
           </Button>
         </div>
       </div>
-    </FormField>
+      {error ? (
+        <p id={getFieldErrorId(DOCUMENT_INPUT_ID)} className="text-[13px] text-danger">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }

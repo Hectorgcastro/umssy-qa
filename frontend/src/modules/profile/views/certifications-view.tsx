@@ -164,7 +164,7 @@ export function CertificationsView() {
       <TrajectorySteps activeStep="certifications" />
       {visibleFeedback ? <FeedbackMessage feedback={visibleFeedback} /> : null}
       {isFormOpen ? (
-        <div className="max-w-3xl">
+        <div className="max-w-6xl">
           <CertificationForm
             key={formState.mode === "edit" ? formState.certification.id : formState.mode}
             initialData={

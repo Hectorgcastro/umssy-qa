@@ -230,6 +230,29 @@ describe("CertificationForm", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it("renders the fields and the document in separate cards within one form", () => {
+    renderForm();
+
+    const form = screen.getByRole("form", { name: "Agregar certificación" });
+    expect(form).toHaveClass("lg:grid-cols-2");
+    expect(screen.getByText("Documento de respaldo (opcional)")).toBeInTheDocument();
+    expect(form).toContainElement(getNameInput());
+    expect(form).toContainElement(getFileInput());
+  });
+
+  it("clears the selected document when cancelled", async () => {
+    const { onCancel, user } = renderForm();
+
+    await user.upload(getFileInput(), CERTIFICATE_PDF);
+    expect(screen.getByText(/certificate\.pdf/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(screen.queryByText(/certificate\.pdf/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Seleccionar archivo" })).toBeInTheDocument();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
   describe("document field", () => {
     it("shows the accepted formats when there is no document", () => {
       renderForm();
