@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { MENTOR_ROLE_NAME } from '../constants/mentor.constants.js';
 
 @Injectable()
 export class MentorsRepository {
@@ -8,7 +9,10 @@ export class MentorsRepository {
   findMentorRole() {
     return this.prisma.role.findUnique({
       where: {
-        name: 'mentor',
+        name: MENTOR_ROLE_NAME,
+      },
+      select: {
+        id: true,
       },
     });
   }
@@ -20,6 +24,9 @@ export class MentorsRepository {
         roleId,
         deletedAt: null,
       },
+      select: {
+        id: true,
+      },
     });
   }
 
@@ -29,6 +36,9 @@ export class MentorsRepository {
         id: {
           in: ids,
         },
+      },
+      select: {
+        id: true,
       },
     });
   }
@@ -40,6 +50,9 @@ export class MentorsRepository {
           in: ids,
         },
         isActive: true,
+      },
+      select: {
+        id: true,
       },
     });
   }
@@ -73,31 +86,7 @@ export class MentorsRepository {
         })),
       });
 
-      return transaction.user.findUnique({
-        where: {
-          id: userId,
-        },
-        include: {
-          roles: {
-            where: {
-              deletedAt: null,
-            },
-            include: {
-              role: true,
-            },
-          },
-          mentorTechnicalAreas: {
-            include: {
-              technicalArea: true,
-            },
-          },
-          mentorOrientationTypes: {
-            include: {
-              orientationType: true,
-            },
-          },
-        },
-      });
+      return { id: userId };
     });
   }
 }

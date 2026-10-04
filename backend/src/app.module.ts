@@ -26,10 +26,7 @@ import { MentorsModule } from './modules/mentors/mentors.module.js';
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_FILTER,
-      useClass: DomainExceptionFilter,
-    },
+    { provide: APP_FILTER, useClass: DomainExceptionFilter },
   ],
 })
 export class AppModule {}

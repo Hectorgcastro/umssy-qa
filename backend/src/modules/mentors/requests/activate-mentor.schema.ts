@@ -1,8 +1,15 @@
 import { z } from 'zod';
 
+const uniqueUuidArray = z
+  .array(z.string().uuid())
+  .min(1)
+  .refine((ids) => new Set(ids).size === ids.length, {
+    message: 'No se permiten identificadores duplicados',
+  });
+
 export const activateMentorSchema = z.object({
-  technicalAreaIds: z.array(z.string().uuid()).min(1),
-  orientationTypeIds: z.array(z.string().uuid()).min(1),
+  technicalAreaIds: uniqueUuidArray,
+  orientationTypeIds: uniqueUuidArray,
 });
 
 export type ActivateMentorDto = z.infer<typeof activateMentorSchema>;

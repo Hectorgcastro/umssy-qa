@@ -5,13 +5,8 @@ import { MentorsService } from './services/mentors.service.js';
 import { MentorsRepository } from './repositories/mentors.repository.js';
 
 @Module({
-  imports: [
-    AuthModule,
-  ],
+  imports: [AuthModule],
   controllers: [MentorsController],
-  providers: [
-    MentorsService,
-    MentorsRepository,
-  ],
+  providers: [MentorsService, MentorsRepository],
 })
 export class MentorsModule {}
