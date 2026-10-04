@@ -190,6 +190,9 @@ describe("EducationView", () => {
 
     await user.click(screen.getByRole("button", { name: "Agregar información" }));
     await user.type(screen.getByLabelText(/Institución/), "Example University");
+    await user.type(screen.getByLabelText(/Título o carrera/), "Engineering");
+    fireEvent.change(screen.getByLabelText(/Desde/), { target: { value: "2020-01-01" } });
+    fireEvent.change(screen.getByLabelText(/Hasta/), { target: { value: "2024-01-01" } });
     await user.click(screen.getByRole("button", { name: "Guardar formación" }));
 
     expect(
@@ -375,5 +378,114 @@ describe("EducationView", () => {
     expect(
       await screen.findByText("No se pudo eliminar la formación académica. Inténtalo de nuevo."),
     ).toBeInTheDocument();
+  });
+
+  it("preserves the edit form after a failed deletion and allows retrying inside the dialog", async () => {
+    vi.mocked(educationsService.deleteEducation).mockRejectedValueOnce(new Error("Server error")).mockResolvedValueOnce();
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", { name: "Editar Computer Science" }));
+    await user.type(screen.getByLabelText(/Institución/), " edited");
+    const institution = screen.getByLabelText(/Institución/);
+    await user.click(screen.getByRole("button", { name: "Eliminar Computer Science" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("No se pudo eliminar");
+    expect(institution).toHaveValue("Example University edited");
+    expect(educationsService.getEducations).toHaveBeenCalledTimes(1);
+    await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+    expect(educationsService.deleteEducation).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText(/Institución/)).toHaveValue("");
+  });
+
+  it("disables cancellation, escape and repeated confirmation while deleting", async () => {
+    let finishDelete!: () => void;
+    vi.mocked(educationsService.deleteEducation).mockReturnValue(new Promise((resolve) => { finishDelete = resolve; }));
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", { name: "Eliminar Computer Science" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
+    expect(within(dialog).getByRole("button", { name: "Cancelar" })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: "Eliminando..." })).toBeDisabled();
+    await user.keyboard("{Escape}");
+    expect(dialog).toBeInTheDocument();
+    expect(educationsService.deleteEducation).toHaveBeenCalledOnce();
+    await act(async () => { finishDelete(); });
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+  });
+
+  it.each([false, true])("prevents invalid API writes while creating or editing (editing: %s)", async (editing) => {
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", { name: editing ? "Editar Computer Science" : "Agregar información" }));
+    for (const label of [/Institución/, /Título o carrera/, /Desde/, /Hasta/]) {
+      fireEvent.change(screen.getByLabelText(label), { target: { value: "" } });
+    }
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(screen.getByText("La institución es obligatoria.")).toBeInTheDocument();
+    expect(screen.getByText("El título o carrera es obligatorio.")).toBeInTheDocument();
+    expect(screen.getByText("La fecha de inicio es obligatoria.")).toBeInTheDocument();
+    expect(screen.getByText("La fecha de fin es obligatoria.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/Institución/), { target: { value: "University" } });
+    fireEvent.change(screen.getByLabelText(/Título o carrera/), { target: { value: "Engineering" } });
+    fireEvent.change(screen.getByLabelText(/Desde/), { target: { value: "2024-01-02" } });
+    fireEvent.change(screen.getByLabelText(/Hasta/), { target: { value: "2024-01-01" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(screen.getByText("La fecha de fin no puede ser anterior a la fecha de inicio.")).toBeInTheDocument();
+    expect(educationsService.createEducation).not.toHaveBeenCalled();
+    expect(educationsService.updateEducation).not.toHaveBeenCalled();
+  });
+
+  it("creates two records, edits one, cancels deletion and then deletes only the confirmed record", async () => {
+    let records: EducationItem[] = [];
+    vi.mocked(educationsService.getEducations).mockImplementation(async () => [...records]);
+    vi.mocked(educationsService.createEducation).mockImplementation(async (payload) => {
+      const record = { ...EDUCATIONS[records.length], ...payload };
+      records = [...records, record];
+      return record;
+    });
+    vi.mocked(educationsService.updateEducation).mockImplementation(async (id, payload) => {
+      records = records.map((record) => record.id === id ? { ...record, ...payload } : record);
+      return records.find((record) => record.id === id)!;
+    });
+    vi.mocked(educationsService.deleteEducation).mockImplementation(async (id) => {
+      records = records.filter((record) => record.id !== id);
+    });
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByText("Todavía no tienes formación académica registrada.");
+    for (const [index, degree] of ["Engineering", "Data Science"].entries()) {
+      await user.click(screen.getByRole("button", { name: "Agregar información" }));
+      for (const [label, value] of [[/Institución/, "University"], [/Título o carrera/, degree], [/Desde/, "2020-01-01"], [/Hasta/, "2024-01-01"]] as const) {
+        fireEvent.change(screen.getByLabelText(label), { target: { value } });
+      }
+      await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+      await screen.findByRole("heading", { name: degree });
+      expect(within(screen.getByRole("list", { name: "Formación registrada" })).getAllByRole("listitem")).toHaveLength(index + 1);
+      expect(screen.getByLabelText(/Institución/)).toHaveValue("");
+    }
+    await user.click(screen.getByRole("button", { name: "Editar Engineering" }));
+    fireEvent.change(screen.getByLabelText(/Título o carrera/), { target: { value: "Updated Engineering" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    await screen.findByRole("heading", { name: "Updated Engineering" });
+    await user.click(screen.getByRole("button", { name: "Eliminar Updated Engineering" }));
+    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Cancelar" }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+    expect(educationsService.deleteEducation).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: "Updated Engineering" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Eliminar Updated Engineering" }));
+    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Eliminar" }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+    const list = screen.getByRole("list", { name: "Formación registrada" });
+    expect(within(list).getAllByRole("listitem")).toHaveLength(1);
+    expect(within(list).getByRole("heading", { name: "Data Science" })).toBeInTheDocument();
+    expect(educationsService.createEducation).toHaveBeenCalledTimes(2);
+    expect(educationsService.updateEducation).toHaveBeenCalledExactlyOnceWith(EDUCATIONS[0].id, expect.objectContaining({ degree: "Updated Engineering" }));
+    expect(educationsService.deleteEducation).toHaveBeenCalledExactlyOnceWith(EDUCATIONS[0].id);
   });
 });

@@ -45,23 +45,23 @@ describe("toEducationPayload", () => {
     const missing = { institution: null, degree: null, description: null } as unknown as EducationFormValues;
 
     expect(toEducationPayload(missing)).toEqual({
-      institution: "", degree: "", startDate: "", endDate: null, description: null,
+      institution: "", degree: "", startDate: "", endDate: "", description: null,
     });
   });
-  it("trims the text fields and sends null for empty optional values", () => {
+  it("trims text and keeps required dates while clearing an empty description", () => {
     expect(
       toEducationPayload({
         institution: " Example University ",
         degree: " Computer Science ",
         startDate: "2021-02-01",
-        endDate: "",
+        endDate: "2025-11-30",
         description: "  ",
       }),
     ).toEqual({
       institution: "Example University",
       degree: "Computer Science",
       startDate: "2021-02-01",
-      endDate: null,
+      endDate: "2025-11-30",
       description: null,
     });
   });

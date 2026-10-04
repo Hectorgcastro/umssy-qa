@@ -7,6 +7,7 @@ export const EDUCATION_UI_TEXTS = {
   addButton: "Agregar información",
   editButton: "Editar",
   deleteButton: "Eliminar",
+  deletingButton: "Eliminando...",
   createTitle: "Agregar formación",
   editTitle: "Editar formación",
   institutionLabel: "Institución",

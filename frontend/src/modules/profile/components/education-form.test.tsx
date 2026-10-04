@@ -15,6 +15,34 @@ const VALUES: EducationFormValues = {
 describe("EducationForm", () => {
   afterEach(cleanup);
 
+  it("shows accessible errors and blocks an empty submission", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm onSubmit={onSubmit} onCancel={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    for (const label of [/Institución/, /Título o carrera/, /Desde/, /Hasta/]) {
+      expect(screen.getByLabelText(label)).toHaveAttribute("aria-invalid", "true");
+      expect(screen.getByLabelText(label)).toHaveAccessibleDescription();
+    }
+    expect(screen.getByText("La fecha de fin es obligatoria.")).toBeInTheDocument();
+  });
+
+  it("revalidates both dates when correcting the start date and allows no description", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm initialValues={{ ...VALUES, startDate: "2026-01-01", description: "" }} onSubmit={onSubmit} onCancel={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Hasta/)).toHaveAccessibleDescription("La fecha de fin no puede ser anterior a la fecha de inicio.");
+
+    fireEvent.change(screen.getByLabelText(/Desde/), { target: { value: VALUES.endDate } });
+    expect(screen.getByLabelText(/Hasta/)).toHaveAttribute("aria-invalid", "false");
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith({ ...VALUES, startDate: VALUES.endDate, description: "" });
+  });
+
   it("submits the values entered in the create form", async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();

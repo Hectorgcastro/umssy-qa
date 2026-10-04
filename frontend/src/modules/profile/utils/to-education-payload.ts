@@ -7,7 +7,7 @@ export function toEducationPayload(values: EducationFormValues): EducationPayloa
     institution: (values.institution ?? "").trim(),
     degree: (values.degree ?? "").trim(),
     startDate: values.startDate ?? "",
-    endDate: values.endDate || null,
+    endDate: values.endDate ?? "",
     description: description === "" ? null : description,
   };
 }

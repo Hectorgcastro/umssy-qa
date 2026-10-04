@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ConfirmDeleteDialog } from "../components/confirm-delete-dialog";
+import { EducationDeleteDialog } from "../components/education-delete-dialog";
 import { EducationForm } from "../components/education-form";
 import { EducationListCard } from "../components/education-list-card";
 import { FeedbackMessage } from "../components/feedback-message";
@@ -33,9 +33,7 @@ export function EducationView() {
     return reload();
   });
 
-  const deleteMutation = useDeleteEducation(() => {
-    void reload();
-  });
+  const deleteMutation = useDeleteEducation(reload);
 
   const isBusy = saveMutation.isSaving || deleteMutation.isDeleting || pendingDelete !== null;
 
@@ -77,10 +75,11 @@ export function EducationView() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!pendingDelete) {
+    if (!pendingDelete || deleteMutation.isDeleting) {
       return;
     }
-    await deleteMutation.deleteEducation(pendingDelete);
+    const deleted = await deleteMutation.deleteEducation(pendingDelete);
+    if (!deleted) return;
     if (editingEducation?.id === pendingDelete.id) {
       resetForm();
     }
@@ -94,7 +93,7 @@ export function EducationView() {
       description={EDUCATION_UI_TEXTS.pageDescription}
     >
       <TrajectorySteps activeStep="education" />
-      <FeedbackMessage feedback={deleteMutation.feedback} />
+      <FeedbackMessage feedback={pendingDelete ? null : deleteMutation.feedback} />
       <div className={`grid items-start gap-6 ${isFormOpen ? "grid-cols-2" : "grid-cols-1"}`}>
         <EducationListCard
           educations={educations}
@@ -116,17 +115,13 @@ export function EducationView() {
           />
         ) : null}
       </div>
-      <ConfirmDeleteDialog
+      <EducationDeleteDialog
         isOpen={pendingDelete !== null}
-        title={EDUCATION_UI_TEXTS.deleteTitle}
-        message={
-          pendingDelete
-            ? EDUCATION_UI_TEXTS.deleteMessage(pendingDelete.degree)
-            : ""
-        }
+        degree={pendingDelete?.degree ?? ""}
+        feedback={deleteMutation.feedback}
         isDeleting={deleteMutation.isDeleting}
         onConfirm={() => void handleConfirmDelete()}
-        onCancel={() => setPendingDelete(null)}
+        onCancel={() => { if (!deleteMutation.isDeleting) setPendingDelete(null); }}
       />
     </ProfilePageLayout>
   );
