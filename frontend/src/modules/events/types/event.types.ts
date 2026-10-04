@@ -30,6 +30,8 @@ export interface EventsListResponse {
 export interface GetEventsParams {
   page: number;
   limit: number;
+  search?: string;
+  categoryId?: string;
 }
 
 // Contrato de propiedades con sufijo obligatorio Props (Estandar 2.2)
