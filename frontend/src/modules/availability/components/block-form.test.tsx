@@ -33,8 +33,9 @@ describe("BlockForm", () => {
   it("renderiza el modo creación con sus campos y botones", () => {
     renderForm()
 
-    expect(screen.getByRole("heading", { name: "Nuevo bloque de disponibilidad" })).toBeInTheDocument()
-    expect(screen.getByRole("group", { name: /Día/ })).toBeInTheDocument()
+    expect(screen.getByText("Nuevo bloque de disponibilidad")).toBeInTheDocument()
+    expect(screen.getByLabelText(/Fecha/)).toHaveValue("")
+    expect(screen.getByText("Los días anteriores a hoy no se pueden elegir.")).toBeInTheDocument()
     expect(screen.getByLabelText(/Hora de inicio/)).toBeInTheDocument()
     expect(screen.getByLabelText(/Hora de fin/)).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Cancelar" })).toBeInTheDocument()
@@ -75,7 +76,7 @@ describe("BlockForm", () => {
 
     await user.click(screen.getByRole("button", { name: "Guardar bloque" }))
 
-    expect(screen.getByText("Selecciona un día")).toBeInTheDocument()
+    expect(screen.getByText("Selecciona una fecha")).toBeInTheDocument()
     expect(screen.getByText("Selecciona la hora de inicio")).toBeInTheDocument()
     expect(screen.getByText("Selecciona la hora de fin")).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
@@ -115,6 +116,14 @@ describe("BlockForm", () => {
     expect(screen.queryByText("La hora de fin debe ser posterior a la hora de inicio")).not.toBeInTheDocument()
   })
 
+  it("muestra la fecha elegida en el campo Fecha", async () => {
+    const { user } = renderForm()
+
+    await user.click(screen.getByRole("button", { name: "martes, 13 de octubre de 2026" }))
+
+    expect(screen.getByLabelText(/Fecha/)).toHaveValue("Martes 13 de octubre de 2026")
+  })
+
   it("envía el bloque en UTC cuando es válido", async () => {
     const { onSubmit, user } = renderForm()
 
@@ -143,7 +152,8 @@ describe("BlockForm", () => {
       initialValues: { startAt: "2026-10-13T22:00:00.000Z", endAt: "2026-10-14T00:00:00.000Z" },
     })
 
-    expect(screen.getByRole("heading", { name: "Editar bloque" })).toBeInTheDocument()
+    expect(screen.getByText("Editar bloque")).toBeInTheDocument()
+    expect(screen.getByLabelText(/Fecha/)).toHaveValue("Martes 13 de octubre de 2026")
     expect(screen.getByLabelText(/Hora de inicio/)).toHaveValue("18:00")
     expect(screen.getByLabelText(/Hora de fin/)).toHaveValue("20:00")
 

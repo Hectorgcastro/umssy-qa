@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { CalendarDaysIcon } from "lucide-react";
 import { es } from "react-day-picker/locale";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { toBoliviaTime, toUtcIso } from "@/shared/utils/date-time";
 import {
   BLOCK_MAX_HOUR,
@@ -30,18 +34,18 @@ interface BlockFormProps {
 const FORM_TEXT: Record<BlockFormMode, { title: string; description: string; submit: string }> = {
   create: {
     title: "Nuevo bloque de disponibilidad",
-    description: "Indica el día y el horario en que puedes atender sesiones de mentoría.",
+    description: "Elige la fecha y el horario en que puedes atender sesiones de mentoría.",
     submit: "Guardar bloque",
   },
   edit: {
     title: "Editar bloque",
-    description: "Modifica el día o el horario del bloque.",
+    description: "Modifica la fecha o el horario del bloque.",
     submit: "Guardar cambios",
   },
 };
 
 const REQUIRED_MESSAGES: Record<BlockFormField, string> = {
-  date: "Selecciona un día",
+  date: "Selecciona una fecha",
   startAt: "Selecciona la hora de inicio",
   endAt: "Selecciona la hora de fin",
 };
@@ -56,9 +60,6 @@ const TIME_OPTIONS: string[] = Array.from(
   },
 );
 
-const SELECT_CLASS_NAME =
-  "h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm";
-
 // El calendario trabaja con fechas locales; se usan solo como día de calendario (YYYY-MM-DD).
 const toCalendarDate = (date: string): Date => {
   const [year, month, day] = date.split("-").map(Number);
@@ -67,6 +68,15 @@ const toCalendarDate = (date: string): Date => {
 
 const toDateString = (date: Date): string =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+// "2026-10-10" -> "Sábado 10 de octubre de 2026"
+const formatLongDate = (date: string): string => {
+  const [year, month, day] = date.split("-").map(Number);
+  const value = new Date(Date.UTC(year, month - 1, day));
+  const weekday = value.toLocaleDateString("es-BO", { weekday: "long", timeZone: "UTC" });
+  const monthName = value.toLocaleDateString("es-BO", { month: "long", timeZone: "UTC" });
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${day} de ${monthName} de ${year}`;
+};
 
 const getBoliviaToday = (): Date => toCalendarDate(toBoliviaTime(new Date()).date);
 
@@ -158,97 +168,121 @@ export function BlockForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="flex w-full flex-col gap-5 rounded-xl border bg-card p-4 text-card-foreground sm:p-6"
-    >
-      <div className="flex flex-col gap-1">
-        <h2 className="font-heading text-lg font-semibold">{text.title}</h2>
-        <p className="text-sm text-muted-foreground">{text.description}</p>
-      </div>
+    <Card className="w-full [--card-spacing:--spacing(4)] sm:[--card-spacing:--spacing(6)]">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">{text.title}</CardTitle>
+        <CardDescription>{text.description}</CardDescription>
+      </CardHeader>
 
-      <fieldset className="flex flex-col gap-2" aria-describedby={errors.date ? "date-error" : undefined}>
-        <legend className="mb-2 text-sm font-medium">
-          Día
-          <RequiredMark />
-        </legend>
-        <Calendar
-          mode="single"
-          locale={es}
-          selected={selectedDate}
-          onSelect={handleDateSelect}
-          defaultMonth={selectedDate ?? today}
-          disabled={{ before: today }}
-          className="w-full rounded-lg border sm:w-fit"
-        />
-        <FieldError id="date-error" message={errors.date} />
-      </fieldset>
+      <form onSubmit={handleSubmit} noValidate className="contents">
+        <CardContent className="flex flex-col gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="date" className="text-sm font-semibold">
+                Fecha
+                <RequiredMark />
+              </label>
+              <div className="relative">
+                <Input
+                  id="date"
+                  readOnly
+                  value={date ? formatLongDate(date) : ""}
+                  placeholder="Selecciona una fecha en el calendario"
+                  aria-invalid={errors.date ? true : undefined}
+                  aria-describedby={errors.date ? "date-error" : "date-hint"}
+                  className="h-10 pr-10"
+                />
+                <CalendarDaysIcon
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+              </div>
+              <Calendar
+                mode="single"
+                locale={es}
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                defaultMonth={selectedDate ?? today}
+                disabled={{ before: today }}
+                className="w-full rounded-lg border [--cell-size:--spacing(9)]"
+              />
+              <p id="date-hint" className="text-xs text-muted-foreground">
+                Los días anteriores a hoy no se pueden elegir.
+              </p>
+              <FieldError id="date-error" message={errors.date} />
+            </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="startAt" className="text-sm font-medium">
-            Hora de inicio
-            <RequiredMark />
-          </label>
-          <select
-            id="startAt"
-            name="startAt"
-            value={startTime}
-            onChange={handleStartChange}
-            aria-invalid={errors.startAt ? true : undefined}
-            aria-describedby={errors.startAt ? "startAt-error" : undefined}
-            className={SELECT_CLASS_NAME}
-          >
-            <option value="">--:--</option>
-            {TIME_OPTIONS.map((time) => (
-              <option key={time} value={time}>
-                {time}
-              </option>
-            ))}
-          </select>
-          <FieldError id="startAt-error" message={errors.startAt} />
-        </div>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="startAt" className="text-sm font-semibold">
+                  Hora de inicio
+                  <RequiredMark />
+                </label>
+                <NativeSelect
+                  id="startAt"
+                  name="startAt"
+                  value={startTime}
+                  onChange={handleStartChange}
+                  aria-invalid={errors.startAt ? true : undefined}
+                  aria-describedby={errors.startAt ? "startAt-error" : undefined}
+                  className="w-full [&>select]:h-10"
+                >
+                  <NativeSelectOption value="">--:--</NativeSelectOption>
+                  {TIME_OPTIONS.map((time) => (
+                    <NativeSelectOption key={time} value={time}>
+                      {time}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+                <FieldError id="startAt-error" message={errors.startAt} />
+              </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="endAt" className="text-sm font-medium">
-            Hora de fin
-            <RequiredMark />
-          </label>
-          <select
-            id="endAt"
-            name="endAt"
-            value={endTime}
-            onChange={handleEndChange}
-            aria-invalid={errors.endAt ? true : undefined}
-            aria-describedby={errors.endAt ? "endAt-error" : undefined}
-            className={SELECT_CLASS_NAME}
-          >
-            <option value="">--:--</option>
-            {TIME_OPTIONS.map((time) => (
-              <option key={time} value={time}>
-                {time}
-              </option>
-            ))}
-          </select>
-          <FieldError id="endAt-error" message={errors.endAt} />
-        </div>
-      </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="endAt" className="text-sm font-semibold">
+                  Hora de fin
+                  <RequiredMark />
+                </label>
+                <NativeSelect
+                  id="endAt"
+                  name="endAt"
+                  value={endTime}
+                  onChange={handleEndChange}
+                  aria-invalid={errors.endAt ? true : undefined}
+                  aria-describedby={errors.endAt ? "endAt-error" : undefined}
+                  className="w-full [&>select]:h-10"
+                >
+                  <NativeSelectOption value="">--:--</NativeSelectOption>
+                  {TIME_OPTIONS.map((time) => (
+                    <NativeSelectOption key={time} value={time}>
+                      {time}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+                <FieldError id="endAt-error" message={errors.endAt} />
+              </div>
 
-      {submitError && (
-        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {submitError}
-        </p>
-      )}
+              <p className="text-xs text-muted-foreground">
+                La hora de fin debe ser posterior a la de inicio. Horario en hora de Bolivia (GMT-4).
+              </p>
+            </div>
+          </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
-          {isSubmitting ? "Guardando..." : text.submit}
-        </Button>
-      </div>
-    </form>
+          {submitError && (
+            <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {submitError}
+            </p>
+          )}
+        </CardContent>
+
+        <CardFooter className="flex-col-reverse gap-2 bg-transparent sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
+            {isSubmitting ? "Guardando..." : text.submit}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
