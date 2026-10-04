@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { WeekGrid } from "./week-grid";
 import type { AvailabilityBlock } from "../../types/availability-block.types";
 import type { WeekRange } from "@/shared/types/week-range.types";
@@ -29,6 +29,10 @@ const blocks: AvailabilityBlock[] = [
 ];
 
 describe("WeekGrid", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("muestra la leyenda con los 3 estados", () => {
     render(<WeekGrid blocks={[]} weekRange={WEEK_RANGE} variant="public" />);
     expect(screen.getByText("Libre")).toBeInTheDocument();
@@ -125,15 +129,15 @@ describe("WeekGrid", () => {
   it("ubica un bloque cuya hora UTC cae al día siguiente en la columna del día correcto en Bolivia", () => {
     const crossDayBlock = makeBlock({
       id: "5",
-      startAt: "2026-10-06T02:00:00.000Z",
-      endAt: "2026-10-06T03:00:00.000Z",
+      startAt: "2026-10-06T00:00:00.000Z",
+      endAt: "2026-10-06T01:00:00.000Z",
       state: "confirmed",
     });
     render(
       <WeekGrid blocks={[crossDayBlock]} weekRange={WEEK_RANGE} variant="public" />
     );
     expect(
-      screen.getByRole("button", { name: /confirmada, 22:00 a 23:00/ })
+      screen.getByRole("button", { name: /confirmada, 20:00 a 21:00/ })
     ).toBeInTheDocument();
   });
 });
