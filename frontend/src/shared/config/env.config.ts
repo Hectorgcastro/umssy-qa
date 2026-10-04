@@ -12,3 +12,9 @@ export const ENV_CONFIG = {
   env: currentEnv,
   apiUrl: API_URLS[currentEnv],
 };
+
+if (!ENV_CONFIG.apiUrl) {
+  throw new Error(
+    `Falta NEXT_PUBLIC_API_URL_${currentEnv.toUpperCase()} en tu .env.local. Revisa .env.example.`
+  );
+}
