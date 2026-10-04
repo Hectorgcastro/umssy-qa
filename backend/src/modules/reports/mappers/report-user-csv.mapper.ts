@@ -6,7 +6,7 @@ import type {
 } from '../types/report-user.types.js';
 
 // Mismas etiquetas que muestra la tabla del frontend (modules/reports/constants).
-const USER_TYPE_LABELS: Record<ReportUserType, string> = {
+export const USER_TYPE_LABELS: Record<ReportUserType, string> = {
   STUDENT: 'Estudiante',
   GRADUATE: 'Egresado',
   DEGREE_HOLDER: 'Titulado',

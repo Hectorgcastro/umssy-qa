@@ -109,6 +109,20 @@ describe('ReportsService', () => {
 
       expect(fileName).toBe('usuarios-registrados-2026-10-03.csv');
     });
+
+    it('agrega al nombre del archivo los filtros usados', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({
+          userType: 'STUDENT',
+          year: '2026',
+          search: 'Ana Pérez',
+        }),
+      );
+
+      expect(fileName).toBe(
+        'usuarios-registrados-estudiante-2026-ana-perez-2026-10-03.csv',
+      );
+    });
   });
 
   describe('exportRejectedUsersCsv', () => {
@@ -162,6 +176,16 @@ describe('ReportsService', () => {
       const { fileName } = buildService().exportRejectedUsersCsv({});
 
       expect(fileName).toBe('usuarios-rechazados-2026-10-03.csv');
+    });
+
+    it('agrega al nombre del archivo lo que se buscó', () => {
+      const { fileName } = buildService().exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({ search: ' Juan.Perez@gmail.com ' }),
+      );
+
+      expect(fileName).toBe(
+        'usuarios-rechazados-juan.perez@gmail.com-2026-10-03.csv',
+      );
     });
   });
 

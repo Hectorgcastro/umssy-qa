@@ -5,6 +5,7 @@ import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { EmailSearchInput } from "../components/email-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
+import { ExportErrorMessage } from "../components/export-error-message";
 import { RefreshButton } from "../components/refresh-button";
 import { RejectedUsersTable } from "../components/rejected-users-table";
 import { TablePagination } from "../components/table-pagination";
@@ -46,18 +47,14 @@ export function RejectedUsersReportView() {
         <ExportCsvButton onClick={exportCsv} isExporting={isExporting} />
       </div>
 
-      {exportErrorMessage && (
-        <p role="alert" className="text-sm text-accent">
-          {exportErrorMessage}
-        </p>
-      )}
-
       <RejectedUsersTable
         users={users}
         isLoading={isLoading}
         errorMessage={errorMessage}
         searchTerm={search}
       />
+
+      <ExportErrorMessage message={exportErrorMessage} />
 
       <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
         <p className="text-center text-sm text-text-secondary md:text-left">

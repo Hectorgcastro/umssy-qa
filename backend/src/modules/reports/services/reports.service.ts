@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import type { PaginatedResult } from '../../../common/types/api-response.types.js';
 import { buildCsv } from '../../../common/utils/csv.js';
+import { buildExportFileName } from '../../../common/utils/file-name.js';
 import { paginate } from '../../../common/utils/pagination.js';
 import {
   REGISTERED_USERS_CSV_HEADERS,
   REJECTED_USERS_CSV_HEADERS,
   toRegisteredUserCsvRow,
   toRejectedUserCsvRow,
+  USER_TYPE_LABELS,
 } from '../mappers/report-user-csv.mapper.js';
 import {
   toRegisteredUserResponse,
@@ -28,6 +30,7 @@ import type {
 
 const REGISTERED_USERS_CSV_PREFIX = 'usuarios-registrados';
 const REJECTED_USERS_CSV_PREFIX = 'usuarios-rechazados';
+const CSV_EXTENSION = 'csv';
 
 // Ignora mayúsculas y tildes para que "perez" encuentre "Pérez".
 function normalizeText(text: string): string {
@@ -69,8 +72,20 @@ export class ReportsService {
   exportRegisteredUsersCsv(filters: RegisteredUsersFilters): ReportCsvFile {
     const rows = this.findRegisteredUsers(filters).map(toRegisteredUserCsvRow);
 
+    // El nombre del archivo indica los filtros usados: tipo de usuario, gestión y búsqueda.
+    const fileNameFilters = [
+      filters.userType && USER_TYPE_LABELS[filters.userType],
+      filters.year?.toString(),
+      filters.search,
+    ];
+
     return {
-      fileName: `${REGISTERED_USERS_CSV_PREFIX}-${todayIsoDate()}.csv`,
+      fileName: buildExportFileName(
+        REGISTERED_USERS_CSV_PREFIX,
+        fileNameFilters,
+        todayIsoDate(),
+        CSV_EXTENSION,
+      ),
       content: buildCsv(REGISTERED_USERS_CSV_HEADERS, rows),
     };
   }
@@ -85,7 +100,12 @@ export class ReportsService {
     const rows = this.findRejectedUsers(filters).map(toRejectedUserCsvRow);
 
     return {
-      fileName: `${REJECTED_USERS_CSV_PREFIX}-${todayIsoDate()}.csv`,
+      fileName: buildExportFileName(
+        REJECTED_USERS_CSV_PREFIX,
+        [filters.search],
+        todayIsoDate(),
+        CSV_EXTENSION,
+      ),
       content: buildCsv(REJECTED_USERS_CSV_HEADERS, rows),
     };
   }
