@@ -8,10 +8,28 @@ import type {
   RegisteredUsersExportParams,
   RegisteredUsersParams,
 } from "../types/registered-user.types";
-import type { RejectedUser, RejectedUsersParams } from "../types/rejected-user.types";
+import type {
+  RejectedUser,
+  RejectedUsersExportParams,
+  RejectedUsersParams,
+} from "../types/rejected-user.types";
 import { REGISTERED_USERS_MOCK } from "./registered-users.mock";
 
 const REGISTERED_USERS_CSV_FALLBACK_NAME = "usuarios-registrados.csv";
+const REJECTED_USERS_CSV_FALLBACK_NAME = "usuarios-rechazados.csv";
+
+// Descarga un CSV del backend y toma el nombre del archivo de la cabecera Content-Disposition.
+async function downloadCsv(url: string, params: object, fallbackName: string): Promise<ExportedFile> {
+  const response = await apiClient.get<Blob>(url, { params, responseType: "blob" });
+
+  return {
+    file: response.data,
+    fileName: getFileNameFromDisposition(
+      response.headers["content-disposition"] as string | undefined,
+      fallbackName,
+    ),
+  };
+}
 
 export const reportsService = {
   getReportHistory: async ({
@@ -49,20 +67,8 @@ export const reportsService = {
     };
   },
 
-  exportRegisteredUsersCsv: async ({ userType }: RegisteredUsersExportParams): Promise<ExportedFile> => {
-    const response = await apiClient.get<Blob>("/reports/registered-users/export", {
-      params: { userType },
-      responseType: "blob",
-    });
-
-    return {
-      file: response.data,
-      fileName: getFileNameFromDisposition(
-        response.headers["content-disposition"] as string | undefined,
-        REGISTERED_USERS_CSV_FALLBACK_NAME,
-      ),
-    };
-  },
+  exportRegisteredUsersCsv: ({ userType }: RegisteredUsersExportParams): Promise<ExportedFile> =>
+    downloadCsv("/reports/registered-users/export", { userType }, REGISTERED_USERS_CSV_FALLBACK_NAME),
 
   getRejectedUsers: async ({
     page,
@@ -75,4 +81,7 @@ export const reportsService = {
 
     return data;
   },
+
+  exportRejectedUsersCsv: ({ search }: RejectedUsersExportParams): Promise<ExportedFile> =>
+    downloadCsv("/reports/rejected-users/export", { search: search || undefined }, REJECTED_USERS_CSV_FALLBACK_NAME),
 };

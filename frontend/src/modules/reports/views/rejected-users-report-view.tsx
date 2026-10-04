@@ -8,6 +8,7 @@ import { ExportCsvButton } from "../components/export-csv-button";
 import { RefreshButton } from "../components/refresh-button";
 import { RejectedUsersTable } from "../components/rejected-users-table";
 import { TablePagination } from "../components/table-pagination";
+import { useExportRejectedUsersCsv } from "../hooks/use-export-rejected-users-csv";
 import { REJECTED_USERS_PAGE_SIZE, useRejectedUsers } from "../hooks/use-rejected-users";
 
 const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
@@ -23,6 +24,7 @@ export function RejectedUsersReportView() {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebouncedValue(searchInput.trim(), SEARCH_DEBOUNCE_MS);
   const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRejectedUsers(currentPage, search);
+  const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRejectedUsersCsv(search);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -41,8 +43,14 @@ export function RejectedUsersReportView() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <EmailSearchInput value={searchInput} onChange={handleSearchChange} />
-        <ExportCsvButton />
+        <ExportCsvButton onClick={exportCsv} isExporting={isExporting} />
       </div>
+
+      {exportErrorMessage && (
+        <p role="alert" className="text-sm text-accent">
+          {exportErrorMessage}
+        </p>
+      )}
 
       <RejectedUsersTable
         users={users}
