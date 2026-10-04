@@ -1,7 +1,6 @@
 import { z } from 'zod';
+import { toBoliviaTime } from '../../../common/utils/date-time.js';
 
-// Bolivia no usa horario de verano: siempre UTC-4.
-export const BOLIVIA_UTC_OFFSET_MINUTES = -240;
 // Rango de atención en hora de Bolivia (valor propuesto, a confirmar con el PO).
 export const BLOCK_MIN_HOUR = 7;
 export const BLOCK_MAX_HOUR = 22;
@@ -16,16 +15,15 @@ export const CREATE_BLOCK_MESSAGES = {
   differentDays: 'El bloque debe empezar y terminar el mismo día',
 } as const;
 
-// Convierte un instante UTC a sus componentes de fecha y hora en Bolivia.
 const getBoliviaParts = (date: Date) => {
-  const shifted = new Date(date.getTime() + BOLIVIA_UTC_OFFSET_MINUTES * 60_000);
+  const { date: day, hours, minutes } = toBoliviaTime(date);
   return {
-    day: shifted.toISOString().slice(0, 10),
-    minutesOfDay: shifted.getUTCHours() * 60 + shifted.getUTCMinutes(),
+    day,
+    minutesOfDay: hours * 60 + minutes,
     isOnStep:
-      shifted.getUTCMinutes() % BLOCK_STEP_MINUTES === 0 &&
-      shifted.getUTCSeconds() === 0 &&
-      shifted.getUTCMilliseconds() === 0,
+      minutes % BLOCK_STEP_MINUTES === 0 &&
+      date.getUTCSeconds() === 0 &&
+      date.getUTCMilliseconds() === 0,
   };
 };
 
