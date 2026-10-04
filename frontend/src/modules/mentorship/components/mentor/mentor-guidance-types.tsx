@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Compass } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import type { MentorGuidanceType } from "../../types/mentor-guidance-type.types";
 
@@ -28,8 +25,12 @@ export function MentorGuidanceTypes({
           <CardTitle
             role="heading"
             aria-level={2}
-            className="text-xl font-bold text-umssy-ink"
+            className="flex items-center gap-2 text-xl font-bold text-umssy-ink"
           >
+            <Compass
+              className="size-5 shrink-0 text-umssy-red"
+              aria-hidden="true"
+            />
             Tipos de orientación
           </CardTitle>
         </CardHeader>
@@ -53,8 +54,12 @@ export function MentorGuidanceTypes({
         <CardTitle
           role="heading"
           aria-level={2}
-          className="text-xl font-bold text-umssy-ink"
+          className="flex items-center gap-2 text-xl font-bold text-umssy-ink"
         >
+          <Compass
+            className="size-5 shrink-0 text-umssy-red"
+            aria-hidden="true"
+          />
           Tipos de orientación
         </CardTitle>
       </CardHeader>

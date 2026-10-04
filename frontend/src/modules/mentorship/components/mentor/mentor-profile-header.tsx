@@ -29,17 +29,17 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
                 src={mentor.profileImage}
                 alt={`Foto de ${mentor.name}`}
                 fill
-                className="rounded-full object-cover"
+                className="rounded-full border-2 border-umssy-border object-cover"
               />
             ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-umssy-border text-2xl font-bold text-umssy-ink">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-umssy-border bg-white text-2xl font-bold text-umssy-ink shadow-sm">
                 {getInitials(mentor.name)}
               </div>
             )}
 
             <span
               className={`absolute bottom-1 right-1 h-4 w-4 rounded-full border-2 border-white ${
-                mentor.isAvailable ? "bg-umssy-red" : "bg-umssy-secondary"
+                mentor.isAvailable ? "bg-green-500" : "bg-red-500"
               }`}
             />
           </div>
@@ -50,10 +50,16 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
                 {mentor.name}
               </h1>
 
-              <span className="inline-flex items-center gap-2 rounded-full border border-umssy-border bg-umssy-background px-3 py-1 text-sm text-umssy-secondary">
+              <span
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold ${
+                  mentor.isAvailable
+                    ? "border-green-300 bg-green-100 text-green-700"
+                    : "border-red-300 bg-red-100 text-red-700"
+                }`}
+              >
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    mentor.isAvailable ? "bg-umssy-red" : "bg-umssy-secondary"
+                    mentor.isAvailable ? "bg-green-500" : "bg-red-500"
                   }`}
                 />
 
