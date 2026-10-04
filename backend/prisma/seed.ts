@@ -42,6 +42,9 @@ const EVENT_UI_UX_ID = '33333333-3333-3333-3333-333333333344';
 const EVENT_SEGURIDAD_BASICA_ID = '33333333-3333-3333-3333-333333333345';
 const EVENT_NOSQL_ID = '33333333-3333-3333-3333-333333333346';
 
+// --- Commit 6: unpublished event UUID ---
+const EVENT_BORRADOR_ID = '33333333-3333-3333-3333-333333333347';
+
 async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
@@ -373,6 +376,41 @@ async function main() {
     });
   }
   console.log('Event registrations ensured: 24 active, 1 cancelled');
+
+  // --- Commit 6: 1 unpublished event (Draft) ---
+  await prisma.event.upsert({
+    where: { id: EVENT_BORRADOR_ID },
+    update: {
+      title: 'Taller en Borrador',
+      description: 'Evento borrador para pruebas de visibilidad y filtrado.',
+      instructorName: 'Instructor Borrador',
+      eventDate: new Date('2026-11-20'),
+      startTime: new Date('1970-01-01T10:00:00.000Z'),
+      endTime: new Date('1970-01-01T13:00:00.000Z'),
+      capacity: 20,
+      categoryId: CATEGORY_TECNOLOGIA_ID,
+      modalityId: MODALITY_PRESENCIAL_ID,
+      originId: ORIGIN_INSTITUCIONAL_ID,
+      statusId: EVENT_STATUS_BORRADOR_ID,
+      createdById: seedUsers[0].id,
+    },
+    create: {
+      id: EVENT_BORRADOR_ID,
+      title: 'Taller en Borrador',
+      description: 'Evento borrador para pruebas de visibilidad y filtrado.',
+      instructorName: 'Instructor Borrador',
+      eventDate: new Date('2026-11-20'),
+      startTime: new Date('1970-01-01T10:00:00.000Z'),
+      endTime: new Date('1970-01-01T13:00:00.000Z'),
+      capacity: 20,
+      categoryId: CATEGORY_TECNOLOGIA_ID,
+      modalityId: MODALITY_PRESENCIAL_ID,
+      originId: ORIGIN_INSTITUCIONAL_ID,
+      statusId: EVENT_STATUS_BORRADOR_ID,
+      createdById: seedUsers[0].id,
+    },
+  });
+  console.log('Unpublished event ensured: 1 draft event');
 }
 
 main()
