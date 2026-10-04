@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -26,26 +26,21 @@ import {
   saveMentorAreas,
   loadMentorAreas,
 } from "../services/technical-areas.mock";
-import type {
-  TechnicalAreasViewProps,
-} from "../types/technical-areas-view-props.types";
 
-export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
+export function TechnicalAreasView() {
   const router = useRouter();
-  const isEditMode = mode === "edit";
-  const initialIds = isEditMode ? MOCK_MENTOR_AREA_IDS : [];
+  const initialIds = MOCK_MENTOR_AREA_IDS;
 
   const [savedIds, setSavedIds] = useState<number[]>(initialIds);
   const [selectedIds, setSelectedIds] = useState<number[]>(initialIds);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [toast, setToast] = useState<{ isError: boolean; text: string } | null>(
     null,
   );
 
   useEffect(() => {
-    if (!isEditMode) return;
     let active = true;
     loadMentorAreas().then((ids) => {
       if (!active) return;
@@ -57,7 +52,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
       if (active) setIsLoading(false);
     });
     return () => { active = false; };
-  }, [isEditMode]);
+  }, []);
 
   const hasChanges =
     selectedIds.length !== savedIds.length ||
@@ -79,11 +74,6 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
   const handleSubmit = async () => {
     if (hasNoSelection) return;
 
-    if (!isEditMode) {
-      router.push("/mentors/register/guidance");
-      return;
-    }
-
     setIsSaving(true);
     try {
       await saveMentorAreas(selectedIds);
@@ -97,7 +87,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
   };
 
   const handleGoBack = () => {
-    if (isEditMode && hasChanges) setIsDiscardModalOpen(true);
+    if (hasChanges) setIsDiscardModalOpen(true);
     else router.push("/mentors/participation");
   };
 
@@ -106,7 +96,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
       <Breadcrumbs items={TECHNICAL_AREAS_BREADCRUMB_ITEMS} />
 
       <h1 className="text-2xl font-bold">
-        {isEditMode ? "Editar áreas técnicas" : "Selecciona tus áreas técnicas"}
+        Editar áreas técnicas
       </h1>
       <p className="mb-4 text-gray-600">
         Indica las áreas en las que tienes experiencia y puedes brindar
@@ -155,13 +145,9 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
         >
           {isSaving ? (
             "Guardando..."
-          ) : isEditMode ? (
-            <>
-              <Save size={16} /> Guardar cambios
-            </>
           ) : (
             <>
-              Continuar <ArrowRight size={16} />
+              <Save size={16} /> Guardar cambios
             </>
           )}
         </Button>

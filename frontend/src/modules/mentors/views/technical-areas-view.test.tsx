@@ -25,43 +25,9 @@ describe("TechnicalAreasView", () => {
     cleanup()
   })
 
-  describe("modo register", () => {
-    it("muestra las 8 áreas sin marcar, alerta y botón bloqueado", async () => {
-      render(<TechnicalAreasView mode="register" />)
-      expect(screen.getAllByRole("checkbox")).toHaveLength(8)
-      expect(screen.getByRole("alert").textContent).toContain(
-        "Debe seleccionarse al menos un área para continuar"
-      )
-      expect((button(/Continuar/) as HTMLButtonElement).disabled).toBe(true)
-    })
-
-    it("al marcar un área actualiza el contador y habilita el botón", async () => {
-      render(<TechnicalAreasView mode="register" />)
-      fireEvent.click(card(/Backend/))
-      expect(screen.getByText("1 seleccionadas")).toBeTruthy()
-      expect(screen.queryByRole("alert")).toBeNull()
-      expect((button(/Continuar/) as HTMLButtonElement).disabled).toBe(false)
-    })
-
-    it("al desmarcar un área vuelve al estado neutro", async () => {
-      render(<TechnicalAreasView mode="register" />)
-      fireEvent.click(card(/Backend/))
-      expect(card(/Backend/).getAttribute("aria-checked")).toBe("true")
-      fireEvent.click(card(/Backend/))
-      expect(card(/Backend/).getAttribute("aria-checked")).toBe("false")
-    })
-
-    it("Continuar avanza al Paso 3", async () => {
-      render(<TechnicalAreasView mode="register" />)
-      fireEvent.click(card(/Backend/))
-      fireEvent.click(button(/Continuar/))
-      expect(push).toHaveBeenCalledWith("/mentors/register/guidance")
-    })
-  })
-
   describe("modo edit", () => {
     it("carga marcadas las áreas del mentor (Backend, Cloud, Arquitectura)", async () => {
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       expect(card(/Backend/).getAttribute("aria-checked")).toBe("true")
       expect(card(/Cloud/).getAttribute("aria-checked")).toBe("true")
       expect(card(/Arquitectura/).getAttribute("aria-checked")).toBe("true")
@@ -70,7 +36,7 @@ describe("TechnicalAreasView", () => {
     })
 
     it("desmarcar todo muestra la alerta y bloquea Guardar", async () => {
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       fireEvent.click(card(/Backend/))
       fireEvent.click(card(/Cloud/))
       fireEvent.click(card(/Arquitectura/))
@@ -79,7 +45,7 @@ describe("TechnicalAreasView", () => {
     })
 
     it("guardar con éxito envía las áreas y muestra el toast", async () => {
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       fireEvent.click(card(/QA/))
       fireEvent.click(button(/Guardar cambios/))
       expect(
@@ -90,7 +56,7 @@ describe("TechnicalAreasView", () => {
 
     it("si falla el guardado muestra el mensaje de error", async () => {
       vi.mocked(saveMentorAreas).mockRejectedValueOnce(new Error("500"))
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       fireEvent.click(card(/QA/))
       fireEvent.click(button(/Guardar cambios/))
       expect(
@@ -101,13 +67,13 @@ describe("TechnicalAreasView", () => {
     })
 
     it("Volver sin cambios regresa directo a Mi participación", async () => {
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       fireEvent.click(button(/Volver/))
       expect(push).toHaveBeenCalledWith("/mentors/participation")
     })
 
     it("Volver con cambios abre el modal y Seguir editando lo cierra", async () => {
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       fireEvent.click(card(/QA/))
       fireEvent.click(button(/Volver/))
       expect(screen.getByText("¿Descartar cambios?")).toBeTruthy()
@@ -117,7 +83,7 @@ describe("TechnicalAreasView", () => {
     })
 
     it("Descartar en el modal regresa a Mi participación", async () => {
-      await act(async () => { render(<TechnicalAreasView mode="edit" />) })
+      await act(async () => { render(<TechnicalAreasView />) })
       fireEvent.click(card(/QA/))
       fireEvent.click(button(/Volver/))
       fireEvent.click(button("Descartar"))
