@@ -26,19 +26,16 @@ export function StepTechnicalAreas({
         </p>
       </div>
 
-      {/* Contador */}
       <div className="rounded-md bg-surface-soft px-3 py-2 text-sm font-medium text-ink">
         {selectedCount} seleccionada{selectedCount === 1 ? "" : "s"}
       </div>
 
-      {/* Mensaje de validación */}
       {!hasSelection && (
         <p className="text-sm font-medium text-red-600" role="alert">
           Debe seleccionarse al menos un área para continuar
         </p>
       )}
 
-      {/* Grid de tarjetas */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {TECHNICAL_AREAS.map((area) => (
           <TechnicalAreaCard

@@ -50,7 +50,7 @@ export function MentorshipView() {
   const handleActivate = async () => {
     setIsActivating(true);
 
-    // La integración real con la API se realizará en la tarea correspondiente.
+    // TODO: Replace the activation delay with the mentorship API integration.
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     saveMentorParticipation({

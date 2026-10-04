@@ -1,8 +1,4 @@
-export interface MentorGuidanceType {
-  id: number;
-  name: string;
-  description: string;
-}
+import type { MentorGuidanceType } from "./mentor-guidance-type.types";
 
 export interface MentorProfile {
   id: number;

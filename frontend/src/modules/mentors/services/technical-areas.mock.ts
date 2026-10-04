@@ -4,7 +4,7 @@ import {
   updateMentorParticipation,
 } from "@/shared/services/mentor-participation.service";
 
-// Datos de prueba: se reemplazan por GET /technical-areas cuando el backend esté listo
+// TODO: Replace mock technical areas with GET /technical-areas when backend integration is implemented.
 export const MOCK_TECHNICAL_AREAS: TechnicalArea[] = [
   { id: 1, name: "Backend", description: "APIs, lógica de negocio" },
   { id: 2, name: "Desarrollo Web", description: "Frontend & SPAs" },
@@ -16,7 +16,6 @@ export const MOCK_TECHNICAL_AREAS: TechnicalArea[] = [
   { id: 8, name: "Arquitectura", description: "Sistemas distribuidos & diseño" },
 ];
 
-// Áreas que el mentor ya tiene guardadas (Backend, Cloud y Arquitectura)
 export const MOCK_MENTOR_AREA_IDS: number[] = [1, 6, 8];
 
 export async function loadMentorAreas(): Promise<number[]> {

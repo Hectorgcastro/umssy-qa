@@ -6,19 +6,17 @@ import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { Breadcrumbs } from "@/shared/components/layout";
 import { TechnicalAreaCard } from "../components/technical-area-card";
 import {
+  TECHNICAL_AREAS_BREADCRUMB_ITEMS,
+} from "../constants/technical-areas-breadcrumb.constants";
+import {
   MOCK_MENTOR_AREA_IDS,
   MOCK_TECHNICAL_AREAS,
   saveMentorAreas,
   loadMentorAreas,
 } from "../services/technical-areas.mock";
-import type { TechnicalAreasViewProps } from "../types/technical-area.types";
-
-const BREADCRUMB_ITEMS = [
-  { label: "UMSSY", href: "/" },
-  { label: "Mentorías" },
-  { label: "Mi participación", href: "/mentors/participation" },
-  { label: "Áreas técnicas" },
-];
+import type {
+  TechnicalAreasViewProps,
+} from "../types/technical-areas-view-props.types";
 
 export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
   const router = useRouter();
@@ -69,7 +67,6 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
   const handleSubmit = async () => {
     if (hasNoSelection) return;
 
-    // Paso 2 del registro: solo avanza al Paso 3
     if (!isEditMode) {
       router.push("/mentors/register/guidance");
       return;
@@ -94,7 +91,7 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
 
   return (
     <div className="mx-auto max-w-5xl p-4 md:p-8">
-      <Breadcrumbs items={BREADCRUMB_ITEMS} />
+      <Breadcrumbs items={TECHNICAL_AREAS_BREADCRUMB_ITEMS} />
 
       <h1 className="text-2xl font-bold">
         {isEditMode ? "Editar áreas técnicas" : "Selecciona tus áreas técnicas"}
@@ -117,8 +114,10 @@ export function TechnicalAreasView({ mode }: TechnicalAreasViewProps) {
         </div>
       )}
 
-      {/* 1 columna en móvil, 2 en tablet (768px) y 3 en escritorio (1024px) */}
-      <fieldset disabled={isLoading || isSaving} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <fieldset
+        disabled={isLoading || isSaving}
+        className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+      >
         {MOCK_TECHNICAL_AREAS.map((area) => (
           <TechnicalAreaCard
             key={area.id}

@@ -55,7 +55,6 @@ export function OrientationConfigView() {
   };
 
   const handleSave = () => {
-    // Validación AC-12: Impedir guardar la orientación nula o vacía
     if (selectedValues.length === 0) {
       setErrorMessage(
         "Debe seleccionar al menos un tipo de orientación antes de guardar.",
@@ -116,7 +115,6 @@ export function OrientationConfigView() {
     <div className="min-h-full w-full bg-background">
       <div className="flex w-full flex-col">
         <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-4 py-8 sm:px-8">
-          {/* Breadcrumb */}
           <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
             <Link className="transition-colors hover:text-ink" href="/">
               UMSSY
@@ -141,7 +139,6 @@ export function OrientationConfigView() {
             </span>
           </div>
 
-          {/* Header */}
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight text-ink">
               Editar tipos de orientación
@@ -151,9 +148,7 @@ export function OrientationConfigView() {
             </p>
           </div>
 
-          {/* Main Card */}
           <div className="flex w-full max-w-3xl flex-col gap-6 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-8">
-            {/* Mensaje de error si intenta guardar vacío (AC-12) */}
             {errorMessage && (
               <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 <AlertCircle size={20} className="shrink-0 text-red-600" />
@@ -161,7 +156,6 @@ export function OrientationConfigView() {
               </div>
             )}
 
-            {/* Opciones */}
             <div className="flex flex-col gap-3">
               {ORIENTATION_TYPES.map((option) => {
                 const isSelected = selectedValues.includes(option.id);
@@ -204,7 +198,6 @@ export function OrientationConfigView() {
               })}
             </div>
 
-            {/* Footer Actions */}
             <div className="flex items-center justify-between gap-4 border-t border-gray-100 pt-4">
               <Link
                 href="/mentors/participation"

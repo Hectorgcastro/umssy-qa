@@ -1,24 +1,8 @@
 "use client";
 
-import {
-  Server,
-  Monitor,
-  CheckCircle,
-  Cloud,
-  Smartphone,
-  Database,
-  type LucideIcon,
-} from "lucide-react";
-import type { TechnicalArea } from "../types/mentorship.types";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Server,
-  Monitor,
-  CheckCircle,
-  Cloud,
-  Smartphone,
-  Database,
-};
+import { CheckCircle, Server } from "lucide-react";
+import { TECHNICAL_AREA_ICON_MAP } from "../constants/technical-area-icon-map.constants";
+import type { TechnicalArea } from "../types/technical-area.types";
 
 interface TechnicalAreaCardProps {
   area: TechnicalArea;
@@ -31,7 +15,7 @@ export function TechnicalAreaCard({
   isSelected,
   onToggle,
 }: TechnicalAreaCardProps) {
-  const Icon = ICON_MAP[area.icon] ?? Server;
+  const Icon = TECHNICAL_AREA_ICON_MAP[area.icon] ?? Server;
 
   return (
     <button

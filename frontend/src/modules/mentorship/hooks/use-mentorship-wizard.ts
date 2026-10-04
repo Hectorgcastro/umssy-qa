@@ -1,20 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type {
-  MentorshipStep,
-  MentorshipWizardState,
-} from "../types/mentorship.types";
-
-const INITIAL_STATE: MentorshipWizardState = {
-  currentStep: 1,
-  wantsToParticipate: false,
-  selectedTechnicalAreaIds: [],
-  selectedOrientationTypeIds: [],
-};
+import { INITIAL_MENTORSHIP_WIZARD_STATE } from "../constants/mentorship-wizard.constants";
+import type { MentorshipStep } from "../types/mentorship-step.types";
+import type { MentorshipWizardState } from "../types/mentorship-wizard-state.types";
 
 export function useMentorshipWizard() {
-  const [state, setState] = useState<MentorshipWizardState>(INITIAL_STATE);
+  const [state, setState] = useState<MentorshipWizardState>(
+    INITIAL_MENTORSHIP_WIZARD_STATE,
+  );
 
   const goToStep = useCallback((step: MentorshipStep) => {
     setState((prev) => ({

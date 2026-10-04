@@ -1,10 +1,8 @@
 "use client";
 
 import { Check } from "lucide-react";
-import {
-  MENTORSHIP_STEPS,
-  type MentorshipStep,
-} from "../types/mentorship.types";
+import { MENTORSHIP_STEPS } from "../constants/mentorship-steps.constants";
+import type { MentorshipStep } from "../types/mentorship-step.types";
 
 interface ProgressStepperProps {
   currentStep: MentorshipStep;
@@ -21,7 +19,6 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
 
           return (
             <li key={step.id} className="relative flex items-start gap-3 sm:flex-col sm:items-center sm:text-center">
-              {/* Círculo */}
               <div
                 className={[
                   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
@@ -40,7 +37,6 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
                 )}
               </div>
 
-              {/* Label */}
               <div className="min-w-0 flex-1 pt-1 sm:pt-0">
                 <span
                   className={[
@@ -52,7 +48,6 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
                 </span>
               </div>
 
-              {/* Línea conectora (solo desktop) */}
               {!isLast && (
                 <div
                   className="absolute left-[18px] top-9 hidden h-[calc(100%-2.25rem)] w-0.5 bg-slate-200 sm:left-auto sm:right-[-50%] sm:top-[18px] sm:h-0.5 sm:w-[calc(100%-2.25rem)]"
