@@ -6,6 +6,7 @@ export { eventsService } from './services/events.service';
 export type {
   EventCardProps,
   EventCategoryItem,
+  EventCapacityStatus,
   EventItem,
   EventsListResponse,
   GetEventsParams,
