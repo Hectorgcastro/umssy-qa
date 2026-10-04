@@ -5,14 +5,19 @@ import { AvailabilityController } from '../controllers/availability.controller.j
 import { AvailabilityService } from '../services/availability.service.js';
 import { AvailabilityRepository } from '../repositories/availability.repository.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
+import { PrismaModule } from '../../../common/prisma/prisma.module.js';
+import { PrismaService } from '../../../common/prisma/prisma.service.js';
 
 describe('AvailabilityModule', () => {
   let moduleRef: TestingModule;
 
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [AvailabilityModule],
-    }).compile();
+      imports: [AvailabilityModule, PrismaModule],
+    })
+      .overrideProvider(PrismaService)
+      .useValue({})
+      .compile();
   });
 
   it.each([
