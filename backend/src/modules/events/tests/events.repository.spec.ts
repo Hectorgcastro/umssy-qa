@@ -33,6 +33,22 @@ describe('EventsRepository', () => {
     expect(result).toEqual({ items: [], total: 0 });
   });
 
+  it('applies published status filter when isPublishedOnly is true and statusId is undefined', async () => {
+    prismaMock.event.findMany.mockResolvedValue([]);
+    prismaMock.event.count.mockResolvedValue(0);
+
+    await repository.findAndCount({ isPublishedOnly: true, skip: 0, take: 10 });
+
+    const expectedWhere = {
+      status: { title: 'Publicado' },
+    };
+
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expectedWhere }),
+    );
+    expect(prismaMock.event.count).toHaveBeenCalledWith({ where: expectedWhere });
+  });
+
   it('applies only search filter with case-insensitive partial match to where', async () => {
     prismaMock.event.findMany.mockResolvedValue([]);
     prismaMock.event.count.mockResolvedValue(0);
@@ -50,6 +66,24 @@ describe('EventsRepository', () => {
       expect.objectContaining({ where: expectedWhere }),
     );
     expect(prismaMock.event.count).toHaveBeenCalledWith({ where: expectedWhere });
+  });
+
+  it('escapes wildcards percent (%) and underscore (_) in search', async () => {
+    prismaMock.event.findMany.mockResolvedValue([]);
+    prismaMock.event.count.mockResolvedValue(0);
+
+    await repository.findAndCount({ search: '100%_test', skip: 0, take: 10 });
+
+    const expectedWhere = {
+      title: {
+        contains: '100\\%\\_test',
+        mode: 'insensitive',
+      },
+    };
+
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expectedWhere }),
+    );
   });
 
   it('applies categoryId filter to where in both queries', async () => {

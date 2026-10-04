@@ -4,6 +4,7 @@ import type {
   EventsListResponse,
 } from '../types/events.types.js';
 
+// Note: the database stores wall-clock values without a time zone, and UTC getters are used only to read them without shifting.
 export function formatUtcDate(date: Date): string {
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, '0');
