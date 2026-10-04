@@ -49,8 +49,9 @@ describe("AddBlockView", () => {
 
     render(<AddBlockView />)
 
-    expect(screen.getByRole("heading", { name: "Mi disponibilidad" })).toBeInTheDocument()
-    expect(screen.getByRole("heading", { name: "Nuevo bloque de disponibilidad" })).toBeInTheDocument()
+    expect(screen.getByText("Mentorías / Mi disponibilidad")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Agregar bloque" })).toBeInTheDocument()
+    expect(screen.getByText("Nuevo bloque de disponibilidad")).toBeInTheDocument()
     expect(getSpy).not.toHaveBeenCalled()
   })
 
@@ -74,7 +75,7 @@ describe("AddBlockView", () => {
     await fillAndSave(user)
 
     await waitFor(() => {
-      expect(screen.getByText("Bloque guardado correctamente")).toBeInTheDocument()
+      expect(screen.getByText("Bloque guardado correctamente.")).toBeInTheDocument()
     })
     expect(createSpy).toHaveBeenCalledWith({
       startAt: "2026-10-13T22:00:00.000Z",
@@ -94,6 +95,6 @@ describe("AddBlockView", () => {
     await waitFor(() => {
       expect(screen.getByText("Error al crear el bloque de disponibilidad")).toBeInTheDocument()
     })
-    expect(screen.queryByText("Bloque guardado correctamente")).not.toBeInTheDocument()
+    expect(screen.queryByText("Bloque guardado correctamente.")).not.toBeInTheDocument()
   })
 })
