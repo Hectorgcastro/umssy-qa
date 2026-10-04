@@ -100,7 +100,7 @@ describe('EventsController (e2e)', () => {
       startTime: '09:00',
       endTime: '11:00',
       availableSpots: 20,
-      registeredCount: 10,
+      registrationCount: 10,
       instructorName: 'Ana Garcia',
       modalityId: 'modality-001',
       category: { id: 'cat-001', name: 'Tecnologia' },

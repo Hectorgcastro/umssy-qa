@@ -15,7 +15,7 @@ export interface EventItemResponse {
   location: string | null;
   capacity: number | null;
   availableSpots: number | null;
-  registeredCount: number;
+  registrationCount: number;
   instructorName: string | null;
   modalityId: string | null;
   category: EventCategoryResponse;

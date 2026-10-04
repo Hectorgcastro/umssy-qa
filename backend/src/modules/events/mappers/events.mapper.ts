@@ -31,7 +31,7 @@ export function mapEventToResponse(
     location: record.location,
     capacity: record.capacity,
     availableSpots,
-    registeredCount: record._count.registrations,
+    registrationCount: record._count.registrations,
     instructorName: record.instructorName ?? null,
     modalityId: record.modalityId ?? null,
     category: {
@@ -52,11 +52,11 @@ export function mapEventsToListResponse(
   const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
   const items = records.map((record) => {
-    const registeredCount = record._count.registrations;
+    const registrationCount = record._count.registrations;
     const availableSpots =
       record.capacity === null
         ? null
-        : Math.max(0, record.capacity - registeredCount);
+        : Math.max(0, record.capacity - registrationCount);
 
     return mapEventToResponse(record, availableSpots);
   });
