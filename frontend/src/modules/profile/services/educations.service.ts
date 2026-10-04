@@ -2,13 +2,36 @@ import { apiClient } from "@/shared/services/api-client";
 import { EDUCATIONS_ENDPOINT } from "../config/education-api.config";
 import type { ApiResponse } from "../types/api-response.types";
 import type { EducationItem } from "../types/education-item.types";
+import type { EducationPayload } from "../types/education-payload.types";
+import { getAuthHeaders } from "../utils/get-auth-headers";
 
 export const educationsService = {
   getEducations: async (): Promise<EducationItem[]> => {
-    const accessToken = sessionStorage.getItem("accessToken");
     const response = await apiClient.get<ApiResponse<EducationItem[]>>(EDUCATIONS_ENDPOINT, {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      headers: getAuthHeaders(),
     });
     return response.data.data;
+  },
+
+  createEducation: async (payload: EducationPayload): Promise<EducationItem> => {
+    const response = await apiClient.post<ApiResponse<EducationItem>>(
+      EDUCATIONS_ENDPOINT,
+      payload,
+      { headers: getAuthHeaders() },
+    );
+    return response.data.data;
+  },
+
+  updateEducation: async (id: string, payload: EducationPayload): Promise<EducationItem> => {
+    const response = await apiClient.patch<ApiResponse<EducationItem>>(
+      `${EDUCATIONS_ENDPOINT}/${id}`,
+      payload,
+      { headers: getAuthHeaders() },
+    );
+    return response.data.data;
+  },
+
+  deleteEducation: async (id: string): Promise<void> => {
+    await apiClient.delete(`${EDUCATIONS_ENDPOINT}/${id}`, { headers: getAuthHeaders() });
   },
 };

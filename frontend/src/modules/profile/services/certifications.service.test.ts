@@ -135,57 +135,23 @@ describe("certificationsService", () => {
   });
 
   describe("with the endpoints unavailable", () => {
-    it("starts with an empty list", async () => {
+    it.each<[string, (service: CertificationsService) => Promise<unknown>]>([
+      ["getCertifications", (service) => service.getCertifications()],
+      ["createCertification", (service) => service.createCertification(NEW_CERTIFICATION)],
+      ["updateCertification", (service) => service.updateCertification("certification-1", {})],
+      ["deleteCertification", (service) => service.deleteCertification("certification-1")],
+    ])("propagates the not found error from %s without local data", async (_name, call) => {
       makeEndpointsUnavailable();
       const service = await loadService();
 
-      await expect(service.getCertifications()).resolves.toEqual([]);
+      await expect(call(service)).rejects.toBe(NOT_FOUND_ERROR);
     });
 
-    it("falls back to sample data on network errors", async () => {
+    it("propagates network errors", async () => {
       vi.mocked(apiClient.get).mockRejectedValue(NETWORK_ERROR);
       const service = await loadService();
 
-      await expect(service.getCertifications()).resolves.toEqual([]);
-    });
-
-    it("creates, updates and deletes sample certifications in memory", async () => {
-      makeEndpointsUnavailable();
-      const service = await loadService();
-
-      const created = await service.createCertification(NEW_CERTIFICATION);
-      expect(created).toMatchObject(NEW_CERTIFICATION);
-      expect(created.id).toEqual(expect.any(String));
-      await expect(service.getCertifications()).resolves.toEqual([created]);
-
-      const updated = await service.updateCertification(created.id, {
-        issuingOrganization: "Scrum.org",
-      });
-      expect(updated).toMatchObject({ id: created.id, issuingOrganization: "Scrum.org" });
-      await expect(service.getCertifications()).resolves.toEqual([updated]);
-
-      await service.deleteCertification(created.id);
-      await expect(service.getCertifications()).resolves.toEqual([]);
-    });
-
-    it("keeps other sample certifications when one is updated", async () => {
-      makeEndpointsUnavailable();
-      const service = await loadService();
-
-      const first = await service.createCertification(NEW_CERTIFICATION);
-      const second = await service.createCertification({ ...NEW_CERTIFICATION, name: "CCNA" });
-      const updated = await service.updateCertification(second.id, { name: "CCNP" });
-
-      await expect(service.getCertifications()).resolves.toEqual([first, updated]);
-    });
-
-    it("fails to update a sample certification that does not exist", async () => {
-      makeEndpointsUnavailable();
-      const service = await loadService();
-
-      await expect(service.updateCertification("missing", { name: "CCNA" })).rejects.toThrow(
-        "Certification missing not found",
-      );
+      await expect(service.getCertifications()).rejects.toBe(NETWORK_ERROR);
     });
   });
 
@@ -248,40 +214,6 @@ describe("certificationsService", () => {
       const service = await loadService();
 
       await expect(call(service)).rejects.toBe(SERVER_ERROR);
-    });
-
-    it("keeps sample documents in memory while the endpoints are unavailable", async () => {
-      makeEndpointsUnavailable();
-      const service = await loadService();
-      const created = await service.createCertification(NEW_CERTIFICATION);
-      const other = await service.createCertification({ ...NEW_CERTIFICATION, name: "CCNA" });
-
-      await service.uploadDocument(created.id, DOCUMENT);
-
-      await expect(service.getDocument(created.id)).resolves.toBe(DOCUMENT);
-      await expect(service.getCertifications()).resolves.toEqual([
-        { ...created, hasDocument: true },
-        other,
-      ]);
-
-      await service.deleteDocument(created.id);
-
-      await expect(service.getDocument(created.id)).resolves.toBeNull();
-      await expect(service.getCertifications()).resolves.toEqual([
-        { ...created, hasDocument: false },
-        other,
-      ]);
-    });
-
-    it("removes the sample document when the certification is deleted", async () => {
-      makeEndpointsUnavailable();
-      const service = await loadService();
-      const created = await service.createCertification(NEW_CERTIFICATION);
-      await service.uploadDocument(created.id, DOCUMENT);
-
-      await service.deleteCertification(created.id);
-
-      await expect(service.getDocument(created.id)).resolves.toBeNull();
     });
   });
 });

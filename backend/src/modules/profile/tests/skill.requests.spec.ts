@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DomainException } from '../../../common/exceptions/domain.exception.js';
+import { MAX_USER_SKILLS } from '../constants/profile.constants.js';
 import { DuplicateSkillException } from '../exceptions/duplicate-skill.exception.js';
 import { SkillNotFoundException } from '../exceptions/skill-not-found.exception.js';
 import { createCustomSkillSchema } from '../requests/create-custom-skill.request.js';
 import { searchSkillsSchema } from '../requests/search-skills.request.js';
-import {
-  MAX_USER_SKILLS,
-  updateUserSkillsSchema,
-} from '../requests/update-user-skills.request.js';
+import { updateUserSkillsSchema } from '../requests/update-user-skills.request.js';
 
 const skillId = '33333333-3333-4333-8333-333333333333';
 

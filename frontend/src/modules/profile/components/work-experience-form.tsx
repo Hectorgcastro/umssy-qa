@@ -3,7 +3,9 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { EMPTY_WORK_EXPERIENCE_FORM_VALUES } from "../config/work-experience-form-defaults.config";
 import type { WorkExperienceFormProps } from "../types/work-experience-form-props.types";
@@ -30,8 +32,7 @@ export function WorkExperienceForm({
     setValues((current) => ({ ...current, [name]: value }));
   };
 
-  const handleCurrentChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleCurrentChange = (checked: boolean) => {
     setValues((current) => ({
       ...current,
       isCurrent: checked,
@@ -96,19 +97,18 @@ export function WorkExperienceForm({
           </FormField>
         </div>
         <label htmlFor="work-experience-isCurrent" className="flex items-center gap-3 text-[14px] text-ink">
-          <input
+          <Checkbox
             id="work-experience-isCurrent"
             name="isCurrent"
-            type="checkbox"
             checked={values.isCurrent}
             disabled={isPending}
-            onChange={handleCurrentChange}
-            className="size-4 accent-accent"
+            onCheckedChange={handleCurrentChange}
+            className="size-4 border-border-strong data-checked:border-accent data-checked:bg-accent data-checked:text-white"
           />
           Trabajo actualmente aquí
         </label>
         <FormField id="work-experience-description" label="Descripción de funciones (opcional)">
-          <textarea
+          <Textarea
             id="work-experience-description"
             name="description"
             rows={4}
@@ -116,7 +116,7 @@ export function WorkExperienceForm({
             value={values.description}
             disabled={isPending}
             onChange={handleChange}
-            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3"
+            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3 field-sizing-fixed min-h-0 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
           />
         </FormField>
 

@@ -3,10 +3,9 @@ import {
   CERTIFICATION_VALIDATION_MESSAGES,
   ISSUING_ORGANIZATION_MAX_LENGTH,
 } from "../config/certification-validation.config";
+import { ISO_DATE_PATTERN } from "../constants/validation.constants";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
-
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidIsoDate(value: string): boolean {
   if (!ISO_DATE_PATTERN.test(value)) {

@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { PresentationErrors } from "../types/presentation-errors.types";
 import type { PresentationFormProps } from "../types/presentation-form-props.types";
 import type { PresentationValues } from "../types/presentation-values.types";
@@ -69,7 +70,7 @@ export function PresentationForm({
             />
           </FormField>
           <FormField id="aboutMe" label="Acerca de" isRequired error={errors.aboutMe}>
-            <textarea
+            <Textarea
               id="aboutMe"
               name="aboutMe"
               rows={6}
@@ -77,12 +78,12 @@ export function PresentationForm({
               value={values.aboutMe}
               disabled={isSaving}
               onChange={handleChange}
-              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3"
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3 field-sizing-fixed min-h-0 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("aboutMe", errors.aboutMe)}
             />
           </FormField>
           <FormField id="interestedOpportunities" label="Oportunidades que me interesan">
-            <textarea
+            <Textarea
               id="interestedOpportunities"
               name="interestedOpportunities"
               rows={3}
@@ -90,7 +91,7 @@ export function PresentationForm({
               value={values.interestedOpportunities}
               disabled={isSaving}
               onChange={handleChange}
-              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3"
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3 field-sizing-fixed min-h-0 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             />
           </FormField>
 

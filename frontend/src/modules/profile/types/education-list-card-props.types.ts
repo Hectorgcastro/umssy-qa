@@ -4,4 +4,6 @@ export interface EducationListCardProps {
   educations?: EducationItem[];
   isLoading?: boolean;
   error?: string | null;
+  onEdit?: (education: EducationItem) => void;
+  onDelete?: (education: EducationItem) => void;
 }
