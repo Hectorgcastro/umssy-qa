@@ -1,6 +1,6 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { EDUCATION_FEEDBACK_MESSAGES } from "../config/education-feedback.config";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../constants/education-feedback.constants";
 import { educationsService } from "../services/educations.service";
 import type { EducationItem } from "../types/education-item.types";
 import { useEducations } from "./use-educations";
@@ -104,5 +104,62 @@ describe("useEducations", () => {
 
     expect(result.current.educations).toEqual([EDUCATION]);
     expect(result.current.error).toBeNull();
+  });
+
+  it("keeps the refreshed list when the initial request finishes after a save", async () => {
+    let resolveInitial!: (records: EducationItem[]) => void;
+    vi.mocked(educationsService.getEducations)
+      .mockReturnValueOnce(new Promise((resolve) => { resolveInitial = resolve; }))
+      .mockResolvedValueOnce([EDUCATION]);
+    const { result } = renderHook(() => useEducations());
+
+    await act(async () => { await result.current.reload(); });
+    await act(async () => { resolveInitial([]); });
+
+    expect(result.current.educations).toEqual([EDUCATION]);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("ignores an older reload error after a newer reload succeeds", async () => {
+    let rejectOlder!: (error: Error) => void;
+    vi.mocked(educationsService.getEducations).mockResolvedValueOnce([]);
+    const { result } = renderHook(() => useEducations());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    vi.mocked(educationsService.getEducations)
+      .mockReturnValueOnce(new Promise((_, reject) => { rejectOlder = reject; }))
+      .mockResolvedValueOnce([EDUCATION]);
+    let olderReload!: Promise<void>;
+
+    act(() => { olderReload = result.current.reload(); });
+    await act(async () => { await result.current.reload(); });
+    await act(async () => {
+      rejectOlder(new Error("Network error"));
+      await olderReload;
+    });
+
+    expect(result.current.educations).toEqual([EDUCATION]);
+    expect(result.current.error).toBeNull();
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it("ignores a pending reload after unmounting and does not start further requests", async () => {
+    let resolveReload!: (records: EducationItem[]) => void;
+    vi.mocked(educationsService.getEducations).mockResolvedValueOnce([EDUCATION]);
+    const { result, unmount } = renderHook(() => useEducations());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    vi.mocked(educationsService.getEducations)
+      .mockReturnValueOnce(new Promise((resolve) => { resolveReload = resolve; }));
+    let pendingReload!: Promise<void>;
+    act(() => { pendingReload = result.current.reload(); });
+    unmount();
+
+    await act(async () => {
+      resolveReload([]);
+      await pendingReload;
+      await result.current.reload();
+    });
+
+    expect(result.current.educations).toEqual([EDUCATION]);
+    expect(educationsService.getEducations).toHaveBeenCalledTimes(2);
   });
 });

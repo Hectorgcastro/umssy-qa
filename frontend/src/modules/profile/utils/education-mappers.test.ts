@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EducationItem } from "../types/education-item.types";
+import type { EducationFormValues } from "../types/education-form-values.types";
 import { toEducationFormValues } from "./to-education-form-values";
 import { toEducationPayload } from "./to-education-payload";
 
@@ -15,6 +16,13 @@ const EDUCATION: EducationItem = {
 };
 
 describe("toEducationFormValues", () => {
+  it("uses empty strings for missing record fields", () => {
+    const missing = { institution: null, degree: null, startDate: null } as unknown as EducationItem;
+
+    expect(toEducationFormValues(missing)).toEqual({
+      institution: "", degree: "", startDate: "", endDate: "", description: "",
+    });
+  });
   it("maps nullable fields to empty strings and keeps only the date part", () => {
     expect(toEducationFormValues(EDUCATION)).toEqual({
       institution: "Example University",
@@ -33,6 +41,13 @@ describe("toEducationFormValues", () => {
 });
 
 describe("toEducationPayload", () => {
+  it("handles missing form values without calling trim on null", () => {
+    const missing = { institution: null, degree: null, description: null } as unknown as EducationFormValues;
+
+    expect(toEducationPayload(missing)).toEqual({
+      institution: "", degree: "", startDate: "", endDate: null, description: null,
+    });
+  });
   it("trims the text fields and sends null for empty optional values", () => {
     expect(
       toEducationPayload({

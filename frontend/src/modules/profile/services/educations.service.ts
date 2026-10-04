@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/services/api-client";
-import { EDUCATIONS_ENDPOINT } from "../config/education-api.config";
+import { EDUCATIONS_ENDPOINT } from "../constants/education-api.constants";
 import type { ApiResponse } from "../types/api-response.types";
 import type { EducationItem } from "../types/education-item.types";
 import type { EducationPayload } from "../types/education-payload.types";

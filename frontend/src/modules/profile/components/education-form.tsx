@@ -5,8 +5,8 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { EMPTY_EDUCATION_FORM_VALUES } from "../config/education-form-defaults.config";
+import { EMPTY_EDUCATION_FORM_VALUES } from "../constants/education-form-defaults.constants";
+import { EDUCATION_UI_TEXTS } from "../constants/education-ui.constants";
 import type { EducationFormProps } from "../types/education-form-props.types";
 import type { EducationFormValues } from "../types/education-form-values.types";
 import { FeedbackMessage } from "./feedback-message";
@@ -23,7 +23,7 @@ export function EducationForm({
   const [values, setValues] = useState<EducationFormValues>(
     initialValues ?? EMPTY_EDUCATION_FORM_VALUES,
   );
-  const title = initialValues ? "Editar formación" : "Agregar formación";
+  const title = initialValues ? EDUCATION_UI_TEXTS.editTitle : EDUCATION_UI_TEXTS.createTitle;
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
@@ -32,32 +32,34 @@ export function EducationForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPending) return;
     await onSubmit(values);
   };
 
   return (
     <SectionCard title={title}>
-      <form aria-label={title} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <FormField id="education-institution" label="Institución" isRequired>
+      <form aria-label={title} aria-busy={isPending} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <FormField id="education-institution" label={EDUCATION_UI_TEXTS.institutionLabel} isRequired>
           <Input
             id="education-institution"
             name="institution"
             type="text"
             required
-            placeholder="Nombre de la institución"
+            placeholder={EDUCATION_UI_TEXTS.institutionPlaceholder}
+            autoFocus
             value={values.institution}
             disabled={isPending}
             onChange={handleChange}
             className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
           />
         </FormField>
-        <FormField id="education-degree" label="Título o carrera" isRequired>
+        <FormField id="education-degree" label={EDUCATION_UI_TEXTS.degreeLabel} isRequired>
           <Input
             id="education-degree"
             name="degree"
             type="text"
             required
-            placeholder="Ej. Licenciatura en Informática"
+            placeholder={EDUCATION_UI_TEXTS.degreePlaceholder}
             value={values.degree}
             disabled={isPending}
             onChange={handleChange}
@@ -65,7 +67,7 @@ export function EducationForm({
           />
         </FormField>
         <div className="grid grid-cols-2 gap-5">
-          <FormField id="education-startDate" label="Desde" isRequired>
+          <FormField id="education-startDate" label={EDUCATION_UI_TEXTS.startDateLabel} isRequired>
             <Input
               id="education-startDate"
               name="startDate"
@@ -77,7 +79,7 @@ export function EducationForm({
               className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             />
           </FormField>
-          <FormField id="education-endDate" label="Hasta" isRequired>
+          <FormField id="education-endDate" label={EDUCATION_UI_TEXTS.endDateLabel} isRequired>
             <Input
               id="education-endDate"
               name="endDate"
@@ -90,12 +92,12 @@ export function EducationForm({
             />
           </FormField>
         </div>
-        <FormField id="education-description" label="Descripción (opcional)">
+        <FormField id="education-description" label={EDUCATION_UI_TEXTS.descriptionLabel}>
           <Textarea
             id="education-description"
             name="description"
             rows={3}
-            placeholder="Agrega un detalle relevante de tus estudios"
+            placeholder={EDUCATION_UI_TEXTS.descriptionPlaceholder}
             value={values.description}
             disabled={isPending}
             onChange={handleChange}
@@ -112,15 +114,15 @@ export function EducationForm({
             disabled={isPending}
             onClick={onCancel}
           >
-            Cancelar
+            {EDUCATION_UI_TEXTS.cancelButton}
           </Button>
           <Button
             type="submit"
-            className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "min-w-44")}
+            className="h-12 min-w-44 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger"
             disabled={isPending}
           >
             {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
-            {isPending ? "Guardando..." : "Guardar formación"}
+            {isPending ? EDUCATION_UI_TEXTS.savingButton : EDUCATION_UI_TEXTS.saveButton}
           </Button>
         </div>
       </form>

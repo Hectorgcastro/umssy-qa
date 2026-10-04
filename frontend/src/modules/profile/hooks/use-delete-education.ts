@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EDUCATION_FEEDBACK_MESSAGES } from "../config/education-feedback.config";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../constants/education-feedback.constants";
 import { educationsService } from "../services/educations.service";
 import type { EducationItem } from "../types/education-item.types";
 import type { Feedback } from "../types/feedback.types";

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { educationsService } from "../services/educations.service";
@@ -133,9 +133,12 @@ describe("EducationView", () => {
     expect(screen.getByRole("link", { name: "Datos personales" })).not.toHaveAttribute("aria-current");
   });
 
-  it("shows the existing form fields and save button", async () => {
+  it("opens an empty form from the add information button", async () => {
+    const user = userEvent.setup();
     render(<EducationView />);
     await screen.findByRole("list", { name: "Formación registrada" });
+    expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
 
     expect(screen.getByLabelText(/Institución/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Título o carrera/)).toBeInTheDocument();
@@ -146,27 +149,37 @@ describe("EducationView", () => {
   });
 
   it("creates an education record and reloads the list", async () => {
-    vi.mocked(educationsService.createEducation).mockResolvedValue(EDUCATIONS[0]);
+    const created = { ...EDUCATIONS[0], id: "33333333-3333-4333-8333-333333333333", degree: "Systems Engineering" };
+    vi.mocked(educationsService.createEducation).mockResolvedValue(created);
+    vi.mocked(educationsService.getEducations)
+      .mockResolvedValueOnce(EDUCATIONS)
+      .mockResolvedValueOnce([...EDUCATIONS, created]);
     const user = userEvent.setup();
     render(<EducationView />);
     await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
 
     await user.type(screen.getByLabelText(/Institución/), "  Example University ");
-    await user.type(screen.getByLabelText(/Título o carrera/), "Computer Science");
+    await user.type(screen.getByLabelText(/Título o carrera/), "Systems Engineering");
     await user.type(screen.getByLabelText(/Desde/), "2021-02-01");
+    await user.type(screen.getByLabelText(/Hasta/), "2025-11-30");
     await user.type(screen.getByLabelText(/Descripción \(opcional\)/), "   ");
     await user.click(screen.getByRole("button", { name: "Guardar formación" }));
 
     expect(educationsService.createEducation).toHaveBeenCalledWith({
       institution: "Example University",
-      degree: "Computer Science",
+      degree: "Systems Engineering",
       startDate: "2021-02-01",
-      endDate: null,
+      endDate: "2025-11-30",
       description: null,
     });
     expect(await screen.findByText("Formación académica agregada correctamente.")).toBeInTheDocument();
     expect(educationsService.getEducations).toHaveBeenCalledTimes(2);
-    expect(screen.getByLabelText(/Institución/)).toHaveValue("");
+    expect(await screen.findByRole("heading", { name: "Systems Engineering" })).toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Formación registrada" })).getAllByRole("listitem")).toHaveLength(3);
+    for (const label of [/Institución/, /Título o carrera/, /Desde/, /Hasta/, /Descripción/]) {
+      expect(screen.getByLabelText(label)).toHaveValue("");
+    }
   });
 
   it("shows a Spanish error when creating fails", async () => {
@@ -175,16 +188,28 @@ describe("EducationView", () => {
     render(<EducationView />);
     await screen.findByRole("list", { name: "Formación registrada" });
 
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
+    await user.type(screen.getByLabelText(/Institución/), "Example University");
     await user.click(screen.getByRole("button", { name: "Guardar formación" }));
 
     expect(
       await screen.findByText("No se pudo agregar la formación académica. Inténtalo de nuevo."),
     ).toBeInTheDocument();
     expect(screen.queryByText("Bad request")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Institución/)).toHaveValue("Example University");
+    expect(educationsService.getEducations).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Institución/)).toHaveValue("");
   });
 
   it("edits an existing record and cancels back to the empty form", async () => {
-    vi.mocked(educationsService.updateEducation).mockResolvedValue(EDUCATIONS[0]);
+    const updated = { ...EDUCATIONS[0], degree: "Systems Engineering" };
+    vi.mocked(educationsService.updateEducation).mockResolvedValue(updated);
+    vi.mocked(educationsService.getEducations)
+      .mockResolvedValueOnce(EDUCATIONS)
+      .mockResolvedValueOnce([updated, EDUCATIONS[1]]);
     const user = userEvent.setup();
     render(<EducationView />);
     await screen.findByRole("list", { name: "Formación registrada" });
@@ -209,10 +234,18 @@ describe("EducationView", () => {
     expect(
       await screen.findByText("Formación académica actualizada correctamente."),
     ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Systems Engineering" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Computer Science" })).not.toBeInTheDocument();
+    expect(educationsService.createEducation).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Título o carrera/)).toHaveValue("");
 
     await user.click(screen.getByRole("button", { name: "Editar High School Diploma" }));
+    await user.type(screen.getByLabelText(/Institución/), " unsaved changes");
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
+    expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    expect(educationsService.updateEducation).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
     expect(screen.getByRole("form", { name: "Agregar formación" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Institución/)).toHaveValue("");
   });
@@ -224,11 +257,78 @@ describe("EducationView", () => {
     await screen.findByRole("list", { name: "Formación registrada" });
 
     await user.click(screen.getByRole("button", { name: "Editar Computer Science" }));
+    await user.clear(screen.getByLabelText(/Título o carrera/));
+    await user.type(screen.getByLabelText(/Título o carrera/), "Systems Engineering");
     await user.click(screen.getByRole("button", { name: "Guardar formación" }));
 
     expect(
       await screen.findByText("No se pudo actualizar la formación académica. Inténtalo de nuevo."),
     ).toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "Editar formación" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Título o carrera/)).toHaveValue("Systems Engineering");
+    expect(educationsService.getEducations).toHaveBeenCalledTimes(1);
+    expect(educationsService.createEducation).not.toHaveBeenCalled();
+  });
+
+  it("switches from editing to a clean create form using add information", async () => {
+    vi.mocked(educationsService.createEducation).mockResolvedValue(EDUCATIONS[0]);
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", { name: "Editar Computer Science" }));
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
+
+    expect(screen.getByRole("form", { name: "Agregar formación" })).toBeInTheDocument();
+    for (const label of [/Institución/, /Título o carrera/, /Desde/, /Hasta/, /Descripción/]) {
+      expect(screen.getByLabelText(label)).toHaveValue("");
+    }
+    await user.type(screen.getByLabelText(/Institución/), "Another University");
+    await user.type(screen.getByLabelText(/Título o carrera/), "Data Science");
+    await user.type(screen.getByLabelText(/Desde/), "2023-01-01");
+    await user.type(screen.getByLabelText(/Hasta/), "2025-01-01");
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+
+    await screen.findByText("Formación académica agregada correctamente.");
+    expect(educationsService.createEducation).toHaveBeenCalledOnce();
+    expect(educationsService.updateEducation).not.toHaveBeenCalled();
+  });
+
+  it("allows adding information when the list is empty and cancelling without saving", async () => {
+    vi.mocked(educationsService.getEducations).mockResolvedValue([]);
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByText("Todavía no tienes formación académica registrada.");
+    await user.click(screen.getByRole("button", { name: "Agregar información" }));
+    await user.type(screen.getByLabelText(/Institución/), "Unsaved University");
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    expect(educationsService.createEducation).not.toHaveBeenCalled();
+    expect(educationsService.updateEducation).not.toHaveBeenCalled();
+  });
+
+  it("blocks other actions and duplicate submissions while an edit is being saved", async () => {
+    let finishSave!: (record: EducationItem) => void;
+    vi.mocked(educationsService.updateEducation).mockReturnValue(new Promise((resolve) => {
+      finishSave = resolve;
+    }));
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", { name: "Editar Computer Science" }));
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+
+    for (const name of ["Agregar información", "Editar High School Diploma", "Eliminar Computer Science", "Cancelar", "Guardando..."]) {
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+    }
+    expect(screen.getByLabelText(/Institución/)).toBeDisabled();
+    fireEvent.submit(screen.getByRole("form", { name: "Editar formación" }));
+    expect(educationsService.updateEducation).toHaveBeenCalledTimes(1);
+    await act(async () => { finishSave(EDUCATIONS[0]); });
+
+    expect(await screen.findByText("Formación académica actualizada correctamente.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Guardar formación" })).toBeEnabled());
+    expect(screen.getByLabelText(/Institución/)).toHaveValue("");
   });
 
   it("deletes a record after confirming and reloads the list", async () => {
