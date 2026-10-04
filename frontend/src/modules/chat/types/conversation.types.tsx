@@ -55,3 +55,17 @@ export interface StandardApiResponse<T> {
   detail: string;
   ok: boolean;
 }
+
+export interface SendMessagePayload {
+  conversationId: string;
+  senderId?: string;
+  content: string;
+}
+
+export interface SendMessageOptions {
+  forceError?: boolean;
+  forceOffline?: boolean;
+  latencyMs?: number;
+}
+
+export type SendMessageResponse = StandardApiResponse<Message>;

@@ -1,8 +1,14 @@
-import { Conversation, Message } from '../types/conversation.types';
+import {
+  Conversation,
+  Message,
+  SendMessagePayload,
+  SendMessageOptions,
+  SendMessageResponse,
+} from '../types/conversation.types';
 import { MOCK_CONVERSATIONS } from '../mocks/mock-conversations';
 import { User } from '../types/user.types';
 import { MOCK_USERS, CURRENT_USER_ID, MOCK_USER_BY_ID } from '../mocks/mock-users';
-import { getMessagesByConversation } from './message-storage';
+import { getMessagesByConversation, saveStoredMessage } from './message-storage';
 
 const MIN_SEARCH_CHARS = 2;
 
@@ -91,5 +97,63 @@ export async function getOrCreateConversation(contactId: string): Promise<Conver
     lastMessage: null,
     unreadCount: 0,
     updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Simula el envio asincrono de un mensaje (POST /api/messages)
+ * con latencia artificial entre 300ms y 600ms (< 2 segundos),
+ * soporte para caidas de red y simulacion de modo offline.
+ */
+export async function sendMessage(
+  payload: SendMessagePayload,
+  options?: SendMessageOptions
+): Promise<SendMessageResponse> {
+  const isBrowserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+
+  if (options?.forceOffline || isBrowserOffline) {
+    throw new Error('Error de red: Sin conexion a internet');
+  }
+
+  if (options?.forceError) {
+    throw new Error('Error del servidor: No se pudo procesar el envio del mensaje');
+  }
+
+  if (!payload.conversationId) {
+    throw new Error('El identificador de conversacion es requerido');
+  }
+
+  const trimmedContent = payload.content.trim();
+  if (trimmedContent.length === 0) {
+    throw new Error('El contenido del mensaje no puede estar vacio');
+  }
+
+  const minLatency = 300;
+  const maxLatency = 600;
+  const latency =
+    options?.latencyMs ??
+    Math.floor(Math.random() * (maxLatency - minLatency + 1)) + minLatency;
+
+  await new Promise((resolve) => setTimeout(resolve, latency));
+
+  const nowIso = new Date().toISOString();
+  const createdMessage: Message = {
+    id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    conversationId: payload.conversationId,
+    senderId: payload.senderId || CURRENT_USER_ID,
+    content: payload.content,
+    timestamp: nowIso,
+    status: 'sent',
+    createdAt: nowIso,
+    isAttachment: false,
+  };
+
+  saveStoredMessage(createdMessage);
+
+  return {
+    statusCode: 201,
+    ok: true,
+    detail: 'Mensaje enviado exitosamente',
+    data: createdMessage,
   };
 }

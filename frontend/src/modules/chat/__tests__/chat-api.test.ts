@@ -1,8 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getConversations, searchUsers, getMessages, getOrCreateConversation} from '../services/chat-api';
+  getConversations,
+  searchUsers,
+  getMessages,
+  getOrCreateConversation,
+  sendMessage,
+} from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 import { MOCK_CONVERSATIONS } from '../mocks/mock-conversations';
+import { getStoredMessages, clearStoredMessages } from '../services/message-storage';
 
 describe('chat-api', () => {
   it('debe retornar las conversaciones ordenadas cronologicamente descendente', async () => {
@@ -132,7 +138,6 @@ describe('chat-api — getOrCreateConversation', () => {
   });
 
   it('debe crear una conversacion nueva si no existe con ese contacto', async () => {
-    // user-105 (Ana Rojas) has no conversation in mock-conversations.ts
     const result = await getOrCreateConversation('user-105');
 
     expect(result.id).toBeDefined();
@@ -152,5 +157,131 @@ describe('chat-api — getOrCreateConversation', () => {
     const before = MOCK_CONVERSATIONS.length;
     await getOrCreateConversation('user-106');
     expect(MOCK_CONVERSATIONS.length).toBe(before);
+  });
+});
+
+describe('chat-api — sendMessage (HU-03 Tarea 2)', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    clearStoredMessages();
+  });
+
+  it('debe responder dentro del umbral esperado (< 2 segundos)', async () => {
+    const startTime = Date.now();
+    const response = await sendMessage({
+      conversationId: 'conv-1',
+      content: 'Mensaje con tiempo de respuesta controlado',
+    });
+    const elapsedTime = Date.now() - startTime;
+
+    expect(elapsedTime).toBeLessThan(2000);
+    expect(response.ok).toBe(true);
+  });
+
+  it('debe retornar un payload estructurado con el mensaje registrado en operacion exitosa', async () => {
+    const response = await sendMessage(
+      {
+        conversationId: 'conv-1',
+        senderId: 'current-user',
+        content: 'Hola mundo desde el mock API',
+      },
+      { latencyMs: 10 }
+    );
+
+    expect(response.statusCode).toBe(201);
+    expect(response.ok).toBe(true);
+    expect(response.detail).toBe('Mensaje enviado exitosamente');
+    expect(response.data).toBeDefined();
+    expect(response.data.id).toMatch(/^msg-/);
+    expect(response.data.conversationId).toBe('conv-1');
+    expect(response.data.senderId).toBe('current-user');
+    expect(response.data.content).toBe('Hola mundo desde el mock API');
+    expect(response.data.status).toBe('sent');
+    expect(typeof response.data.timestamp).toBe('string');
+    expect(typeof response.data.createdAt).toBe('string');
+  });
+
+  it('debe persistir el mensaje enviado en el almacenamiento local', async () => {
+    const response = await sendMessage(
+      {
+        conversationId: 'conv-2',
+        content: 'Mensaje persistido via sendMessage',
+      },
+      { latencyMs: 10 }
+    );
+
+    const stored = getStoredMessages();
+    const found = stored.find((m) => m.id === response.data.id);
+    expect(found).toBeDefined();
+    expect(found?.content).toBe('Mensaje persistido via sendMessage');
+  });
+
+  it('debe rechazar la promesa ante simulacion de caida de red (forceOffline)', async () => {
+    await expect(
+      sendMessage(
+        {
+          conversationId: 'conv-1',
+          content: 'Mensaje que fallara por modo offline',
+        },
+        { forceOffline: true, latencyMs: 10 }
+      )
+    ).rejects.toThrow('Error de red: Sin conexion a internet');
+  });
+
+  it('debe rechazar la promesa ante simulacion de fallo del servidor (forceError)', async () => {
+    await expect(
+      sendMessage(
+        {
+          conversationId: 'conv-1',
+          content: 'Mensaje que fallara por error de servidor',
+        },
+        { forceError: true, latencyMs: 10 }
+      )
+    ).rejects.toThrow('Error del servidor: No se pudo procesar el envio del mensaje');
+  });
+
+  it('debe detectar cuando el navegador no tiene conexion a internet (navigator.onLine === false)', async () => {
+    const originalOnLine = navigator.onLine;
+    Object.defineProperty(navigator, 'onLine', {
+      value: false,
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      await expect(
+        sendMessage(
+          {
+            conversationId: 'conv-1',
+            content: 'Mensaje offline por navigator',
+          },
+          { latencyMs: 10 }
+        )
+      ).rejects.toThrow('Error de red: Sin conexion a internet');
+    } finally {
+      Object.defineProperty(navigator, 'onLine', {
+        value: originalOnLine,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+
+  it('debe rechazar si el contenido del mensaje esta vacio o solo contiene espacios', async () => {
+    await expect(
+      sendMessage({
+        conversationId: 'conv-1',
+        content: '   ',
+      })
+    ).rejects.toThrow('El contenido del mensaje no puede estar vacio');
+  });
+
+  it('debe rechazar si falta el conversationId', async () => {
+    await expect(
+      sendMessage({
+        conversationId: '',
+        content: 'Mensaje sin conversacion',
+      })
+    ).rejects.toThrow('El identificador de conversacion es requerido');
   });
 });
