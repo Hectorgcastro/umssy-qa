@@ -1,37 +1,26 @@
 import { z } from 'zod';
+import { toBoliviaTime } from '../../../common/utils/date-time.js';
+import {
+  BLOCK_MAX_HOUR,
+  BLOCK_MIN_HOUR,
+  BLOCK_STEP_MINUTES,
+  CREATE_BLOCK_MESSAGES,
+} from '../constants/create-block.constants.js';
 
-// Bolivia no usa horario de verano: siempre UTC-4.
-export const BOLIVIA_UTC_OFFSET_MINUTES = -240;
-// Rango de atención en hora de Bolivia (valor propuesto, a confirmar con el PO).
-export const BLOCK_MIN_HOUR = 7;
-export const BLOCK_MAX_HOUR = 22;
-export const BLOCK_STEP_MINUTES = 30;
-
-export const CREATE_BLOCK_MESSAGES = {
-  invalidDate: 'La fecha y hora no tienen un formato válido',
-  endBeforeStart: 'La hora de fin debe ser posterior a la hora de inicio',
-  startInPast: 'La hora de inicio ya pasó',
-  outOfRange: `El horario debe estar entre las ${String(BLOCK_MIN_HOUR).padStart(2, '0')}:00 y las ${String(BLOCK_MAX_HOUR).padStart(2, '0')}:00`,
-  invalidStep: `Las horas deben ir en intervalos de ${BLOCK_STEP_MINUTES} minutos`,
-  differentDays: 'El bloque debe empezar y terminar el mismo día',
-} as const;
-
-// Convierte un instante UTC a sus componentes de fecha y hora en Bolivia.
 const getBoliviaParts = (date: Date) => {
-  const shifted = new Date(date.getTime() + BOLIVIA_UTC_OFFSET_MINUTES * 60_000);
+  const { date: day, hours, minutes } = toBoliviaTime(date);
   return {
-    day: shifted.toISOString().slice(0, 10),
-    minutesOfDay: shifted.getUTCHours() * 60 + shifted.getUTCMinutes(),
+    day,
+    minutesOfDay: hours * 60 + minutes,
     isOnStep:
-      shifted.getUTCMinutes() % BLOCK_STEP_MINUTES === 0 &&
-      shifted.getUTCSeconds() === 0 &&
-      shifted.getUTCMilliseconds() === 0,
+      minutes % BLOCK_STEP_MINUTES === 0 &&
+      date.getUTCSeconds() === 0 &&
+      date.getUTCMilliseconds() === 0,
   };
 };
 
 const isoDateTime = z.iso.datetime({ offset: true, error: CREATE_BLOCK_MESSAGES.invalidDate });
 
-// Se recibe "now" para poder probar el esquema con una fecha fija.
 export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
   z
     .strictObject({

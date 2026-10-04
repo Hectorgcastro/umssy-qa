@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, waitFor, act } from "@testing-library/react"
 import { useAvailability } from "./use-availability"
 import { availabilityApi } from "../services/availability.api"
-import type { AvailabilityBlock, AvailabilityFilters } from "../types/availability"
+import type { AvailabilityBlock } from "../types/availability-block.types"
+import type { AvailabilityFilters } from "../types/availability-filters.types"
 
 const block = (id: string, startAt: string, endAt: string): AvailabilityBlock => ({
   id,
