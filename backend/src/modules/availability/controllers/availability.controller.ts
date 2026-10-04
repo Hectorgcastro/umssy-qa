@@ -1,23 +1,42 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { AvailabilityService } from '../services/availability.service.js';
-import { createBlockSchema, type CreateBlockPayload } from '../requests/availability.schema.js';
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { Roles, type AuthenticatedUser } from '../../../common/decorators/roles.decorator.js';
 import { ProvisionalSessionGuard } from '../../../common/guards/provisional.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
-import { Roles, type AuthenticatedUser } from '../../../common/decorators/roles.decorator.js';
-import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { CREATE_BLOCK_DOCS, FIND_MY_BLOCKS_DOCS } from '../constants/availability-docs.constants.js';
+import { createBlockSchema, type CreateBlockPayload } from '../requests/availability.schema.js';
+import { weekQuerySchema } from '../requests/week-query.request.js';
+import { AvailabilityService } from '../services/availability.service.js';
+import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
+import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
 
 @Controller('availability-blocks')
-@UseGuards(ProvisionalSessionGuard, RolesGuard)
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}
 
   @Post()
+  @UseGuards(ProvisionalSessionGuard, RolesGuard)
   @Roles('mentor')
+  @ApiOperation({ summary: CREATE_BLOCK_DOCS.summary })
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(createBlockSchema)) body: CreateBlockPayload,
-  ) {
+  ): Promise<AvailabilityBlockResponse> {
     return this.availabilityService.create(user.id, body);
+  }
+
+  @Get()
+  @UseGuards(ProvisionalSessionGuard, RolesGuard)
+  @Roles('mentor')
+  @ApiOperation({ summary: FIND_MY_BLOCKS_DOCS.summary })
+  @ApiQuery({ name: 'from', description: FIND_MY_BLOCKS_DOCS.fromDescription })
+  @ApiQuery({ name: 'to', description: FIND_MY_BLOCKS_DOCS.toDescription })
+  findMyBlocks(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query(new ZodValidationPipe(weekQuerySchema)) query: WeekQueryPayload,
+  ): Promise<AvailabilityBlockResponse[]> {
+    return this.availabilityService.findMyBlocks(user.id, query);
   }
 }

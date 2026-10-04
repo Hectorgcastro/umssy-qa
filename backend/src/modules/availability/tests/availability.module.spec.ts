@@ -13,7 +13,7 @@ describe('AvailabilityModule', () => {
 
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [AvailabilityModule, PrismaModule],
+      imports: [PrismaModule, AvailabilityModule],
     })
       .overrideProvider(PrismaService)
       .useValue({})

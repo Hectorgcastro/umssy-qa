@@ -3,7 +3,8 @@ import { AvailabilityRepository } from '../repositories/availability.repository.
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import { BlockOverlapException } from '../exceptions/index.js';
 import type { CreateBlockPayload } from '../requests/availability.schema.js';
-import type { AvailabilityBlockResponse } from '../types/availability.types.js';
+import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
+import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
 
 // prisma no tiene codigo propio para la restriccion exclude: el 23p01 llega dentro del error.
 const OVERLAP_ERROR_CODE = '23P01';
@@ -36,6 +37,18 @@ export class AvailabilityService {
     private readonly availabilityMapper: AvailabilityMapper,
   ) {}
 
+  async findMyBlocks(
+    mentorId: string,
+    query: WeekQueryPayload,
+  ): Promise<AvailabilityBlockResponse[]> {
+    const blocks = await this.availabilityRepository.findMentorBlocksInRange(
+      mentorId,
+      new Date(query.from),
+      new Date(query.to),
+    );
+    return this.availabilityMapper.toResponseList(blocks);
+  }
+
   async create(mentorId: string, payload: CreateBlockPayload): Promise<AvailabilityBlockResponse> {
     try {
       const block = await this.availabilityRepository.create(
@@ -43,7 +56,8 @@ export class AvailabilityService {
         payload.startAt,
         payload.endAt,
       );
-      return this.availabilityMapper.toResponse(block);
+      // un bloque recien creado no tiene citas: nace libre.
+      return this.availabilityMapper.toResponse({ ...block, appointments: [] });
     } catch (error) {
       if (hasOverlapErrorCode(error)) {
         throw new BlockOverlapException();
