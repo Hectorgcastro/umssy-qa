@@ -9,7 +9,7 @@ import { CertificationForm } from "./certification-form";
 const SAVED_VALUES: CreateCertificationDto = {
   name: "AWS Certified Cloud Practitioner",
   issuingOrganization: "Amazon Web Services",
-  issueDate: "2025-03-01",
+  issueDate: "2025-03-10",
 };
 
 function renderForm({
@@ -60,7 +60,7 @@ describe("CertificationForm", () => {
     expect(screen.getByRole("form", { name: "Agregar certificación" })).toBeInTheDocument();
     expect(getNameInput()).toHaveValue("");
     expect(getOrganizationInput()).toHaveValue("");
-    expect(getIssueDateInput()).toHaveAttribute("type", "month");
+    expect(getIssueDateInput()).toHaveAttribute("type", "date");
     expect(screen.getByText("* Campos obligatorios")).toBeInTheDocument();
     expect(saveButton()).toBeEnabled();
     expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("CertificationForm", () => {
     expect(screen.getByRole("form", { name: "Editar certificación" })).toBeInTheDocument();
     expect(getNameInput()).toHaveValue(SAVED_VALUES.name);
     expect(getOrganizationInput()).toHaveValue(SAVED_VALUES.issuingOrganization);
-    expect(getIssueDateInput()).toHaveValue("2025-03");
+    expect(getIssueDateInput()).toHaveValue("2025-03-10");
     expect(screen.getByRole("button", { name: "Cancelar" })).toBeInTheDocument();
   });
 
@@ -137,13 +137,13 @@ describe("CertificationForm", () => {
 
     fireEvent.change(getNameInput(), { target: { value: name } });
     fireEvent.change(getOrganizationInput(), { target: { value: issuingOrganization } });
-    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04" } });
+    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
     await user.click(saveButton());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-01" });
+    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" });
   });
 
-  it("shows an inline error for a future issue month", async () => {
+  it("shows an inline error for a future issue date", async () => {
     const { onSubmit, user } = renderForm({
       initialData: { ...SAVED_VALUES, issueDate: "2999-01-01" },
     });
@@ -151,15 +151,6 @@ describe("CertificationForm", () => {
     await user.click(saveButton());
 
     expect(screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.futureDate)).toBeInTheDocument();
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-
-  it("shows an inline error for a month typed in an invalid format", async () => {
-    const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
-
-    fireEvent.change(getIssueDateInput(), { target: { value: "marzo 2025" } });
-    await user.click(saveButton());
-
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -173,18 +164,18 @@ describe("CertificationForm", () => {
     expect(screen.getAllByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toHaveLength(2);
   });
 
-  it("submits the trimmed values with the first day of the month", async () => {
+  it("submits the trimmed values with the chosen day", async () => {
     const { onSubmit, user } = renderForm();
 
     await user.type(getNameInput(), "  Scrum Master  ");
     await user.type(getOrganizationInput(), " Scrum Alliance ");
-    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04" } });
+    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
     await user.click(saveButton());
 
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Scrum Master",
       issuingOrganization: "Scrum Alliance",
-      issueDate: "2025-04-01",
+      issueDate: "2025-04-20",
     });
   });
 

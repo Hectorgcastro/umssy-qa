@@ -8,8 +8,6 @@ import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
-import { isoDateToMonth } from "../utils/iso-date-to-month";
-import { monthToIsoDate } from "../utils/month-to-iso-date";
 import { trimFormValues } from "../utils/trim-form-values";
 import { getTodayIsoDate, validateCertification } from "../utils/validate-certification";
 import { FormField } from "./form-field";
@@ -27,9 +25,7 @@ export function CertificationForm({
   onCancel,
 }: CertificationFormProps) {
   const [values, setValues] = useState<CreateCertificationDto>(
-    initialData
-      ? { ...initialData, issueDate: isoDateToMonth(initialData.issueDate) }
-      : EMPTY_CERTIFICATION_VALUES,
+    initialData ?? EMPTY_CERTIFICATION_VALUES,
   );
   const [errors, setErrors] = useState<CertificationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,8 +49,7 @@ export function CertificationForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedValues = trimFormValues(values);
-    const payload = { ...trimmedValues, issueDate: monthToIsoDate(trimmedValues.issueDate) };
-    const validationErrors = validateCertification(payload);
+    const validationErrors = validateCertification(trimmedValues);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -63,7 +58,7 @@ export function CertificationForm({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(payload);
+      await onSubmit(trimmedValues);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,9 +113,8 @@ export function CertificationForm({
           <Input
             id="certification-issueDate"
             name="issueDate"
-            type="month"
-            placeholder="AAAA-MM"
-            max={getTodayIsoDate().slice(0, 7)}
+            type="date"
+            max={getTodayIsoDate()}
             value={values.issueDate}
             disabled={isBusy}
             onChange={handleChange}

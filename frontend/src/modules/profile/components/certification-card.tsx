@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import type { CertificationCardProps } from "../types/certification-card-props.types";
-import { formatIssueMonth } from "../utils/format-issue-month";
+import { formatIssueDate } from "../utils/format-issue-date";
 
 export function CertificationCard({
   certification,
@@ -13,8 +13,8 @@ export function CertificationCard({
       <div className="min-w-0">
         <h4 className="text-[15px] font-bold text-ink">{certification.name}</h4>
         <p className="mt-0.5 text-[13px] text-text-secondary">
-          {certification.issuingOrganization} · Obtenida en{" "}
-          <time dateTime={certification.issueDate}>{formatIssueMonth(certification.issueDate)}</time>
+          {certification.issuingOrganization} · Obtenida el{" "}
+          <time dateTime={certification.issueDate}>{formatIssueDate(certification.issueDate)}</time>
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
