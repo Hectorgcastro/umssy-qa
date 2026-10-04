@@ -29,7 +29,7 @@ export function EventsView() {
 
   return (
     <div className="flex min-h-svh w-full flex-1 flex-col bg-surface-soft text-foreground lg:flex-row">
-      {/* Columna central: Catalogo de talleres disponibles */}
+
       <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pb-8 pt-20 sm:px-10">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
@@ -40,7 +40,7 @@ export function EventsView() {
           </p>
         </header>
 
-        {/* Barra horizontal combinada: Buscador por texto + Chips de categorias */}
+
         <div
           role="search"
           aria-label="Filtros de talleres"
@@ -72,7 +72,7 @@ export function EventsView() {
           </div>
         </div>
 
-        {/* Grilla de 2 columnas renderizando el componente reutilizable EventCard */}
+
         <section aria-label="Listado de talleres">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {events.map((eventItem) => (
@@ -121,7 +121,7 @@ export function EventsView() {
         </section>
       </div>
 
-      {/* Franja de detalle junto al listado en escritorio. */}
+
       {selectedEvent ? (
         <EventDetailPanel event={selectedEvent} />
       ) : (
