@@ -8,6 +8,7 @@ import type { ApiResponse } from "../types/api-response.types";
 import type { Certification } from "../types/certification.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import type { UpdateCertificationDto } from "../types/update-certification-dto.types";
+import { getAuthHeaders } from "../utils/get-auth-headers";
 import { getHttpStatus } from "../utils/get-http-status";
 
 const NOT_FOUND_STATUS = 404;
@@ -59,7 +60,9 @@ function updateSampleCertification(id: string, data: UpdateCertificationDto): Ce
 export const certificationsService = {
   getCertifications: async (): Promise<Certification[]> => {
     try {
-      const response = await apiClient.get<ApiResponse<Certification[]>>(CERTIFICATIONS_ENDPOINT);
+      const response = await apiClient.get<ApiResponse<Certification[]>>(CERTIFICATIONS_ENDPOINT, {
+        headers: getAuthHeaders(),
+      });
       return response.data.data;
     } catch (error) {
       if (isEndpointUnavailable(error)) {
@@ -74,6 +77,7 @@ export const certificationsService = {
       const response = await apiClient.post<ApiResponse<Certification>>(
         CERTIFICATIONS_ENDPOINT,
         data,
+        { headers: getAuthHeaders() },
       );
       return response.data.data;
     } catch (error) {
@@ -92,6 +96,7 @@ export const certificationsService = {
       const response = await apiClient.patch<ApiResponse<Certification>>(
         `${CERTIFICATIONS_ENDPOINT}/${id}`,
         data,
+        { headers: getAuthHeaders() },
       );
       return response.data.data;
     } catch (error) {
@@ -104,7 +109,7 @@ export const certificationsService = {
 
   deleteCertification: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(`${CERTIFICATIONS_ENDPOINT}/${id}`);
+      await apiClient.delete(`${CERTIFICATIONS_ENDPOINT}/${id}`, { headers: getAuthHeaders() });
     } catch (error) {
       if (!isEndpointUnavailable(error)) {
         throw error;
@@ -120,7 +125,9 @@ export const certificationsService = {
     const formData = new FormData();
     formData.append(CERTIFICATION_DOCUMENT_FIELD_NAME, file);
     try {
-      await apiClient.put(getCertificationDocumentEndpoint(id), formData);
+      await apiClient.put(getCertificationDocumentEndpoint(id), formData, {
+        headers: getAuthHeaders(),
+      });
     } catch (error) {
       if (!isEndpointUnavailable(error)) {
         throw error;
@@ -133,6 +140,7 @@ export const certificationsService = {
     try {
       const response = await apiClient.get<Blob>(getCertificationDocumentEndpoint(id), {
         responseType: "blob",
+        headers: getAuthHeaders(),
       });
       return response.data;
     } catch (error) {
@@ -145,7 +153,7 @@ export const certificationsService = {
 
   deleteDocument: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(getCertificationDocumentEndpoint(id));
+      await apiClient.delete(getCertificationDocumentEndpoint(id), { headers: getAuthHeaders() });
     } catch (error) {
       if (!isEndpointUnavailable(error)) {
         throw error;

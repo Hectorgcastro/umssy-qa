@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiClient } from "@/shared/services/api-client";
+import { ACCESS_TOKEN_STORAGE_KEY } from "../config/auth-storage.config";
 import type { Certification } from "../types/certification.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 
@@ -26,6 +27,8 @@ const SAVED_CERTIFICATION: Certification = {
   updatedAt: "2025-04-21T10:00:00.000Z",
 };
 
+const AUTH_HEADERS = { Authorization: "Bearer token-123" };
+
 const NOT_FOUND_ERROR = { response: { status: 404 } };
 const NETWORK_ERROR = new Error("Network Error");
 const SERVER_ERROR = { response: { status: 500 } };
@@ -49,6 +52,19 @@ describe("certificationsService", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    window.sessionStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, "token-123");
+  });
+
+  describe("without an access token", () => {
+    it("sends the requests without an authorization header", async () => {
+      window.sessionStorage.clear();
+      vi.mocked(apiClient.get).mockResolvedValue({ data: { data: [] } });
+      const service = await loadService();
+
+      await service.getCertifications();
+
+      expect(apiClient.get).toHaveBeenCalledWith("/certifications", { headers: {} });
+    });
   });
 
   describe("with the endpoints available", () => {
@@ -57,7 +73,9 @@ describe("certificationsService", () => {
       const service = await loadService();
 
       await expect(service.getCertifications()).resolves.toEqual([SAVED_CERTIFICATION]);
-      expect(apiClient.get).toHaveBeenCalledWith("/certifications");
+      expect(apiClient.get).toHaveBeenCalledWith("/certifications", {
+        headers: AUTH_HEADERS,
+      });
     });
 
     it("creates a certification", async () => {
@@ -67,7 +85,9 @@ describe("certificationsService", () => {
       await expect(service.createCertification(NEW_CERTIFICATION)).resolves.toEqual(
         SAVED_CERTIFICATION,
       );
-      expect(apiClient.post).toHaveBeenCalledWith("/certifications", NEW_CERTIFICATION);
+      expect(apiClient.post).toHaveBeenCalledWith("/certifications", NEW_CERTIFICATION, {
+        headers: AUTH_HEADERS,
+      });
     });
 
     it("updates a certification", async () => {
@@ -78,9 +98,11 @@ describe("certificationsService", () => {
       await expect(
         service.updateCertification("certification-1", { name: updated.name }),
       ).resolves.toEqual(updated);
-      expect(apiClient.patch).toHaveBeenCalledWith("/certifications/certification-1", {
-        name: updated.name,
-      });
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        "/certifications/certification-1",
+        { name: updated.name },
+        { headers: AUTH_HEADERS },
+      );
     });
 
     it("deletes a certification", async () => {
@@ -89,7 +111,9 @@ describe("certificationsService", () => {
 
       await service.deleteCertification("certification-1");
 
-      expect(apiClient.delete).toHaveBeenCalledWith("/certifications/certification-1");
+      expect(apiClient.delete).toHaveBeenCalledWith("/certifications/certification-1", {
+        headers: AUTH_HEADERS,
+      });
     });
   });
 
@@ -174,9 +198,14 @@ describe("certificationsService", () => {
 
       await service.uploadDocument("certification-1", DOCUMENT);
 
-      const [endpoint, body] = vi.mocked(apiClient.put).mock.calls[0] as [string, FormData];
+      const [endpoint, body, config] = vi.mocked(apiClient.put).mock.calls[0] as [
+        string,
+        FormData,
+        unknown,
+      ];
       expect(endpoint).toBe("/certifications/certification-1/document");
       expect(body.get("file")).toBe(DOCUMENT);
+      expect(config).toEqual({ headers: AUTH_HEADERS });
     });
 
     it("gets the document as a blob", async () => {
@@ -186,6 +215,7 @@ describe("certificationsService", () => {
       await expect(service.getDocument("certification-1")).resolves.toBe(DOCUMENT);
       expect(apiClient.get).toHaveBeenCalledWith("/certifications/certification-1/document", {
         responseType: "blob",
+        headers: AUTH_HEADERS,
       });
     });
 
@@ -202,7 +232,9 @@ describe("certificationsService", () => {
 
       await service.deleteDocument("certification-1");
 
-      expect(apiClient.delete).toHaveBeenCalledWith("/certifications/certification-1/document");
+      expect(apiClient.delete).toHaveBeenCalledWith("/certifications/certification-1/document", {
+        headers: AUTH_HEADERS,
+      });
     });
 
     it.each<[string, (service: CertificationsService) => Promise<unknown>]>([

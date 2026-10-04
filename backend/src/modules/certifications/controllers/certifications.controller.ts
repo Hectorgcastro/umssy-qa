@@ -7,8 +7,17 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { ResponseInterceptor } from '../../../common/interceptors/response.interceptor.js';
 import { RequestValidationPipe } from '../../../common/pipes/request-validation.pipe.js';
 import {
   createCertificationSchema,
@@ -21,6 +30,11 @@ import {
 import { CertificationsService } from '../services/certifications.service.js';
 import type { CertificationResponse } from '../types/certification-response.type.js';
 
+@ApiTags('certifications')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'A valid access token is required' })
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(ResponseInterceptor)
 @Controller('certifications')
 export class CertificationsController {
   constructor(private readonly certificationsService: CertificationsService) {}
