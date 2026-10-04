@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Breadcrumbs } from "@/shared/components/layout";
+import { MENTOR_PROFILE_BREADCRUMB_ITEMS } from "../../constants/mentor-profile-breadcrumb.constants";
 
 type MentorProfileNavigationProps = {
   mentorName: string;
@@ -8,34 +11,26 @@ type MentorProfileNavigationProps = {
 export function MentorProfileNavigation({
   mentorName,
 }: MentorProfileNavigationProps) {
+  const breadcrumbItems = [
+    ...MENTOR_PROFILE_BREADCRUMB_ITEMS,
+    { label: mentorName },
+  ];
+
   return (
-    <div className="mb-6">
+    <div className="mb-6 [&>nav]:mb-0 [&>nav]:text-umssy-secondary [&_svg]:size-4 [&_[aria-current=page]]:text-umssy-ink">
       <Link
         href="/mentorship/mentors"
-        className="mb-4 inline-flex items-center gap-2 rounded-lg border border-umssy-border bg-white px-4 py-2 text-sm font-semibold text-umssy-ink shadow-sm transition hover:bg-umssy-background hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-umssy-red"
+        className={buttonVariants({
+          variant: "outline",
+          className:
+            "mb-4 h-auto gap-2 rounded-lg border-umssy-border bg-white px-4 py-2 text-sm font-semibold text-umssy-ink shadow-sm transition hover:bg-umssy-background hover:text-umssy-ink hover:shadow-md active:translate-y-0 focus-visible:ring-2 focus-visible:ring-umssy-red",
+        })}
       >
         <ArrowLeft size={16} />
         Volver al directorio
       </Link>
 
-      <nav
-        aria-label="Ruta de navegación"
-        className="flex flex-wrap items-center gap-1 text-sm"
-      >
-        <span className="text-umssy-secondary">UMSSY</span>
-
-        <ChevronRight size={16} className="text-umssy-secondary" />
-
-        <span className="text-umssy-secondary">Mentorías</span>
-
-        <ChevronRight size={16} className="text-umssy-secondary" />
-
-        <span className="text-umssy-secondary">Directorio de mentores</span>
-
-        <ChevronRight size={16} className="text-umssy-secondary" />
-
-        <span className="font-semibold text-umssy-ink">{mentorName}</span>
-      </nav>
+      <Breadcrumbs items={breadcrumbItems} />
     </div>
   );
 }

@@ -18,7 +18,7 @@ describe("MentorshipView", () => {
 
     const checkbox = screen.getByRole("checkbox");
 
-    expect((checkbox as HTMLInputElement).checked).toBe(false);
+    expect(checkbox).not.toBeChecked();
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
@@ -34,13 +34,25 @@ describe("MentorshipView", () => {
 
     fireEvent.click(checkbox);
 
-    expect((checkbox as HTMLInputElement).checked).toBe(true);
+    expect(checkbox).toBeChecked();
 
     const nextButton = screen.getByRole("button", {
       name: /Continuar/i,
     });
 
     expect((nextButton as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("permite seleccionar participación desde toda la fila sin duplicar el cambio", () => {
+    render(<MentorshipView />);
+
+    fireEvent.click(screen.getByText("Quiero participar como mentor"));
+
+    expect(
+      screen.getByRole("checkbox", {
+        name: "Quiero participar como mentor",
+      }),
+    ).toBeChecked();
   });
 
   it("permite avanzar entre los pasos después de aceptar participación", () => {
@@ -168,9 +180,7 @@ describe("MentorshipView", () => {
 
     const participationCheckbox = screen.getByRole("checkbox");
 
-    expect(
-      (participationCheckbox as HTMLInputElement).checked,
-    ).toBe(true);
+    expect(participationCheckbox).toBeChecked();
   });
 
   it("muestra el título principal del wizard", () => {
