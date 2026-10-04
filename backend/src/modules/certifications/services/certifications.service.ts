@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CertificationNotFoundException } from '../exceptions/certification-not-found.exception.js';
 import { CertificationMapper } from '../mappers/certification.mapper.js';
+import { CertificationDocumentsRepository } from '../repositories/certification-documents.repository.js';
 import { CertificationsRepository } from '../repositories/certifications.repository.js';
 import type { CreateCertificationRequest } from '../requests/create-certification.request.js';
 import type { UpdateCertificationRequest } from '../requests/update-certification.request.js';
@@ -11,6 +12,7 @@ import type { CertificationResponse } from '../types/certification-response.type
 export class CertificationsService {
   constructor(
     private readonly certificationsRepository: CertificationsRepository,
+    private readonly documentsRepository: CertificationDocumentsRepository,
     private readonly certificationMapper: CertificationMapper,
   ) {}
 
@@ -23,9 +25,11 @@ export class CertificationsService {
   }
 
   async findAll(userId: string): Promise<CertificationResponse[]> {
-    const records =
-      await this.certificationsRepository.findManyByUserId(userId);
-    return this.certificationMapper.toResponseList(records);
+    const [records, idsWithDocument] = await Promise.all([
+      this.certificationsRepository.findManyByUserId(userId),
+      this.documentsRepository.findIdsWithDocument(userId),
+    ]);
+    return this.certificationMapper.toResponseList(records, idsWithDocument);
   }
 
   async update(
@@ -35,7 +39,8 @@ export class CertificationsService {
   ): Promise<CertificationResponse> {
     await this.getOwnedOrFail(userId, id);
     const updated = await this.certificationsRepository.update(id, request);
-    return this.certificationMapper.toResponse(updated);
+    const hasDocument = await this.documentsRepository.hasDocument(id);
+    return this.certificationMapper.toResponse(updated, hasDocument);
   }
 
   async remove(userId: string, id: string): Promise<void> {
