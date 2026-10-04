@@ -1,0 +1,33 @@
+import { toBoliviaTime } from "@/shared/utils/date-time";
+import type { WeekRange } from "@/shared/types/week-range.types";
+import { HOUR_HEIGHT_PX } from "../../constants/week-grid.constants";
+
+export function getWeekDayIndex(startAt: string, weekRange: WeekRange): number | null {
+  const startMs = new Date(startAt).getTime();
+  const rangeStartMs = new Date(weekRange.startAt).getTime();
+  const rangeEndMs = new Date(weekRange.endAt).getTime();
+  if (startMs < rangeStartMs || startMs > rangeEndMs) return null;
+  return toBoliviaTime(startAt).weekday - 1;
+}
+
+export function getBlockVerticalPosition(
+  startAt: string,
+  endAt: string,
+  startHour: number,
+  endHour: number
+): { topPx: number; heightPx: number } {
+  const start = toBoliviaTime(startAt);
+  const end = toBoliviaTime(endAt);
+
+  const startMinutes = Math.max(0, (start.hours - startHour) * 60 + start.minutes);
+  const endMinutes = Math.min(
+    (endHour - startHour) * 60,
+    (end.hours - startHour) * 60 + end.minutes
+  );
+
+  const pxPerMinute = HOUR_HEIGHT_PX / 60;
+  return {
+    topPx: startMinutes * pxPerMinute,
+    heightPx: Math.max(0, endMinutes - startMinutes) * pxPerMinute,
+  };
+}
