@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import type { UpdatePersonalInfoRequest } from '../requests/update-personal-info.request.js';
+import type { UpdatePresentationRequest } from '../requests/update-presentation.request.js';
 import type { ProfileRecord } from '../types/profile-record.type.js';
 
 // Only the profile columns of users; password and file columns are never read here.
@@ -23,6 +25,17 @@ export class ProfileRepository {
   findByUserId(userId: string): Promise<ProfileRecord | null> {
     return this.prisma.user.findUnique({
       where: { id: userId },
+      select: profileSelect,
+    });
+  }
+
+  update(
+    userId: string,
+    data: UpdatePersonalInfoRequest | UpdatePresentationRequest,
+  ): Promise<ProfileRecord> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
       select: profileSelect,
     });
   }

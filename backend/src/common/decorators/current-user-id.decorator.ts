@@ -1,13 +1,14 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
-import type { Request } from 'express';
 import { MissingUserException } from '../exceptions/missing-user.exception.js';
+import type { AuthenticatedRequest } from '../types/authenticated-request.type.js';
 
+// Returns the id of the user authenticated by JwtAuthGuard (never from headers or body).
 export const CurrentUserId = createParamDecorator(
   (_data: unknown, context: ExecutionContext): string => {
-    const request = context.switchToHttp().getRequest<Request>();
-    const userId = request.headers['x-user-id'];
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const userId = request.user?.userId;
 
-    if (typeof userId !== 'string' || userId.trim().length === 0) {
+    if (!userId) {
       throw new MissingUserException();
     }
 
