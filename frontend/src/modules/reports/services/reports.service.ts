@@ -8,11 +8,12 @@ import type {
   RegisteredUsersExportParams,
   RegisteredUsersParams,
 } from "../types/registered-user.types";
-import type { RejectedUser, RejectedUsersParams } from "../types/rejected-user.types";
+import type { RejectedUser, RejectedUsersExportParams, RejectedUsersParams } from "../types/rejected-user.types";
 import { REGISTERED_USERS_MOCK } from "./registered-users.mock";
 import { REPORT_HISTORY_MOCK } from "./report-history.mock";
 
 const REGISTERED_USERS_CSV_FALLBACK_NAME = "usuarios-registrados.csv";
+const REJECTED_USERS_CSV_FALLBACK_NAME = "usuarios-rechazados.csv";
 
 export const reportsService = {
   // Mock temporal: reemplazar por apiClient.get("/reports/history", { params }) cuando exista el endpoint.
@@ -84,5 +85,20 @@ export const reportsService = {
     });
 
     return data;
+  },
+
+  exportRejectedUsersCsv: async ({ search }: RejectedUsersExportParams): Promise<ExportedFile> => {
+    const response = await apiClient.get<Blob>("/reports/rejected-users/export", {
+      params: { search: search || undefined },
+      responseType: "blob",
+    });
+
+    return {
+      file: response.data,
+      fileName: getFileNameFromDisposition(
+        response.headers["content-disposition"] as string | undefined,
+        REJECTED_USERS_CSV_FALLBACK_NAME,
+      ),
+    };
   },
 };

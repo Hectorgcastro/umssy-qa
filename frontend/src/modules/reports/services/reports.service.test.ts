@@ -36,6 +36,40 @@ describe("reportsService.getRejectedUsers", () => {
   });
 });
 
+describe("reportsService.exportRejectedUsersCsv", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("descarga el CSV como archivo con la búsqueda actual", async () => {
+    const file = new Blob(["Usuario"], { type: "text/csv" });
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+      data: file,
+      headers: { "content-disposition": 'attachment; filename="usuarios-rechazados-2026-10-04.csv"' },
+    });
+
+    const result = await reportsService.exportRejectedUsersCsv({ search: "juan" });
+
+    expect(getSpy).toHaveBeenCalledWith("/reports/rejected-users/export", {
+      params: { search: "juan" },
+      responseType: "blob",
+    });
+    expect(result).toEqual({ file, fileName: "usuarios-rechazados-2026-10-04.csv" });
+  });
+
+  it("no envía la búsqueda vacía y usa un nombre por defecto", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: new Blob([]), headers: {} });
+
+    const result = await reportsService.exportRejectedUsersCsv({ search: "" });
+
+    expect(getSpy).toHaveBeenCalledWith("/reports/rejected-users/export", {
+      params: { search: undefined },
+      responseType: "blob",
+    });
+    expect(result.fileName).toBe("usuarios-rechazados.csv");
+  });
+});
+
 describe("reportsService.exportRegisteredUsersCsv", () => {
   afterEach(() => {
     vi.restoreAllMocks();
