@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Award, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 import { CertificationCard } from "../components/certification-card";
 import { CertificationDeleteDialog } from "../components/certification-delete-dialog";
+import { CertificationDocumentsPanel } from "../components/certification-documents-panel";
 import { CertificationForm } from "../components/certification-form";
 import { FeedbackMessage } from "../components/feedback-message";
 import { ProfilePageLayout } from "../components/profile-page-layout";
@@ -15,8 +14,6 @@ import { useCreateCertification, useUpdateCertification } from "../hooks/use-cer
 import { useCertificationDocument } from "../hooks/use-certification-document";
 import { useCertifications } from "../hooks/use-certifications";
 import { useDeleteCertification } from "../hooks/use-delete-certification";
-import type { CertificationDocumentChange } from "../types/certification-document-change.types";
-import type { CertificationFormState } from "../types/certification-form-state.types";
 import type { Certification } from "../types/certification.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import type { Feedback } from "../types/feedback.types";
@@ -31,8 +28,10 @@ function toFormValues(certification: Certification): CreateCertificationDto {
 
 export function CertificationsView() {
   const { certifications, isLoading, error, reload } = useCertifications();
-  const [formState, setFormState] = useState<CertificationFormState>({ mode: "closed" });
+  const [editing, setEditing] = useState<Certification | null>(null);
+  const [formVersion, setFormVersion] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<Certification | null>(null);
+  const [fileFeedback, setFileFeedback] = useState<Feedback | null>(null);
 
   const createMutation = useCreateCertification();
   const updateMutation = useUpdateCertification();
@@ -41,10 +40,10 @@ export function CertificationsView() {
   });
   const certificationDocument = useCertificationDocument();
 
-  const isFormOpen = formState.mode !== "closed";
-  const isSaving =
-    createMutation.isPending || updateMutation.isPending || certificationDocument.isSaving;
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isBusy = isSaving || certificationDocument.isSaving || certificationDocument.isOpening;
   const visibleFeedback: Feedback | null =
+    fileFeedback ??
     certificationDocument.feedback ??
     createMutation.feedback ??
     updateMutation.feedback ??
@@ -56,37 +55,29 @@ export function CertificationsView() {
     updateMutation.clearFeedback();
     deleteMutation.clearFeedback();
     certificationDocument.clearFeedback();
-  };
-
-  const openCreateForm = () => {
-    clearFeedback();
-    setFormState({ mode: "create" });
+    setFileFeedback(null);
   };
 
   const openEditForm = (certification: Certification) => {
     clearFeedback();
-    setFormState({ mode: "edit", certification });
+    setEditing(certification);
   };
 
   const closeForm = () => {
-    setFormState({ mode: "closed" });
+    setEditing(null);
+    setFormVersion((version) => version + 1);
   };
 
-  const handleSubmit = async (
-    values: CreateCertificationDto,
-    documentChange: CertificationDocumentChange,
-  ) => {
-    const savedCertification =
-      formState.mode === "edit"
-        ? await updateMutation.mutate({ id: formState.certification.id, data: values })
-        : await createMutation.mutate(values);
+  const handleSubmit = async (values: CreateCertificationDto) => {
+    const savedCertification = editing
+      ? await updateMutation.mutate({ id: editing.id, data: values })
+      : await createMutation.mutate(values);
 
     if (!savedCertification) {
       return;
     }
 
-    await certificationDocument.applyDocumentChange(savedCertification.id, documentChange);
-    setFormState({ mode: "closed" });
+    closeForm();
     void reload();
   };
 
@@ -95,59 +86,67 @@ export function CertificationsView() {
     setPendingDelete(certification);
   };
 
-  const openDocument = (certification: Certification) => {
+  const handleConfirmDelete = async (certification: Certification) => {
+    const wasDeleted = await deleteMutation.deleteCertification(certification);
+    if (wasDeleted && editing?.id === certification.id) {
+      closeForm();
+    }
+    setPendingDelete(null);
+  };
+
+  const handleUploadDocument = async (certification: Certification, file: File) => {
+    clearFeedback();
+    const wasSaved = await certificationDocument.applyDocumentChange(certification.id, {
+      type: "replace",
+      file,
+    });
+    if (wasSaved) {
+      await reload();
+    }
+    return wasSaved;
+  };
+
+  const handleRemoveDocument = async (certification: Certification) => {
+    clearFeedback();
+    const wasRemoved = await certificationDocument.applyDocumentChange(certification.id, {
+      type: "remove",
+    });
+    if (wasRemoved) {
+      await reload();
+    }
+    return wasRemoved;
+  };
+
+  const handleViewDocument = (certification: Certification) => {
     clearFeedback();
     void certificationDocument.openDocument(certification);
   };
 
-  const closeDeleteDialog = () => {
-    setPendingDelete(null);
+  const handleInvalidFile = (message: string) => {
+    clearFeedback();
+    setFileFeedback({ type: "error", message });
   };
-
-  const handleConfirmDelete = async (certification: Certification) => {
-    await deleteMutation.deleteCertification(certification);
-    setPendingDelete(null);
-  };
-
-  const addButton = (
-    <Button type="button" className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "gap-2")} onClick={openCreateForm}>
-      <Plus aria-hidden="true" className="size-4" />
-      Agregar certificación
-    </Button>
-  );
 
   const renderList = () => {
     if (isLoading) {
-      return <p className="text-[14px] text-text-secondary">Cargando certificaciones...</p>;
+      return <p className="py-3 text-[14px] text-text-secondary">Cargando certificaciones...</p>;
     }
 
     if (certifications.length === 0) {
       return error ? null : (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border-strong px-8 py-12 text-center">
-          <span className="flex size-12 items-center justify-center rounded-full bg-surface-soft text-ink-soft">
-            <Award aria-hidden="true" className="size-6" />
-          </span>
-          <div className="flex flex-col gap-1">
-            <h3 className="text-[16px] font-bold text-ink">Aún no has agregado certificaciones</h3>
-            <p className="max-w-md text-[14px] text-text-secondary">
-              Suma los cursos y certificaciones que respaldan tus conocimientos para fortalecer tu perfil.
-            </p>
-          </div>
-          {addButton}
-        </div>
+        <p className="py-3 text-[14px] text-text-secondary">Aún no has agregado certificaciones.</p>
       );
     }
 
     return (
-      <ul aria-label="Certificaciones" className="flex flex-col gap-3">
+      <ul aria-label="Certificaciones" className="flex flex-col divide-y divide-border">
         {certifications.map((certification) => (
           <li key={certification.id}>
             <CertificationCard
               certification={certification}
-              isBusy={deleteMutation.isDeleting || certificationDocument.isOpening}
+              isBusy={deleteMutation.isDeleting || isBusy}
               onEdit={openEditForm}
               onDelete={openDeleteDialog}
-              onViewDocument={openDocument}
             />
           </li>
         ))}
@@ -163,35 +162,39 @@ export function CertificationsView() {
     >
       <TrajectorySteps activeStep="certifications" />
       {visibleFeedback ? <FeedbackMessage feedback={visibleFeedback} /> : null}
-      {isFormOpen ? (
-        <div className="max-w-6xl">
-          <CertificationForm
-            key={formState.mode === "edit" ? formState.certification.id : formState.mode}
-            initialData={
-              formState.mode === "edit" ? toFormValues(formState.certification) : undefined
-            }
-            hasDocument={
-              formState.mode === "edit" ? Boolean(formState.certification.hasDocument) : false
-            }
-            isPending={isSaving}
-            onSubmit={handleSubmit}
-            onCancel={closeForm}
-          />
-        </div>
-      ) : (
-        <SectionCard
-          title="Certificaciones"
-          description="Ordenadas de la más reciente a la más antigua."
-          action={certifications.length > 0 ? addButton : undefined}
-        >
-          {renderList()}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <SectionCard title="Tus certificaciones">
+          <div className="flex flex-col gap-6">
+            <section aria-label="Certificaciones registradas" className="flex flex-col gap-1">
+              <p className="text-[12px] font-semibold tracking-wide text-text-secondary">
+                CERTIFICACIONES REGISTRADAS
+              </p>
+              {renderList()}
+            </section>
+            <Separator />
+            <CertificationForm
+              key={editing ? editing.id : `create-${formVersion}`}
+              initialData={editing ? toFormValues(editing) : undefined}
+              isPending={isSaving}
+              onSubmit={handleSubmit}
+              onCancel={closeForm}
+            />
+          </div>
         </SectionCard>
-      )}
+        <CertificationDocumentsPanel
+          certifications={certifications}
+          isBusy={isBusy}
+          onUpload={handleUploadDocument}
+          onRemove={handleRemoveDocument}
+          onView={handleViewDocument}
+          onInvalidFile={handleInvalidFile}
+        />
+      </div>
       <CertificationDeleteDialog
         certification={pendingDelete}
         isDeleting={deleteMutation.isDeleting}
         onConfirm={handleConfirmDelete}
-        onCancel={closeDeleteDialog}
+        onCancel={() => setPendingDelete(null)}
       />
     </ProfilePageLayout>
   );

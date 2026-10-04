@@ -7,20 +7,18 @@ import { Input } from "@/components/ui/input";
 import { CERTIFICATE_FILE_ACCEPT } from "../config/certification-document.config";
 import type { CertificationDocumentFieldProps } from "../types/certification-document-field-props.types";
 import { formatFileSize } from "../utils/format-file-size";
-import { getFieldErrorId, getFieldErrorProps } from "../utils/get-field-error-props";
+import { getFieldErrorProps } from "../utils/get-field-error-props";
+import { FormField } from "./form-field";
 
 const DOCUMENT_INPUT_ID = "certification-document";
 
 export function CertificationDocumentField({
   selectedFile,
-  hasCurrentDocument,
   error,
   disabled = false,
   onSelectFile,
-  onRemove,
 }: CertificationDocumentFieldProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const hasDocument = selectedFile !== null || hasCurrentDocument;
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,21 +28,13 @@ export function CertificationDocumentField({
     }
   };
 
-  const getDescription = () => {
-    if (selectedFile) {
-      return `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`;
-    }
-    return hasCurrentDocument ? "Documento actual adjunto" : "PDF, PNG o JPG de hasta 5 MB.";
-  };
-
   return (
-    <div className="flex flex-col gap-2">
+    <FormField id={DOCUMENT_INPUT_ID} label="Archivo de respaldo" isRequired error={error}>
       <Input
         ref={fileInputRef}
         id={DOCUMENT_INPUT_ID}
         type="file"
         accept={CERTIFICATE_FILE_ACCEPT}
-        aria-label="Archivo del certificado"
         className="hidden"
         disabled={disabled}
         onChange={handleFileChange}
@@ -53,36 +43,22 @@ export function CertificationDocumentField({
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-dashed border-border-strong bg-surface-soft px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <FileText aria-hidden="true" className="size-5 shrink-0 text-ink-soft" />
-          <p className="text-[13px] break-all text-text-secondary">{getDescription()}</p>
+          <p className="text-[13px] break-all text-text-secondary">
+            {selectedFile
+              ? `${selectedFile.name} · ${formatFileSize(selectedFile.size)}`
+              : "PDF, JPG o PNG - Selecciona el documento o imagen."}
+          </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          {hasDocument ? (
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-10 px-3 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent"
-              disabled={disabled}
-              onClick={onRemove}
-            >
-              Quitar
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            className="h-10 border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft"
-            disabled={disabled}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {hasDocument ? "Reemplazar archivo" : "Seleccionar archivo"}
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 shrink-0 border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft"
+          disabled={disabled}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {selectedFile ? "Reemplazar archivo" : "Seleccionar archivo"}
+        </Button>
       </div>
-      {error ? (
-        <p id={getFieldErrorId(DOCUMENT_INPUT_ID)} className="text-[13px] text-danger">
-          {error}
-        </p>
-      ) : null}
-    </div>
+    </FormField>
   );
 }
