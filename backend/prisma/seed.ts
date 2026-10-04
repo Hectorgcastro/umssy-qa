@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/prisma/client.js';
+import { PrismaClient } from '../src/generated/prisma/client.js';
 import bcrypt from 'bcrypt';
 import { buildDatabaseConnectionString } from '../src/common/prisma/build-connection-string.js';
 import { ROLE_NAMES } from '../src/common/enums/roles.enum.js';

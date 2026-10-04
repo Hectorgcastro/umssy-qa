@@ -167,11 +167,6 @@ export type TimeProposal = Prisma.TimeProposalModel
  */
 export type AppointmentHistory = Prisma.AppointmentHistoryModel
 /**
- * Model Vacancy
- * 
- */
-export type Vacancy = Prisma.VacancyModel
-/**
  * Model EventCategory
  * 
  */
