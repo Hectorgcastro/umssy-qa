@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { CircleCheckIcon } from "lucide-react";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { BlockForm } from "../components/block-form";
+import { MY_AVAILABILITY_PATH } from "../constants/availability.constants";
 import { useCreateAvailabilityBlock } from "../hooks/use-create-availability-block";
-import type { CreateAvailabilityBlockInput } from "../types/availability";
-
-const MY_AVAILABILITY_PATH = "/mentor/availability";
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 
 export function AddBlockView() {
   const router = useRouter();

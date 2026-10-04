@@ -1,21 +1,7 @@
 import { toBoliviaTime } from "@/shared/utils/date-time";
-import type { CreateAvailabilityBlockInput } from "../types/availability";
-
-// Mismas reglas y mensajes que la validación de creación de bloques del backend.
-// Rango de atención en hora de Bolivia (valor propuesto, a confirmar con el PO).
-export const BLOCK_MIN_HOUR = 7;
-export const BLOCK_MAX_HOUR = 22;
-export const BLOCK_STEP_MINUTES = 30;
-
-export const BLOCK_MESSAGES = {
-  endBeforeStart: "La hora de fin debe ser posterior a la hora de inicio",
-  startInPast: "La hora de inicio ya pasó",
-  outOfRange: `El horario debe estar entre las ${String(BLOCK_MIN_HOUR).padStart(2, "0")}:00 y las ${String(BLOCK_MAX_HOUR).padStart(2, "0")}:00`,
-  invalidStep: `Las horas deben ir en intervalos de ${BLOCK_STEP_MINUTES} minutos`,
-  differentDays: "El bloque debe empezar y terminar el mismo día",
-} as const;
-
-export type BlockValidationErrors = Partial<Record<keyof CreateAvailabilityBlockInput, string>>;
+import { BLOCK_MAX_HOUR, BLOCK_MESSAGES, BLOCK_MIN_HOUR, BLOCK_STEP_MINUTES } from "../constants/availability.constants";
+import type { BlockValidationErrors } from "../types/block-validation-errors.types";
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 
 const getBoliviaParts = (value: string) => {
   const date = new Date(value);
@@ -27,7 +13,6 @@ const getBoliviaParts = (value: string) => {
   };
 };
 
-// Devuelve el primer error de cada campo; un objeto vacío significa que el bloque es válido.
 export function validateBlock(
   { startAt, endAt }: CreateAvailabilityBlockInput,
   now: Date = new Date(),

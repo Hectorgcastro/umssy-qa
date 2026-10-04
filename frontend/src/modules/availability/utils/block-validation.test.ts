@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { BLOCK_MESSAGES as MSG, validateBlock } from "./block-validation"
+import { BLOCK_MESSAGES as MSG } from "../constants/availability.constants"
+import { validateBlock } from "./block-validation"
 
 // Ahora fijo: 1 de octubre de 2026, 08:00 en Bolivia (12:00 UTC).
 const FIXED_NOW = new Date("2026-10-01T12:00:00Z")

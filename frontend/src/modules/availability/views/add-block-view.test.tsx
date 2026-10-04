@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { AddBlockView } from "./add-block-view"
 import { availabilityApi } from "../services/availability.api"
-import type { AvailabilityBlock } from "../types/availability"
+import type { AvailabilityBlock } from "../types/availability-block.types"
 
 const push = vi.fn()
 

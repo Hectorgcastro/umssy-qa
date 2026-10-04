@@ -11,76 +11,13 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { toBoliviaTime, toUtcIso } from "@/shared/utils/date-time";
-import {
-  BLOCK_MAX_HOUR,
-  BLOCK_MIN_HOUR,
-  BLOCK_STEP_MINUTES,
-  validateBlock,
-} from "../utils/block-validation";
-import type { CreateAvailabilityBlockInput } from "../types/availability";
-
-export type BlockFormMode = "create" | "edit";
-
-type BlockFormField = "date" | "startAt" | "endAt";
-type BlockFormErrors = Partial<Record<BlockFormField, string>>;
-
-interface BlockFormProps {
-  mode: BlockFormMode;
-  initialValues?: Partial<CreateAvailabilityBlockInput>;
-  isSubmitting?: boolean;
-  submitError?: string | null;
-  onSubmit: (values: CreateAvailabilityBlockInput) => void;
-  onCancel: () => void;
-}
-
-const FORM_TEXT: Record<BlockFormMode, { title: string; description: string; submit: string }> = {
-  create: {
-    title: "Nuevo bloque de disponibilidad",
-    description: "Elige la fecha y el horario en que puedes atender sesiones de mentoría.",
-    submit: "Guardar bloque",
-  },
-  edit: {
-    title: "Editar bloque",
-    description: "Modifica la fecha o el horario del bloque.",
-    submit: "Guardar cambios",
-  },
-};
-
-const REQUIRED_MESSAGES: Record<BlockFormField, string> = {
-  date: "Selecciona una fecha",
-  startAt: "Selecciona la hora de inicio",
-  endAt: "Selecciona la hora de fin",
-};
-
-const pad = (value: number): string => String(value).padStart(2, "0");
-
-const TIME_OPTIONS: string[] = Array.from(
-  { length: ((BLOCK_MAX_HOUR - BLOCK_MIN_HOUR) * 60) / BLOCK_STEP_MINUTES + 1 },
-  (_, index) => {
-    const minutes = BLOCK_MIN_HOUR * 60 + index * BLOCK_STEP_MINUTES;
-    return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
-  },
-);
-
-// El calendario trabaja con fechas locales; se usan solo como día de calendario (YYYY-MM-DD).
-const toCalendarDate = (date: string): Date => {
-  const [year, month, day] = date.split("-").map(Number);
-  return new Date(year, month - 1, day);
-};
-
-const toDateString = (date: Date): string =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-
-// "2026-10-10" -> "Sábado 10 de octubre de 2026"
-const formatLongDate = (date: string): string => {
-  const [year, month, day] = date.split("-").map(Number);
-  const value = new Date(Date.UTC(year, month - 1, day));
-  const weekday = value.toLocaleDateString("es-BO", { weekday: "long", timeZone: "UTC" });
-  const monthName = value.toLocaleDateString("es-BO", { month: "long", timeZone: "UTC" });
-  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${day} de ${monthName} de ${year}`;
-};
-
-const getBoliviaToday = (): Date => toCalendarDate(toBoliviaTime(new Date()).date);
+import { FORM_TEXT, REQUIRED_MESSAGES, TIME_OPTIONS } from "../constants/availability.constants";
+import type { BlockFormErrors } from "../types/block-form-errors.types";
+import type { BlockFormField } from "../types/block-form-field.types";
+import type { BlockFormProps } from "../types/block-form-props.types";
+import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
+import { validateBlock } from "../utils/block-validation";
+import { formatLongDate, getBoliviaToday, toCalendarDate, toDateString } from "../utils/calendar-date";
 
 function RequiredMark() {
   return (
