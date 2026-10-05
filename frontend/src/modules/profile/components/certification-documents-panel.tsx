@@ -6,11 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { CERTIFICATE_FILE_ACCEPT } from "../config/certification-document.config";
 import type { Certification } from "../types/certification.types";
 import type { CertificationDocumentsPanelProps } from "../types/certification-documents-panel-props.types";
-import type { UploadedDocumentInfo } from "../types/uploaded-document-info.types";
-import { formatIssueDate } from "../utils/format-issue-date";
-import { getFileFormat } from "../utils/get-file-format";
 import { validateCertificateFile } from "../utils/validate-certificate-file";
-import { getTodayIsoDate } from "../utils/validate-certification";
 import { CertificationDocumentForm } from "./certification-document-form";
 import { CertificationDocumentItem } from "./certification-document-item";
 import { ConfirmDeleteDialog } from "./confirm-delete-dialog";
@@ -18,6 +14,7 @@ import { SectionCard } from "./section-card";
 
 export function CertificationDocumentsPanel({
   certifications = [],
+  uploadedInfo = {},
   isBusy = false,
   onUpload,
   onRemove,
@@ -28,24 +25,13 @@ export function CertificationDocumentsPanel({
   const [replacing, setReplacing] = useState<Certification | null>(null);
   const [pendingRemoval, setPendingRemoval] = useState<Certification | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
-  const [uploadedInfo, setUploadedInfo] = useState<Record<string, UploadedDocumentInfo>>({});
+  
   const certificationsWithDocument = certifications.filter(
     (certification) => certification.hasDocument,
   );
 
   const saveUpload = async (certification: Certification, file: File): Promise<boolean> => {
-    const wasSaved = await onUpload(certification, file);
-    if (wasSaved) {
-      setUploadedInfo((current) => ({
-        ...current,
-        [certification.id]: {
-          fileName: file.name,
-          format: getFileFormat(file.name),
-          uploadedAt: formatIssueDate(getTodayIsoDate()),
-        },
-      }));
-    }
-    return wasSaved;
+    return await onUpload(certification, file);
   };
 
   const handleLinkDocument = (certificationId: string, file: File): Promise<boolean> | boolean => {
@@ -78,12 +64,7 @@ export function CertificationDocumentsPanel({
     }
     setIsRemoving(true);
     try {
-      const wasRemoved = await onRemove(pendingRemoval);
-      if (wasRemoved) {
-        setUploadedInfo((current) =>
-          Object.fromEntries(Object.entries(current).filter(([id]) => id !== pendingRemoval.id)),
-        );
-      }
+      await onRemove(pendingRemoval);
     } finally {
       setIsRemoving(false);
       setPendingRemoval(null);
