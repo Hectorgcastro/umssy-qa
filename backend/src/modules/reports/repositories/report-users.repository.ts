@@ -13,7 +13,6 @@ const ROLE_NAME_TO_USER_TYPE: Record<string, ReportUserType> = {
   mentor: 'MENTOR',
   empresa: 'COMPANY',
   administrativo: 'ADMIN',
-  egresado: 'GRADUATE',
 };
 
 @Injectable()
