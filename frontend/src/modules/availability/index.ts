@@ -9,6 +9,7 @@ export { useAvailability } from "./hooks/use-availability";
 export { useMentorFreeBlocks } from "./hooks/use-mentor-free-blocks";
 export { useCreateAvailabilityBlock } from "./hooks/use-create-availability-block";
 export { useDeleteBlock } from "./hooks/use-delete-block";
+export { useUpdateAvailabilityBlock } from "./hooks/use-update-availability-block";
 export { availabilityApi } from "./services/availability.api";
 export type { AvailabilityBlock } from "./types/availability-block.types";
 export type { AvailabilityBlockState } from "./types/availability-block-state.types";
