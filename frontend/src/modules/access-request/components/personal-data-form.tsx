@@ -14,6 +14,7 @@ import {
 import { CAREERS } from "../constants/careers.constants";
 import { ID_CARD_ISSUED_IN } from "../constants/id-card-issued-in.constants";
 import { PersonalDataField } from "./personal-data-field";
+import { RequiredMark } from "./required-mark";
 
 export function PersonalDataForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -33,10 +34,18 @@ export function PersonalDataForm() {
         </p>
       </div>
 
+      <p className="text-[12.5px] text-text-secondary 2xl:text-base">
+        <span aria-hidden="true" className="text-accent">
+          *
+        </span>{" "}
+        Campo obligatorio
+      </p>
+
       <form noValidate onSubmit={handleSubmit} className="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-x-8 2xl:gap-y-6">
         <PersonalDataField
           id="firstName"
           label="Nombres"
+          isRequired
           autoComplete="given-name"
           placeholder="Ingresa tus nombres"
         />
@@ -44,6 +53,7 @@ export function PersonalDataForm() {
         <PersonalDataField
           id="lastName"
           label="Apellidos"
+          isRequired
           autoComplete="family-name"
           placeholder="Ingresa tus apellidos"
         />
@@ -52,6 +62,7 @@ export function PersonalDataForm() {
           <PersonalDataField
             id="idCardNumber"
             label="Carnet de identidad"
+            isRequired
             inputMode="numeric"
             maxLength={20}
             placeholder="Ej. 7845123"
@@ -61,10 +72,12 @@ export function PersonalDataForm() {
           <div className="w-24 shrink-0">
             <Label htmlFor="idCardIssuedIn" className="mb-1.5 text-[12.5px] font-semibold text-ink 2xl:text-base">
               Expedido
+              <RequiredMark />
             </Label>
             <Select name="idCardIssuedIn">
               <SelectTrigger
                 id="idCardIssuedIn"
+                aria-required="true"
                 className="w-full rounded-md border-border bg-surface px-3 text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] 2xl:text-base 2xl:data-[size=default]:h-12"
               >
                 <SelectValue placeholder="Elegir" />
@@ -87,6 +100,7 @@ export function PersonalDataForm() {
         <PersonalDataField
           id="sisCode"
           label="Código SIS"
+          isRequired
           help="Figura en tu carnet universitario o en tu kárdex."
           inputMode="numeric"
           maxLength={20}
@@ -96,6 +110,7 @@ export function PersonalDataForm() {
         <PersonalDataField
           id="email"
           label="Correo electrónico"
+          isRequired
           help="Aquí te enviaremos el resultado y el código de activación."
           icon={<Mail aria-hidden="true" className="size-4" />}
           type="email"
@@ -117,11 +132,18 @@ export function PersonalDataForm() {
           placeholder="Ej. 70712345"
         />
 
-        <PersonalDataField id="birthDate" label="Fecha de nacimiento" type="date" autoComplete="bday" />
+        <PersonalDataField
+          id="birthDate"
+          label="Fecha de nacimiento"
+          isRequired
+          type="date"
+          autoComplete="bday"
+        />
 
         <PersonalDataField
           id="graduationYear"
           label="Año de titulación"
+          isRequired
           inputMode="numeric"
           maxLength={4}
           placeholder="Ej. 2024"
@@ -130,10 +152,12 @@ export function PersonalDataForm() {
         <div className="md:col-span-2">
           <Label htmlFor="career" className="mb-1.5 text-[12.5px] font-semibold text-ink 2xl:text-base">
             Carrera
+            <RequiredMark />
           </Label>
           <Select name="career">
             <SelectTrigger
               id="career"
+              aria-required="true"
               className="w-full rounded-md border-border bg-surface px-3 text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] 2xl:text-base 2xl:data-[size=default]:h-12"
             >
               <SelectValue placeholder="Selecciona tu carrera" />

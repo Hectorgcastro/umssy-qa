@@ -43,6 +43,23 @@ describe("PersonalDataField", () => {
     expect(input).not.toHaveClass("h-8");
   });
 
+  it("marca el campo obligatorio con asterisco y aria-required", () => {
+    render(<PersonalDataField id="firstName" label="Nombres" isRequired />);
+
+    const input = screen.getByLabelText(/^Nombres/);
+    expect(input).toHaveAttribute("aria-required", "true");
+    const mark = screen.getByText("*");
+    expect(mark).toHaveAttribute("aria-hidden", "true");
+    expect(mark).toHaveClass("text-accent");
+  });
+
+  it("no marca el campo opcional", () => {
+    render(<PersonalDataField id="phone" label="Teléfono" />);
+
+    expect(screen.getByLabelText("Teléfono")).not.toHaveAttribute("aria-required");
+    expect(screen.queryByText("*")).toBeNull();
+  });
+
   it("reenvía las props del campo", () => {
     render(<PersonalDataField id="phone" label="Teléfono" maxLength={8} placeholder="Ej. 70712345" />);
 

@@ -9,15 +9,15 @@ describe("PersonalDataForm", () => {
   it("muestra todos los campos del paso 1", () => {
     render(<PersonalDataForm />);
 
-    expect(screen.getByLabelText("Nombres")).toBeInTheDocument();
-    expect(screen.getByLabelText("Apellidos")).toBeInTheDocument();
-    expect(screen.getByLabelText("Carnet de identidad")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Nombres/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Apellidos/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Carnet de identidad/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Expedido" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Código SIS")).toBeInTheDocument();
-    expect(screen.getByLabelText("Correo electrónico")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Código SIS/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Correo electrónico/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Teléfono/)).toBeInTheDocument();
-    expect(screen.getByLabelText("Fecha de nacimiento")).toBeInTheDocument();
-    expect(screen.getByLabelText("Año de titulación")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Fecha de nacimiento/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Año de titulación/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Carrera" })).toBeInTheDocument();
   });
 
@@ -45,7 +45,7 @@ describe("PersonalDataForm", () => {
   it("coloca el carnet y el expedido en la misma fila", () => {
     render(<PersonalDataForm />);
 
-    const row = screen.getByLabelText("Carnet de identidad").closest(".flex.gap-2");
+    const row = screen.getByLabelText(/^Carnet de identidad/).closest(".flex.gap-2");
     expect(row).not.toBeNull();
     expect(row).toContainElement(screen.getByRole("combobox", { name: "Expedido" }));
   });
@@ -77,8 +77,8 @@ describe("PersonalDataForm", () => {
   it("usa los tipos de campo adecuados", () => {
     render(<PersonalDataForm />);
 
-    expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute("type", "email");
-    expect(screen.getByLabelText("Fecha de nacimiento")).toHaveAttribute("type", "date");
+    expect(screen.getByLabelText(/^Correo electrónico/)).toHaveAttribute("type", "email");
+    expect(screen.getByLabelText(/^Fecha de nacimiento/)).toHaveAttribute("type", "date");
     expect(screen.getByLabelText(/Teléfono/)).toHaveAttribute("maxlength", "8");
   });
 
@@ -98,7 +98,7 @@ describe("PersonalDataForm", () => {
     const { container } = render(<PersonalDataForm />);
 
     expect(container.textContent).not.toMatch(/ingreso/i);
-    expect(screen.getByLabelText("Año de titulación")).toHaveAttribute("maxlength", "4");
+    expect(screen.getByLabelText(/^Año de titulación/)).toHaveAttribute("maxlength", "4");
   });
 
   it("ofrece las dos carreras del catálogo", async () => {
@@ -129,6 +129,43 @@ describe("PersonalDataForm", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveClass("text-3xl", "2xl:text-4xl");
     expect(container.querySelector("form")).toHaveClass("2xl:gap-x-8", "2xl:gap-y-6");
     expect(screen.getByText("Carrera")).toHaveClass("2xl:text-base");
+  });
+
+  it("muestra la leyenda de campo obligatorio antes del formulario", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    const legend = screen.getByText("Campo obligatorio");
+    expect(legend).toHaveTextContent("* Campo obligatorio");
+    const form = container.querySelector("form") as HTMLFormElement;
+    expect(legend.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("marca con aria-required los nueve campos obligatorios y no el teléfono", () => {
+    render(<PersonalDataForm />);
+
+    const required = [
+      screen.getByLabelText(/^Nombres/),
+      screen.getByLabelText(/^Apellidos/),
+      screen.getByLabelText(/^Carnet de identidad/),
+      screen.getByRole("combobox", { name: /Expedido/ }),
+      screen.getByLabelText(/^Código SIS/),
+      screen.getByLabelText(/^Correo electrónico/),
+      screen.getByLabelText(/^Fecha de nacimiento/),
+      screen.getByLabelText(/^Año de titulación/),
+      screen.getByRole("combobox", { name: /Carrera/ }),
+    ];
+    for (const control of required) {
+      expect(control).toHaveAttribute("aria-required", "true");
+    }
+    expect(screen.getByLabelText(/Teléfono/)).not.toHaveAttribute("aria-required");
+  });
+
+  it("muestra el asterisco rojo en nueve etiquetas y no en la del teléfono", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    const marks = Array.from(container.querySelectorAll("form span[aria-hidden='true'].text-accent"));
+    expect(marks).toHaveLength(9);
+    expect(screen.getByText(/Teléfono/).textContent).not.toContain("*");
   });
 
   it("muestra el botón Continuar al siguiente paso", () => {

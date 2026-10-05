@@ -1,12 +1,14 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "./required-mark";
 
 interface PersonalDataFieldProps extends ComponentProps<typeof Input> {
   id: string;
   label: ReactNode;
   help?: string;
   icon?: ReactNode;
+  isRequired?: boolean;
 }
 
 export function PersonalDataField({
@@ -14,6 +16,7 @@ export function PersonalDataField({
   label,
   help,
   icon,
+  isRequired = false,
   className,
   ...inputProps
 }: PersonalDataFieldProps) {
@@ -23,6 +26,7 @@ export function PersonalDataField({
     <div className={className}>
       <Label htmlFor={id} className="mb-1.5 text-[12.5px] font-semibold text-ink 2xl:text-base">
         {label}
+        {isRequired ? <RequiredMark /> : null}
       </Label>
       <div className="relative">
         {icon ? (
@@ -34,6 +38,7 @@ export function PersonalDataField({
           id={id}
           name={id}
           aria-describedby={helpId}
+          aria-required={isRequired || undefined}
           className={`h-[42px] rounded-md border-border bg-surface text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction md:text-[15px] 2xl:h-12 2xl:text-base ${
             icon ? "pl-10" : "px-3"
           }`}
