@@ -44,6 +44,57 @@ describe('MentorsRepository', () => {
     expect(result).toBe(userRole);
   });
 
+  it('valida la participacion activa del mentor autenticado', async () => {
+    const now = new Date('2026-10-05T12:00:00.000Z');
+    const mentor = { id: 'user-1' };
+    const findFirst = vi.fn().mockResolvedValue(mentor);
+    const prisma = { user: { findFirst } } as unknown as PrismaService;
+    const repository = new MentorsRepository(prisma);
+
+    const result = await repository.findActiveMentorParticipation(
+      mentor.id,
+      now,
+    );
+
+    expect(findFirst).toHaveBeenCalledWith({
+      where: {
+        id: mentor.id,
+        isActive: true,
+        roles: {
+          some: {
+            deletedAt: null,
+            startAt: { lte: now },
+            role: { name: MENTOR_ROLE_NAME },
+          },
+        },
+      },
+      select: { id: true },
+    });
+    expect(result).toBe(mentor);
+  });
+
+  it('consulta las areas tecnicas asociadas al mentor', async () => {
+    const relations = [{ technicalArea: { id: 'area-1' } }];
+    const findMany = vi.fn().mockResolvedValue(relations);
+    const prisma = {
+      mentorTechnicalArea: { findMany },
+    } as unknown as PrismaService;
+    const repository = new MentorsRepository(prisma);
+
+    const result = await repository.findMentorTechnicalAreas('user-1');
+
+    expect(findMany).toHaveBeenCalledWith({
+      where: { mentorId: 'user-1' },
+      select: {
+        technicalArea: {
+          select: { id: true, name: true, description: true },
+        },
+      },
+      orderBy: { technicalArea: { name: 'asc' } },
+    });
+    expect(result).toBe(relations);
+  });
+
   it('busca solo los ids de las areas tecnicas solicitadas', async () => {
     const areas = [{ id: 'area-1' }];
     const findMany = vi.fn().mockResolvedValue(areas);
@@ -279,16 +330,38 @@ describe('MentorsRepository', () => {
     const repository = new MentorsRepository(prisma);
 
     await expect(
-      repository.activate(
-        'user-1',
-        'role-1',
-        ['area-1'],
-        ['orientation-1'],
-      ),
+      repository.activate('user-1', 'role-1', ['area-1'], ['orientation-1']),
     ).rejects.toBe(writeError);
     expect($transaction).toHaveBeenCalledTimes(1);
     expect(createUserRole).toHaveBeenCalledTimes(1);
     expect(createTechnicalAreas).toHaveBeenCalledTimes(1);
     expect(createOrientationTypes).not.toHaveBeenCalled();
+  });
+
+  it('reemplaza atomicamente las areas tecnicas del mentor', async () => {
+    const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    const createMany = vi.fn().mockResolvedValue({ count: 2 });
+    const transaction = {
+      mentorTechnicalArea: { deleteMany, createMany },
+    };
+    const $transaction = vi.fn(async (callback) => callback(transaction));
+    const prisma = { $transaction } as unknown as PrismaService;
+    const repository = new MentorsRepository(prisma);
+
+    await repository.replaceMentorTechnicalAreas('user-1', [
+      'area-1',
+      'area-2',
+    ]);
+
+    expect($transaction).toHaveBeenCalledTimes(1);
+    expect(deleteMany).toHaveBeenCalledWith({
+      where: { mentorId: 'user-1' },
+    });
+    expect(createMany).toHaveBeenCalledWith({
+      data: [
+        { mentorId: 'user-1', technicalAreaId: 'area-1' },
+        { mentorId: 'user-1', technicalAreaId: 'area-2' },
+      ],
+    });
   });
 });

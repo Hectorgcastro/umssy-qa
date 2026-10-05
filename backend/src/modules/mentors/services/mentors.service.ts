@@ -8,14 +8,14 @@ import {
   MentorRoleNotFoundException,
 } from '../exceptions/index.js';
 import type { ActivateMentorDto } from '../requests/activate-mentor.schema.js';
+import type { UpdateMentorTechnicalAreasDto } from '../requests/update-mentor-technical-areas.schema.js';
 import type { MentorDirectoryResponse } from '../types/mentor-directory-response.types.js';
 import type { MentorProfileResponse } from '../types/mentor-profile-response.types.js';
+import type { TechnicalAreaResponse } from '../../technical-areas/types/technical-area-response.types.js';
 
 @Injectable()
 export class MentorsService {
-  constructor(
-    private readonly mentorsRepository: MentorsRepository,
-  ) {}
+  constructor(private readonly mentorsRepository: MentorsRepository) {}
 
   async findAll(): Promise<MentorDirectoryResponse[]> {
     const now = new Date();
@@ -65,30 +65,54 @@ export class MentorsService {
     };
   }
 
-  async activate(
+  async findMyTechnicalAreas(userId: string): Promise<TechnicalAreaResponse[]> {
+    await this.assertActiveMentor(userId);
+    const relations =
+      await this.mentorsRepository.findMentorTechnicalAreas(userId);
+
+    return relations.map((relation) => relation.technicalArea);
+  }
+
+  async updateMyTechnicalAreas(
     userId: string,
-    data: ActivateMentorDto,
+    data: UpdateMentorTechnicalAreasDto,
   ) {
+    await this.assertActiveMentor(userId);
+    const technicalAreas = await this.mentorsRepository.findTechnicalAreas(
+      data.technicalAreaIds,
+    );
+
+    if (technicalAreas.length !== data.technicalAreaIds.length) {
+      throw new InvalidTechnicalAreasException();
+    }
+
+    await this.mentorsRepository.replaceMentorTechnicalAreas(
+      userId,
+      data.technicalAreaIds,
+    );
+
+    return { technicalAreaIds: data.technicalAreaIds };
+  }
+
+  async activate(userId: string, data: ActivateMentorDto) {
     const mentorRole = await this.mentorsRepository.findMentorRole();
 
     if (!mentorRole) {
       throw new MentorRoleNotFoundException();
     }
 
-    const existingRole =
-      await this.mentorsRepository.findActiveUserRole(
-        userId,
-        mentorRole.id,
-      );
+    const existingRole = await this.mentorsRepository.findActiveUserRole(
+      userId,
+      mentorRole.id,
+    );
 
     if (existingRole) {
       throw new AlreadyMentorException();
     }
 
-    const technicalAreas =
-      await this.mentorsRepository.findTechnicalAreas(
-        data.technicalAreaIds,
-      );
+    const technicalAreas = await this.mentorsRepository.findTechnicalAreas(
+      data.technicalAreaIds,
+    );
 
     if (technicalAreas.length !== data.technicalAreaIds.length) {
       throw new InvalidTechnicalAreasException();
@@ -113,5 +137,16 @@ export class MentorsService {
 
   private bytesToString(value: Uint8Array | null): string | null {
     return value ? Buffer.from(value).toString('utf8') : null;
+  }
+
+  private async assertActiveMentor(userId: string): Promise<void> {
+    const mentor = await this.mentorsRepository.findActiveMentorParticipation(
+      userId,
+      new Date(),
+    );
+
+    if (!mentor) {
+      throw new MentorNotFoundException();
+    }
   }
 }

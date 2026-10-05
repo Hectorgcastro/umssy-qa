@@ -37,6 +37,33 @@ describe('MentorsController', () => {
     expect(result).toBe(profileResult);
   });
 
+  it('consulta las areas tecnicas del usuario autenticado', async () => {
+    const areas = [{ id: 'area-1', name: 'Backend', description: null }];
+    const findMyTechnicalAreas = vi.fn().mockResolvedValue(areas);
+    const service = { findMyTechnicalAreas } as unknown as MentorsService;
+    const controller = new MentorsController(service);
+    const user = { id: 'user-1' };
+
+    const result = await controller.findMyTechnicalAreas(user);
+
+    expect(findMyTechnicalAreas).toHaveBeenCalledWith(user.id);
+    expect(result).toBe(areas);
+  });
+
+  it('actualiza las areas tecnicas del usuario autenticado', async () => {
+    const body = { technicalAreaIds: ['area-1'] };
+    const updateResult = { technicalAreaIds: body.technicalAreaIds };
+    const updateMyTechnicalAreas = vi.fn().mockResolvedValue(updateResult);
+    const service = { updateMyTechnicalAreas } as unknown as MentorsService;
+    const controller = new MentorsController(service);
+    const user = { id: 'user-1' };
+
+    const result = await controller.updateMyTechnicalAreas(user, body);
+
+    expect(updateMyTechnicalAreas).toHaveBeenCalledWith(user.id, body);
+    expect(result).toBe(updateResult);
+  });
+
   it('delega la activacion con el id del usuario autenticado', async () => {
     const activationResult = { id: 'user-1' };
     const activate = vi.fn().mockResolvedValue(activationResult);

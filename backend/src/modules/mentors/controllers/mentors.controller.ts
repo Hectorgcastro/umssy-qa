@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Param,
   ParseUUIDPipe,
   Post,
@@ -15,17 +16,35 @@ import {
   activateMentorSchema,
   type ActivateMentorDto,
 } from '../requests/activate-mentor.schema.js';
+import {
+  updateMentorTechnicalAreasSchema,
+  type UpdateMentorTechnicalAreasDto,
+} from '../requests/update-mentor-technical-areas.schema.js';
 import { MentorsService } from '../services/mentors.service.js';
 
 @Controller('mentors')
 export class MentorsController {
-  constructor(
-    private readonly mentorsService: MentorsService,
-  ) {}
+  constructor(private readonly mentorsService: MentorsService) {}
 
   @Get()
   findAll() {
     return this.mentorsService.findAll();
+  }
+
+  @Get('me/technical-areas')
+  @UseGuards(JwtAuthGuard)
+  findMyTechnicalAreas(@CurrentUser() user: AuthenticatedUser) {
+    return this.mentorsService.findMyTechnicalAreas(user.id);
+  }
+
+  @Patch('me/technical-areas')
+  @UseGuards(JwtAuthGuard)
+  updateMyTechnicalAreas(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateMentorTechnicalAreasSchema))
+    body: UpdateMentorTechnicalAreasDto,
+  ) {
+    return this.mentorsService.updateMyTechnicalAreas(user.id, body);
   }
 
   @Get(':userId')

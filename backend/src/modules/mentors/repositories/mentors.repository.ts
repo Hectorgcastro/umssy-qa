@@ -99,6 +99,51 @@ export class MentorsRepository {
     });
   }
 
+  findActiveMentorParticipation(userId: string, now: Date) {
+    return this.prisma.user.findFirst({
+      where: {
+        id: userId,
+        isActive: true,
+        roles: {
+          some: {
+            deletedAt: null,
+            startAt: {
+              lte: now,
+            },
+            role: {
+              name: MENTOR_ROLE_NAME,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+  }
+
+  findMentorTechnicalAreas(userId: string) {
+    return this.prisma.mentorTechnicalArea.findMany({
+      where: {
+        mentorId: userId,
+      },
+      select: {
+        technicalArea: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
+      orderBy: {
+        technicalArea: {
+          name: 'asc',
+        },
+      },
+    });
+  }
+
   findActiveMentorById(userId: string, now: Date) {
     return this.prisma.user.findFirst({
       where: {
@@ -265,6 +310,23 @@ export class MentorsRepository {
       });
 
       return { id: userId };
+    });
+  }
+
+  replaceMentorTechnicalAreas(userId: string, technicalAreaIds: string[]) {
+    return this.prisma.$transaction(async (transaction) => {
+      await transaction.mentorTechnicalArea.deleteMany({
+        where: {
+          mentorId: userId,
+        },
+      });
+
+      await transaction.mentorTechnicalArea.createMany({
+        data: technicalAreaIds.map((technicalAreaId) => ({
+          mentorId: userId,
+          technicalAreaId,
+        })),
+      });
     });
   }
 }

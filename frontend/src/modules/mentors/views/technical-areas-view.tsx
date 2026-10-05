@@ -17,49 +17,62 @@ import {
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/shared/components/layout";
 import { TechnicalAreaCard } from "../components/technical-area-card";
+import { TECHNICAL_AREAS_BREADCRUMB_ITEMS } from "../constants/technical-areas-breadcrumb.constants";
 import {
-  TECHNICAL_AREAS_BREADCRUMB_ITEMS,
-} from "../constants/technical-areas-breadcrumb.constants";
-import {
-  MOCK_MENTOR_AREA_IDS,
-  MOCK_TECHNICAL_AREAS,
-  saveMentorAreas,
-  loadMentorAreas,
-} from "../services/technical-areas.mock";
+  getMentorTechnicalAreas,
+  getTechnicalAreas,
+  updateMentorTechnicalAreas,
+} from "../services/technical-areas.service";
+import type { TechnicalArea } from "../types/technical-area.types";
 
 export function TechnicalAreasView() {
   const router = useRouter();
-  const initialIds = MOCK_MENTOR_AREA_IDS;
 
-  const [savedIds, setSavedIds] = useState<number[]>(initialIds);
-  const [selectedIds, setSelectedIds] = useState<number[]>(initialIds);
+  const [areas, setAreas] = useState<TechnicalArea[]>([]);
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadError, setHasLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [toast, setToast] = useState<{ isError: boolean; text: string } | null>(
     null,
   );
 
   useEffect(() => {
-    let active = true;
-    loadMentorAreas().then((ids) => {
-      if (!active) return;
-      setSavedIds(ids);
-      setSelectedIds(ids);
-    }).catch(() => {
-      if (active) setToast({ isError: true, text: "No se pudieron cargar las áreas guardadas." });
-    }).finally(() => {
-      if (active) setIsLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
+    const controller = new AbortController();
+
+    Promise.all([
+      getTechnicalAreas(controller.signal),
+      getMentorTechnicalAreas(controller.signal),
+    ])
+      .then(([catalog, selectedAreas]) => {
+        const ids = selectedAreas.map((area) => area.id);
+        setAreas(catalog);
+        setSavedIds(ids);
+        setSelectedIds(ids);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setHasLoadError(true);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [loadAttempt]);
 
   const hasChanges =
     selectedIds.length !== savedIds.length ||
     selectedIds.some((id) => !savedIds.includes(id));
   const hasNoSelection = selectedIds.length === 0;
 
-  const handleToggleArea = (id: number) =>
+  const handleToggleArea = (id: string) =>
     setSelectedIds((previous) =>
       previous.includes(id)
         ? previous.filter((item) => item !== id)
@@ -76,11 +89,14 @@ export function TechnicalAreasView() {
 
     setIsSaving(true);
     try {
-      await saveMentorAreas(selectedIds);
-      setSavedIds(selectedIds);
+      await updateMentorTechnicalAreas(selectedIds);
+      setSavedIds([...selectedIds]);
       showToast(false, "Áreas técnicas actualizadas correctamente");
     } catch {
-      showToast(true, "No se pudieron guardar los cambios. Intente nuevamente.");
+      showToast(
+        true,
+        "No se pudieron guardar los cambios. Intente nuevamente.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -95,39 +111,62 @@ export function TechnicalAreasView() {
     <div className="mx-auto max-w-5xl p-4 md:p-8">
       <Breadcrumbs items={TECHNICAL_AREAS_BREADCRUMB_ITEMS} />
 
-      <h1 className="text-2xl font-bold">
-        Editar áreas técnicas
-      </h1>
+      <h1 className="text-2xl font-bold">Editar áreas técnicas</h1>
       <p className="mb-4 text-gray-600">
         Indica las áreas en las que tienes experiencia y puedes brindar
         orientación.
       </p>
 
-      {hasNoSelection ? (
-        <Alert
-          className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700"
-        >
-          Debe seleccionarse al menos un área para continuar
-        </Alert>
-      ) : (
-        <div className="mb-4 rounded-lg bg-gray-100 p-3 text-sm text-gray-700">
-          {selectedIds.length} seleccionadas
-        </div>
+      {!isLoading &&
+        !hasLoadError &&
+        (hasNoSelection ? (
+          <Alert className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            Debe seleccionarse al menos un área para continuar
+          </Alert>
+        ) : (
+          <div className="mb-4 rounded-lg bg-gray-100 p-3 text-sm text-gray-700">
+            {selectedIds.length} seleccionadas
+          </div>
+        ))}
+
+      {isLoading && (
+        <p role="status" aria-live="polite" className="py-8 text-center">
+          Cargando áreas técnicas...
+        </p>
       )}
 
-      <fieldset
-        disabled={isLoading || isSaving}
-        className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
-      >
-        {MOCK_TECHNICAL_AREAS.map((area) => (
-          <TechnicalAreaCard
-            key={area.id}
-            area={area}
-            isSelected={selectedIds.includes(area.id)}
-            onToggle={handleToggleArea}
-          />
-        ))}
-      </fieldset>
+      {hasLoadError && (
+        <Alert className="flex items-center justify-between gap-4 rounded-lg border border-red-300 bg-red-50 p-4 text-red-700">
+          <span>No se pudieron cargar las áreas técnicas.</span>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setIsLoading(true);
+              setHasLoadError(false);
+              setLoadAttempt((attempt) => attempt + 1);
+            }}
+          >
+            Reintentar
+          </Button>
+        </Alert>
+      )}
+
+      {!isLoading && !hasLoadError && (
+        <fieldset
+          disabled={isSaving}
+          className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {areas.map((area) => (
+            <TechnicalAreaCard
+              key={area.id}
+              area={area}
+              isSelected={selectedIds.includes(area.id)}
+              onToggle={handleToggleArea}
+            />
+          ))}
+        </fieldset>
+      )}
 
       <div className="mt-6 flex items-center justify-between">
         <Button
@@ -140,7 +179,7 @@ export function TechnicalAreasView() {
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={hasNoSelection || isSaving || isLoading}
+          disabled={hasNoSelection || isSaving || isLoading || hasLoadError}
           className="h-auto gap-2 rounded-lg bg-[#DC2626] px-6 py-2 font-medium text-white hover:bg-[#DC2626] active:translate-y-0 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? (

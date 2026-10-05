@@ -260,16 +260,111 @@ describe('MentorsService', () => {
     });
   });
 
+  it('devuelve las areas tecnicas del mentor autenticado activo', async () => {
+    const technicalArea = {
+      id: 'area-1',
+      name: 'Backend',
+      description: 'APIs',
+    };
+    const findActiveMentorParticipation = vi
+      .fn()
+      .mockResolvedValue({ id: userId });
+    const findMentorTechnicalAreas = vi
+      .fn()
+      .mockResolvedValue([{ technicalArea }]);
+    const repository = {
+      findActiveMentorParticipation,
+      findMentorTechnicalAreas,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findMyTechnicalAreas(userId);
+
+    expect(findActiveMentorParticipation).toHaveBeenCalledWith(
+      userId,
+      expect.any(Date),
+    );
+    expect(findMentorTechnicalAreas).toHaveBeenCalledWith(userId);
+    expect(result).toEqual([technicalArea]);
+  });
+
+  it('reemplaza las areas tecnicas con UUID validos', async () => {
+    const technicalAreaIds = [
+      '0424f370-00f0-43cf-9b8a-997af81840b9',
+      '0fa5e6de-63a4-430e-87fb-22f5eb700ecd',
+    ];
+    const findActiveMentorParticipation = vi
+      .fn()
+      .mockResolvedValue({ id: userId });
+    const findTechnicalAreas = vi
+      .fn()
+      .mockResolvedValue(technicalAreaIds.map((id) => ({ id })));
+    const replaceMentorTechnicalAreas = vi.fn().mockResolvedValue(undefined);
+    const repository = {
+      findActiveMentorParticipation,
+      findTechnicalAreas,
+      replaceMentorTechnicalAreas,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.updateMyTechnicalAreas(userId, {
+      technicalAreaIds,
+    });
+
+    expect(findTechnicalAreas).toHaveBeenCalledWith(technicalAreaIds);
+    expect(replaceMentorTechnicalAreas).toHaveBeenCalledWith(
+      userId,
+      technicalAreaIds,
+    );
+    expect(result).toEqual({ technicalAreaIds });
+  });
+
+  it('rechaza consultas y cambios si el usuario no es mentor activo', async () => {
+    const replaceMentorTechnicalAreas = vi.fn();
+    const repository = {
+      findActiveMentorParticipation: vi.fn().mockResolvedValue(null),
+      replaceMentorTechnicalAreas,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    await expect(service.findMyTechnicalAreas(userId)).rejects.toBeInstanceOf(
+      MentorNotFoundException,
+    );
+    await expect(
+      service.updateMyTechnicalAreas(userId, {
+        technicalAreaIds: ['0424f370-00f0-43cf-9b8a-997af81840b9'],
+      }),
+    ).rejects.toBeInstanceOf(MentorNotFoundException);
+    expect(replaceMentorTechnicalAreas).not.toHaveBeenCalled();
+  });
+
+  it('rechaza el cambio si alguna area tecnica no existe', async () => {
+    const replaceMentorTechnicalAreas = vi.fn();
+    const repository = {
+      findActiveMentorParticipation: vi.fn().mockResolvedValue({ id: userId }),
+      findTechnicalAreas: vi.fn().mockResolvedValue([]),
+      replaceMentorTechnicalAreas,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    await expect(
+      service.updateMyTechnicalAreas(userId, {
+        technicalAreaIds: ['0424f370-00f0-43cf-9b8a-997af81840b9'],
+      }),
+    ).rejects.toBeInstanceOf(InvalidTechnicalAreasException);
+    expect(replaceMentorTechnicalAreas).not.toHaveBeenCalled();
+  });
+
   it('valida los catalogos y activa al usuario autenticado', async () => {
     const activationResult = { id: userId };
     const findMentorRole = vi.fn().mockResolvedValue({ id: roleId });
     const findActiveUserRole = vi.fn().mockResolvedValue(null);
-    const findTechnicalAreas = vi.fn().mockResolvedValue([
-      { id: data.technicalAreaIds[0] },
-    ]);
-    const findActiveOrientationTypes = vi.fn().mockResolvedValue([
-      { id: data.orientationTypeIds[0] },
-    ]);
+    const findTechnicalAreas = vi
+      .fn()
+      .mockResolvedValue([{ id: data.technicalAreaIds[0] }]);
+    const findActiveOrientationTypes = vi
+      .fn()
+      .mockResolvedValue([{ id: data.orientationTypeIds[0] }]);
     const activate = vi.fn().mockResolvedValue(activationResult);
     const repository = {
       findMentorRole,
@@ -347,9 +442,9 @@ describe('MentorsService', () => {
     const repository = {
       findMentorRole: vi.fn().mockResolvedValue({ id: roleId }),
       findActiveUserRole: vi.fn().mockResolvedValue(null),
-      findTechnicalAreas: vi.fn().mockResolvedValue([
-        { id: data.technicalAreaIds[0] },
-      ]),
+      findTechnicalAreas: vi
+        .fn()
+        .mockResolvedValue([{ id: data.technicalAreaIds[0] }]),
       findActiveOrientationTypes: vi.fn().mockResolvedValue([]),
       activate,
     } as unknown as MentorsRepository;
