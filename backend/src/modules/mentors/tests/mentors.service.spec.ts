@@ -16,6 +16,105 @@ describe('MentorsService', () => {
     orientationTypeIds: ['0fa5e6de-63a4-430e-87fb-22f5eb700ecd'],
   };
 
+  it('transforma mentores activos al contrato del directorio', async () => {
+    const findActiveMentors = vi.fn().mockResolvedValue([
+      {
+        id: 'user-1',
+        firstName: 'Ana',
+        lastName: 'Rojas',
+        headline: 'Arquitecta de Software',
+        mentorTechnicalAreas: [
+          {
+            technicalArea: {
+              name: 'Backend',
+            },
+          },
+          {
+            technicalArea: {
+              name: 'Cloud',
+            },
+          },
+        ],
+      },
+    ]);
+    const repository = {
+      findActiveMentors,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findAll();
+
+    expect(findActiveMentors).toHaveBeenCalledTimes(1);
+    expect(findActiveMentors).toHaveBeenCalledWith(expect.any(Date));
+    expect(result).toEqual([
+      {
+        id: 'user-1',
+        fullName: 'Ana Rojas',
+        headline: 'Arquitecta de Software',
+        technicalAreas: ['Backend', 'Cloud'],
+      },
+    ]);
+  });
+
+  it('conserva headline como null cuando no esta registrado', async () => {
+    const findActiveMentors = vi.fn().mockResolvedValue([
+      {
+        id: 'user-1',
+        firstName: 'Ana',
+        lastName: 'Rojas',
+        headline: null,
+        mentorTechnicalAreas: [],
+      },
+    ]);
+    const repository = {
+      findActiveMentors,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findAll();
+
+    expect(result).toEqual([
+      {
+        id: 'user-1',
+        fullName: 'Ana Rojas',
+        headline: null,
+        technicalAreas: [],
+      },
+    ]);
+  });
+
+  it('devuelve una lista vacia de areas cuando el mentor no tiene areas tecnicas', async () => {
+    const findActiveMentors = vi.fn().mockResolvedValue([
+      {
+        id: 'user-1',
+        firstName: 'Ana',
+        lastName: 'Rojas',
+        headline: 'Arquitecta de Software',
+        mentorTechnicalAreas: [],
+      },
+    ]);
+    const repository = {
+      findActiveMentors,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findAll();
+
+    expect(result[0]?.technicalAreas).toEqual([]);
+  });
+
+  it('devuelve una lista vacia cuando no existen mentores activos', async () => {
+    const findActiveMentors = vi.fn().mockResolvedValue([]);
+    const repository = {
+      findActiveMentors,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findAll();
+
+    expect(result).toEqual([]);
+  });
+
   it('valida los catalogos y activa al usuario autenticado', async () => {
     const activationResult = { id: userId };
     const findMentorRole = vi.fn().mockResolvedValue({ id: roleId });
