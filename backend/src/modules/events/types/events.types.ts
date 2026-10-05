@@ -22,6 +22,10 @@ export interface EventItemResponse {
   statusId: string;
 }
 
+export interface EventDetailResponse extends EventItemResponse {
+  modality: { id: string; title: string };
+}
+
 export interface EventsListDataResponse {
   items: EventItemResponse[];
   total: number;

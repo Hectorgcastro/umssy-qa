@@ -1,40 +1,38 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Info } from 'lucide-react';
-import { EventCard } from '../components/event-card';
-import { EventDetailPanel } from '../components/event-detail-panel';
-import { useEvents } from '../hooks/use-events';
-import { useEventsFilters } from '../hooks/use-events-filters';
-import { useEventCategories } from '../hooks/use-event-categories';
-import { EventsSearchInput } from '../components/events-search-input';
-import { CategoryFilterChips } from '../components/category-filter-chips';
-import type { EventItem } from '../types/event.types';
+import { useState } from "react";
+import { Info } from "lucide-react";
+import { EventCard } from "../components/event-card";
+import { EventDetailPanel } from "../components/event-detail-panel";
+import { useEvent } from "../hooks/use-event";
+import { useEvents } from "../hooks/use-events";
+import { useEventsFilters } from "../hooks/use-events-filters";
+import { useEventCategories } from "../hooks/use-event-categories";
+import { EventsSearchInput } from "../components/events-search-input";
+import { CategoryFilterChips } from "../components/category-filter-chips";
+import type { EventItem } from "../types/event.types";
 
 export function EventsView() {
   const { searchInput, setSearchInput, categoryId, setCategoryId, filters } =
     useEventsFilters();
-  const { categories, isLoading: categoriesLoading, error: categoriesError, retry: retryCategories } = useEventCategories();
   const {
-    events,
-    error,
-    hasMore,
-    isLoading,
-    isLoadingMore,
-    loadMore,
-    retry,
-  } = useEvents(filters);
+    categories,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+    retry: retryCategories,
+  } = useEventCategories();
+  const { events, error, hasMore, isLoading, isLoadingMore, loadMore, retry } =
+    useEvents(filters);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const handleSelectEvent = (selectedEvent: EventItem) => {
     setSelectedEventId(selectedEvent.id);
   };
 
-  const selectedEvent = events.find((event) => event.id === selectedEventId);
+  const detail = useEvent(selectedEventId);
 
   return (
     <div className="flex min-h-svh w-full flex-1 flex-col bg-surface-soft text-foreground lg:flex-row">
-
       <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pb-8 pt-20 sm:px-10">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
@@ -44,7 +42,6 @@ export function EventsView() {
             {events.length} talleres cargados
           </p>
         </header>
-
 
         <div
           role="search"
@@ -59,12 +56,19 @@ export function EventsView() {
           />
         </div>
 
-
-        {categoriesLoading && <p role="status" className="text-sm text-text-secondary">Cargando categorías...</p>}
+        {categoriesLoading && (
+          <p role="status" className="text-sm text-text-secondary">
+            Cargando categorías...
+          </p>
+        )}
         {categoriesError && (
           <div role="alert" className="text-sm text-danger">
             <p>{categoriesError}</p>
-            <button type="button" onClick={retryCategories} className="mt-2 font-semibold text-ink underline underline-offset-4">
+            <button
+              type="button"
+              onClick={retryCategories}
+              className="mt-2 font-semibold text-ink underline underline-offset-4"
+            >
               Reintentar categorías
             </button>
           </div>
@@ -89,8 +93,8 @@ export function EventsView() {
           {!isLoading && !error && events.length === 0 && (
             <p className="py-10 text-center text-text-secondary">
               {filters.search.trim() || filters.categoryId
-                ? 'No se encontraron talleres con esos filtros. Prueba otra búsqueda o categoría.'
-                : 'No hay talleres disponibles.'}
+                ? "No se encontraron talleres con esos filtros. Prueba otra búsqueda o categoría."
+                : "No hay talleres disponibles."}
             </p>
           )}
           {error && (
@@ -113,27 +117,47 @@ export function EventsView() {
                 disabled={isLoadingMore}
                 className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:cursor-wait disabled:opacity-60"
               >
-                {isLoadingMore ? 'Cargando...' : 'Cargar más talleres'}
+                {isLoadingMore ? "Cargando..." : "Cargar más talleres"}
               </button>
             </div>
           )}
         </section>
       </div>
 
-
-      {selectedEvent ? (
-        <EventDetailPanel event={selectedEvent} />
+      {detail.event ? (
+        <EventDetailPanel event={detail.event} />
       ) : (
         <aside
           aria-label="Detalle del taller seleccionado"
           className="w-full shrink-0 border-t border-border bg-surface p-8 text-center lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
         >
           <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
-            <h2 className="text-lg font-bold text-ink">Selecciona un taller</h2>
-            <p className="text-xs leading-relaxed text-text-secondary">
-              Elige un taller de la lista para ver su información y opciones de
-              inscripción.
-            </p>
+            {detail.isLoading ? (
+              <p role="status">Cargando detalle del taller...</p>
+            ) : detail.error ? (
+              <div role="alert">
+                <p>{detail.error}</p>
+                {!detail.notFound && (
+                  <button
+                    type="button"
+                    onClick={detail.retry}
+                    className="mt-3 underline"
+                  >
+                    Reintentar detalle
+                  </button>
+                )}
+              </div>
+            ) : (
+              <h2 className="text-lg font-bold text-ink">
+                Selecciona un taller
+              </h2>
+            )}
+            {!selectedEventId && (
+              <p className="text-xs leading-relaxed text-text-secondary">
+                Elige un taller de la lista para ver su información y opciones
+                de inscripción.
+              </p>
+            )}
             <div className="mt-2 flex size-12 items-center justify-center rounded-2xl border border-border bg-surface-soft text-text-secondary">
               <Info aria-hidden="true" className="size-5" />
             </div>

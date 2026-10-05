@@ -15,7 +15,8 @@ export class EventsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAndCount(payload: FindEventsPayload): Promise<FindEventsResponse> {
-    const { categoryId, statusId, isPublishedOnly, search, skip, take } = payload;
+    const { categoryId, statusId, isPublishedOnly, search, skip, take } =
+      payload;
 
     const where: Prisma.EventWhereInput = {
       ...(categoryId !== undefined && { categoryId }),
@@ -76,7 +77,11 @@ export class EventsRepository {
     };
   }
 
-  async findById(id: string): Promise<EventWithRelations | null> {
+  async findById(
+    id: string,
+  ): Promise<
+    (EventWithRelations & { modality: { id: string; title: string } }) | null
+  > {
     const event = await this.prisma.event.findUnique({
       where: { id },
       select: {
@@ -91,6 +96,7 @@ export class EventsRepository {
         statusId: true,
         instructorName: true,
         modalityId: true,
+        modality: { select: { id: true, title: true } },
         category: {
           select: {
             id: true,
@@ -107,6 +113,6 @@ export class EventsRepository {
       },
     });
 
-    return event as unknown as EventWithRelations | null;
+    return event;
   }
 }
