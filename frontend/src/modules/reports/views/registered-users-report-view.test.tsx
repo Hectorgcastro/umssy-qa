@@ -34,8 +34,22 @@ const REGISTERED_USERS: RegisteredUser[] = [
   { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "GRADUATE", identifier: "202003376", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2025-03-20T10:00:00" },
 ];
 
-function buildResponse(page: number, limit: number, userType?: UserType): ApiResponse<PaginatedData<RegisteredUser>> {
-  const filteredUsers = userType ? REGISTERED_USERS.filter((user) => user.userType === userType) : REGISTERED_USERS;
+// "1-2025" agrupa enero a junio y "2-2025" julio a diciembre.
+function getPeriod(registeredAt: string): string {
+  const [year, month] = registeredAt.split("-");
+  return `${Number(month) <= 6 ? 1 : 2}-${year}`;
+}
+
+function buildResponse(
+  page: number,
+  limit: number,
+  userType?: UserType,
+  period?: string,
+): ApiResponse<PaginatedData<RegisteredUser>> {
+  const filteredUsers = REGISTERED_USERS.filter(
+    (user) =>
+      (!userType || user.userType === userType) && (!period || getPeriod(user.registeredAt) === period),
+  );
   const offset = (page - 1) * limit;
 
   return {
@@ -62,8 +76,8 @@ async function selectUserType(user: UserEvent, label: string) {
 
 describe("RegisteredUsersReportView", () => {
   beforeEach(() => {
-    vi.spyOn(reportsService, "getRegisteredUsers").mockImplementation(async ({ page, limit, userType }) =>
-      buildResponse(page, limit, userType),
+    vi.spyOn(reportsService, "getRegisteredUsers").mockImplementation(async ({ page, limit, userType, period }) =>
+      buildResponse(page, limit, userType, period),
     );
   });
 
@@ -262,5 +276,61 @@ describe("RegisteredUsersReportView", () => {
 
     expect((await screen.findByRole("alert")).textContent).toBe("No se pudo exportar el reporte. Inténtalo de nuevo.");
     expect(downloadSpy).not.toHaveBeenCalled();
+  });
+
+  it("filtra por gestión desde el botón Gestión y vuelve a la primera página", async () => {
+    const user = userEvent.setup();
+    await renderLoadedView();
+    await user.click(screen.getByRole("button", { name: "Página 2" }));
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 11-20 de 24 usuarios")).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Gestión" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "2-2025" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 1-9 de 9 usuarios")).toBeDefined();
+    });
+    expect(screen.getByRole("button", { name: "Gestión 2-2025" })).toBeDefined();
+    expect(screen.getByText("Ana Lucia Rojas Vera")).toBeDefined();
+    expect(screen.queryByText("Juan Carlos Peres Rojas")).toBeNull();
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 1,
+      limit: 10,
+      userType: undefined,
+      period: "2-2025",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Gestión 2-2025" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "Todas" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
+    });
+    expect(screen.getByRole("button", { name: "Gestión" })).toBeDefined();
+  });
+
+  it("combina la gestión con el tipo de usuario y la usa al exportar", async () => {
+    const user = userEvent.setup();
+    const exportSpy = vi
+      .spyOn(reportsService, "exportRegisteredUsersCsv")
+      .mockResolvedValueOnce({ file: new Blob([]), fileName: "usuarios-registrados.csv" });
+    vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
+    await renderLoadedView();
+
+    await selectUserType(user, "Empresa");
+    fireEvent.click(screen.getByRole("button", { name: "Gestión" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "1-2025" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mostrando 1-2 de 2 usuarios")).toBeDefined();
+    });
+    expect(screen.getByText("Diego Mercado Rocha")).toBeDefined();
+    expect(screen.getByText("Datalab Bolivia SRL")).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY", period: "1-2025" });
   });
 });

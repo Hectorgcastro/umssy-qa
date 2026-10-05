@@ -14,16 +14,16 @@ interface RegisteredUsersState {
 }
 
 // Se migrará a useQuery cuando TanStack Query esté instalado en el proyecto.
-export function useRegisteredUsers(page: number, userType?: UserType) {
+export function useRegisteredUsers(page: number, userType?: UserType, period?: string) {
   const [state, setState] = useState<RegisteredUsersState | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
-  const requestKey = `${page}-${userType ?? "ALL"}-${refreshCount}`;
+  const requestKey = `${page}-${userType ?? "ALL"}-${period ?? "ALL"}-${refreshCount}`;
 
   useEffect(() => {
     let isCancelled = false;
 
     reportsService
-      .getRegisteredUsers({ page, limit: REGISTERED_USERS_PAGE_SIZE, userType })
+      .getRegisteredUsers({ page, limit: REGISTERED_USERS_PAGE_SIZE, userType, period })
       .then((response) => {
         if (!isCancelled) setState({ requestKey, result: response.data });
       })
@@ -36,7 +36,7 @@ export function useRegisteredUsers(page: number, userType?: UserType) {
     return () => {
       isCancelled = true;
     };
-  }, [page, userType, requestKey]);
+  }, [page, userType, period, requestKey]);
 
   const refresh = useCallback(() => setRefreshCount((count) => count + 1), []);
 

@@ -4,13 +4,15 @@ import { ManagementMenu } from "./management-menu";
 interface ReportActionsProps {
   onExport?: () => void;
   isExporting?: boolean;
+  period?: string;
+  onPeriodChange?: (period?: string) => void;
 }
 
-export function ReportActions({ onExport, isExporting }: ReportActionsProps) {
+export function ReportActions({ onExport, isExporting, period, onPeriodChange }: ReportActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <ExportCsvButton onClick={onExport} isExporting={isExporting} />
-      <ManagementMenu />
+      <ManagementMenu value={period} onChange={onPeriodChange} />
     </div>
   );
 }

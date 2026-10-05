@@ -22,9 +22,11 @@ export interface RegisteredUsersParams {
   page: number;
   limit: number;
   userType?: UserType;
+  // Gestión académica: "1-2025" (enero a junio) o "2-2025" (julio a diciembre).
+  period?: string;
 }
 
-export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType">;
+export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType" | "period">;
 
 export interface ExportedFile {
   file: Blob;

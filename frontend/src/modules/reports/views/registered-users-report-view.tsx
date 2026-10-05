@@ -21,11 +21,21 @@ const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
 export function RegisteredUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [userType, setUserType] = useState<UserType | undefined>(undefined);
-  const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRegisteredUsers(currentPage, userType);
-  const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRegisteredUsersCsv(userType);
+  const [period, setPeriod] = useState<string | undefined>(undefined);
+  const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRegisteredUsers(
+    currentPage,
+    userType,
+    period,
+  );
+  const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRegisteredUsersCsv(userType, period);
 
   const handleUserTypeChange = (selectedUserType?: UserType) => {
     setUserType(selectedUserType);
+    setCurrentPage(1);
+  };
+
+  const handlePeriodChange = (selectedPeriod?: string) => {
+    setPeriod(selectedPeriod);
     setCurrentPage(1);
   };
 
@@ -41,7 +51,12 @@ export function RegisteredUsersReportView() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <UserTypeFilter value={userType} onChange={handleUserTypeChange} />
-        <ReportActions onExport={exportCsv} isExporting={isExporting} />
+        <ReportActions
+          onExport={exportCsv}
+          isExporting={isExporting}
+          period={period}
+          onPeriodChange={handlePeriodChange}
+        />
       </div>
 
       <RegisteredUsersTable users={users} isLoading={isLoading} errorMessage={errorMessage} />

@@ -1,19 +1,32 @@
 "use client";
 
+import { useMemo } from "react";
 import { ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getAcademicPeriods } from "../utils/academic-periods";
 
-// Periodos de ejemplo hasta que el backend exponga la gestión académica.
-const ACADEMIC_PERIODS = ["I-2026", "II-2026", "I-2025", "II-2025"];
+interface ManagementMenuProps {
+  value?: string;
+  onChange?: (period?: string) => void;
+}
 
-// Solo abre y cierra el menú: las opciones se conectarán cuando el backend las exponga.
-export function ManagementMenu() {
+const ALL_PERIODS_VALUE = "ALL";
+
+// Filtro por gestión académica: "1-2025" (enero a junio) o "2-2025" (julio a diciembre).
+export function ManagementMenu({ value, onChange }: ManagementMenuProps) {
+  const periods = useMemo(() => getAcademicPeriods(), []);
+
+  const handleValueChange = (selectedValue: string) => {
+    onChange?.(selectedValue === ALL_PERIODS_VALUE ? undefined : selectedValue);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -25,19 +38,33 @@ export function ManagementMenu() {
         }
       >
         <Settings className="size-5" strokeWidth={1.5} aria-hidden="true" />
-        Gestión
+        {value ? `Gestión ${value}` : "Gestión"}
         <ChevronDown className="size-4 transition-transform group-aria-expanded:rotate-180" aria-hidden="true" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-40 rounded-md bg-surface py-1 text-ink-soft ring-border">
-        {ACADEMIC_PERIODS.map((period) => (
-          <DropdownMenuItem
-            key={period}
+      <DropdownMenuContent
+        align="end"
+        className="max-h-72 w-40 overflow-y-auto rounded-md bg-surface py-1 text-ink-soft ring-border"
+      >
+        <DropdownMenuRadioGroup value={value ?? ALL_PERIODS_VALUE} onValueChange={handleValueChange}>
+          <DropdownMenuRadioItem
+              closeOnClick
+            value={ALL_PERIODS_VALUE}
             className="rounded-none px-4 py-2 text-sm text-ink-soft focus:bg-surface-soft focus:text-ink"
           >
-            {period}
-          </DropdownMenuItem>
-        ))}
+            Todas
+          </DropdownMenuRadioItem>
+          {periods.map((period) => (
+            <DropdownMenuRadioItem
+              closeOnClick
+              key={period}
+              value={period}
+              className="rounded-none px-4 py-2 text-sm text-ink-soft focus:bg-surface-soft focus:text-ink"
+            >
+              {period}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
