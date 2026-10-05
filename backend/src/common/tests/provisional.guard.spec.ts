@@ -70,7 +70,7 @@ describe('ProvisionalSessionGuard', () => {
     expect(findFirst).toHaveBeenCalledOnce();
   });
 
-  it('busca los roles frescos por el sub del token, no por el roleTag', async () => {
+  it('busca en BD solo el rol vigente del roleTag del token', async () => {
     const { guard, findFirst } = createGuard(null, { sub: VALID_ID, roleTag: 'mentor' });
     const ctx = createContext({ headers: { authorization: `Bearer ${VALID_TOKEN}` } });
 
@@ -78,22 +78,35 @@ describe('ProvisionalSessionGuard', () => {
 
     const args = findFirst.mock.calls[0][0];
     expect(args.where).toEqual({ id: VALID_ID, isActive: true });
-    expect(args.select.roles.where.deletedAt).toBeNull();
+    expect(args.select.roles.where).toMatchObject({ deletedAt: null, role: { name: 'mentor' } });
   });
 
-  it('deja pasar y carga request.user con los roles vigentes en BD', async () => {
-    const { guard } = createGuard({
-      id: VALID_ID,
-      email: 'mentor@test.com',
-      roles: [{ role: { name: 'mentor' } }],
-    });
+  it('responde 401 si el rol del token ya no está vigente', async () => {
+    const { guard } = createGuard({ id: VALID_ID, email: 'mentor@test.com', roles: [] });
+    const request: FakeRequest = { headers: { authorization: `Bearer ${VALID_TOKEN}` } };
+
+    await expect(guard.canActivate(createContext(request))).rejects.toThrow(
+      UnauthorizedSessionException,
+    );
+    expect(request.user).toBeUndefined();
+  });
+
+  it('deja pasar y carga request.user solo con el rol de la sesión', async () => {
+    const { guard } = createGuard(
+      {
+        id: VALID_ID,
+        email: 'mentor@test.com',
+        roles: [{ role: { name: 'titulado' } }],
+      },
+      { sub: VALID_ID, roleTag: 'titulado' },
+    );
     const request: FakeRequest = { headers: { authorization: `Bearer ${VALID_TOKEN}` } };
 
     await expect(guard.canActivate(createContext(request))).resolves.toBe(true);
     expect(request.user).toEqual({
       id: VALID_ID,
       email: 'mentor@test.com',
-      roles: ['mentor'],
+      roles: ['titulado'],
     });
   });
 });

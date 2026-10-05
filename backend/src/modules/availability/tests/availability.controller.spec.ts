@@ -1,6 +1,6 @@
 import { Reflector } from '@nestjs/core';
 import { describe, expect, it, vi } from 'vitest';
-import { ROLES_KEY } from '../../../common/decorators/roles.decorator.js';
+import { ROLES_KEY } from '../../../common/constants/roles.constants.js';
 import { AvailabilityController } from '../controllers/availability.controller.js';
 
 const USER = { id: 'mentor-1', email: 'mentor.a@umssy.test', roles: ['mentor'] };
