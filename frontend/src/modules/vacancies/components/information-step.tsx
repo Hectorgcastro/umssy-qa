@@ -4,18 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
-import { Modality, VacancyConditions } from "../hooks/use-job-offer-form";
+import { Modality, VacancyConditions, VacancyErrors, } from "../hooks/use-job-offer-form";
 
 interface InformationStepProps{
   conditions: VacancyConditions;
+  errors: VacancyErrors;
   updateField: (field: keyof VacancyConditions, value:string) => void;
   selectModality: (modality:Modality) => void;
+  validateMapsLink: () => void;
 }
 
 const MODALITIES = ["Presencial", "Remoto", "Hibrido"];
 const CONTRACT_TYPES = ["Tiempo completo", "Medio tiempo", "Pasantia"];
 
-export function InformationStep({ conditions, updateField, selectModality }: InformationStepProps) {
+export function InformationStep({ conditions, errors, updateField, selectModality ,validateMapsLink, }: InformationStepProps) {
   return (
     <div className="mt-6 rounded-xl border border-border bg-surface">
       <div className="border-b border-border px-6 py-4">
@@ -57,10 +59,9 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
             Enlace de Google Maps <span className="text-danger">*</span>
           </Label>
           <Input
-            id="mapsLink"
-            placeholder="https://maps.google.com/?q=..."
-            className="mt-1.5"
-            value={conditions.mapsLink} onChange={(event) => updateField("mapsLink" , event.target.value)}/>
+            id="mapsLink" placeholder="https://maps.google.com/?q=..." className="mt-1.5"
+              value={conditions.mapsLink} onChange={(event) => updateField("mapsLink" , event.target.value)} onBlur={validateMapsLink}/>
+              {errors.mapsLink && (<p className="mt-1 text-xs font-semibold text-danger">{errors.mapsLink}</p>)}
         </div>
 
         <div>
