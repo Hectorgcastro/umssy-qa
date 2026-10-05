@@ -152,9 +152,11 @@ describe("CertificationForm", () => {
     fireEvent.change(getNameInput(), { target: { value: name } });
     fireEvent.change(getOrganizationInput(), { target: { value: issuingOrganization } });
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
+    const fileInputs = screen.getAllByLabelText(/Archivo de respaldo/);
+    await user.upload(fileInputs[0], new File(["certificate"], "certificate.pdf", { type: "application/pdf" }));
     await user.click(saveButton());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" }, null);
+    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" }, expect.any(File));
   });
 
   it("shows an inline error for a future issue date", async () => {
@@ -184,13 +186,15 @@ describe("CertificationForm", () => {
     await user.type(getNameInput(), "  Scrum Master  ");
     await user.type(getOrganizationInput(), " Scrum Alliance ");
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
+    const fileInputs = screen.getAllByLabelText(/Archivo de respaldo/);
+    await user.upload(fileInputs[0], new File(["certificate"], "certificate.pdf", { type: "application/pdf" }));
     await user.click(saveButton());
 
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Scrum Master",
       issuingOrganization: "Scrum Alliance",
       issueDate: "2025-04-20",
-    }, null);
+    }, expect.any(File));
   });
 
   it("disables the inputs and buttons while the submit is in progress", async () => {
