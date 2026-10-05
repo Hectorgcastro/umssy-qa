@@ -16,7 +16,13 @@ import {
 } from "../../constants/week-grid.constants";
 import type { AvailabilityBlock } from "../../types/availability-block.types";
 import type { WeekGridProps } from "../../types/week-grid-props.types";
-import { getBlockVerticalPosition, getWeekDayIndex } from "../../utils/week-grid.utils";
+import {
+  getBlockVerticalPosition,
+  getWeekDayDates,
+  getWeekDayIndex,
+  isBlockClickable,
+} from "../../utils/week-grid.utils";
+import { WeekDayList } from "./week-day-list";
 
 export function WeekGrid({
   blocks,
@@ -38,17 +44,14 @@ export function WeekGrid({
   }
 
   function handleBlockClick(block: AvailabilityBlock) {
-    if (variant === "selectable" && block.state === "free") {
-      onSelectBlock?.(block);
-    }
-    if (variant === "owner" && block.state === "free") {
-      onEditBlock?.(block);
-    }
+    if (!isBlockClickable(variant, block.state)) return;
+    if (variant === "selectable") onSelectBlock?.(block);
+    if (variant === "owner") onEditBlock?.(block);
   }
 
   return (
     <section aria-label="Disponibilidad semanal">
-      <div className="grid grid-cols-[2.5rem_repeat(7,1fr)] rounded-lg border border-border overflow-hidden">
+      <div className="hidden md:grid grid-cols-[2.5rem_repeat(7,1fr)] rounded-lg border border-border overflow-hidden">
         <div aria-hidden="true">
           <div className="py-1 text-[10px]">&nbsp;</div>
           <ol className="relative" style={{ height: gridHeightPx }}>
@@ -92,10 +95,6 @@ export function WeekGrid({
                   );
                   if (heightPx <= 0) return null;
 
-                  const clickable =
-                    (variant === "selectable" || variant === "owner") &&
-                    block.state === "free";
-
                   const isSelected = block.id === selectedBlockId;
                   const stateLabel = STATE_LABELS_ES[block.state];
                   const timeRange = `${toBoliviaTime(block.startAt).time} a ${toBoliviaTime(block.endAt).time}`;
@@ -109,7 +108,7 @@ export function WeekGrid({
                       <Button
                         type="button"
                         variant={STATE_BUTTON_VARIANT[block.state]}
-                        disabled={!clickable}
+                        disabled={!isBlockClickable(variant, block.state)}
                         onClick={() => handleBlockClick(block)}
                         className={cn(
                           "h-full w-full rounded px-1 text-[9px]",
@@ -130,7 +129,18 @@ export function WeekGrid({
         ))}
       </div>
 
-      <ul aria-label="Leyenda" className="flex gap-4 mt-2 text-[10px] text-muted-foreground">
+      <WeekDayList
+        blocksByDay={blocksByDay}
+        dayDates={getWeekDayDates(weekRange)}
+        variant={variant}
+        selectedBlockId={selectedBlockId}
+        onBlockClick={handleBlockClick}
+      />
+
+      <ul
+        aria-label="Leyenda"
+        className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-muted-foreground"
+      >
         <li className="flex items-center gap-1">
           <span aria-hidden="true" className="inline-block w-3 h-3 rounded-sm border border-border" />
           Libre
