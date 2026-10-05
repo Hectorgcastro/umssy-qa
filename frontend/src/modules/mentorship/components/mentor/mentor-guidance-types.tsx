@@ -9,10 +9,10 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 
-import type { MentorGuidanceType } from "../../types/mentor-guidance-type.types";
+import type { OrientationTypeResponse } from "../../types/orientation-type-response.types";
 
 type MentorGuidanceTypesProps = {
-  orientationTypes: MentorGuidanceType[];
+  orientationTypes: OrientationTypeResponse[];
 };
 
 export function MentorGuidanceTypes({

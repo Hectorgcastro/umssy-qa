@@ -9,4 +9,3 @@ export function useMentorDirectory() {
     queryFn: ({ signal }) => getMentorDirectory(signal),
   });
 }
-

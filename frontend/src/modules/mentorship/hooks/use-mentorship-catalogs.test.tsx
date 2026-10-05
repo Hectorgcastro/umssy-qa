@@ -36,6 +36,18 @@ function renderCatalogsHook() {
 }
 
 describe("useMentorshipCatalogs", () => {
+  it("passes only the query signal to the catalog services", async () => {
+    serviceMocks.getTechnicalAreas.mockReturnValue(new Promise(() => {}));
+    const { unmount } = renderCatalogsHook();
+    await waitFor(() => {
+      expect(serviceMocks.getTechnicalAreas).toHaveBeenCalledWith(expect.any(AbortSignal));
+      expect(serviceMocks.getOrientationTypes).toHaveBeenCalledWith(expect.any(AbortSignal));
+    });
+    const signal = serviceMocks.getTechnicalAreas.mock.calls[0][0];
+    unmount();
+    expect(signal.aborted).toBe(true);
+  });
+
   it("keeps technical areas successful when orientation types fail", async () => {
     serviceMocks.getTechnicalAreas.mockResolvedValue([
       {

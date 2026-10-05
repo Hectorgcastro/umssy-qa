@@ -1,4 +1,5 @@
-import type { MentorGuidanceType } from "./mentor-guidance-type.types";
+import type { OrientationTypeResponse } from "./orientation-type-response.types";
+import type { TechnicalAreaResponse } from "./technical-area-response.types";
 
 export interface MentorProfile {
   id: string;
@@ -42,10 +43,6 @@ export interface MentorProfile {
     issueDate: string;
     documentUrl: string | null;
   }>;
-  technicalAreas: Array<{
-    id: string;
-    name: string;
-    description: string | null;
-  }>;
-  orientationTypes: MentorGuidanceType[];
+  technicalAreas: TechnicalAreaResponse[];
+  orientationTypes: OrientationTypeResponse[];
 }

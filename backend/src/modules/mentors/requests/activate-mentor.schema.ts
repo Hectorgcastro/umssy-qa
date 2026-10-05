@@ -7,9 +7,11 @@ const uniqueUuidArray = z
     message: 'No se permiten identificadores duplicados',
   });
 
-export const activateMentorSchema = z.object({
-  technicalAreaIds: uniqueUuidArray,
-  orientationTypeIds: uniqueUuidArray,
-});
+export const activateMentorSchema = z
+  .object({
+    technicalAreaIds: uniqueUuidArray,
+    orientationTypeIds: uniqueUuidArray,
+  })
+  .strict();
 
 export type ActivateMentorDto = z.infer<typeof activateMentorSchema>;

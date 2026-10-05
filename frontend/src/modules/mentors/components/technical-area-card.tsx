@@ -1,8 +1,8 @@
 import { Check } from "lucide-react";
-import type { TechnicalArea } from "../types/technical-area.types";
+import type { TechnicalAreaResponse } from "@/modules/mentorship/types/technical-area-response.types";
 
 type TechnicalAreaCardProps = {
-  area: TechnicalArea;
+  area: TechnicalAreaResponse;
   isSelected: boolean;
   onToggle: (id: string) => void;
 };

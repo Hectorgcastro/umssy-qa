@@ -20,15 +20,15 @@ import { TechnicalAreaCard } from "../components/technical-area-card";
 import { TECHNICAL_AREAS_BREADCRUMB_ITEMS } from "../constants/technical-areas-breadcrumb.constants";
 import {
   getMentorTechnicalAreas,
-  getTechnicalAreas,
   updateMentorTechnicalAreas,
 } from "../services/technical-areas.service";
-import type { TechnicalArea } from "../types/technical-area.types";
+import { getTechnicalAreas } from "@/modules/mentorship/services/technical-area.service";
+import type { TechnicalAreaResponse } from "@/modules/mentorship/types/technical-area-response.types";
 
 export function TechnicalAreasView() {
   const router = useRouter();
 
-  const [areas, setAreas] = useState<TechnicalArea[]>([]);
+  const [areas, setAreas] = useState<TechnicalAreaResponse[]>([]);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);

@@ -28,13 +28,14 @@ describe("AppSidebar", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows the brand and the temporary user by default", () => {
+  it("shows the brand without an identity footer when no user is provided", () => {
     renderSidebar();
 
     expect(screen.getByText("UMSSY")).toBeDefined();
     expect(screen.getByText("Universidad para el futuro")).toBeDefined();
-    expect(screen.getByText("Alejandro Vargas")).toBeDefined();
-    expect(screen.getByText("Administrador")).toBeDefined();
+    expect(screen.queryByText("Alejandro Vargas")).toBeNull();
+    expect(screen.queryByText("Administrador")).toBeNull();
+    expect(document.querySelector('[data-slot="sidebar-footer"]')).toBeNull();
   });
 
   it("renders the mentorship group with its two routes", () => {

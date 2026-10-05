@@ -1,3 +1,6 @@
+import type { TechnicalAreaResponse } from '../../technical-areas/types/technical-area-response.types.js';
+import type { OrientationTypeResponse } from '../../orientation-types/types/orientation-type-response.types.js';
+
 interface MentorProfileCity {
   id: string;
   title: string;
@@ -41,18 +44,6 @@ interface MentorProfileCertification {
   documentUrl: string | null;
 }
 
-interface MentorProfileTechnicalArea {
-  id: string;
-  name: string;
-  description: string | null;
-}
-
-interface MentorProfileOrientationType {
-  id: string;
-  name: string;
-  description: string | null;
-}
-
 export interface MentorProfileResponse {
   id: string;
   fullName: string;
@@ -64,6 +55,6 @@ export interface MentorProfileResponse {
   workExperiences: MentorProfileWorkExperience[];
   skills: MentorProfileSkill[];
   certifications: MentorProfileCertification[];
-  technicalAreas: MentorProfileTechnicalArea[];
-  orientationTypes: MentorProfileOrientationType[];
+  technicalAreas: TechnicalAreaResponse[];
+  orientationTypes: OrientationTypeResponse[];
 }

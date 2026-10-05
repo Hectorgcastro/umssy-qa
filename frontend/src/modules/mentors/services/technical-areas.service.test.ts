@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiClient } from "@/shared/services/api-client";
 import {
   getMentorTechnicalAreas,
-  getTechnicalAreas,
   updateMentorTechnicalAreas,
 } from "./technical-areas.service";
 
@@ -18,16 +17,6 @@ describe("technical areas service", () => {
       description: "APIs",
     },
   ];
-
-  it("obtiene el catalogo real", async () => {
-    const signal = new AbortController().signal;
-    const request = vi
-      .spyOn(apiClient, "get")
-      .mockResolvedValue({ data: areas });
-
-    await expect(getTechnicalAreas(signal)).resolves.toBe(areas);
-    expect(request).toHaveBeenCalledWith("/technical-areas", { signal });
-  });
 
   it("obtiene la seleccion del mentor autenticado", async () => {
     const signal = new AbortController().signal;

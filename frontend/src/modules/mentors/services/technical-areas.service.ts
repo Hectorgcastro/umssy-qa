@@ -1,19 +1,10 @@
 import { apiClient } from "@/shared/services/api-client";
-import type { TechnicalArea } from "../types/technical-area.types";
-
-export async function getTechnicalAreas(
-  signal?: AbortSignal,
-): Promise<TechnicalArea[]> {
-  const response = await apiClient.get<TechnicalArea[]>("/technical-areas", {
-    signal,
-  });
-  return response.data;
-}
+import type { TechnicalAreaResponse } from "@/modules/mentorship/types/technical-area-response.types";
 
 export async function getMentorTechnicalAreas(
   signal?: AbortSignal,
-): Promise<TechnicalArea[]> {
-  const response = await apiClient.get<TechnicalArea[]>(
+): Promise<TechnicalAreaResponse[]> {
+  const response = await apiClient.get<TechnicalAreaResponse[]>(
     "/mentors/me/technical-areas",
     { signal },
   );
