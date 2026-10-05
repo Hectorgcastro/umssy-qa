@@ -8,22 +8,32 @@ describe('mock-messages', () => {
   });
 
   it('cada mensaje debe referenciar una conversacion existente', () => {
-    const conversationIds = new Set(MOCK_CONVERSATIONS.map((c) => c.id));
+    const conversationIds = new Set(
+      MOCK_CONVERSATIONS.map((c) => c.id),
+    );
+
     MOCK_MESSAGES.forEach((message) => {
-      expect(conversationIds.has(message.conversationId)).toBe(true);
+      expect(
+        conversationIds.has(message.conversationId),
+      ).toBe(true);
     });
   });
 
-  it('debe existir al menos una conversacion sin mensajes', () => {
-    const withMessages = new Set(MOCK_MESSAGES.map((m) => m.conversationId));
-    const emptyConversations = MOCK_CONVERSATIONS.filter(
-      (c) => !withMessages.has(c.id)
+  it('cada conversacion debe tener mensajes en el historial mock', () => {
+    const conversationIdsWithMessages = new Set(
+      MOCK_MESSAGES.map((message) => message.conversationId),
     );
-    expect(emptyConversations.length).toBeGreaterThan(0);
+
+    MOCK_CONVERSATIONS.forEach((conversation) => {
+      expect(
+        conversationIdsWithMessages.has(conversation.id),
+      ).toBe(true);
+    });
   });
 
   it('los ids de mensaje deben ser unicos', () => {
-    const ids = MOCK_MESSAGES.map((m) => m.id);
+    const ids = MOCK_MESSAGES.map((message) => message.id);
+
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
