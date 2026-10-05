@@ -14,7 +14,7 @@ describe('Home Page', () => {
     })
 
     render(<Home />)
-    expect(screen.getByText('PWA Egresados UMSS')).toBeDefined()
+    expect(screen.getByText('UMSSY')).toBeDefined()
 
     await waitFor(() => {
       expect(screen.getByText('Hello World!')).toBeDefined()
