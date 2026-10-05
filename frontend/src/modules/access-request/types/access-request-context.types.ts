@@ -1,6 +1,8 @@
 import type { FieldErrors, PersonalDataFieldName, PersonalDataValues } from "./access-request.types";
 
-export type SubmitStatus = "idle" | "submitting";
+export type SubmitStatus = "idle" | "submitting" | "clearing";
+
+export type ClearResult = { ok: true } | { ok: false; message: string };
 
 export interface FormNotice {
   type: "error" | "success";
@@ -13,6 +15,8 @@ export interface AccessRequestContextValue {
   status: SubmitStatus;
   fieldErrors: FieldErrors;
   notice: FormNotice | null;
+  hasData: boolean;
   setValue: (field: PersonalDataFieldName, value: string) => void;
   submit: () => Promise<void>;
+  clear: () => Promise<ClearResult>;
 }

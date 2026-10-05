@@ -3,7 +3,12 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { accessRequestService } from "../services/access-request.service";
-import type { AccessRequestContextValue, FormNotice, SubmitStatus } from "../types/access-request-context.types";
+import type {
+  AccessRequestContextValue,
+  ClearResult,
+  FormNotice,
+  SubmitStatus,
+} from "../types/access-request-context.types";
 import type { FieldErrors, PersonalDataFieldName, PersonalDataValues } from "../types/access-request.types";
 import { buildAccessRequestPayload } from "../utils/build-access-request-payload";
 import { validatePersonalData } from "../utils/validate-personal-data";
@@ -21,6 +26,8 @@ const EMPTY_VALUES: PersonalDataValues = {
   career: "",
 };
 
+const BUSY_MESSAGE = "Hay una operación en curso. Espera a que termine.";
+
 const AccessRequestContext = createContext<AccessRequestContextValue | null>(null);
 
 // Estado del flujo solo en memoria: recargar la página pierde el borrador (no se guarda nada en el navegador)
@@ -35,6 +42,7 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
   const valuesRef = useRef(values);
   const draftIdRef = useRef<string | null>(null);
   const submittingRef = useRef(false);
+  const clearingRef = useRef(false);
 
   const updateDraftId = useCallback((id: string | null) => {
     draftIdRef.current = id;
@@ -52,8 +60,11 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Cualquier campo con valor (sin contar espacios) cuenta como dato; el draftId no influye
+  const hasData = useMemo(() => Object.values(values).some((value) => value.trim() !== ""), [values]);
+
   const submit = useCallback(async () => {
-    if (submittingRef.current) return;
+    if (submittingRef.current || clearingRef.current) return;
 
     const errors = validatePersonalData(valuesRef.current);
     setNotice(null);
@@ -89,9 +100,38 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
     setStatus("idle");
   }, [updateDraftId]);
 
+  // Vacía el formulario y elimina el borrador del servidor si existe. Si el DELETE falla (salvo 404) no se limpia nada
+  const clear = useCallback(async (): Promise<ClearResult> => {
+    if (submittingRef.current || clearingRef.current) return { ok: false, message: BUSY_MESSAGE };
+
+    clearingRef.current = true;
+    setStatus("clearing");
+
+    const currentDraftId = draftIdRef.current;
+    if (currentDraftId) {
+      const result = await accessRequestService.deleteAccessRequest(currentDraftId);
+      // Un 404 cuenta como éxito: el borrador ya no existe
+      if (!result.ok && result.status !== 404) {
+        clearingRef.current = false;
+        setStatus("idle");
+        return { ok: false, message: result.message };
+      }
+    }
+
+    valuesRef.current = EMPTY_VALUES;
+    setValues(EMPTY_VALUES);
+    setFieldErrors({});
+    setNotice(null);
+    updateDraftId(null);
+
+    clearingRef.current = false;
+    setStatus("idle");
+    return { ok: true };
+  }, [updateDraftId]);
+
   const value = useMemo(
-    () => ({ values, draftId, status, fieldErrors, notice, setValue, submit }),
-    [values, draftId, status, fieldErrors, notice, setValue, submit],
+    () => ({ values, draftId, status, fieldErrors, notice, hasData, setValue, submit, clear }),
+    [values, draftId, status, fieldErrors, notice, hasData, setValue, submit, clear],
   );
 
   return <AccessRequestContext.Provider value={value}>{children}</AccessRequestContext.Provider>;
