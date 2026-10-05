@@ -21,15 +21,20 @@ const getBoliviaParts = (date: Date) => {
 
 const isoDateTime = z.iso.datetime({ offset: true, error: CREATE_BLOCK_MESSAGES.invalidDate });
 
+const blockInstant = isoDateTime.transform((value) => new Date(value));
+
 export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
   z
     .strictObject({
-      startAt: isoDateTime,
-      endAt: isoDateTime,
+      startAt: blockInstant,
+      endAt: blockInstant,
     })
     .superRefine((payload, ctx) => {
-      const startAt = new Date(payload.startAt);
-      const endAt = new Date(payload.endAt);
+      const { startAt, endAt } = payload;
+
+      if (!(startAt instanceof Date) || !(endAt instanceof Date)) {
+        return;
+      }
 
       if (endAt.getTime() <= startAt.getTime()) {
         ctx.addIssue({
@@ -93,5 +98,3 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
     });
 
 export const createBlockSchema = buildCreateBlockSchema();
-
-export type CreateBlockPayload = z.infer<typeof createBlockSchema>;
