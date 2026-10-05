@@ -6,6 +6,7 @@ import {
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
 import type { AvailabilityBlockState } from '../types/availability-block-state.types.js';
 import type { AvailabilityBlockWithAppointments } from '../types/availability-block-with-appointments.types.js';
+import type { DeletedBlockResponse } from '../types/deleted-block-response.types.js';
 
 @Injectable()
 export class AvailabilityMapper {
@@ -23,6 +24,10 @@ export class AvailabilityMapper {
 
   toResponseList(blocks: AvailabilityBlockWithAppointments[]): AvailabilityBlockResponse[] {
     return blocks.map((block) => this.toResponse(block));
+  }
+
+  toDeletedResponse(block: AvailabilityBlockWithAppointments): DeletedBlockResponse {
+    return { id: block.id };
   }
 
   private toState(block: AvailabilityBlockWithAppointments): AvailabilityBlockState {

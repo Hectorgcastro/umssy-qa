@@ -1,6 +1,6 @@
 import { Reflector } from '@nestjs/core';
 import { describe, expect, it, vi } from 'vitest';
-import { ROLES_KEY } from '../../../common/decorators/roles.decorator.js';
+import { ROLES_KEY } from '../../../common/constants/roles.constants.js';
 import { MentorAvailabilityController } from '../controllers/mentor-availability.controller.js';
 
 const MENTOR_ID = '6f1c2b8e-3d4a-4f5b-9c6d-7e8f9a0b1c2d';
