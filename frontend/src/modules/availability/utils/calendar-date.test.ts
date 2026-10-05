@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { formatLongDate, getBoliviaToday, toCalendarDate, toDateString } from "./calendar-date"
+import { formatDayAndMonth, formatLongDate, getBoliviaToday, toCalendarDate, toDateString } from "./calendar-date"
 import { pad } from "./pad"
 
 describe("calendar-date", () => {
@@ -23,6 +23,10 @@ describe("calendar-date", () => {
 
   it("formatea la fecha larga en español", () => {
     expect(formatLongDate("2026-10-10")).toBe("Sábado 10 de octubre de 2026")
+  })
+
+  it("formatea el día y el mes sin el año", () => {
+    expect(formatDayAndMonth("2026-10-10")).toBe("Sábado 10 de octubre")
   })
 
   it("devuelve el día actual de Bolivia aunque en UTC sea el día siguiente", () => {

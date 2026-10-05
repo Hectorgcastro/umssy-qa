@@ -3,6 +3,8 @@ import {
   getWeekDayIndex,
   getBlockVerticalPosition,
   capitalize,
+  getWeekDayDates,
+  isBlockClickable,
 } from "./week-grid.utils";
 
 const WEEK_RANGE = {
@@ -50,5 +52,29 @@ describe("getBlockVerticalPosition", () => {
 describe("capitalize", () => {
   it("pone en mayúscula la primera letra", () => {
     expect(capitalize("libre")).toBe("Libre");
+  });
+});
+
+describe("isBlockClickable", () => {
+  it("solo permite clic en bloques libres de las variantes owner y selectable", () => {
+    expect(isBlockClickable("owner", "free")).toBe(true);
+    expect(isBlockClickable("selectable", "free")).toBe(true);
+    expect(isBlockClickable("public", "free")).toBe(false);
+    expect(isBlockClickable("owner", "pending")).toBe(false);
+    expect(isBlockClickable("selectable", "confirmed")).toBe(false);
+  });
+});
+
+describe("getWeekDayDates", () => {
+  it("devuelve las 7 fechas de la semana en hora de Bolivia, de lunes a domingo", () => {
+    expect(getWeekDayDates(WEEK_RANGE)).toEqual([
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-10",
+      "2026-10-11",
+    ]);
   });
 });

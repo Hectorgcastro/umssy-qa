@@ -171,4 +171,25 @@ describe("WeekGrid", () => {
       screen.getByRole("button", { name: /confirmada, 20:00 a 21:00/ })
     ).toBeInTheDocument();
   });
+
+  it("muestra la grilla desde md y la lista por día en pantallas chicas", () => {
+    render(<WeekGrid blocks={blocks} weekRange={WEEK_RANGE} variant="owner" />);
+
+    const grid = screen.getByRole("heading", { name: "LUN" }).closest("section")?.parentElement;
+    expect(grid).toHaveClass("hidden", "md:grid");
+    expect(screen.getByRole("heading", { name: "Lunes 5 de octubre" }).closest("ol")).toHaveClass(
+      "md:hidden"
+    );
+  });
+
+  it("en la lista por día, dispara onEditBlock en variant owner al tocar un bloque libre", () => {
+    const onEditBlock = vi.fn();
+    render(
+      <WeekGrid blocks={blocks} weekRange={WEEK_RANGE} variant="owner" onEditBlock={onEditBlock} />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Martes 6 de octubre, 18:00 a 19:00, libre" }));
+    expect(onEditBlock).toHaveBeenCalledWith(blocks[0]);
+  });
 });
+
