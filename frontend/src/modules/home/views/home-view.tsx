@@ -35,7 +35,7 @@ export function HomeView() {
 
           <Button>Botón de ejemplo</Button>
           	<Button asChild>
-    			<a href="/vacantes">Vacantes</Link>
+    			<Link href="/vacantes">Vacantes</Link>
   		</Button>
         </CardContent>
       </Card>
