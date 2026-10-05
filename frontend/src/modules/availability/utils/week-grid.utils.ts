@@ -1,6 +1,9 @@
+import { DAY_MS } from "@/shared/constants/date-time.constants";
 import { toBoliviaTime } from "@/shared/utils/date-time";
 import type { WeekRange } from "@/shared/types/week-range.types";
 import { HOUR_HEIGHT_PX } from "../constants/week-grid.constants";
+import type { AvailabilityBlockState } from "../types/availability-block-state.types";
+import type { WeekGridVariant } from "../types/week-grid-variant.types";
 
 export function getWeekDayIndex(startAt: string, weekRange: WeekRange): number | null {
   const startMs = new Date(startAt).getTime();
@@ -34,4 +37,15 @@ export function getBlockVerticalPosition(
 
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function isBlockClickable(variant: WeekGridVariant, state: AvailabilityBlockState): boolean {
+  return (variant === "selectable" || variant === "owner") && state === "free";
+}
+
+export function getWeekDayDates(weekRange: WeekRange): string[] {
+  const weekStartMs = new Date(weekRange.startAt).getTime();
+  return Array.from({ length: 7 }, (_, dayIndex) =>
+    toBoliviaTime(new Date(weekStartMs + dayIndex * DAY_MS)).date
+  );
 }
