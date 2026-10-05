@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { addWeeks, getWeekRange } from "@/shared/utils/date-time";
+import { cn } from "cn";
 import { NEW_BLOCK_PATH } from "../constants/availability.constants";
 import { MY_AVAILABILITY_TEXT } from "../constants/my-availability.constants";
 import { AvailabilityLoading } from "../components/availability-loading";
@@ -31,7 +32,10 @@ export function MentorAvailabilityView() {
         </Link>
       </header>
 
-      <nav aria-label={MY_AVAILABILITY_TEXT.weekNavigation} className="flex flex-wrap items-center gap-2">
+      <nav
+        aria-label={MY_AVAILABILITY_TEXT.weekNavigation}
+        className="flex flex-wrap items-center gap-2"
+      >
         <Button
           variant="outline"
           size="icon"
@@ -65,7 +69,12 @@ export function MentorAvailabilityView() {
       ) : error ? (
         <p className="text-center text-destructive">{error}</p>
       ) : blocks.length === 0 ? (
-        <section className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border p-8 text-center">
+        <section
+          className={cn(
+            "flex flex-col items-center gap-3 rounded-lg",
+            "border border-dashed border-border p-8 text-center",
+          )}
+        >
           <p className="text-muted-foreground">{MY_AVAILABILITY_TEXT.emptyWeek}</p>
           <Link href={NEW_BLOCK_PATH} className={buttonVariants({ variant: "outline" })}>
             <Plus aria-hidden="true" />
@@ -74,7 +83,12 @@ export function MentorAvailabilityView() {
         </section>
       ) : (
         // TODO: abrir el panel de detalle del bloque (#164) en lugar del diálogo de eliminar
-        <WeekGrid blocks={blocks} weekRange={weekRange} variant="owner" onEditBlock={setBlockToDelete} />
+        <WeekGrid
+          blocks={blocks}
+          weekRange={weekRange}
+          variant="owner"
+          onEditBlock={setBlockToDelete}
+        />
       )}
 
       <DeleteBlockDialog

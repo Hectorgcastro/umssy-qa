@@ -31,7 +31,9 @@ describe("MentorAvailabilityView", () => {
   })
 
   it("muestra el skeleton mientras carga", () => {
-    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockImplementation(() => new Promise(() => {}))
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockImplementation(
+      () => new Promise(() => {}),
+    )
 
     render(<MentorAvailabilityView />)
 
@@ -114,7 +116,9 @@ describe("MentorAvailabilityView", () => {
 
     render(<MentorAvailabilityView />)
 
-    expect(await screen.findByText("Error al obtener los bloques de disponibilidad")).toBeInTheDocument()
+    expect(
+      await screen.findByText("Error al obtener los bloques de disponibilidad"),
+    ).toBeInTheDocument()
   })
 
   it("al hacer clic en un bloque libre abre el modal y lo elimina al confirmar", async () => {
@@ -123,7 +127,9 @@ describe("MentorAvailabilityView", () => {
     const blockB = blockAt("b", "2026-10-07T18:00:00.000Z", "2026-10-07T19:00:00.000Z")
     const getSpy = vi.spyOn(availabilityApi, "getAvailabilityBlocks")
     getSpy.mockResolvedValueOnce([blockA, blockB]).mockResolvedValue([blockB])
-    const deleteSpy = vi.spyOn(availabilityApi, "deleteAvailabilityBlock").mockResolvedValue(undefined)
+    const deleteSpy = vi
+      .spyOn(availabilityApi, "deleteAvailabilityBlock")
+      .mockResolvedValue(undefined)
 
     render(<MentorAvailabilityView />)
 
@@ -143,12 +149,15 @@ describe("MentorAvailabilityView", () => {
     const user = userEvent.setup()
     const block = blockAt("a", "2026-10-06T14:00:00.000Z", "2026-10-06T15:00:00.000Z")
     const getSpy = vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([block])
-    const deleteSpy = vi.spyOn(availabilityApi, "deleteAvailabilityBlock").mockResolvedValue(undefined)
+    const deleteSpy = vi
+      .spyOn(availabilityApi, "deleteAvailabilityBlock")
+      .mockResolvedValue(undefined)
 
     render(<MentorAvailabilityView />)
 
     await user.click(await screen.findByRole("button", { name: "libre, 10:00 a 11:00" }))
-    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Cancelar" }))
+    const dialog = await screen.findByRole("alertdialog")
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }))
 
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
     expect(deleteSpy).not.toHaveBeenCalled()
