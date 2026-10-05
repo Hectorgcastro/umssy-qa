@@ -5,6 +5,7 @@ import {
   AlreadyMentorException,
   InvalidOrientationTypesException,
   InvalidTechnicalAreasException,
+  MentorNotFoundException,
   MentorRoleNotFoundException,
 } from '../exceptions/index.js';
 
@@ -113,6 +114,150 @@ describe('MentorsService', () => {
     const result = await service.findAll();
 
     expect(result).toEqual([]);
+  });
+
+  it('transforma el perfil publico completo de un mentor activo', async () => {
+    const startDate = new Date('2020-01-01T00:00:00.000Z');
+    const issueDate = new Date('2025-06-15T00:00:00.000Z');
+    const findActiveMentorById = vi.fn().mockResolvedValue({
+      id: userId,
+      firstName: 'Ana',
+      lastName: 'Rojas',
+      headline: 'Arquitecta de Software',
+      aboutMe: 'Mentora de ingeniería de software.',
+      photoUrl: new TextEncoder().encode('https://cdn.test/ana.jpg'),
+      city: { id: 'city-1', title: 'Cochabamba' },
+      educations: [
+        {
+          id: 'education-1',
+          institution: 'UMSS',
+          degree: 'Ingeniería de Sistemas',
+          startDate,
+          endDate: null,
+          description: null,
+        },
+      ],
+      workExperiences: [
+        {
+          id: 'work-1',
+          position: 'Tech Lead',
+          startDate,
+          endDate: null,
+          isCurrent: true,
+          description: 'Liderazgo técnico',
+          company: { id: 'company-1', title: 'Acme' },
+        },
+      ],
+      userSkills: [
+        {
+          skill: { id: 'skill-1', name: 'TypeScript', isCustom: false },
+        },
+      ],
+      certifications: [
+        {
+          id: 'certification-1',
+          name: 'Cloud Architect',
+          issuingOrganization: 'Cloud Org',
+          issueDate,
+          documentUrl: new TextEncoder().encode('https://cdn.test/cert.pdf'),
+        },
+      ],
+      mentorTechnicalAreas: [
+        {
+          technicalArea: {
+            id: 'area-1',
+            name: 'Arquitectura',
+            description: 'Diseño de software',
+          },
+        },
+      ],
+      mentorOrientationTypes: [
+        {
+          orientationType: {
+            id: 'orientation-1',
+            name: 'Orientación técnica',
+            description: 'Revisión de decisiones técnicas',
+          },
+        },
+      ],
+    });
+    const repository = {
+      findActiveMentorById,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findOne(userId);
+
+    expect(findActiveMentorById).toHaveBeenCalledWith(userId, expect.any(Date));
+    expect(result).toEqual({
+      id: userId,
+      fullName: 'Ana Rojas',
+      headline: 'Arquitecta de Software',
+      aboutMe: 'Mentora de ingeniería de software.',
+      photoUrl: 'https://cdn.test/ana.jpg',
+      city: { id: 'city-1', title: 'Cochabamba' },
+      educations: [
+        {
+          id: 'education-1',
+          institution: 'UMSS',
+          degree: 'Ingeniería de Sistemas',
+          startDate,
+          endDate: null,
+          description: null,
+        },
+      ],
+      workExperiences: [
+        {
+          id: 'work-1',
+          position: 'Tech Lead',
+          startDate,
+          endDate: null,
+          isCurrent: true,
+          description: 'Liderazgo técnico',
+          company: { id: 'company-1', title: 'Acme' },
+        },
+      ],
+      skills: [{ id: 'skill-1', name: 'TypeScript', isCustom: false }],
+      certifications: [
+        {
+          id: 'certification-1',
+          name: 'Cloud Architect',
+          issuingOrganization: 'Cloud Org',
+          issueDate,
+          documentUrl: 'https://cdn.test/cert.pdf',
+        },
+      ],
+      technicalAreas: [
+        {
+          id: 'area-1',
+          name: 'Arquitectura',
+          description: 'Diseño de software',
+        },
+      ],
+      orientationTypes: [
+        {
+          id: 'orientation-1',
+          name: 'Orientación técnica',
+          description: 'Revisión de decisiones técnicas',
+        },
+      ],
+    });
+  });
+
+  it('responde 404 cuando el usuario no es un mentor activo', async () => {
+    const findActiveMentorById = vi.fn().mockResolvedValue(null);
+    const repository = {
+      findActiveMentorById,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = service.findOne(userId);
+
+    await expect(result).rejects.toBeInstanceOf(MentorNotFoundException);
+    await expect(result).rejects.toMatchObject({
+      statusCode: 404,
+      message: 'El mentor no existe o no está activo',
+    });
   });
 
   it('valida los catalogos y activa al usuario autenticado', async () => {
