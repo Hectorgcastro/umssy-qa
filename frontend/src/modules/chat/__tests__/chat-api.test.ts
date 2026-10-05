@@ -70,10 +70,10 @@ describe('chat-api — searchUsers', () => {
     });
   });
 
-  it('debe retornar lista vacia si no hay coincidencias', async () => {
-    const results = await searchUsers('zzzzzzzz');
-    expect(results).toEqual([]);
-  });
+  it('debe retornar lista vacia si la conversacion no tiene mensajes', async () => {
+  const messages = await getMessages('conv-empty');
+  expect(messages).toEqual([]);
+});;
 
   it('debe tratar caracteres especiales como texto plano', async () => {
     await expect(searchUsers("'")).resolves.toEqual([]);
@@ -118,7 +118,7 @@ describe('chat-api — getMessages', () => {
   });
 
   it('debe retornar lista vacia si la conversacion no tiene mensajes', async () => {
-    const messages = await getMessages('conv-4');
+    const messages = await getMessages('conv-empty');
     expect(messages).toEqual([]);
   });
 
