@@ -1,21 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useConversations } from '../hooks/use-conversations';
+import { useMessages, messagesQueryKey } from '../hooks/use-messages';
+
 import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
 import { ChatRoom } from '../components/chat-room';
-import { Message, Conversation } from '../types/conversation.types';
+
+import { Conversation } from '../types/conversation.types';
 import { User } from '../types/user.types';
-import { getMessages, sendMessage } from '../services/chat-api';
+import { sendMessage } from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 
 export function ChatView() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const {
     conversations,
@@ -33,35 +38,19 @@ export function ChatView() {
     startConversationWithContact,
   } = useConversations();
 
-  useEffect(() => {
-    if (!selectedId) return;
-
-    let isMounted = true;
-
-    getMessages(selectedId)
-      .then((data) => {
-        if (isMounted) {
-          setMessages(data);
-          setIsLoadingMessages(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setIsLoadingMessages(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedId]);
+  const {
+  data: messages = [],
+  isLoading: isLoadingMessages,
+  hasMoreMessages,
+  loadMoreMessages,
+  isLoadingMoreMessages,
+} = useMessages(selectedId);
 
   const handleBackToList = () => {
     clearSelectedConversation();
   };
 
   const handleSelectChat = (conversation: Conversation) => {
-    setIsLoadingMessages(true);
     handleSelectConversation(conversation);
   };
 
@@ -76,22 +65,25 @@ export function ChatView() {
     if (activeFilter !== 'all') {
       setActiveFilter('all');
     }
-    setIsLoadingMessages(true);
     await startConversationWithContact(contactUser);
+    setIsSearchModalOpen(false);
   };
 
   const handleSendMessage = async (content: string) => {
     if (!selectedId || isSending) return;
+
     setIsSending(true);
     try {
-      const response = await sendMessage({
+      await sendMessage({
         conversationId: selectedId,
         content,
         senderId: CURRENT_USER_ID,
       });
-      setMessages((prev) => [...prev, response.data]);
+
+      await queryClient.invalidateQueries({
+        queryKey: messagesQueryKey(selectedId),
+      });
     } catch {
-      // Manejo de errores
     } finally {
       setIsSending(false);
     }
@@ -133,6 +125,9 @@ export function ChatView() {
             onSendMessage={handleSendMessage}
             isLoadingMessages={isLoadingMessages}
             isSending={isSending}
+            hasMoreMessages={hasMoreMessages}
+            onLoadMoreMessages={loadMoreMessages}
+            isLoadingMoreMessages={isLoadingMoreMessages}
           />
         ) : (
           <EmptyChatState
