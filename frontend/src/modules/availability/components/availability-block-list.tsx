@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DATE_LOCALE } from "../constants/availability.constants";
+import { DELETE_BLOCK_TEXT } from "../constants/delete-block.constants";
 import type { AvailabilityBlockListProps } from "../types/availability-block-list-props.types";
 
 export function AvailabilityBlockList({ blocks, emptyMessage, onDelete }: AvailabilityBlockListProps) {
@@ -24,7 +25,7 @@ export function AvailabilityBlockList({ blocks, emptyMessage, onDelete }: Availa
                   className="mt-2 border-border-strong bg-surface text-ink hover:bg-surface-soft"
                   onClick={() => onDelete(block)}
                 >
-                  Eliminar bloque
+                  {DELETE_BLOCK_TEXT.confirm}
                 </Button>
               )}
             </CardContent>

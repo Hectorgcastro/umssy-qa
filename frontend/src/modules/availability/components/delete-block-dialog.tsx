@@ -9,11 +9,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BOLIVIA_TIME_LABEL } from "@/shared/constants/date-time.constants";
 import { formatBlockRange, toBoliviaTime } from "@/shared/utils/date-time";
-import {
-  BOLIVIA_TIME_LABEL,
-  STATE_LABELS,
-} from "../constants/delete-block.constants";
+import { DELETE_BLOCK_TEXT, STATE_LABELS } from "../constants/delete-block.constants";
 import { useDeleteBlock } from "../hooks/use-delete-block";
 import type { DeleteBlockDialogProps } from "../types/delete-block-dialog-props.types";
 import { formatLongDate } from "../utils/calendar-date";
@@ -45,7 +43,7 @@ export function DeleteBlockDialog({
       <AlertDialogContent className="p-6 data-[size=default]:sm:max-w-md">
         <AlertDialogHeader className="text-left">
           <AlertDialogTitle className="font-heading text-lg font-bold text-ink">
-            ¿Eliminar este bloque?
+            {DELETE_BLOCK_TEXT.title}
           </AlertDialogTitle>
           {block && (
             <div className="w-full rounded-lg border border-border bg-surface-soft p-3">
@@ -62,8 +60,7 @@ export function DeleteBlockDialog({
             </div>
           )}
           <AlertDialogDescription className="text-sm text-text-secondary">
-            Los egresados dejarán de ver este horario al buscar mentorías. Esta
-            acción no se puede deshacer.
+            {DELETE_BLOCK_TEXT.description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
@@ -76,14 +73,14 @@ export function DeleteBlockDialog({
             className="border-border-strong bg-surface p-5 text-ink hover:bg-surface-soft"
             disabled={isDeleting}
           >
-            Cancelar
+            {DELETE_BLOCK_TEXT.cancel}
           </AlertDialogCancel>
           <AlertDialogAction
             className="bg-danger p-5 text-surface hover:bg-danger/90"
             disabled={isDeleting}
             onClick={handleConfirm}
           >
-            {isDeleting ? "Eliminando..." : "Eliminar bloque"}
+            {isDeleting ? DELETE_BLOCK_TEXT.deleting : DELETE_BLOCK_TEXT.confirm}
           </AlertDialogAction>
         </div>
       </AlertDialogContent>
