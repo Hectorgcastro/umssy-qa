@@ -14,6 +14,7 @@ interface CategoriesResult {
 export function useEventCategories() {
   const [result, setResult] =
     useState<CategoriesResult | null>(null);
+  const [reloadVersion, setReloadVersion] = useState(0);
 
   useEffect(() => {
     let isCancelled = false;
@@ -40,9 +41,13 @@ export function useEventCategories() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [reloadVersion]);
 
   return {
+    retry: () => {
+      setResult(null);
+      setReloadVersion((version) => version + 1);
+    },
     categories: result?.categories ?? [],
     isLoading: result === null,
     error: result?.error ?? null,

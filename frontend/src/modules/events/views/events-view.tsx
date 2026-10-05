@@ -14,7 +14,7 @@ import type { EventItem } from '../types/event.types';
 export function EventsView() {
   const { searchInput, setSearchInput, categoryId, setCategoryId, filters } =
     useEventsFilters();
-  const { categories } = useEventCategories();
+  const { categories, isLoading: categoriesLoading, error: categoriesError, retry: retryCategories } = useEventCategories();
   const {
     events,
     error,
@@ -60,6 +60,16 @@ export function EventsView() {
         </div>
 
 
+        {categoriesLoading && <p role="status" className="text-sm text-text-secondary">Cargando categorías...</p>}
+        {categoriesError && (
+          <div role="alert" className="text-sm text-danger">
+            <p>{categoriesError}</p>
+            <button type="button" onClick={retryCategories} className="mt-2 font-semibold text-ink underline underline-offset-4">
+              Reintentar categorías
+            </button>
+          </div>
+        )}
+
         <section aria-label="Listado de talleres">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {events.map((eventItem) => (
@@ -78,7 +88,9 @@ export function EventsView() {
           )}
           {!isLoading && !error && events.length === 0 && (
             <p className="py-10 text-center text-text-secondary">
-              No hay talleres disponibles.
+              {filters.search.trim() || filters.categoryId
+                ? 'No se encontraron talleres con esos filtros. Prueba otra búsqueda o categoría.'
+                : 'No hay talleres disponibles.'}
             </p>
           )}
           {error && (
