@@ -14,8 +14,13 @@ function makeOverlapError(): Prisma.PrismaClientKnownRequestError {
 describe('AvailabilityRepository', () => {
   const findMany = vi.fn();
   const findUnique = vi.fn();
+<<<<<<< HEAD
   const update = vi.fn();
   const prisma = { availabilityBlock: { findMany, findUnique, update } };
+=======
+  const deleteBlock = vi.fn();
+  const prisma = { availabilityBlock: { findMany, findUnique, delete: deleteBlock } };
+>>>>>>> origin/epic/grupo-7-agendamiento-sesiones
   let repository: AvailabilityRepository;
 
   beforeEach(() => {
@@ -108,5 +113,30 @@ describe('AvailabilityRepository', () => {
 
       await expect(repository.update('block-1', data)).rejects.toBe(generic);
     });
+  });
+
+  it('busca un bloque por id incluyendo solo sus citas activas', async () => {
+    findUnique.mockResolvedValue(null);
+
+    await repository.findById('block-1');
+
+    expect(findUnique).toHaveBeenCalledWith({
+      where: { id: 'block-1' },
+      include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+    });
+  });
+
+  it('devuelve null si el bloque no existe', async () => {
+    findUnique.mockResolvedValue(null);
+
+    await expect(repository.findById('missing')).resolves.toBeNull();
+  });
+
+  it('borra el bloque por id', async () => {
+    const row = { id: 'block-1' };
+    deleteBlock.mockResolvedValue(row);
+
+    await expect(repository.delete('block-1')).resolves.toBe(row);
+    expect(deleteBlock).toHaveBeenCalledWith({ where: { id: 'block-1' } });
   });
 });

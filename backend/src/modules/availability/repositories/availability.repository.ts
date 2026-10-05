@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { AvailabilityBlock } from '../../../prisma/client.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { Prisma } from '../../../prisma/client.js';
 import { BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE } from '../constants/block-query.constants.js';
@@ -18,7 +19,17 @@ interface UpdateBlockData {
 export class AvailabilityRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findMentorBlocksInRange(mentorId: string, from: Date, to: Date): Promise<AvailabilityBlockWithAppointments[]> {
+  create(mentorId: string, startAt: Date, endAt: Date): Promise<AvailabilityBlock> {
+    return this.prisma.availabilityBlock.create({
+      data: { mentorId, startAt, endAt },
+    });
+  }
+
+  findMentorBlocksInRange(
+    mentorId: string,
+    from: Date,
+    to: Date,
+  ): Promise<AvailabilityBlockWithAppointments[]> {
     return this.prisma.availabilityBlock.findMany({
       where: { mentorId, startAt: { gte: from, lt: to } },
       orderBy: { startAt: 'asc' },
@@ -57,5 +68,9 @@ export class AvailabilityRepository {
     }
     const meta = error.meta as { driverAdapterError?: { cause?: { code?: string } } } | undefined;
     return meta?.driverAdapterError?.cause?.code === POSTGRES_EXCLUSION_VIOLATION;
+  }
+  
+  delete(id: string): Promise<AvailabilityBlock> {
+    return this.prisma.availabilityBlock.delete({ where: { id } });
   }
 }

@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { AvailabilityRepository } from '../repositories/availability.repository.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
-import { BlockNotFoundException } from '../exceptions/block-not-found.exception.js';
-import { BlockNotOwnedException } from '../exceptions/block-not-owned.exception.js';
-import { BlockHasAppointmentException } from '../exceptions/block-has-appointment.exception.js';
+import {
+  BlockHasAppointmentException,
+  BlockNotFoundException,
+  BlockNotOwnedException,
+  BlockOverlapException,
+} from '../exceptions/index.js';
+import { hasOverlapErrorCode } from '../utils/overlap-error.js';
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
-import type { UpdateBlockPayload } from '../requests/update-block.request.js';
+import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
 import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
+import type { DeletedBlockResponse } from '../types/deleted-block-response.types.js';
+import type { UpdateBlockPayload } from '../requests/update-block.request.js';
 
 @Injectable()
 export class AvailabilityService {
@@ -15,7 +21,26 @@ export class AvailabilityService {
     private readonly availabilityMapper: AvailabilityMapper,
   ) {}
 
-  async findMyBlocks(mentorId: string, query: WeekQueryPayload): Promise<AvailabilityBlockResponse[]> {
+  async remove(mentorId: string, blockId: string): Promise<DeletedBlockResponse> {
+    const block = await this.availabilityRepository.findById(blockId);
+    if (!block) {
+      throw new BlockNotFoundException();
+    }
+    if (block.mentorId !== mentorId) {
+      throw new BlockNotOwnedException();
+    }
+    if (block.appointments.length > 0) {
+      throw new BlockHasAppointmentException();
+    }
+    // TODO: impedir eliminar el bloque si tiene propuestas activas (Sprint 2)
+    await this.availabilityRepository.delete(blockId);
+    return this.availabilityMapper.toDeletedResponse(block);
+  }
+
+  async findMyBlocks(
+    mentorId: string,
+    query: WeekQueryPayload,
+  ): Promise<AvailabilityBlockResponse[]> {
     const blocks = await this.availabilityRepository.findMentorBlocksInRange(
       mentorId,
       new Date(query.from),
@@ -45,7 +70,22 @@ export class AvailabilityService {
       startAt: new Date(payload.startAt),
       endAt: new Date(payload.endAt),
     });
-
     return this.availabilityMapper.toResponse(updated);
+  }
+  
+  async create(mentorId: string, payload: CreateBlockPayload): Promise<AvailabilityBlockResponse> {
+    try {
+      const block = await this.availabilityRepository.create(
+        mentorId,
+        payload.startAt,
+        payload.endAt,
+      );
+      return this.availabilityMapper.toResponse({ ...block, appointments: [] });
+    } catch (error) {
+      if (hasOverlapErrorCode(error)) {
+        throw new BlockOverlapException();
+      }
+      throw error;
+    }
   }
 }
