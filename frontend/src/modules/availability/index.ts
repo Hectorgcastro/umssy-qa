@@ -4,6 +4,7 @@ export { AddBlockView } from "./views/add-block-view";
 export { BlockForm } from "./components/block-form";
 export { AvailabilityBlockList } from "./components/availability-block-list";
 export { DeleteBlockDialog } from "./components/delete-block-dialog";
+export { BlockSelection } from "./components/block-selection/block-selection";
 export { useAvailability } from "./hooks/use-availability";
 export { useMentorFreeBlocks } from "./hooks/use-mentor-free-blocks";
 export { useCreateAvailabilityBlock } from "./hooks/use-create-availability-block";

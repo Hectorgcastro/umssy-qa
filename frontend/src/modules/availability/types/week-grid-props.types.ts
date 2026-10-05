@@ -8,6 +8,7 @@ export interface WeekGridProps {
   variant: WeekGridVariant;
   startHour?: number;
   endHour?: number;
+  selectedBlockId?: string;
   onSelectBlock?: (block: AvailabilityBlock) => void;
   onEditBlock?: (block: AvailabilityBlock) => void;
 }
