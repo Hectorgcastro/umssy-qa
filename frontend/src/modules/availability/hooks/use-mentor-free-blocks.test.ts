@@ -21,9 +21,14 @@ describe("useMentorFreeBlocks", () => {
   })
 
   it("obtiene los bloques libres del mentor", async () => {
-    const spy = vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockResolvedValue([mockBlock])
+    const spy = vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockResolvedValue([mockBlock])
 
-    const { result } = renderHook(() => useMentorFreeBlocks("m1"), { wrapper: StrictMode })
+    const { result } = renderHook(
+      () => useMentorFreeBlocks("m1"),
+      { wrapper: StrictMode },
+    )
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
@@ -35,7 +40,9 @@ describe("useMentorFreeBlocks", () => {
   })
 
   it("maneja error al obtener bloques libres", async () => {
-    vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockRejectedValue(new Error("Network error"))
+    vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockRejectedValue(new Error("Network error"))
 
     const { result } = renderHook(() => useMentorFreeBlocks("m1"))
 
@@ -43,15 +50,22 @@ describe("useMentorFreeBlocks", () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.error).toBe("Error al obtener los bloques de disponibilidad")
+    expect(result.current.error).toBe(
+      "Error al obtener los bloques de disponibilidad",
+    )
   })
 
   it("vuelve a pedir datos cuando cambia el mentor", async () => {
-    const spy = vi.spyOn(availabilityApi, "getMentorFreeBlocks").mockResolvedValue([])
+    const spy = vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockResolvedValue([])
 
-    const { result, rerender } = renderHook(({ mentorId }) => useMentorFreeBlocks(mentorId), {
-      initialProps: { mentorId: "m1" },
-    })
+    const { result, rerender } = renderHook(
+      ({ mentorId }) => useMentorFreeBlocks(mentorId),
+      {
+        initialProps: { mentorId: "m1" },
+      },
+    )
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
@@ -60,9 +74,85 @@ describe("useMentorFreeBlocks", () => {
     rerender({ mentorId: "m2" })
 
     expect(result.current.isLoading).toBe(true)
+
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
+
     expect(spy).toHaveBeenLastCalledWith("m2")
   })
+
+  it("no vuelve a pedir datos cuando la pestaña está oculta", async () => {
+    const spy = vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockResolvedValue([mockBlock])
+
+    const originalVisibilityState = document.visibilityState
+
+    const { result } = renderHook(() => useMentorFreeBlocks("m1"))
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(spy).toHaveBeenCalledTimes(1)
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    })
+
+    document.dispatchEvent(new Event("visibilitychange"))
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(spy).toHaveBeenCalledTimes(1)
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: originalVisibilityState,
+    })
+  })
+
+  it("vuelve a pedir datos al recuperar el foco", async () => {
+    const spy = vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockResolvedValue([mockBlock])
+
+    const { result } = renderHook(() => useMentorFreeBlocks("m1"))
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    const callsBeforeFocus = spy.mock.calls.length
+
+    window.dispatchEvent(new Event("focus"))
+
+    await waitFor(() => {
+      expect(spy.mock.calls.length).toBeGreaterThan(callsBeforeFocus)
+    })
+  })
+
+  it("obtiene los bloques usando el rango semanal", async () => {
+  const spy = vi
+    .spyOn(availabilityApi, "getMentorFreeBlocks")
+    .mockResolvedValue([mockBlock])
+
+  const weekRange = {
+    startAt: "2024-01-15T00:00:00Z",
+    endAt: "2024-01-21T23:59:59Z",
+  }
+
+  const { result } = renderHook(() =>
+    useMentorFreeBlocks("m1", weekRange)
+  )
+
+  await waitFor(() => {
+    expect(result.current.isLoading).toBe(false)
+  })
+
+  expect(spy).toHaveBeenCalledWith("m1", weekRange)
+  expect(result.current.blocks).toEqual([mockBlock])
+})
 })
