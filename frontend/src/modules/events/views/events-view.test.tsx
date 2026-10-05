@@ -52,6 +52,7 @@ beforeEach(() => {
     filters: { search: '', categoryId: null },
   });
   mockUseEventCategories.mockReturnValue({
+    retry: vi.fn(),
     categories: [{ id: 'cat-1', name: 'Tecnología' }],
     isLoading: false,
     error: null,
@@ -175,4 +176,28 @@ describe('EventsView', () => {
     expect(filterState.setCategoryId).toHaveBeenCalledWith('cat-1');
     expect(mockUseEvents).toHaveBeenCalledWith(filterState.filters);
   });
+  it('shows category loading without hiding the workshops', () => {
+    mockUseEventCategories.mockReturnValue({ categories: [], isLoading: true, error: null, retry: vi.fn() });
+    render(<EventsView />);
+    expect(screen.getByRole('status')).toHaveTextContent('Cargando categorías');
+    expect(screen.getByRole('heading', { name: 'Desarrollo Web con React' })).toBeInTheDocument();
+  });
+
+  it('lets users retry categories independently of workshops', () => {
+    const retry = vi.fn();
+    mockUseEventCategories.mockReturnValue({ categories: [], isLoading: false, error: 'No se pudieron cargar las categorías.', retry });
+    render(<EventsView />);
+    expect(screen.getByRole('alert')).toHaveTextContent('No se pudieron cargar las categorías');
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar categorías' }));
+    expect(retry).toHaveBeenCalledOnce();
+    expect(screen.getByRole('heading', { name: 'Desarrollo Web con React' })).toBeInTheDocument();
+  });
+
+  it('explains when no workshops match the selected filters', () => {
+    mockUseEventsFilters.mockReturnValue({ searchInput: 'Marketing', setSearchInput: vi.fn(), categoryId: null, setCategoryId: vi.fn(), filters: { search: 'Marketing', categoryId: null } });
+    mockUseEvents.mockReturnValue({ events: [], error: null, hasMore: false, isLoading: false, isLoadingMore: false, loadMore: vi.fn(), retry: vi.fn() });
+    render(<EventsView />);
+    expect(screen.getByText(/No se encontraron talleres con esos filtros/)).toBeInTheDocument();
+  });
+
 });

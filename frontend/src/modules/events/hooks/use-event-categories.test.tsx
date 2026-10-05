@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventCategories } from './use-event-categories';
@@ -55,4 +55,18 @@ describe('useEventCategories', () => {
       'No se pudieron cargar las categorías.',
     );
   });
+  it('recovers from a failed request when retrying', async () => {
+    vi.mocked(eventCategoriesService.getAll)
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce([{ id: 'cat-1', name: 'Tecnología' }]);
+    const { result } = renderHook(() => useEventCategories());
+    await waitFor(() => expect(result.current.error).toBeTruthy());
+    act(() => result.current.retry());
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.error).toBeNull();
+    await waitFor(() => expect(result.current.categories).toHaveLength(1));
+    expect(result.current.isLoading).toBe(false);
+    expect(eventCategoriesService.getAll).toHaveBeenCalledTimes(2);
+  });
+
 });

@@ -171,4 +171,15 @@ describe('EventsRepository', () => {
       }),
     );
   });
+  it('counts only confirmed registrations that have not been cancelled', async () => {
+    prismaMock.event.findMany.mockResolvedValue([]);
+    prismaMock.event.count.mockResolvedValue(0);
+    await repository.findAndCount({ isPublishedOnly: true, skip: 0, take: 10 });
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({
+        _count: { select: { registrations: { where: { cancelledAt: null, status: { title: 'Confirmada' } } } } },
+      }),
+    }));
+  });
+
 });

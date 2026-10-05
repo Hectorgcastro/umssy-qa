@@ -53,7 +53,7 @@ export class EventsRepository {
       _count: {
         select: {
           registrations: {
-            where: { cancelledAt: null },
+            where: { cancelledAt: null, status: { title: 'Confirmada' } },
           },
         },
       },
@@ -100,7 +100,7 @@ export class EventsRepository {
         _count: {
           select: {
             registrations: {
-              where: { cancelledAt: null },
+              where: { cancelledAt: null, status: { title: 'Confirmada' } },
             },
           },
         },

@@ -57,12 +57,15 @@ async function main() {
   console.log('Roles creados:', ROLE_NAMES.join(', '));
   console.log('Usuario de prueba: prueba@umss.edu.bo / Prueba123 (rol: titulado)');
 
-    // --- Eventos & pases (HU-08-03) ---
-  const category = await prisma.eventCategory.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222221' },
-    update: {},
-    create: { id: '22222222-2222-2222-2222-222222222221', name: 'Tecnología' },
-  });
+  // Catálogo de HU-08-01 y pases de ejemplo de HU-08-03.
+  const categories = [];
+  for (const name of ['Tecnología', 'IA & Datos', 'Diseño', 'Seguridad']) {
+    categories.push(await prisma.eventCategory.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    }));
+  }
   const modality = await prisma.eventModality.upsert({
     where: { id: '22222222-2222-2222-2222-222222222222' },
     update: {},
@@ -85,15 +88,19 @@ async function main() {
   });
 
   const events = [
-    { id: '33333333-3333-3333-3333-333333333331', title: 'Taller de NestJS', date: '2026-10-20', location: 'Aula 101', enroll: true },
-    { id: '33333333-3333-3333-3333-333333333332', title: 'Taller de Prisma', date: '2026-10-25', location: 'Laboratorio 2', enroll: true },
-    { id: '33333333-3333-3333-3333-333333333333', title: 'Taller de Vitest', date: '2026-11-02', location: 'Aula 203', enroll: false },
+    { id: '33333333-3333-3333-3333-333333333331', title: 'Taller de NestJS', date: '2026-10-20', location: 'Aula 101', enroll: true, categoryIndex: 0, capacity: 30 },
+    { id: '33333333-3333-3333-3333-333333333332', title: 'Taller de Prisma', date: '2026-10-25', location: 'Laboratorio 2', enroll: true, categoryIndex: 0, capacity: 1 },
+    { id: '33333333-3333-3333-3333-333333333333', title: 'Taller de Vitest', date: '2026-11-02', location: 'Aula 203', enroll: false, categoryIndex: 0, capacity: 30 },
+    { id: '33333333-3333-3333-3333-333333333334', title: 'Desarrollo Web con React', date: '2026-11-03', location: 'Laboratorio 1', enroll: false, categoryIndex: 0, capacity: 30 },
+    { id: '33333333-3333-3333-3333-333333333335', title: 'Data Science con Python', date: '2026-11-04', location: 'Laboratorio 3', enroll: false, categoryIndex: 1, capacity: 20 },
+    { id: '33333333-3333-3333-3333-333333333336', title: 'Diseño de interfaces accesibles', date: '2026-11-05', location: 'Aula 204', enroll: false, categoryIndex: 2, capacity: 25 },
+    { id: '33333333-3333-3333-3333-333333333337', title: 'Seguridad de aplicaciones web', date: '2026-11-06', location: 'Laboratorio 4', enroll: false, categoryIndex: 3, capacity: 20 },
   ];
 
   for (const e of events) {
     await prisma.event.upsert({
       where: { id: e.id },
-      update: {},
+      update: { capacity: e.capacity, categoryId: categories[e.categoryIndex].id },
       create: {
         id: e.id,
         title: e.title,
@@ -103,9 +110,9 @@ async function main() {
         startTime: new Date('1970-01-01T09:00:00.000Z'),
         endTime: new Date('1970-01-01T12:00:00.000Z'),
         location: e.location,
-        capacity: 30,
+        capacity: e.capacity,
         supportThreshold: 0,
-        categoryId: category.id,
+        categoryId: categories[e.categoryIndex].id,
         modalityId: modality.id,
         originId: origin.id,
         statusId: eventStatus.id,
@@ -127,7 +134,7 @@ async function main() {
     }
   }
 
-    console.log('Eventos de prueba creados; usuario inscrito en 2 de 3');
+  console.log('Catálogo: 4 categorías, 7 talleres y 2 pases; Taller de Prisma lleno (1/1).');
 }
 
 main()
