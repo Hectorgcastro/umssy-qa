@@ -39,13 +39,12 @@ export function ChatView() {
   } = useConversations();
 
   const {
-    data: messages = [],
-    isLoading: isLoadingMessages,
-    isError: isMessagesError,
-    hasMoreMessages,
-    loadMoreMessages,
-    isLoadingMoreMessages,
-  } = useMessages(selectedId);
+  data: messages = [],
+  isLoading: isLoadingMessages,
+  hasMoreMessages,
+  loadMoreMessages,
+  isLoadingMoreMessages,
+} = useMessages(selectedId);
 
   const handleBackToList = () => {
     clearSelectedConversation();
