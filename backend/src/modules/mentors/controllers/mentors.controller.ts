@@ -20,6 +20,10 @@ import {
   updateMentorTechnicalAreasSchema,
   type UpdateMentorTechnicalAreasDto,
 } from '../requests/update-mentor-technical-areas.schema.js';
+import {
+  updateMentorOrientationTypesSchema,
+  type UpdateMentorOrientationTypesDto,
+} from '../requests/update-mentor-orientation-types.schema.js';
 import { MentorsService } from '../services/mentors.service.js';
 
 @Controller('mentors')
@@ -45,6 +49,22 @@ export class MentorsController {
     body: UpdateMentorTechnicalAreasDto,
   ) {
     return this.mentorsService.updateMyTechnicalAreas(user.id, body);
+  }
+
+  @Get('me/orientation-types')
+  @UseGuards(JwtAuthGuard)
+  findMyOrientationTypes(@CurrentUser() user: AuthenticatedUser) {
+    return this.mentorsService.findMyOrientationTypes(user.id);
+  }
+
+  @Patch('me/orientation-types')
+  @UseGuards(JwtAuthGuard)
+  updateMyOrientationTypes(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateMentorOrientationTypesSchema))
+    body: UpdateMentorOrientationTypesDto,
+  ) {
+    return this.mentorsService.updateMyOrientationTypes(user.id, body);
   }
 
   @Get(':userId')

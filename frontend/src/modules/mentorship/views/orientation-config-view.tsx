@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
@@ -14,71 +15,104 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Breadcrumbs } from "@/shared/components/layout";
-import {
-  getMentorParticipation,
-  updateMentorParticipation,
-} from "@/shared/services/mentor-participation.service";
 import { ORIENTATION_CONFIG_BREADCRUMB_ITEMS } from "../constants/orientation-config-breadcrumb.constants";
-import { ORIENTATION_TYPES } from "../data/orientation-types";
+import {
+  getMentorOrientationTypes,
+  getOrientationTypes,
+  updateMentorOrientationTypes,
+} from "../services/orientation-type.service";
+import type { OrientationTypeResponse } from "../types/orientation-type-response.types";
 
 export function OrientationConfigView() {
-  const [participation, setParticipation] = useState<
-    ReturnType<typeof getMentorParticipation> | undefined
-  >(undefined);
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [orientationTypes, setOrientationTypes] = useState<
+    OrientationTypeResponse[]
+  >([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasLoadError, setHasLoadError] = useState(false);
+  const [isMentorActive, setIsMentorActive] = useState(true);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
 
-    queueMicrotask(() => {
-      if (!isMounted) return;
+    Promise.allSettled([
+      getOrientationTypes(controller.signal),
+      getMentorOrientationTypes(controller.signal),
+    ])
+      .then(([catalogResult, selectedOrientationsResult]) => {
+        if (controller.signal.aborted) return;
 
-      const currentParticipation = getMentorParticipation();
-      setParticipation(currentParticipation);
+        if (catalogResult.status === "rejected") {
+          setHasLoadError(true);
+          return;
+        }
 
-      if (currentParticipation) {
-        setSelectedValues(
-          ORIENTATION_TYPES.filter((orientation) =>
-            currentParticipation.orientations.includes(orientation.label),
-          ).map((orientation) => orientation.id),
+        if (selectedOrientationsResult.status === "rejected") {
+          const error: unknown = selectedOrientationsResult.reason;
+
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            setIsMentorActive(false);
+            return;
+          }
+
+          setHasLoadError(true);
+          return;
+        }
+
+        const ids = selectedOrientationsResult.value.map(
+          (orientation) => orientation.id,
         );
-      }
-    });
+        setOrientationTypes(catalogResult.value);
+        setSelectedIds(ids);
+        setIsMentorActive(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      });
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => controller.abort();
+  }, [loadAttempt]);
 
-  const handleCheckboxChange = (value: string) => {
+  const handleCheckboxChange = (id: string) => {
     setErrorMessage(null);
-    if (selectedValues.includes(value)) {
-      setSelectedValues(selectedValues.filter((item) => item !== value));
-    } else {
-      setSelectedValues([...selectedValues, value]);
-    }
+    setShowToast(false);
+    setSelectedIds((previous) =>
+      previous.includes(id)
+        ? previous.filter((item) => item !== id)
+        : [...previous, id],
+    );
   };
 
-  const handleSave = () => {
-    if (selectedValues.length === 0) {
+  const handleSave = async () => {
+    if (selectedIds.length === 0) {
       setErrorMessage(
         "Debe seleccionar al menos un tipo de orientación antes de guardar.",
       );
       return;
     }
 
-    const orientations = ORIENTATION_TYPES.filter((orientation) =>
-      selectedValues.includes(orientation.id),
-    ).map((orientation) => orientation.label);
-
-    updateMentorParticipation({ orientations });
-    setErrorMessage(null);
-    setShowToast(true);
+    setIsSaving(true);
+    setShowToast(false);
+    try {
+      await updateMentorOrientationTypes(selectedIds);
+      setErrorMessage(null);
+      setShowToast(true);
+    } catch {
+      setErrorMessage(
+        "No se pudieron guardar los cambios. Intente nuevamente.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  if (participation === undefined) {
+  if (isLoading) {
     return (
       <main className="min-h-full bg-background px-4 py-8 sm:px-8">
         <Card
@@ -93,7 +127,7 @@ export function OrientationConfigView() {
             >
               Editar tipos de orientación
             </CardTitle>
-            <p className="mt-3 text-sm text-text-secondary">
+            <p role="status" className="mt-3 text-sm text-text-secondary">
               Cargando tu participación como mentor…
             </p>
           </CardHeader>
@@ -102,7 +136,7 @@ export function OrientationConfigView() {
     );
   }
 
-  if (participation === null) {
+  if (!isMentorActive) {
     return (
       <main className="min-h-full bg-background px-4 py-8 sm:px-8">
         <Card className="mx-auto max-w-3xl gap-0 rounded-xl border border-gray-100 bg-white py-0 shadow-sm ring-0">
@@ -152,50 +186,75 @@ export function OrientationConfigView() {
 
           <Card className="w-full max-w-3xl gap-6 rounded-xl border border-gray-100 bg-white py-0 shadow-sm ring-0">
             <CardContent className="flex flex-col gap-6 px-4 pt-4 sm:px-8 sm:pt-8">
-              {errorMessage && (
+              {hasLoadError && (
+                <Alert className="flex items-center justify-between gap-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  <span>No se pudieron cargar los tipos de orientación.</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsLoading(true);
+                      setHasLoadError(false);
+                      setLoadAttempt((attempt) => attempt + 1);
+                    }}
+                  >
+                    Reintentar
+                  </Button>
+                </Alert>
+              )}
+
+              {!hasLoadError && errorMessage && (
                 <Alert className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                   <AlertCircle size={20} className="shrink-0 text-red-600" />
                   <span>{errorMessage}</span>
                 </Alert>
               )}
 
-              <div className="flex flex-col gap-3">
-                {ORIENTATION_TYPES.map((option) => {
-                  const isSelected = selectedValues.includes(option.id);
+              {!hasLoadError && (
+                <div className="flex flex-col gap-3">
+                  {orientationTypes.map((option) => {
+                    const isSelected = selectedIds.includes(option.id);
 
-                  return (
-                    <label
-                      key={option.id}
-                      className={`group flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-4 transition-colors ${
-                        isSelected
-                          ? "border-red-200 bg-red-50/50"
-                          : "border-transparent bg-gray-50/50 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex min-w-0 flex-1 items-center gap-4">
-                        <span
-                          id={`orientation-label-${option.id}`}
-                          className="min-w-0 break-words text-sm font-semibold text-ink"
-                        >
-                          {option.label}
-                        </span>
-                      </div>
+                    return (
+                      <label
+                        key={option.id}
+                        className={`group flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-4 transition-colors ${
+                          isSelected
+                            ? "border-red-200 bg-red-50/50"
+                            : "border-transparent bg-gray-50/50 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span
+                            id={`orientation-label-${option.id}`}
+                            className="min-w-0 break-words text-sm font-semibold text-ink"
+                          >
+                            {option.name}
+                          </span>
+                          {option.description && (
+                            <span className="text-sm text-text-secondary">
+                              {option.description}
+                            </span>
+                          )}
+                        </div>
 
-                      <div className="flex shrink-0 items-center">
-                        <Checkbox
-                          value={option.id}
-                          checked={isSelected}
-                          onCheckedChange={() =>
-                            handleCheckboxChange(option.id)
-                          }
-                          aria-labelledby={`orientation-label-${option.id}`}
-                          className="size-5 border-0 bg-gray-200 text-transparent data-checked:bg-red-600 data-checked:text-white [&_[data-slot=checkbox-indicator]>svg]:size-4"
-                        />
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
+                        <div className="flex shrink-0 items-center">
+                          <Checkbox
+                            value={option.id}
+                            checked={isSelected}
+                            disabled={isSaving}
+                            onCheckedChange={() =>
+                              handleCheckboxChange(option.id)
+                            }
+                            aria-labelledby={`orientation-label-${option.id}`}
+                            className="size-5 border-0 bg-gray-200 text-transparent data-checked:bg-red-600 data-checked:text-white [&_[data-slot=checkbox-indicator]>svg]:size-4"
+                          />
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
             <CardFooter className="mx-4 flex items-center justify-between gap-4 border-t border-gray-100 bg-transparent px-0 pb-4 pt-4 sm:mx-8 sm:pb-8">
               <Link
@@ -210,10 +269,10 @@ export function OrientationConfigView() {
               <Button
                 type="button"
                 onClick={handleSave}
-                disabled={selectedValues.length === 0}
+                disabled={selectedIds.length === 0 || isSaving || hasLoadError}
                 className="h-10 rounded-lg bg-red-600 px-6 text-sm font-semibold text-white shadow-sm hover:bg-red-700 active:translate-y-0 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Guardar cambios
+                {isSaving ? "Guardando..." : "Guardar cambios"}
               </Button>
             </CardFooter>
           </Card>

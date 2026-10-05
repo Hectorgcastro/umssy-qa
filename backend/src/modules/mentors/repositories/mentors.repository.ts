@@ -144,6 +144,31 @@ export class MentorsRepository {
     });
   }
 
+  findMentorOrientationTypes(userId: string) {
+    return this.prisma.mentorOrientationType.findMany({
+      where: {
+        mentorId: userId,
+        orientationType: {
+          isActive: true,
+        },
+      },
+      select: {
+        orientationType: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
+      orderBy: {
+        orientationType: {
+          name: 'asc',
+        },
+      },
+    });
+  }
+
   findActiveMentorById(userId: string, now: Date) {
     return this.prisma.user.findFirst({
       where: {
@@ -325,6 +350,23 @@ export class MentorsRepository {
         data: technicalAreaIds.map((technicalAreaId) => ({
           mentorId: userId,
           technicalAreaId,
+        })),
+      });
+    });
+  }
+
+  replaceMentorOrientationTypes(userId: string, orientationTypeIds: string[]) {
+    return this.prisma.$transaction(async (transaction) => {
+      await transaction.mentorOrientationType.deleteMany({
+        where: {
+          mentorId: userId,
+        },
+      });
+
+      await transaction.mentorOrientationType.createMany({
+        data: orientationTypeIds.map((orientationTypeId) => ({
+          mentorId: userId,
+          orientationTypeId,
         })),
       });
     });

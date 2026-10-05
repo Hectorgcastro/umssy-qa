@@ -321,9 +321,11 @@ describe('MentorsService', () => {
 
   it('rechaza consultas y cambios si el usuario no es mentor activo', async () => {
     const replaceMentorTechnicalAreas = vi.fn();
+    const replaceMentorOrientationTypes = vi.fn();
     const repository = {
       findActiveMentorParticipation: vi.fn().mockResolvedValue(null),
       replaceMentorTechnicalAreas,
+      replaceMentorOrientationTypes,
     } as unknown as MentorsRepository;
     const service = new MentorsService(repository);
 
@@ -335,7 +337,16 @@ describe('MentorsService', () => {
         technicalAreaIds: ['0424f370-00f0-43cf-9b8a-997af81840b9'],
       }),
     ).rejects.toBeInstanceOf(MentorNotFoundException);
+    await expect(service.findMyOrientationTypes(userId)).rejects.toBeInstanceOf(
+      MentorNotFoundException,
+    );
+    await expect(
+      service.updateMyOrientationTypes(userId, {
+        orientationTypeIds: ['0fa5e6de-63a4-430e-87fb-22f5eb700ecd'],
+      }),
+    ).rejects.toBeInstanceOf(MentorNotFoundException);
     expect(replaceMentorTechnicalAreas).not.toHaveBeenCalled();
+    expect(replaceMentorOrientationTypes).not.toHaveBeenCalled();
   });
 
   it('rechaza el cambio si alguna area tecnica no existe', async () => {
@@ -353,6 +364,82 @@ describe('MentorsService', () => {
       }),
     ).rejects.toBeInstanceOf(InvalidTechnicalAreasException);
     expect(replaceMentorTechnicalAreas).not.toHaveBeenCalled();
+  });
+
+  it('devuelve los tipos de orientacion del mentor autenticado activo', async () => {
+    const orientationType = {
+      id: 'orientation-1',
+      name: 'Orientación técnica',
+      description: 'Decisiones técnicas',
+    };
+    const findActiveMentorParticipation = vi
+      .fn()
+      .mockResolvedValue({ id: userId });
+    const findMentorOrientationTypes = vi
+      .fn()
+      .mockResolvedValue([{ orientationType }]);
+    const repository = {
+      findActiveMentorParticipation,
+      findMentorOrientationTypes,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.findMyOrientationTypes(userId);
+
+    expect(findActiveMentorParticipation).toHaveBeenCalledWith(
+      userId,
+      expect.any(Date),
+    );
+    expect(findMentorOrientationTypes).toHaveBeenCalledWith(userId);
+    expect(result).toEqual([orientationType]);
+  });
+
+  it('reemplaza los tipos de orientacion con UUID activos', async () => {
+    const orientationTypeIds = [
+      '0424f370-00f0-43cf-9b8a-997af81840b9',
+      '0fa5e6de-63a4-430e-87fb-22f5eb700ecd',
+    ];
+    const findActiveMentorParticipation = vi
+      .fn()
+      .mockResolvedValue({ id: userId });
+    const findActiveOrientationTypes = vi
+      .fn()
+      .mockResolvedValue(orientationTypeIds.map((id) => ({ id })));
+    const replaceMentorOrientationTypes = vi.fn().mockResolvedValue(undefined);
+    const repository = {
+      findActiveMentorParticipation,
+      findActiveOrientationTypes,
+      replaceMentorOrientationTypes,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    const result = await service.updateMyOrientationTypes(userId, {
+      orientationTypeIds,
+    });
+
+    expect(findActiveOrientationTypes).toHaveBeenCalledWith(orientationTypeIds);
+    expect(replaceMentorOrientationTypes).toHaveBeenCalledWith(
+      userId,
+      orientationTypeIds,
+    );
+    expect(result).toEqual({ orientationTypeIds });
+  });
+
+  it('rechaza el cambio si alguna orientacion no existe o esta inactiva', async () => {
+    const replaceMentorOrientationTypes = vi.fn();
+    const repository = {
+      findActiveMentorParticipation: vi.fn().mockResolvedValue({ id: userId }),
+      findActiveOrientationTypes: vi.fn().mockResolvedValue([]),
+      replaceMentorOrientationTypes,
+    } as unknown as MentorsRepository;
+    const service = new MentorsService(repository);
+
+    await expect(
+      service.updateMyOrientationTypes(userId, {
+        orientationTypeIds: ['0424f370-00f0-43cf-9b8a-997af81840b9'],
+      }),
+    ).rejects.toBeInstanceOf(InvalidOrientationTypesException);
+    expect(replaceMentorOrientationTypes).not.toHaveBeenCalled();
   });
 
   it('valida los catalogos y activa al usuario autenticado', async () => {

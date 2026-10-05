@@ -64,6 +64,35 @@ describe('MentorsController', () => {
     expect(result).toBe(updateResult);
   });
 
+  it('consulta los tipos de orientacion del usuario autenticado', async () => {
+    const orientationTypes = [
+      { id: 'orientation-1', name: 'Orientación técnica', description: null },
+    ];
+    const findMyOrientationTypes = vi.fn().mockResolvedValue(orientationTypes);
+    const service = { findMyOrientationTypes } as unknown as MentorsService;
+    const controller = new MentorsController(service);
+    const user = { id: 'user-1' };
+
+    const result = await controller.findMyOrientationTypes(user);
+
+    expect(findMyOrientationTypes).toHaveBeenCalledWith(user.id);
+    expect(result).toBe(orientationTypes);
+  });
+
+  it('actualiza los tipos de orientacion del usuario autenticado', async () => {
+    const body = { orientationTypeIds: ['orientation-1'] };
+    const updateResult = { orientationTypeIds: body.orientationTypeIds };
+    const updateMyOrientationTypes = vi.fn().mockResolvedValue(updateResult);
+    const service = { updateMyOrientationTypes } as unknown as MentorsService;
+    const controller = new MentorsController(service);
+    const user = { id: 'user-1' };
+
+    const result = await controller.updateMyOrientationTypes(user, body);
+
+    expect(updateMyOrientationTypes).toHaveBeenCalledWith(user.id, body);
+    expect(result).toBe(updateResult);
+  });
+
   it('delega la activacion con el id del usuario autenticado', async () => {
     const activationResult = { id: 'user-1' };
     const activate = vi.fn().mockResolvedValue(activationResult);
