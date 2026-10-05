@@ -1,4 +1,5 @@
 import type { Career } from "../constants/careers.constants";
+import type { DocumentType } from "../constants/document-types.constants";
 import type { IdCardIssuedIn } from "../constants/id-card-issued-in.constants";
 
 // Valores del formulario del paso 1: todo llega como texto desde los controles
@@ -17,7 +18,8 @@ export interface PersonalDataValues {
 
 export type PersonalDataFieldName = keyof PersonalDataValues;
 
-export type FieldErrors = Partial<Record<PersonalDataFieldName, string>>;
+// documentType lo informa el 400 de Zod al subir el documento
+export type FieldErrors = Partial<Record<PersonalDataFieldName | "documentType", string>>;
 
 // Cuerpo que acepta el backend (POST y PATCH)
 export interface AccessRequestPayload {
@@ -35,6 +37,13 @@ export interface AccessRequestPayload {
 
 export interface CreateAccessRequestResponse {
   id: string;
+}
+
+// Respuesta del POST del documento; documentFileId nunca es nulo al subir
+export interface UploadDocumentResponse {
+  id: string;
+  documentFileId: string;
+  documentType: DocumentType;
 }
 
 export type ApiResult<T> =

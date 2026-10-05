@@ -4,7 +4,10 @@ import type {
   ApiResult,
   CreateAccessRequestResponse,
   FieldErrors,
+  UploadDocumentResponse,
 } from "../types/access-request.types";
+import type { DocumentType } from "../constants/document-types.constants";
+import { FILE_TOO_LARGE_MESSAGE } from "../utils/validate-document-file";
 
 const NETWORK_ERROR_MESSAGE = "No se pudo conectar con el servidor. Inténtalo de nuevo.";
 const GENERIC_ERROR_MESSAGE = "No se pudo completar la solicitud. Inténtalo de nuevo.";
@@ -21,6 +24,7 @@ const KNOWN_FIELDS = [
   "birthDate",
   "graduationYear",
   "career",
+  "documentType",
 ] as const;
 
 // Palabras con las que el backend nombra los campos repetidos en el 409
@@ -76,6 +80,8 @@ function fromDomainError(status: number, detail: string): ApiResult<never> {
 
 function parseError(status: number, body: unknown): ApiResult<never> {
   if (status === 404) return failure(404, NOT_FOUND_MESSAGE);
+  // Se usa el texto del issue y no el del servidor; el 413 puede venir sin cuerpo JSON (por ejemplo de un proxy)
+  if (status === 413) return failure(413, FILE_TOO_LARGE_MESSAGE);
   if (!isRecord(body)) return failure(0, NETWORK_ERROR_MESSAGE);
   if (Array.isArray(body.message)) return fromZodIssues(body.message);
   if (typeof body.detail === "string") return fromDomainError(status, body.detail);
@@ -83,10 +89,16 @@ function parseError(status: number, body: unknown): ApiResult<never> {
   return failure(status, GENERIC_ERROR_MESSAGE);
 }
 
+interface SendOptions {
+  onUploadProgress?: (event: { loaded: number; total?: number }) => void;
+}
+
+// FormData: axios arma el Content-Type multipart con su boundary; no se fuerza ninguna cabecera
 async function send<T>(
   method: "post" | "patch" | "delete",
   url: string,
-  payload?: AccessRequestPayload,
+  payload?: AccessRequestPayload | FormData,
+  options: SendOptions = {},
 ): Promise<ApiResult<T>> {
   try {
     // Endpoints públicos: sin token. validateStatus evita que axios lance en errores HTTP
@@ -94,6 +106,7 @@ async function send<T>(
       method,
       url,
       data: payload,
+      ...(options.onUploadProgress && { onUploadProgress: options.onUploadProgress }),
       validateStatus: () => true,
     });
     if (response.status >= 200 && response.status < 300) {
@@ -115,6 +128,31 @@ async function createAccessRequest(payload: AccessRequestPayload): Promise<ApiRe
   return { ok: true, data: { id } };
 }
 
+// Un 2xx sin documentFileId de texto no sirve para mostrar el documento: se trata como respuesta inválida
+async function uploadDocument(
+  id: string,
+  file: File,
+  documentType: DocumentType,
+  onProgress?: (percent: number) => void,
+): Promise<ApiResult<UploadDocumentResponse>> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("documentType", documentType);
+
+  const result = await send<Record<string, unknown>>("post", `/access-requests/${id}/document`, form, {
+    onUploadProgress: (event) => {
+      if (!onProgress || !event.total) return;
+      onProgress(Math.min(100, Math.max(0, Math.round((event.loaded / event.total) * 100))));
+    },
+  });
+  if (!result.ok) return result;
+  const { documentFileId } = result.data;
+  if (typeof documentFileId !== "string" || documentFileId.trim().length === 0) {
+    return failure(0, GENERIC_ERROR_MESSAGE);
+  }
+  return { ok: true, data: { id, documentFileId, documentType } };
+}
+
 export const accessRequestService = {
   createAccessRequest,
   // La respuesta del PATCH no se usa para el id: el borrador ya lo tiene
@@ -123,4 +161,8 @@ export const accessRequestService = {
   // El backend responde 200 con { id }; el 404 llega con el mensaje fijo de "ya no existe"
   deleteAccessRequest: (id: string) =>
     send<Partial<CreateAccessRequestResponse>>("delete", `/access-requests/${id}`),
+  uploadDocument,
+  // El backend responde 200 con { id, documentFileId: null }, también si no había documento
+  removeDocument: (id: string) =>
+    send<{ id: string; documentFileId: null }>("delete", `/access-requests/${id}/document`),
 };

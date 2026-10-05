@@ -237,4 +237,188 @@ describe("accessRequestService", () => {
     reply(400, { statusCode: 400, message: "Validation failed (uuid is expected)", error: "Bad Request" });
     expect(await accessRequestService.updateAccessRequest("x", payload)).toMatchObject({ ok: false, status: 400, message: "Validation failed (uuid is expected)" });
   });
+
+  describe("uploadDocument", () => {
+    const file = new File(["%PDF-1.4"], "titulo.pdf", { type: "application/pdf" });
+    const ok = { id: "id-1", documentFileId: "file-1", documentType: "national_title" };
+
+    it("hace POST multipart con file y documentType, sin forzar Content-Type", async () => {
+      reply(201, ok);
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({ ok: true, data: ok });
+      const config = request.mock.calls[0][0];
+      expect(config).toMatchObject({ method: "post", url: "/access-requests/id-1/document" });
+      expect(config?.headers).toBeUndefined();
+      expect(config?.data).toBeInstanceOf(FormData);
+      const form = config?.data as FormData;
+      expect((form.get("file") as File).name).toBe("titulo.pdf");
+      expect(form.get("documentType")).toBe("national_title");
+    });
+
+    it("informa el progreso como porcentaje entero", async () => {
+      reply(201, ok);
+      const onProgress = vi.fn();
+
+      await accessRequestService.uploadDocument("id-1", file, "national_title", onProgress);
+
+      const report = request.mock.calls[0][0]?.onUploadProgress as (event: { loaded: number; total?: number }) => void;
+      report({ loaded: 0, total: 300 });
+      report({ loaded: 100, total: 300 });
+      report({ loaded: 300, total: 300 });
+      expect(onProgress.mock.calls.map(([value]) => value)).toEqual([0, 33, 100]);
+    });
+
+    it("no llama al progreso si no hay total", async () => {
+      reply(201, ok);
+      const onProgress = vi.fn();
+
+      await accessRequestService.uploadDocument("id-1", file, "national_title", onProgress);
+
+      const report = request.mock.calls[0][0]?.onUploadProgress as (event: { loaded: number; total?: number }) => void;
+      report({ loaded: 50 });
+      expect(onProgress).not.toHaveBeenCalled();
+    });
+
+    it("funciona sin callback de progreso", async () => {
+      reply(201, ok);
+
+      await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      const report = request.mock.calls[0][0]?.onUploadProgress as (event: { loaded: number; total?: number }) => void;
+      expect(() => report({ loaded: 1, total: 2 })).not.toThrow();
+    });
+
+    it("devuelve el detail del 400 de dominio", async () => {
+      const detail = "Solo se permiten archivos JPG, PNG o PDF";
+      reply(400, { statusCode: 400, data: null, detail, ok: false });
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({ ok: false, status: 400, fieldErrors: {}, message: detail });
+    });
+
+    it("normaliza el 400 de Zod a fieldErrors.documentType", async () => {
+      reply(400, {
+        message: [{ code: "invalid_value", path: ["documentType"], message: "El tipo de documento no es válido" }],
+        error: "Bad Request",
+        statusCode: 400,
+      });
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({
+        ok: false,
+        status: 400,
+        fieldErrors: { documentType: "El tipo de documento no es válido" },
+        message: "Revisa los campos marcados",
+      });
+    });
+
+    it("el 413 usa el texto del issue y no el del servidor", async () => {
+      reply(413, { statusCode: 413, data: null, detail: "El archivo no puede superar los 10 MB", ok: false });
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({ ok: false, status: 413, fieldErrors: {}, message: "El archivo supera el máximo de 10 MB." });
+    });
+
+    it("el 413 sin cuerpo JSON también usa el texto del issue", async () => {
+      reply(413, "<html>Request Entity Too Large</html>");
+
+      expect(await accessRequestService.uploadDocument("id-1", file, "national_title")).toMatchObject({
+        ok: false,
+        status: 413,
+        message: "El archivo supera el máximo de 10 MB.",
+      });
+    });
+
+    it("devuelve el 404 con el mensaje fijo", async () => {
+      reply(404, { statusCode: 404, data: null, detail: "La solicitud de acceso no existe", ok: false });
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({ ok: false, status: 404, fieldErrors: {}, message: "La solicitud ya no existe" });
+    });
+
+    it("devuelve el detail del 409", async () => {
+      const detail = "La solicitud ya fue enviada y no se puede modificar";
+      reply(409, { statusCode: 409, data: null, detail, ok: false });
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({ ok: false, status: 409, fieldErrors: {}, message: detail });
+    });
+
+    it("devuelve status 0 ante un fallo de red", async () => {
+      request.mockRejectedValue(new Error("Network Error"));
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({
+        ok: false,
+        status: 0,
+        fieldErrors: {},
+        message: "No se pudo conectar con el servidor. Inténtalo de nuevo.",
+      });
+    });
+
+    it.each([
+      ["sin documentFileId", { id: "id-1" }],
+      ["con documentFileId nulo", { id: "id-1", documentFileId: null }],
+      ["con documentFileId numérico", { id: "id-1", documentFileId: 7 }],
+      ["con documentFileId vacío", { id: "id-1", documentFileId: "  " }],
+    ])("un 201 %s devuelve el error con status 0", async (_name, body) => {
+      reply(201, body);
+
+      const result = await accessRequestService.uploadDocument("id-1", file, "national_title");
+
+      expect(result).toEqual({
+        ok: false,
+        status: 0,
+        fieldErrors: {},
+        message: "No se pudo completar la solicitud. Inténtalo de nuevo.",
+      });
+    });
+  });
+
+  describe("removeDocument", () => {
+    it("hace DELETE al documento y devuelve ok", async () => {
+      reply(200, { id: "id-1", documentFileId: null });
+
+      const result = await accessRequestService.removeDocument("id-1");
+
+      expect(result).toEqual({ ok: true, data: { id: "id-1", documentFileId: null } });
+      const config = request.mock.calls[0][0];
+      expect(config).toMatchObject({ method: "delete", url: "/access-requests/id-1/document" });
+      expect(config?.data).toBeUndefined();
+      expect(config?.headers).toBeUndefined();
+      expect(config?.onUploadProgress).toBeUndefined();
+    });
+
+    it("devuelve el 404 con el mensaje fijo", async () => {
+      reply(404, { statusCode: 404, data: null, detail: "La solicitud de acceso no existe", ok: false });
+
+      expect(await accessRequestService.removeDocument("id-1")).toEqual({
+        ok: false,
+        status: 404,
+        fieldErrors: {},
+        message: "La solicitud ya no existe",
+      });
+    });
+
+    it("devuelve el detail del 409", async () => {
+      const detail = "La solicitud ya fue enviada y no se puede modificar";
+      reply(409, { statusCode: 409, data: null, detail, ok: false });
+
+      expect(await accessRequestService.removeDocument("id-1")).toEqual({ ok: false, status: 409, fieldErrors: {}, message: detail });
+    });
+
+    it("devuelve status 0 ante un fallo de red", async () => {
+      request.mockRejectedValue(new Error("Network Error"));
+
+      expect(await accessRequestService.removeDocument("id-1")).toMatchObject({ ok: false, status: 0 });
+    });
+  });
 });
