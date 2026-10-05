@@ -38,7 +38,7 @@ export class ProvisionalSessionGuard implements CanActivate {
         id: true,
         email: true,
         roles: {
-          where: { deletedAt: null, startAt: { lte: new Date() } },
+          where: { deletedAt: null, startAt: { lte: new Date() }, role: { name: payload.roleTag } },
           select: { role: { select: { name: true } } },
         },
       },
@@ -48,10 +48,14 @@ export class ProvisionalSessionGuard implements CanActivate {
       throw new UnauthorizedSessionException('Usuario no encontrado o inactivo');
     }
 
+    if (user.roles.length === 0) {
+      throw new UnauthorizedSessionException('El rol de la sesión ya no está vigente');
+    }
+
     const authenticated: AuthenticatedUser = {
       id: user.id,
       email: user.email,
-      roles: user.roles.map((userRole) => userRole.role.name),
+      roles: [payload.roleTag],
     };
     request.user = authenticated;
 
