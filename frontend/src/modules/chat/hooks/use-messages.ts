@@ -59,8 +59,6 @@ export function useMessages(conversationId: string | null) {
     enabled: Boolean(conversationId),
   });
 
-  // Las páginas se cargan desde las más recientes hacia las anteriores.
-  // Por eso invertimos las páginas para mostrarlas cronológicamente.
   const messages = query.data
     ? [...query.data.pages]
         .reverse()
