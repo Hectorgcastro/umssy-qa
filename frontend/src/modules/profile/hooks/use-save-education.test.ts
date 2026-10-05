@@ -65,7 +65,10 @@ describe("useSaveEducation", () => {
     const onSaved = vi.fn();
     const { result } = renderHook(() => useSaveEducation(onSaved));
 
-    await act(async () => { await result.current.save(PAYLOAD, editing ? RECORD.id : undefined); });
+    await act(async () => {
+      if (editing) await result.current.save(PAYLOAD, RECORD.id);
+      else await result.current.save(PAYLOAD);
+    });
 
     expect(onSaved).not.toHaveBeenCalled();
     expect(result.current.isSaving).toBe(false);
@@ -108,5 +111,16 @@ describe("useSaveEducation", () => {
 
     await act(async () => { await result.current.save(PAYLOAD); });
     expect(educationsService.createEducation).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves the view and reports a conflict without automatic retries", async () => {
+    vi.mocked(educationsService.updateEducation).mockRejectedValue({ response: { status: 409 } });
+    const onSaved = vi.fn();
+    const { result } = renderHook(() => useSaveEducation(onSaved));
+    await act(async () => { await result.current.save(PAYLOAD, RECORD.id); });
+    expect(result.current.feedback).toEqual({ type: "error", message: EDUCATION_FEEDBACK_MESSAGES.updateConflict });
+    expect(result.current.isSaving).toBe(false);
+    expect(onSaved).not.toHaveBeenCalled();
+    expect(educationsService.updateEducation).toHaveBeenCalledTimes(1);
   });
 });

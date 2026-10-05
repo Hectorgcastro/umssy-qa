@@ -105,6 +105,26 @@ describe("educationsService", () => {
       expect(apiClient.patch).toHaveBeenCalledWith(`/educations/${EDUCATION.id}`, PAYLOAD, HEADERS);
     });
 
+    it("sends a legacy edit without introducing a missing end date", async () => {
+      const payload = {
+        institution: PAYLOAD.institution,
+        degree: PAYLOAD.degree,
+        startDate: PAYLOAD.startDate,
+        description: "Updated description",
+      };
+      vi.mocked(apiClient.patch).mockResolvedValue({ data: { data: { ...EDUCATION, endDate: null } } });
+      await educationsService.updateEducation(EDUCATION.id, payload);
+      expect(apiClient.patch).toHaveBeenCalledWith(`/educations/${EDUCATION.id}`, payload, HEADERS);
+      expect(vi.mocked(apiClient.patch).mock.calls[0][1]).not.toHaveProperty("endDate");
+    });
+
+    it("propagates conflicts without substituting a success response", async () => {
+      const error = { response: { status: 409 } };
+      vi.mocked(apiClient.patch).mockRejectedValue(error);
+      await expect(educationsService.updateEducation(EDUCATION.id, PAYLOAD)).rejects.toBe(error);
+      expect(apiClient.patch).toHaveBeenCalledTimes(1);
+    });
+
     it("deletes an education record", async () => {
       vi.mocked(apiClient.delete).mockResolvedValue({});
 

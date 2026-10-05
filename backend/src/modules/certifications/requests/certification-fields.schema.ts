@@ -7,6 +7,8 @@ import {
   ISSUING_ORGANIZATION_MAX_LENGTH,
 } from '../constants/certification.constants.js';
 
+const BUSINESS_TIMEZONE = 'America/La_Paz';
+
 const requiredText = () =>
   z
     .string({ error: CERTIFICATION_VALIDATION_MESSAGES.required })
@@ -21,6 +23,12 @@ function isCalendarDate(value: string): boolean {
   return (
     !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
   );
+}
+
+function todayInBolivia(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: BUSINESS_TIMEZONE,
+  }).format(new Date());
 }
 
 export const certificationNameSchema = requiredText().max(
@@ -42,6 +50,6 @@ export const issueDateSchema = z
     abort: true,
   })
   .transform((value) => new Date(`${value}T00:00:00.000Z`))
-  .refine((date) => date.getTime() <= Date.now(), {
+  .refine((date) => date.toISOString().slice(0, 10) <= todayInBolivia(), {
     message: CERTIFICATION_VALIDATION_MESSAGES.futureDate,
   });

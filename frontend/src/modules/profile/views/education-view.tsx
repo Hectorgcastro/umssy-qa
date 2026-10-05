@@ -15,6 +15,7 @@ import type { EducationFormValues } from "../types/education-form-values.types";
 import type { EducationItem } from "../types/education-item.types";
 import { toEducationFormValues } from "../utils/to-education-form-values";
 import { toEducationPayload } from "../utils/to-education-payload";
+import { toEducationUpdatePayload } from "../utils/to-education-update-payload";
 
 export function EducationView() {
   const { educations, isLoading, error, reload } = useEducations();
@@ -71,7 +72,11 @@ export function EducationView() {
   const handleSubmit = async (values: EducationFormValues) => {
     if (isBusy) return;
     deleteMutation.clearFeedback();
-    await saveMutation.save(toEducationPayload(values), editingEducation?.id);
+    if (editingEducation) {
+      await saveMutation.save(toEducationUpdatePayload(values, editingEducation), editingEducation.id);
+    } else {
+      await saveMutation.save(toEducationPayload(values));
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -108,6 +113,7 @@ export function EducationView() {
           <EducationForm
             key={`${editingEducation?.id ?? "new"}-${formVersion}`}
             initialValues={editingEducation ? toEducationFormValues(editingEducation) : undefined}
+            allowMissingEndDate={editingEducation?.endDate === null}
             isPending={saveMutation.isSaving}
             feedback={saveMutation.feedback}
             onSubmit={handleSubmit}

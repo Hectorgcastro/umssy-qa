@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CertificationCard } from "../components/certification-card";
 import { CertificationDeleteDialog } from "../components/certification-delete-dialog";
@@ -32,6 +33,7 @@ export function CertificationsView() {
   const [formVersion, setFormVersion] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<Certification | null>(null);
   const [fileFeedback, setFileFeedback] = useState<Feedback | null>(null);
+  const [focusRequest, setFocusRequest] = useState(0);
 
   const createMutation = useCreateCertification();
   const updateMutation = useUpdateCertification();
@@ -66,6 +68,20 @@ export function CertificationsView() {
   const closeForm = () => {
     setEditing(null);
     setFormVersion((version) => version + 1);
+  };
+
+  useEffect(() => {
+    if (focusRequest > 0) {
+      document.getElementById("certification-name")?.focus();
+    }
+  }, [focusRequest]);
+
+  const openCreateForm = () => {
+    clearFeedback();
+    if (editing) {
+      closeForm();
+    }
+    setFocusRequest((request) => request + 1);
   };
 
   const handleSubmit = async (values: CreateCertificationDto) => {
@@ -127,6 +143,17 @@ export function CertificationsView() {
     setFileFeedback({ type: "error", message });
   };
 
+  const renderAddButton = (className: string) => (
+    <Button
+      type="button"
+      className={className}
+      disabled={isBusy}
+      onClick={openCreateForm}
+    >
+      + Agregar certificación
+    </Button>
+  );
+
   const renderList = () => {
     if (isLoading) {
       return <p className="py-3 text-[14px] text-text-secondary">Cargando certificaciones...</p>;
@@ -134,7 +161,12 @@ export function CertificationsView() {
 
     if (certifications.length === 0) {
       return error ? null : (
-        <p className="py-3 text-[14px] text-text-secondary">Aún no has agregado certificaciones.</p>
+        <div className="flex flex-col items-start gap-4 py-3">
+          <p className="text-[14px] text-text-secondary">Aún no has agregado certificaciones.</p>
+          {renderAddButton(
+            "h-11 bg-accent px-5 text-[14px] font-semibold text-white hover:bg-danger",
+          )}
+        </div>
       );
     }
 
@@ -165,10 +197,20 @@ export function CertificationsView() {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <SectionCard title="Tus certificaciones">
           <div className="flex flex-col gap-6">
-            <section aria-label="Certificaciones registradas" className="flex flex-col gap-1">
-              <p className="text-[12px] font-semibold tracking-wide text-text-secondary">
-                CERTIFICACIONES REGISTRADAS
-              </p>
+            <section
+              aria-label="Certificaciones registradas"
+              className="flex max-h-96 flex-col gap-1 overflow-y-auto"
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-surface py-2">
+                <p className="text-[12px] font-semibold tracking-wide text-text-secondary">
+                  CERTIFICACIONES REGISTRADAS
+                </p>
+                {certifications.length > 0
+                  ? renderAddButton(
+                      "h-9 border border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft",
+                    )
+                  : null}
+              </div>
               {renderList()}
             </section>
             <Separator />

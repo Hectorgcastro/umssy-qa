@@ -17,9 +17,9 @@ const userId = '11111111-1111-4111-8111-111111111111';
 const otherUserId = '22222222-2222-4222-8222-222222222222';
 const certificationId = '33333333-3333-4333-8333-333333333333';
 
-const pdfBytes = [0x25, 0x50, 0x44, 0x46, 0x2d];
-const pngBytes = [0x89, 0x50, 0x4e, 0x47];
-const jpgBytes = [0xff, 0xd8, 0xff, 0xe0];
+const pdfBytes = Array.from(Buffer.from("%PDF-1.4\n" + " ".repeat(50) + "\n%%EOF\n"));
+const pngBytes = Array.from(Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(50), Buffer.from([0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82])]));
+const jpgBytes = Array.from(Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(50), Buffer.from([0xff, 0xd9])]));
 
 const buildRecord = (
   overrides: Partial<CertificationRecord> = {},

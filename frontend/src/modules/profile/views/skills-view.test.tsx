@@ -55,4 +55,27 @@ describe("SkillsView", () => {
     expect(skillsService.saveMySkills).toHaveBeenCalledWith([PYTHON.id, SQL.id]);
     expect(await screen.findByText("Tus habilidades se guardaron correctamente.")).toBeInTheDocument();
   });
+
+  it("disables save button on load error and allows retry", async () => {
+    const user = userEvent.setup();
+    vi.mocked(skillsService.getMySkills).mockRejectedValueOnce(new Error("Network Error"));
+
+    render(<SkillsView />);
+
+    expect(
+      await screen.findByText("No se pudieron cargar tus habilidades. Intenta de nuevo más tarde."),
+    ).toBeInTheDocument();
+
+    const saveButton = screen.getByRole("button", { name: "Guardar habilidades" });
+    expect(saveButton).toBeDisabled();
+
+    const retryButton = screen.getByRole("button", { name: "Reintentar" });
+    expect(retryButton).toBeInTheDocument();
+
+    vi.mocked(skillsService.getMySkills).mockResolvedValue([PYTHON]);
+    await user.click(retryButton);
+
+    expect(await screen.findByRole("button", { name: "Quitar Python" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Guardar habilidades" })).toBeEnabled();
+  });
 });

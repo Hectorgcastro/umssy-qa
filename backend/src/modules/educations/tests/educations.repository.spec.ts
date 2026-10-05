@@ -27,6 +27,7 @@ const expectedSelect = {
   createdAt: true,
   updatedAt: true,
 };
+const expectedPeriod = { startDate: record.startDate, endDate: record.endDate };
 
 describe('EducationsRepository', () => {
   const education = {
@@ -116,14 +117,14 @@ describe('EducationsRepository', () => {
     const data = { degree: 'Updated degree', endDate: new Date('2024-01-01') };
     education.updateManyAndReturn.mockResolvedValue([{ ...record, ...data }]);
 
-    await expect(repository.update(educationId, userId, data)).resolves.toEqual(
+    await expect(repository.update(educationId, userId, data, expectedPeriod)).resolves.toEqual(
       {
         ...record,
         ...data,
       },
     );
     expect(education.updateManyAndReturn).toHaveBeenCalledWith({
-      where: { id: educationId, userId },
+      where: { id: educationId, userId, ...expectedPeriod },
       data,
       select: expectedSelect,
     });
@@ -132,7 +133,7 @@ describe('EducationsRepository', () => {
   it('returns null when no owned record can be updated', async () => {
     education.updateManyAndReturn.mockResolvedValue([]);
     await expect(
-      repository.update(educationId, userId, { degree: 'Updated' }),
+      repository.update(educationId, userId, { degree: 'Updated' }, expectedPeriod),
     ).resolves.toBeNull();
   });
 
@@ -149,4 +150,15 @@ describe('EducationsRepository', () => {
       });
     },
   );
+
+  it('matches non-null dates in the atomic update filter', async () => {
+    const period = { startDate: record.startDate, endDate: new Date('2024-01-01') };
+    education.updateManyAndReturn.mockResolvedValue([]);
+    await expect(repository.update(educationId, userId, { degree: 'Updated' }, period)).resolves.toBeNull();
+    expect(education.updateManyAndReturn).toHaveBeenCalledWith({
+      where: { id: educationId, userId, ...period },
+      data: { degree: 'Updated' },
+      select: expectedSelect,
+    });
+  });
 });

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InvalidWorkExperienceDateRangeException } from '../exceptions/invalid-work-experience-date-range.exception.js';
 import { WorkExperienceEndDateRequiredException } from '../exceptions/work-experience-end-date-required.exception.js';
 import { WorkExperienceNotFoundException } from '../exceptions/work-experience-not-found.exception.js';
+import { WorkExperienceUpdateConflictException } from '../exceptions/work-experience-update-conflict.exception.js';
 import { WorkExperienceMapper } from '../mappers/work-experience.mapper.js';
 import { WorkExperienceRepository } from '../repositories/work-experience.repository.js';
 import type { CreateWorkExperienceRequest } from '../requests/create-work-experience.request.js';
@@ -51,12 +52,21 @@ export class WorkExperienceService {
     const endDate = isCurrent ? null : requestedEndDate;
     this.ensureValidPeriod(startDate, endDate, isCurrent);
 
-    const updated = await this.repository.update(id, userId, {
-      ...request,
-      ...(isCurrent ? { endDate: null } : {}),
-    });
+    const updated = await this.repository.update(
+      id,
+      userId,
+      { ...request, ...(isCurrent ? { endDate: null } : {}) },
+      {
+        startDate: current.startDate,
+        endDate: current.endDate,
+        isCurrent: current.isCurrent,
+      },
+    );
     if (!updated) {
-      throw new WorkExperienceNotFoundException();
+      if (!(await this.repository.findByIdAndUserId(id, userId))) {
+        throw new WorkExperienceNotFoundException();
+      }
+      throw new WorkExperienceUpdateConflictException();
     }
     return this.mapper.toResponse(updated);
   }

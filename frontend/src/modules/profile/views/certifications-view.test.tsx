@@ -110,9 +110,52 @@ describe("CertificationsView", () => {
     await renderView();
 
     expect(screen.getByText("Aún no has agregado certificaciones.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "+ Agregar certificación" })).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: "Certificaciones" })).not.toBeInTheDocument();
     expect(screen.getByRole("form", { name: "Agregar certificación" })).toBeInTheDocument();
     expect(screen.getByRole("form", { name: "Vincular documento" })).toBeInTheDocument();
+  });
+
+  it("does not show the empty state when certifications exist", async () => {
+    await renderView();
+
+    expect(screen.queryByText("Aún no has agregado certificaciones.")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "+ Agregar certificación" })).toHaveLength(1);
+  });
+
+  it("keeps the header sticky and the list in a scrollable container", async () => {
+    await renderView();
+
+    const region = screen.getByRole("region", { name: "Certificaciones registradas" });
+    const header = screen.getByText("CERTIFICACIONES REGISTRADAS").parentElement;
+
+    expect(region).toHaveClass("overflow-y-auto");
+    expect(region).toHaveClass("max-h-96");
+    expect(header).toHaveClass("sticky", "top-0", "z-10");
+    expect(region).toContainElement(header);
+    expect(region).toContainElement(screen.getByRole("list", { name: "Certificaciones" }));
+  });
+
+  it("focuses an empty form when adding a certification from the header", async () => {
+    const user = await renderView();
+
+    await user.click(screen.getByRole("button", { name: "Editar Scrum Master" }));
+    expect(screen.getByLabelText(/Nombre de la certificación/)).toHaveValue("Scrum Master");
+
+    await user.click(screen.getByRole("button", { name: "+ Agregar certificación" }));
+
+    const nameInput = screen.getByLabelText(/Nombre de la certificación/);
+    expect(nameInput).toHaveValue("");
+    expect(nameInput).toHaveFocus();
+  });
+
+  it("keeps typed values when adding from the header without editing", async () => {
+    const user = await renderView();
+
+    await user.type(screen.getByLabelText(/Nombre de la certificación/), "CCNA");
+    await user.click(screen.getByRole("button", { name: "+ Agregar certificación" }));
+
+    expect(screen.getByLabelText(/Nombre de la certificación/)).toHaveValue("CCNA");
   });
 
   it("shows the load error instead of the empty state and keeps the form available", async () => {

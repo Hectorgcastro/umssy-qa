@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { isRecordNotFoundError } from '../../../common/utils/map-record-not-found.js';
+import type { WorkExperiencePeriodSnapshot } from '../types/work-experience-period-snapshot.type.js';
 import type { WorkExperienceRecord } from '../types/work-experience-record.type.js';
 import type { WorkExperienceWriteData } from '../types/work-experience-write-data.type.js';
 
@@ -58,11 +59,18 @@ export class WorkExperienceRepository {
     id: string,
     userId: string,
     data: Partial<WorkExperienceWriteData>,
+    expectedPeriod: WorkExperiencePeriodSnapshot,
   ): Promise<WorkExperienceRecord | null> {
     const { companyName, ...fields } = data;
     try {
       return await this.prisma.workExperience.update({
-        where: { id, userId },
+        where: {
+          id,
+          userId,
+          startDate: expectedPeriod.startDate,
+          endDate: expectedPeriod.endDate,
+          isCurrent: expectedPeriod.isCurrent,
+        },
         data: {
           ...fields,
           ...(companyName === undefined

@@ -4,6 +4,7 @@ import { ProfilePageLayout } from "../components/profile-page-layout";
 import { SectionCard } from "../components/section-card";
 import { SkillsSelector } from "../components/skills-selector";
 import { TrajectorySteps } from "../components/trajectory-steps";
+import { SKILLS_UI_TEXTS } from "../constants/skills.constants";
 import { useSkills } from "../hooks/use-skills";
 
 export function SkillsView() {
@@ -12,24 +13,26 @@ export function SkillsView() {
     selectedSkills,
     isLoading,
     isSaving,
+    hasLoadError,
     feedback,
     addSkill,
     removeSkill,
     createCustomSkill,
     saveSkills,
+    reload,
   } = useSkills();
 
   return (
     <ProfilePageLayout
       activeTab="trajectory"
-      title="Trayectoria"
-      description="Selecciona tecnologías y herramientas que dominas o agrega las tuyas."
+      title={SKILLS_UI_TEXTS.pageTitle}
+      description={SKILLS_UI_TEXTS.pageDescription}
     >
       <TrajectorySteps activeStep="skills" />
-      <SectionCard title="Habilidades técnicas">
+      <SectionCard title={SKILLS_UI_TEXTS.sectionTitle}>
         {isLoading ? (
           <p role="status" className="text-[13px] text-text-secondary">
-            Cargando habilidades...
+            {SKILLS_UI_TEXTS.loadingText}
           </p>
         ) : (
           <SkillsSelector
@@ -40,6 +43,8 @@ export function SkillsView() {
             onCreateCustomSkill={createCustomSkill}
             onSave={() => void saveSkills()}
             isSaving={isSaving}
+            hasLoadError={hasLoadError}
+            onRetry={() => void reload()}
             feedback={feedback}
           />
         )}

@@ -42,6 +42,11 @@ export function CertificationDocumentForm({
     setFileError(undefined);
   };
 
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setFileError(undefined);
+  };
+
   const handleCertificationChange = (value: string | null) => {
     setCertificationId(value ?? "");
     setCertificationError(undefined);
@@ -116,7 +121,9 @@ export function CertificationDocumentForm({
         selectedFile={selectedFile}
         error={fileError}
         disabled={isBusy}
+        isUploading={isBusy}
         onSelectFile={handleSelectFile}
+        onClearFile={handleClearFile}
       />
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <p className="text-[13px] text-text-secondary">

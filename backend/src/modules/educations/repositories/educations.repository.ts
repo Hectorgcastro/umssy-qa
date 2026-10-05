@@ -1,20 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { EDUCATION_SELECT } from '../constants/education-select.constants.js';
 import type { CreateEducationRequest } from '../requests/create-education.request.js';
 import type { UpdateEducationRequest } from '../requests/update-education.request.js';
 import type { EducationRecord } from '../types/education-record.type.js';
-
-const educationSelect = {
-  id: true,
-  userId: true,
-  institution: true,
-  degree: true,
-  startDate: true,
-  endDate: true,
-  description: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
+import type { EducationPeriodSnapshot } from '../types/education-period-snapshot.type.js';
 
 @Injectable()
 export class EducationsRepository {
@@ -24,7 +14,7 @@ export class EducationsRepository {
     return this.prisma.education.findMany({
       where: { userId },
       orderBy: [{ startDate: 'desc' }, { id: 'desc' }],
-      select: educationSelect,
+      select: EDUCATION_SELECT,
     });
   }
 
@@ -34,7 +24,7 @@ export class EducationsRepository {
   ): Promise<EducationRecord | null> {
     return this.prisma.education.findFirst({
       where: { id, userId },
-      select: educationSelect,
+      select: EDUCATION_SELECT,
     });
   }
 
@@ -44,7 +34,7 @@ export class EducationsRepository {
   ): Promise<EducationRecord> {
     return this.prisma.education.create({
       data: { ...data, userId },
-      select: educationSelect,
+      select: EDUCATION_SELECT,
     });
   }
 
@@ -52,11 +42,18 @@ export class EducationsRepository {
     id: string,
     userId: string,
     data: UpdateEducationRequest,
+    expectedPeriod: EducationPeriodSnapshot,
   ): Promise<EducationRecord | null> {
+    // Match the dates used by the service validation in the same atomic write.
     const records = await this.prisma.education.updateManyAndReturn({
-      where: { id, userId },
+      where: {
+        id,
+        userId,
+        startDate: expectedPeriod.startDate,
+        endDate: expectedPeriod.endDate,
+      },
       data,
-      select: educationSelect,
+      select: EDUCATION_SELECT,
     });
     return records[0] ?? null;
   }

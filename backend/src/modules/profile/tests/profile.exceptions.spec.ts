@@ -2,6 +2,7 @@ import type { ArgumentsHost } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { DomainException } from '../../../common/exceptions/domain.exception.js';
 import { DomainExceptionFilter } from '../../../common/filters/domain-exception.filter.js';
+import { CorruptedFileException } from '../exceptions/corrupted-file.exception.js';
 import { CvNotFoundException } from '../exceptions/cv-not-found.exception.js';
 import { EmptyFileException } from '../exceptions/empty-file.exception.js';
 import { FileTooLargeException } from '../exceptions/file-too-large.exception.js';
@@ -13,6 +14,11 @@ describe('profile file exceptions', () => {
     [new EmptyFileException(), 400, 'File is required and cannot be empty'],
     [new FileTooLargeException(), 413, 'File exceeds the maximum allowed size'],
     [new InvalidFileTypeException(), 415, 'File type is not allowed'],
+    [
+      new CorruptedFileException(),
+      422,
+      'File content is incomplete or corrupted',
+    ],
     [new CvNotFoundException(), 404, 'CV not found'],
     [new ProfileNotFoundException(), 404, 'User profile not found'],
   ])(

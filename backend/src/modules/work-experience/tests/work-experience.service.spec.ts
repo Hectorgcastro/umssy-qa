@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InvalidWorkExperienceDateRangeException } from '../exceptions/invalid-work-experience-date-range.exception.js';
 import { WorkExperienceEndDateRequiredException } from '../exceptions/work-experience-end-date-required.exception.js';
 import { WorkExperienceNotFoundException } from '../exceptions/work-experience-not-found.exception.js';
+import { WorkExperienceUpdateConflictException } from '../exceptions/work-experience-update-conflict.exception.js';
 import { WorkExperienceMapper } from '../mappers/work-experience.mapper.js';
 import type { WorkExperienceRepository } from '../repositories/work-experience.repository.js';
 import { WorkExperienceService } from '../services/work-experience.service.js';
@@ -125,10 +126,16 @@ describe('WorkExperienceService', () => {
     });
 
     expect(response.position).toBe('Lead');
-    expect(repository.update).toHaveBeenCalledWith(workExperienceId, userId, {
-      position: 'Lead',
-      endDate: null,
-    });
+    expect(repository.update).toHaveBeenCalledWith(
+      workExperienceId,
+      userId,
+      { position: 'Lead', endDate: null },
+      {
+        startDate: record.startDate,
+        endDate: record.endDate,
+        isCurrent: record.isCurrent,
+      },
+    );
   });
 
   it('fails with not found when the record to update is not from the user', async () => {
@@ -145,12 +152,23 @@ describe('WorkExperienceService', () => {
   });
 
   it('fails with not found when the record disappears before updating', async () => {
-    repository.findByIdAndUserId.mockResolvedValue(record);
+    repository.findByIdAndUserId
+      .mockResolvedValueOnce(record)
+      .mockResolvedValueOnce(null);
     repository.update.mockResolvedValue(null);
 
     await expect(
       service.update(userId, workExperienceId, { position: 'Lead' }),
     ).rejects.toBeInstanceOf(WorkExperienceNotFoundException);
+  });
+
+  it('fails with a conflict when the period changed after it was validated', async () => {
+    repository.findByIdAndUserId.mockResolvedValue(record);
+    repository.update.mockResolvedValue(null);
+
+    await expect(
+      service.update(userId, workExperienceId, { position: 'Lead' }),
+    ).rejects.toBeInstanceOf(WorkExperienceUpdateConflictException);
   });
 
   it('clears the end date when a job becomes current', async () => {
@@ -163,10 +181,12 @@ describe('WorkExperienceService', () => {
 
     await service.update(userId, workExperienceId, { isCurrent: true });
 
-    expect(repository.update).toHaveBeenCalledWith(workExperienceId, userId, {
-      isCurrent: true,
-      endDate: null,
-    });
+    expect(repository.update).toHaveBeenCalledWith(
+      workExperienceId,
+      userId,
+      { isCurrent: true, endDate: null },
+      expect.objectContaining({ isCurrent: false }),
+    );
   });
 
   it('validates the period with the saved values when only one date changes', async () => {

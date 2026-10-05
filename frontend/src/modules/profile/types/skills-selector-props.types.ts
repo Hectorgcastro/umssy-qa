@@ -9,5 +9,7 @@ export interface SkillsSelectorProps {
   onCreateCustomSkill: (name: string) => void;
   onSave: () => void;
   isSaving?: boolean;
+  hasLoadError?: boolean;
+  onRetry?: () => void;
   feedback?: Feedback | null;
 }

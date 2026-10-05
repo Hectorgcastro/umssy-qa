@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-messages.config";
+import { SKILLS_VALIDATION_MESSAGES } from "../constants/skills.constants";
 import type { SkillItem } from "../types/skill-item.types";
 import type { SkillsSelectorProps } from "../types/skills-selector-props.types";
 import { SkillsSelector } from "./skills-selector";
@@ -161,6 +161,41 @@ describe("SkillsSelector", () => {
     const saveButton = screen.getByRole("button", { name: "Guardando..." });
     expect(saveButton).toBeDisabled();
     expect(saveButton.querySelector("svg.lucide-loader-circle")).toBeInTheDocument();
+  });
+
+  it("disables add, remove, and custom creation actions while isSaving is true", () => {
+    renderSelector({
+      selectedSkills: [MOCK_CATALOG[0]],
+      isSaving: true,
+    });
+
+    expect(screen.getByRole("button", { name: "Quitar React" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Añadir" })).toBeDisabled();
+    expect(screen.getByLabelText("Agregar habilidad propia")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Agregar" })).toBeDisabled();
+  });
+
+  it("disables actions and enables retry button when hasLoadError is true", async () => {
+    const user = userEvent.setup();
+    const onRetry = vi.fn();
+
+    renderSelector({
+      hasLoadError: true,
+      onRetry,
+      feedback: { type: "error", message: "Error al cargar" },
+    });
+
+    expect(screen.getByRole("button", { name: "Guardar habilidades" })).toBeDisabled();
+    screen.getAllByRole("button", { name: "Añadir" }).forEach((button) => {
+      expect(button).toBeDisabled();
+    });
+    expect(screen.getByLabelText("Agregar habilidad propia")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Agregar" })).toBeDisabled();
+
+    const retryButton = screen.getByRole("button", { name: "Reintentar" });
+    expect(retryButton).toBeInTheDocument();
+    await user.click(retryButton);
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
   it("shows the feedback message after saving", () => {

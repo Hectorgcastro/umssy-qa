@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EducationNotFoundException } from '../exceptions/education-not-found.exception.js';
+import { EducationUpdateConflictException } from '../exceptions/education-update-conflict.exception.js';
 import { InvalidEducationDateRangeException } from '../exceptions/invalid-education-date-range.exception.js';
 import { EducationMapper } from '../mappers/education.mapper.js';
 import type { EducationsRepository } from '../repositories/educations.repository.js';
@@ -92,6 +93,9 @@ describe('EducationsService', () => {
     );
     expect(repository.update).toHaveBeenCalledWith(educationId, userId, {
       degree: 'Updated',
+    }, {
+      startDate: record.startDate,
+      endDate: record.endDate,
     });
     expect(response.degree).toBe('Updated');
   });
@@ -142,7 +146,7 @@ describe('EducationsService', () => {
   });
 
   it('returns not found when the record disappears before the update', async () => {
-    repository.findByIdAndUserId.mockResolvedValue(record);
+    repository.findByIdAndUserId.mockResolvedValueOnce(record).mockResolvedValueOnce(null);
     repository.update.mockResolvedValue(null);
     await expect(
       service.update(userId, educationId, { degree: 'Updated' }),
@@ -165,5 +169,47 @@ describe('EducationsService', () => {
   it('uses standard domain error status codes', () => {
     expect(new EducationNotFoundException().statusCode).toBe(404);
     expect(new InvalidEducationDateRangeException().statusCode).toBe(400);
+    expect(new EducationUpdateConflictException().statusCode).toBe(409);
+  });
+
+  it('preserves a missing end date when updating other fields', async () => {
+    const legacy = { ...record, endDate: null };
+    repository.findByIdAndUserId.mockResolvedValue(legacy);
+    repository.update.mockResolvedValue({ ...legacy, description: 'Updated' });
+    await expect(service.update(userId, educationId, { description: 'Updated' }))
+      .resolves.toMatchObject({ endDate: null, description: 'Updated' });
+    expect(repository.update).toHaveBeenCalledWith(educationId, userId,
+      { description: 'Updated' }, { startDate: record.startDate, endDate: null });
+  });
+
+  it('returns a conflict instead of retrying a stale date update', async () => {
+    repository.findByIdAndUserId.mockResolvedValueOnce(record).mockResolvedValueOnce({
+      ...record, endDate: new Date('2022-01-01'),
+    });
+    repository.update.mockResolvedValue(null);
+    await expect(service.update(userId, educationId, { startDate: new Date('2023-01-01') }))
+      .rejects.toBeInstanceOf(EducationUpdateConflictException);
+    expect(repository.update).toHaveBeenCalledTimes(1);
+    expect(repository.findByIdAndUserId).toHaveBeenLastCalledWith(educationId, userId);
+  });
+
+  it('cannot merge two individually valid concurrent date edits into an invalid period', async () => {
+    let stored = { ...record };
+    repository.findByIdAndUserId.mockImplementation(async () => ({ ...stored }));
+    repository.update.mockImplementation(async (_id, _userId, changes, expectedPeriod) => {
+      if (stored.startDate.getTime() !== expectedPeriod.startDate.getTime()
+        || stored.endDate?.getTime() !== expectedPeriod.endDate?.getTime()) return null;
+      stored = { ...stored, ...changes };
+      return { ...stored };
+    });
+    const results = await Promise.allSettled([
+      service.update(userId, educationId, { startDate: new Date('2023-01-01') }),
+      service.update(userId, educationId, { endDate: new Date('2022-01-01') }),
+    ]);
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.find((result) => result.status === 'rejected')).toMatchObject({
+      reason: expect.any(EducationUpdateConflictException),
+    });
+    expect(stored.endDate >= stored.startDate).toBe(true);
   });
 });
