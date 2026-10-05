@@ -13,7 +13,13 @@ export function BlockSelection({ blocks, weekRange, fetchFreeBlocks }: BlockSele
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
-      <WeekGrid blocks={selectableBlocks} weekRange={weekRange} variant="selectable" onSelectBlock={selectBlock} />
+      <WeekGrid
+        blocks={selectableBlocks}
+        weekRange={weekRange}
+        variant="selectable"
+        selectedBlockId={selectedBlock?.id}
+        onSelectBlock={selectBlock}
+      />
       <BlockSelectionPanel
         selectedBlock={selectedBlock}
         unavailableBlock={unavailableBlock}

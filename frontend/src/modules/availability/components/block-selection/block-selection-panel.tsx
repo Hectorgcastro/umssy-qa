@@ -3,12 +3,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BOLIVIA_TIME_LABEL } from "@/shared/constants/date-time.constants";
 import { formatBlockRange } from "@/shared/utils/date-time";
 import { BLOCK_SELECTION_TEXT } from "../../constants/block-selection.constants";
 import type { BlockSelectionPanelProps } from "../../types/block-selection-panel-props.types";
 import { formatBlockDate, getBlockDurationMinutes } from "../../utils/block-selection.utils";
 
-export function BlockSelectionPanel({ selectedBlock, unavailableBlock, isChecking, error }: BlockSelectionPanelProps) {
+export function BlockSelectionPanel({
+  selectedBlock,
+  unavailableBlock,
+  isChecking,
+  error,
+}: BlockSelectionPanelProps) {
   return (
     <Card aria-label={BLOCK_SELECTION_TEXT.title}>
       <CardHeader>
@@ -21,7 +27,8 @@ export function BlockSelectionPanel({ selectedBlock, unavailableBlock, isCheckin
             <CircleAlertIcon aria-hidden="true" />
             <AlertTitle>{BLOCK_SELECTION_TEXT.unavailableTitle}</AlertTitle>
             <AlertDescription>
-              {formatBlockDate(unavailableBlock.startAt)}, {formatBlockRange(unavailableBlock.startAt, unavailableBlock.endAt)}.{" "}
+              {formatBlockDate(unavailableBlock.startAt)},{" "}
+              {formatBlockRange(unavailableBlock.startAt, unavailableBlock.endAt)}.{" "}
               {BLOCK_SELECTION_TEXT.unavailableDescription}
             </AlertDescription>
           </Alert>
@@ -46,8 +53,10 @@ export function BlockSelectionPanel({ selectedBlock, unavailableBlock, isCheckin
               <CardTitle className="font-bold">{formatBlockDate(selectedBlock.startAt)}</CardTitle>
               <CardDescription>
                 {formatBlockRange(selectedBlock.startAt, selectedBlock.endAt)} ·{" "}
-                {getBlockDurationMinutes(selectedBlock.startAt, selectedBlock.endAt)} min
+                {getBlockDurationMinutes(selectedBlock.startAt, selectedBlock.endAt)}{" "}
+                {BLOCK_SELECTION_TEXT.minutesUnit}
               </CardDescription>
+              <CardDescription className="text-xs">{BOLIVIA_TIME_LABEL}</CardDescription>
             </CardContent>
           </Card>
         ) : (

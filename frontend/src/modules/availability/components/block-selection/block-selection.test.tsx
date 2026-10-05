@@ -24,6 +24,17 @@ const saturdayBlock: AvailabilityBlock = {
 }
 
 const weekRange = getWeekRange(tuesdayBlock.startAt)
+const tuesdayButton = "libre, 18:00 a 19:00"
+const saturdayButton = "libre, 10:00 a 11:00"
+
+const renderSelection = (fetchFreeBlocks: () => Promise<AvailabilityBlock[]>) =>
+  render(
+    <BlockSelection
+      blocks={[tuesdayBlock, saturdayBlock]}
+      weekRange={weekRange}
+      fetchFreeBlocks={fetchFreeBlocks}
+    />
+  )
 
 describe("BlockSelection", () => {
   afterEach(() => {
@@ -32,23 +43,25 @@ describe("BlockSelection", () => {
 
   it("resalta en Tu selección el bloque libre marcado", async () => {
     const fetchFreeBlocks = vi.fn().mockResolvedValue([tuesdayBlock, saturdayBlock])
-    render(<BlockSelection blocks={[tuesdayBlock, saturdayBlock]} weekRange={weekRange} fetchFreeBlocks={fetchFreeBlocks} />)
+    renderSelection(fetchFreeBlocks)
 
-    await userEvent.click(screen.getByRole("button", { name: "libre, 18:00 a 19:00" }))
+    await userEvent.click(screen.getByRole("button", { name: tuesdayButton }))
 
     await waitFor(() => {
       expect(screen.getByText("Martes 6 de octubre de 2026")).toBeInTheDocument()
     })
     expect(fetchFreeBlocks).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("button", { name: BLOCK_SELECTION_TEXT.requestAppointment })).toBeDisabled()
+    expect(screen.getByRole("button", { name: tuesdayButton })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByRole("button", { name: saturdayButton })).not.toHaveAttribute("aria-pressed")
   })
 
   it("cambia la selección al marcar otro bloque", async () => {
     const fetchFreeBlocks = vi.fn().mockResolvedValue([tuesdayBlock, saturdayBlock])
-    render(<BlockSelection blocks={[tuesdayBlock, saturdayBlock]} weekRange={weekRange} fetchFreeBlocks={fetchFreeBlocks} />)
+    renderSelection(fetchFreeBlocks)
 
-    await userEvent.click(screen.getByRole("button", { name: "libre, 18:00 a 19:00" }))
-    await userEvent.click(screen.getByRole("button", { name: "libre, 10:00 a 11:00" }))
+    await userEvent.click(screen.getByRole("button", { name: tuesdayButton }))
+    await userEvent.click(screen.getByRole("button", { name: saturdayButton }))
 
     await waitFor(() => {
       expect(screen.getByText("Sábado 10 de octubre de 2026")).toBeInTheDocument()
@@ -58,14 +71,14 @@ describe("BlockSelection", () => {
 
   it("muestra no disponible y quita de la grilla un bloque tomado por otro", async () => {
     const fetchFreeBlocks = vi.fn().mockResolvedValue([saturdayBlock])
-    render(<BlockSelection blocks={[tuesdayBlock, saturdayBlock]} weekRange={weekRange} fetchFreeBlocks={fetchFreeBlocks} />)
+    renderSelection(fetchFreeBlocks)
 
-    await userEvent.click(screen.getByRole("button", { name: "libre, 18:00 a 19:00" }))
+    await userEvent.click(screen.getByRole("button", { name: tuesdayButton }))
 
     await waitFor(() => {
       expect(screen.getByText(BLOCK_SELECTION_TEXT.unavailableTitle)).toBeInTheDocument()
     })
-    expect(screen.queryByRole("button", { name: "libre, 18:00 a 19:00" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: tuesdayButton })).not.toBeInTheDocument()
     expect(screen.getByText(BLOCK_SELECTION_TEXT.empty)).toBeInTheDocument()
   })
 })
