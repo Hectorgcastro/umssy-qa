@@ -21,3 +21,8 @@ export const DELETE_BLOCK_DOCS = {
   description: 'Borra el bloque; si tiene citas activas asociadas responde con 409',
   idDescription: 'UUID del bloque a eliminar',
 } as const;
+
+export const UPDATE_BLOCK_DOCS = {
+  summary: 'Edita un bloque de disponibilidad propio que no tenga citas pendientes o confirmadas',
+  idDescription: 'ID del bloque de disponibilidad a editar',
+} as const;
