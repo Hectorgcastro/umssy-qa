@@ -19,16 +19,9 @@ const blockAt = (id: string, startAt: string, endAt: string): AvailabilityBlock 
 
 const lastRequestedRange = () => vi.mocked(availabilityApi.getAvailabilityBlocks).mock.lastCall?.[0]
 
-const push = vi.fn()
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
-}))
-
 describe("MentorAvailabilityView", () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    push.mockClear()
     vi.useFakeTimers({ toFake: ["Date"], now: NOW })
   })
 
@@ -128,7 +121,7 @@ describe("MentorAvailabilityView", () => {
     ).toBeInTheDocument()
   })
 
-  it("navega al editor del bloque al hacer clic en un bloque libre", async () => {
+  it("abre el panel de edición con la grilla al hacer clic en un bloque libre", async () => {
     vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([
       blockAt("a", "2026-10-06T14:00:00.000Z", "2026-10-06T15:00:00.000Z"),
     ])
@@ -138,9 +131,14 @@ describe("MentorAvailabilityView", () => {
 
     await user.click(await screen.findByRole("button", { name: "libre, 10:00 a 11:00" }))
 
-    expect(push).toHaveBeenCalledWith(
-      "/mentor/availability/a/edit?week=2026-10-05T04%3A00%3A00.000Z",
-    )
+    const grid = screen.getByRole("region", { name: "Disponibilidad semanal" })
+    expect(grid).toBeInTheDocument()
+    expect(within(grid).getByRole("button", { name: "libre, 10:00 a 11:00" })).toBeInTheDocument()
+
+    expect(await screen.findByText("Editar bloque")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Cancelar" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Eliminar bloque" })).toBeInTheDocument()
   })
 
   it("arranca en la semana de la URL si viene indicada", async () => {
@@ -151,5 +149,40 @@ describe("MentorAvailabilityView", () => {
     expect(screen.getByText("12 oct - 18 oct 2026")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Hoy" })).toBeEnabled()
     await waitFor(() => expect(lastRequestedRange()?.from).toBe("2026-10-12T04:00:00.000Z"))
+  })
+
+  it("cancelar cierra el panel y vuelve a consultar los bloques", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([
+      blockAt("a", "2026-10-06T14:00:00.000Z", "2026-10-06T15:00:00.000Z"),
+    ])
+    const user = userEvent.setup()
+
+    render(<MentorAvailabilityView />)
+
+    await user.click(await screen.findByRole("button", { name: "libre, 10:00 a 11:00" }))
+    expect(screen.getByText("Editar bloque")).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }))
+
+    expect(screen.queryByText("Editar bloque")).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(vi.mocked(availabilityApi.getAvailabilityBlocks).mock.calls.length).toBeGreaterThan(1),
+    )
+  })
+
+  it("cambiar de semana cierra el panel de edición", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([
+      blockAt("a", "2026-10-06T14:00:00.000Z", "2026-10-06T15:00:00.000Z"),
+    ])
+    const user = userEvent.setup()
+
+    render(<MentorAvailabilityView />)
+
+    await user.click(await screen.findByRole("button", { name: "libre, 10:00 a 11:00" }))
+    expect(screen.getByText("Editar bloque")).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Semana siguiente" }))
+
+    expect(screen.queryByText("Editar bloque")).not.toBeInTheDocument()
   })
 })
