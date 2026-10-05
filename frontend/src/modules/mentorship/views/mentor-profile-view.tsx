@@ -56,16 +56,16 @@ export function MentorProfileView({ mentorId }: MentorProfileViewProps) {
   return (
     <main className="min-h-screen bg-surface-soft p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-7xl">
-        <MentorProfileNavigation mentorName={mentor.name} />
+        <MentorProfileNavigation mentorName={mentor.fullName} />
         <MentorProfileHeader mentor={mentor} />
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="flex flex-col gap-8 lg:col-span-8">
-            <MentorAbout description={mentor.description} />
+            {mentor.aboutMe && <MentorAbout description={mentor.aboutMe} />}
 
             <MentorGuidanceTypes
               key={mentor.id}
-              guidanceTypes={mentor.guidanceTypes}
+              orientationTypes={mentor.orientationTypes}
             />
           </div>
 

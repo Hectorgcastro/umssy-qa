@@ -12,17 +12,17 @@ import {
 import type { MentorGuidanceType } from "../../types/mentor-guidance-type.types";
 
 type MentorGuidanceTypesProps = {
-  guidanceTypes: MentorGuidanceType[];
+  orientationTypes: MentorGuidanceType[];
 };
 
 export function MentorGuidanceTypes({
-  guidanceTypes,
+  orientationTypes,
 }: MentorGuidanceTypesProps) {
   const [selectedGuidanceId, setSelectedGuidanceId] = useState(
-    guidanceTypes[0]?.id,
+    orientationTypes[0]?.id,
   );
 
-  if (guidanceTypes.length === 0) {
+  if (orientationTypes.length === 0) {
     return (
       <Card className="gap-0 overflow-visible rounded-xl border border-umssy-border bg-white py-0 text-base ring-0">
         <CardHeader className="px-6 pt-6">
@@ -49,8 +49,8 @@ export function MentorGuidanceTypes({
   }
 
   const selectedGuidance =
-    guidanceTypes.find((guidance) => guidance.id === selectedGuidanceId) ??
-    guidanceTypes[0];
+    orientationTypes.find((guidance) => guidance.id === selectedGuidanceId) ??
+    orientationTypes[0];
 
   return (
     <Card className="gap-0 overflow-visible rounded-xl border border-umssy-border bg-white py-0 text-base ring-0">
@@ -73,7 +73,7 @@ export function MentorGuidanceTypes({
           multiple={false}
           value={[String(selectedGuidance.id)]}
           onValueChange={(values) => {
-            const nextGuidance = guidanceTypes.find(
+            const nextGuidance = orientationTypes.find(
               (guidance) => String(guidance.id) === values[0],
             );
 
@@ -85,7 +85,7 @@ export function MentorGuidanceTypes({
           aria-label="Tipos de orientación"
           className="flex w-full flex-wrap justify-start gap-2"
         >
-          {guidanceTypes.map((guidance) => (
+          {orientationTypes.map((guidance) => (
             <ToggleGroupItem
               key={guidance.id}
               value={String(guidance.id)}
@@ -96,11 +96,13 @@ export function MentorGuidanceTypes({
           ))}
         </ToggleGroup>
 
-        <div className="mt-5 rounded-lg bg-umssy-background p-4">
-          <p className="text-sm leading-6 text-umssy-ink">
-            {selectedGuidance.description}
-          </p>
-        </div>
+        {selectedGuidance.description && (
+          <div className="mt-5 rounded-lg bg-umssy-background p-4">
+            <p className="text-sm leading-6 text-umssy-ink">
+              {selectedGuidance.description}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
