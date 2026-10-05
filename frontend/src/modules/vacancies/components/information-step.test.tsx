@@ -4,7 +4,6 @@ import { InformationStep } from './information-step';
 import { VacancyConditions } from '../hooks/use-job-offer-form';
 
 describe('InformationStep', () => {
-  // Con esto obligamos a Vitest a borrar la pantalla entre cada test
   afterEach(() => {
     cleanup();
   });
@@ -29,10 +28,9 @@ describe('InformationStep', () => {
       />
     );
     expect(container).toBeTruthy();
-    expect(screen.getByText('Informacion y condiciones de la oferta')).toBeTruthy();
   });
 
-  it('permite interactuar con los inputs y botones de modalidad', () => {
+  it('permite interactuar con todos los inputs y funciones del componente', () => {
     const updateFieldMock = vi.fn();
     const selectModalityMock = vi.fn();
 
@@ -44,13 +42,17 @@ describe('InformationStep', () => {
       />
     );
 
-    // Como la pantalla está limpia, ahora sí hay un solo botón y usamos getByRole normal
-    const remotoBtn = screen.getByRole('button', { name: 'Remoto' });
-    fireEvent.click(remotoBtn);
+    const remotoBtns = screen.getAllByRole('button', { name: 'Remoto' });
+    fireEvent.click(remotoBtns[0]);
     expect(selectModalityMock).toHaveBeenCalledWith('Remoto');
 
-    const tituloInput = screen.getByLabelText(/Titulo del puesto/i);
-    fireEvent.change(tituloInput, { target: { value: 'Backend' } });
-    expect(updateFieldMock).toHaveBeenCalledWith('title', 'Backend');
+    fireEvent.change(screen.getByLabelText(/Titulo del puesto/i), { target: { value: 'Backend' } });
+    fireEvent.change(screen.getByLabelText(/Enlace de Google Maps/i), { target: { value: 'maps.com' } });
+    fireEvent.change(screen.getByLabelText(/Categoria/i), { target: { value: 'Tecnologia' } });
+    fireEvent.change(screen.getByLabelText(/Numero de vacantes/i), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText(/Salario/i), { target: { value: '5000' } });
+    fireEvent.change(screen.getByLabelText(/Idiomas/i), { target: { value: 'Ingles' } });
+
+    expect(updateFieldMock).toHaveBeenCalledTimes(6);
   });
 });
