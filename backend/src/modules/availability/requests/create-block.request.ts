@@ -21,7 +21,6 @@ const getBoliviaParts = (date: Date) => {
 
 const isoDateTime = z.iso.datetime({ offset: true, error: CREATE_BLOCK_MESSAGES.invalidDate });
 
-// el resto del módulo solo trabaja con Date: la conversión ocurre una única vez, aquí.
 const blockInstant = isoDateTime.transform((value) => new Date(value));
 
 export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
@@ -33,7 +32,6 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
     .superRefine((payload, ctx) => {
       const { startAt, endAt } = payload;
 
-      // si el formato falló el campo ya reporta su propio error: no hay nada que validar.
       if (!(startAt instanceof Date) || !(endAt instanceof Date)) {
         return;
       }

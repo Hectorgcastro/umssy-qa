@@ -55,7 +55,6 @@ export class AvailabilityService {
         payload.startAt,
         payload.endAt,
       );
-      // un bloque recien creado no tiene citas: nace libre.
       return this.availabilityMapper.toResponse({ ...block, appointments: [] });
     } catch (error) {
       if (hasOverlapErrorCode(error)) {
