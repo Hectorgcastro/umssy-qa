@@ -44,7 +44,6 @@ describe("DeleteBlockDialog", () => {
     expect(screen.getByText(/Esta acción no se puede deshacer\./)).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Cancelar" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Eliminar bloque" })).toBeInTheDocument()
-    expect(document.querySelector(".bg-gold")).not.toBeNull()
   })
 
   it("cancelar cierra el modal sin eliminar (CA4)", async () => {

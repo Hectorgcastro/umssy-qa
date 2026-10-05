@@ -42,12 +42,8 @@ export function DeleteBlockDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className="p-4">
+      <AlertDialogContent className="p-6 data-[size=default]:sm:max-w-md">
         <AlertDialogHeader className="text-left">
-          <span
-            aria-hidden="true"
-            className="mb-3 block h-[3px] w-[26px] bg-gold"
-          />
           <AlertDialogTitle className="font-heading text-lg font-bold text-ink">
             ¿Eliminar este bloque?
           </AlertDialogTitle>
