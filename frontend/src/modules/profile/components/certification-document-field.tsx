@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ChangeEvent } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CERTIFICATE_FILE_ACCEPT } from "../config/certification-document.config";
@@ -16,7 +16,9 @@ export function CertificationDocumentField({
   selectedFile,
   error,
   disabled = false,
+  isUploading = false,
   onSelectFile,
+  onClearFile,
 }: CertificationDocumentFieldProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,16 +51,37 @@ export function CertificationDocumentField({
               : "PDF, JPG o PNG - Selecciona el documento o imagen."}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="h-10 shrink-0 border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft"
-          disabled={disabled}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {selectedFile ? "Reemplazar archivo" : "Seleccionar archivo"}
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          {selectedFile ? (
+            <Button
+              type="button"
+              variant="outline"
+              aria-label="Quitar archivo seleccionado"
+              className="h-10 shrink-0 border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft"
+              disabled={disabled}
+              onClick={onClearFile}
+            >
+              <X aria-hidden="true" className="size-4" />
+              Quitar
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 shrink-0 border-border-strong bg-surface px-4 text-[13px] font-semibold text-ink hover:bg-surface-soft"
+            disabled={disabled}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {selectedFile ? "Reemplazar archivo" : "Seleccionar archivo"}
+          </Button>
+        </div>
       </div>
+      {isUploading && selectedFile ? (
+        <p role="status" className="flex items-center gap-2 text-[13px] text-text-secondary">
+          <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+          Subiendo documento...
+        </p>
+      ) : null}
     </FormField>
   );
 }
