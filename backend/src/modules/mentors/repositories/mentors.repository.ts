@@ -57,6 +57,48 @@ export class MentorsRepository {
     });
   }
 
+  findActiveMentors(now: Date) {
+    return this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        roles: {
+          some: {
+            deletedAt: null,
+            startAt: {
+              lte: now,
+            },
+            role: {
+              name: MENTOR_ROLE_NAME,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        headline: true,
+        mentorTechnicalAreas: {
+          select: {
+            technicalArea: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        {
+          firstName: 'asc',
+        },
+        {
+          lastName: 'asc',
+        },
+      ],
+    });
+  }
+
   activate(
     userId: string,
     roleId: string,
