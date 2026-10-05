@@ -4,7 +4,7 @@ import { formatRegistrationDate, formatRegistrationTime, type Registration } fro
 
 export function PassDetail({ registration }: { registration: Registration }) {
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="flex flex-col gap-5 w-full min-w-0">
       
       <div className="bg-ink text-surface p-8 rounded-[24px] flex flex-col gap-6 shadow-sm">
         
@@ -14,13 +14,13 @@ export function PassDetail({ registration }: { registration: Registration }) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <h2 className="text-[22px] font-bold leading-tight">{registration.eventName}</h2>
+          <h2 className="text-[22px] font-bold leading-tight break-words [overflow-wrap:anywhere]">{registration.eventName}</h2>
           <p className="text-surface-soft/70 text-sm">{formatRegistrationDate(registration.date)} · {formatRegistrationTime(registration.startTime)} - {formatRegistrationTime(registration.endTime)}</p>
         </div>
 
         <div className="flex items-center gap-2 text-surface-soft/70 text-sm">
           <MapPin className="w-4 h-4 shrink-0" />
-          <span>{registration.location}</span>
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">{registration.location}</span>
         </div>
 
         <div className="bg-surface rounded-3xl p-6 mt-2 flex items-center justify-center">
@@ -30,10 +30,10 @@ export function PassDetail({ registration }: { registration: Registration }) {
         <p className="text-xs text-surface-soft/70">El QR de esta vista es ilustrativo; aún no está habilitado para validar asistencia.</p>
 
         {/* Footer Info */}
-        <div className="flex justify-between items-center mt-2 border-t border-white/10 pt-5">
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap justify-between items-start gap-4 mt-2 border-t border-white/10 pt-5">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="text-[10px] text-surface-soft/50 uppercase tracking-widest">ID Inscripción</span>
-            <span className="font-bold text-sm">{registration.id}</span>
+            <span className="font-bold text-sm break-all">{registration.id}</span>
           </div>
           <div className="flex flex-col gap-1 text-right">
             <span className="text-[10px] text-surface-soft/50 uppercase tracking-widest">Estado</span>

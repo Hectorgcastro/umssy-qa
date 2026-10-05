@@ -4,15 +4,19 @@ interface PassCardProps {
   title: string;
   date: string;
   status: string;
+  location: string;
+  registrationId: string;
   isSelected?: boolean;
   onClick?: () => void;
 }
 
-export function PassCard({ title, date, status, isSelected, onClick }: PassCardProps) {
+export function PassCard({ title, date, status, location, registrationId, isSelected, onClick }: PassCardProps) {
   return (
     <button
+      type="button"
+      aria-pressed={Boolean(isSelected)}
       onClick={onClick}
-      className={`w-full text-left p-5 rounded-[20px] transition-all flex flex-col gap-4 ${
+      className={`w-full min-w-0 text-left p-5 rounded-[20px] transition-all flex flex-col gap-4 ${
         isSelected 
           ? "bg-ink text-surface" 
           : "bg-surface text-ink border border-border hover:border-border-strong"
@@ -25,13 +29,15 @@ export function PassCard({ title, date, status, isSelected, onClick }: PassCardP
       </div>
       
       <div>
-        <h3 className="font-bold text-[17px] leading-tight mb-1">{title}</h3>
+        <h3 className="font-bold text-[17px] leading-tight mb-1 break-words [overflow-wrap:anywhere]">{title}</h3>
         <div className={`flex items-center gap-2 text-[13px] ${
           isSelected ? "text-surface-soft/80" : "text-text-secondary"
         }`}>
           <Calendar className="w-4 h-4 opacity-70" />
-          <span>{date}</span>
+          <span className="min-w-0 break-words">{date}</span>
         </div>
+        <p className="mt-2 text-sm break-words [overflow-wrap:anywhere]">{location}</p>
+        <p className="mt-2 text-xs break-all">ID Inscripción: {registrationId}</p>
       </div>
     </button>
   );

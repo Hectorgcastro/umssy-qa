@@ -7,7 +7,7 @@ export class EventRegistrationsRepository {
 
   findByUserId(userId: string) {
     return this.prisma.eventRegistration.findMany({
-      where: { userId },
+      where: { userId, cancelledAt: null, status: { title: 'Confirmada' } },
       select: {
         id: true,
         status: { select: { title: true } },
