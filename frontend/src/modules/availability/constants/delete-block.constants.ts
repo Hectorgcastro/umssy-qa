@@ -9,7 +9,7 @@ export const STATE_LABELS: Record<AvailabilityBlockState, string> = {
 export const DELETE_BLOCK_ERROR = "Error al eliminar el bloque de disponibilidad";
 
 export const DELETE_BLOCK_TEXT = {
-  action: "Eliminar este bloque",
+  action: "Eliminar bloque",
   title: "¿Eliminar este bloque?",
   description:
     "Los egresados dejarán de ver este horario al buscar mentorías. Esta acción no se puede deshacer.",
