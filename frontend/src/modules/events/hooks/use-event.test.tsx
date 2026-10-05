@@ -2,7 +2,7 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useEvent } from "./use-event";
 import { eventsService } from "../services/events.service";
-import type { EventDetail } from "../types/event-item.types";
+import type { EventDetail } from "../types/event-detail.types";
 vi.mock("../services/events.service", () => ({
   eventsService: { getEvent: vi.fn() },
 }));

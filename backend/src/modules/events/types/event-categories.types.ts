@@ -1,33 +1,5 @@
-import type { Prisma } from '../../../prisma/client.js';
-import type { EventCategoryResponse } from './events.types.js';
-
-export interface EventCategoriesListDataResponse {
-  items: EventCategoryResponse[];
-  total: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface EventCategoriesListResponse {
-  data: EventCategoriesListDataResponse;
-  page: number;
-  offset: number;
-}
-
-export type EventCategoryWithFields = Prisma.EventCategoryGetPayload<{
-  select: {
-    id: true;
-    name: true;
-  };
-}>;
-
-export interface FindEventCategoriesPayload {
-  search?: string;
-  skip: number;
-  take: number;
-}
-
-export interface FindEventCategoriesResponse {
-  items: EventCategoryWithFields[];
-  total: number;
-}
+export type { EventCategoriesListDataResponse } from './event-categories-list-data-response.types.js';
+export type { EventCategoriesListResponse } from './event-categories-list-response.types.js';
+export type { EventCategoryWithFields } from './event-category-with-fields.types.js';
+export type { FindEventCategoriesPayload } from './find-event-categories-payload.types.js';
+export type { FindEventCategoriesResponse } from './find-event-categories-response.types.js';

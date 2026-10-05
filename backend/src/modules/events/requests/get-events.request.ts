@@ -1,12 +1,20 @@
 import { z } from 'zod';
 
-export const MAX_PAGE_SIZE = 50;
-export const MAX_SEARCH_LENGTH = 150;
+import {
+  MAX_PAGE_SIZE,
+  MAX_SEARCH_LENGTH,
+} from '../constants/events.constants.js';
+export {
+  MAX_PAGE_SIZE,
+  MAX_SEARCH_LENGTH,
+} from '../constants/events.constants.js';
 
 export const GetEventsSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(10),
-  categoryId: z.guid({ message: 'categoryId debe ser un UUID válido' }).optional(),
+  categoryId: z
+    .guid({ message: 'categoryId debe ser un UUID válido' })
+    .optional(),
   statusId: z.guid({ message: 'statusId debe ser un UUID válido' }).optional(),
   search: z
     .string()

@@ -1,17 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { eventsService } from "../services/events.service";
-import type { EventDetail } from "../types/event-item.types";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { eventsService } from '../services/events.service';
 
-type DetailResult = {
-  id: string;
-  version: number;
-  event: EventDetail | null;
-  error: string | null;
-  notFound: boolean;
-};
+import type { DetailResult } from '../types/detail-result.types';
 
 export function useEvent(id: string | null) {
   const [result, setResult] = useState<DetailResult | null>(null);
@@ -38,8 +31,8 @@ export function useEvent(id: string | null) {
           event: null,
           notFound,
           error: notFound
-            ? "El taller ya no está disponible o no existe."
-            : "No se pudo cargar el detalle del taller. Inténtalo nuevamente.",
+            ? 'El taller ya no está disponible o no existe.'
+            : 'No se pudo cargar el detalle del taller. Inténtalo nuevamente.',
         });
       });
     return () => controller.abort();

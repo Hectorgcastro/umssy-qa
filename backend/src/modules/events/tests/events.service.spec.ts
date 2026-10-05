@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { EventNotFoundException } from '../exceptions/event-not-found.exception.js';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { EventsService } from '../services/events.service.js';
 import type { EventWithRelations } from '../types/events.types.js';
@@ -133,7 +133,7 @@ describe('EventsService', () => {
   it('returns 404 for a missing workshop', async () => {
     repositoryMock.findById.mockResolvedValue(null);
     await expect(service.findOne('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
+      EventNotFoundException,
     );
   });
 });

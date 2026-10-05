@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { GetEventIdSchema } from '../requests/get-event-id.request.js';
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
   ApiOperation,
@@ -81,16 +81,7 @@ export class EventsController {
   @ApiResponse({ status: 200, description: 'Evento obtenido exitosamente' })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
   findOne(
-    @Param(
-      'id',
-      new ZodValidationPipe(
-        z
-          .string()
-          .regex(
-            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-          ),
-      ),
-    )
+    @Param('id', new ZodValidationPipe(GetEventIdSchema))
     id: string,
   ) {
     return this.eventsService.findOne(id);

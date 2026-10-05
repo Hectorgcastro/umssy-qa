@@ -1,33 +1,14 @@
-import { CalendarDays, Clock3, MapPin, UserRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Card } from '@/components/ui/card';
+import { CalendarDays, Clock3, MapPin, UserRound } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   calculateEventCapacityStatus,
   formatEventDate,
   formatTimeRange,
-} from "./event-card";
-import type { EventDetail } from "../types/event-item.types";
+} from '../utils/event-card';
+import { DetailRow } from './detail-row';
 
-type EventDetailPanelProps = {
-  event: EventDetail;
-};
-
-function DetailRow({
-  icon: Icon,
-  value,
-  label,
-}: {
-  icon: typeof CalendarDays;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex min-w-0 items-start gap-2 text-sm text-text-secondary">
-      <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-      <span className="sr-only">{label}: </span>
-      <span className="min-w-0 break-words">{value}</span>
-    </div>
-  );
-}
+import type { EventDetailPanelProps } from '../types/event-detail-panel-props.types';
 
 export function EventDetailPanel({ event }: EventDetailPanelProps) {
   const { enrolledCount, capacity, progressPercentage, isFull } =
@@ -39,7 +20,7 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
       aria-label={`Detalle de ${event.title}`}
       className="w-full shrink-0 border-t border-border bg-surface lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
     >
-      <div className="space-y-5 px-6 py-7 lg:px-7">
+      <Card className="gap-0 rounded-none border-0 shadow-none bg-transparent space-y-5 px-6 py-7 lg:px-7">
         <header className="space-y-3">
           <span className="inline-flex w-fit rounded-full bg-muted px-3 py-1 text-xs font-medium text-text-secondary">
             {event.category.name}
@@ -66,16 +47,16 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
           <DetailRow
             icon={MapPin}
             label={
-              event.modality.title.toLowerCase() === "virtual"
-                ? "Enlace"
-                : "Lugar"
+              event.modality.title.toLowerCase() === 'virtual'
+                ? 'Enlace'
+                : 'Lugar'
             }
-            value={event.location?.trim() || "Por confirmar"}
+            value={event.location?.trim() || 'Por confirmar'}
           />
           <DetailRow
             icon={UserRound}
             label="Instructor"
-            value={event.instructorName?.trim() || "Por confirmar"}
+            value={event.instructorName?.trim() || 'Por confirmar'}
           />
         </dl>
 
@@ -90,7 +71,7 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
             Descripción
           </h3>
           <p className="whitespace-pre-line break-words text-sm leading-5 text-text-secondary">
-            {event.description?.trim() || "Descripción por confirmar."}
+            {event.description?.trim() || 'Descripción por confirmar.'}
           </p>
         </section>
 
@@ -117,15 +98,15 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
             role="progressbar"
           >
             <div
-              className={`h-full rounded-full transition-[width] ${isFull ? "bg-accent" : "bg-gold"}`}
+              className={`h-full rounded-full transition-[width] ${isFull ? 'bg-accent' : 'bg-gold'}`}
               style={{ width: `${progressPercentage ?? 0}%` }}
             />
           </div>
           <p className="text-xs text-text-secondary">
             {capacity === null
-              ? "Sin límite de cupos"
+              ? 'Sin límite de cupos'
               : isFull
-                ? "Lleno · Sin cupos disponibles"
+                ? 'Lleno · Sin cupos disponibles'
                 : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
           </p>
         </section>
@@ -138,7 +119,7 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
         >
           Inscribirme
         </Button>
-      </div>
+      </Card>
     </aside>
   );
 }
