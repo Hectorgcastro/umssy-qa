@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { RegisterVacancyView } from './register-vacancy-view';
 import * as useJobOfferFormHook from '../hooks/use-job-offer-form';
 import type { VacancyConditions } from '../hooks/use-job-offer-form';
@@ -19,6 +19,11 @@ vi.mock('../components/preview-step', () => ({
 }));
 
 describe('RegisterVacancyView', () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
   const mockConditions: VacancyConditions = {
     title: "",
     modality: null,
