@@ -66,4 +66,20 @@ describe("PersonalDataField", () => {
     expect(screen.getByLabelText("Teléfono")).toHaveAttribute("maxlength", "8");
     expect(screen.getByPlaceholderText("Ej. 70712345")).toBeInTheDocument();
   });
+
+  it("muestra el error bajo el campo, lo marca como inválido y lo vincula con aria-describedby", () => {
+    render(<PersonalDataField id="email" label="Correo" help="Ayuda" error="El correo es obligatorio" />);
+
+    const input = screen.getByLabelText("Correo");
+    const error = screen.getByText("El correo es obligatorio");
+    expect(error).toHaveClass("text-destructive");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input.getAttribute("aria-describedby")).toBe(`email-help ${error.id}`);
+  });
+
+  it("no marca el campo como inválido si no hay error", () => {
+    render(<PersonalDataField id="email" label="Correo" />);
+
+    expect(screen.getByLabelText("Correo")).not.toHaveAttribute("aria-invalid");
+  });
 });

@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldError } from "./field-error";
 import { RequiredMark } from "./required-mark";
 
 interface PersonalDataFieldProps extends ComponentProps<typeof Input> {
@@ -9,6 +10,7 @@ interface PersonalDataFieldProps extends ComponentProps<typeof Input> {
   help?: string;
   icon?: ReactNode;
   isRequired?: boolean;
+  error?: string;
 }
 
 export function PersonalDataField({
@@ -17,10 +19,13 @@ export function PersonalDataField({
   help,
   icon,
   isRequired = false,
+  error,
   className,
   ...inputProps
 }: PersonalDataFieldProps) {
   const helpId = help ? `${id}-help` : undefined;
+  const errorId = error ? `${id}-error` : undefined;
+  const describedBy = [helpId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className={className}>
@@ -37,7 +42,8 @@ export function PersonalDataField({
         <Input
           id={id}
           name={id}
-          aria-describedby={helpId}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : undefined}
           aria-required={isRequired || undefined}
           className={`h-[42px] rounded-md border-border bg-surface text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction md:text-[15px] 2xl:h-12 2xl:text-base ${
             icon ? "pl-10" : "px-3"
@@ -50,6 +56,7 @@ export function PersonalDataField({
           {help}
         </p>
       ) : null}
+      <FieldError id={`${id}-error`} message={error} />
     </div>
   );
 }

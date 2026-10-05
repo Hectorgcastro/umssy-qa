@@ -1,13 +1,21 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
+import { AccessRequestProvider } from "../contexts/access-request-context";
 import { PersonalDataForm } from "./personal-data-form";
+
+const renderForm = () =>
+  render(
+    <AccessRequestProvider>
+      <PersonalDataForm />
+    </AccessRequestProvider>,
+  );
 
 describe("PersonalDataForm", () => {
   afterEach(() => cleanup());
 
   it("muestra todos los campos del paso 1", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     expect(screen.getByLabelText(/^Nombres/)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Apellidos/)).toBeInTheDocument();
@@ -22,28 +30,28 @@ describe("PersonalDataForm", () => {
   });
 
   it("muestra el título y el subtítulo del formulario", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     expect(screen.getByRole("heading", { name: "Solicita tu acceso a la comunidad" })).toBeInTheDocument();
     expect(screen.getByText(/La carrera verifica cada solicitud con tu documento académico/)).toBeInTheDocument();
   });
 
   it("muestra los textos de ayuda del código SIS y del correo", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     expect(screen.getByText("Figura en tu carnet universitario o en tu kárdex.")).toBeInTheDocument();
     expect(screen.getByText("Aquí te enviaremos el resultado y el código de activación.")).toBeInTheDocument();
   });
 
   it("muestra el icono de correo y el placeholder del teléfono", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     expect(container.querySelector("svg.lucide-mail")).not.toBeNull();
     expect(screen.getByPlaceholderText("Ej. 70712345")).toBeInTheDocument();
   });
 
   it("coloca el carnet y el expedido en la misma fila", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     const row = screen.getByLabelText(/^Carnet de identidad/).closest(".flex.gap-2");
     expect(row).not.toBeNull();
@@ -51,7 +59,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("el select de expedido usa la altura de 42 px en lugar de la de shadcn", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     const trigger = screen.getByRole("combobox", { name: "Expedido" });
     expect(trigger).toHaveClass("data-[size=default]:h-[42px]", "2xl:data-[size=default]:h-12", "focus-visible:border-accent");
@@ -59,23 +67,23 @@ describe("PersonalDataForm", () => {
   });
 
   it("alinea el botón a la derecha con el chevron y el fondo tinta", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     const button = screen.getByRole("button", { name: "Continuar al siguiente paso" });
     expect(button).toHaveClass("bg-ink", "text-surface", "2xl:h-12");
     expect(button.querySelector("svg.lucide-chevron-right")).not.toBeNull();
-    expect(button.parentElement).toHaveClass("justify-end");
+    expect(button.parentElement).toHaveClass("items-end");
     expect(container.querySelector(".border-t")).toBe(button.parentElement);
   });
 
   it("marca el teléfono como opcional", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     expect(screen.getByText("(opcional)")).toBeInTheDocument();
   });
 
   it("usa los tipos de campo adecuados", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     expect(screen.getByLabelText(/^Correo electrónico/)).toHaveAttribute("type", "email");
     expect(screen.getByLabelText(/^Fecha de nacimiento/)).toHaveAttribute("type", "date");
@@ -84,7 +92,7 @@ describe("PersonalDataForm", () => {
 
   it("ofrece los 9 códigos de expedición", async () => {
     const user = userEvent.setup();
-    render(<PersonalDataForm />);
+    renderForm();
 
     await user.click(screen.getByRole("combobox", { name: "Expedido" }));
 
@@ -95,7 +103,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("reemplaza el año de ingreso por el año de titulación", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     expect(container.textContent).not.toMatch(/ingreso/i);
     expect(screen.getByLabelText(/^Año de titulación/)).toHaveAttribute("maxlength", "4");
@@ -103,7 +111,7 @@ describe("PersonalDataForm", () => {
 
   it("ofrece las dos carreras del catálogo", async () => {
     const user = userEvent.setup();
-    render(<PersonalDataForm />);
+    renderForm();
 
     await user.click(screen.getByRole("combobox", { name: "Carrera" }));
 
@@ -115,7 +123,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("muestra la carrera en una fila propia de ancho completo", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     const trigger = screen.getByRole("combobox", { name: "Carrera" });
     expect(trigger).toHaveClass("w-full", "data-[size=default]:h-[42px]");
@@ -123,7 +131,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("escala tipografía y separación desde 2xl sin fijar el ancho del formulario", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     expect(container.firstElementChild?.className).not.toMatch(/max-w-/);
     expect(screen.getByRole("heading", { level: 1 })).toHaveClass("text-3xl", "2xl:text-4xl");
@@ -132,7 +140,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("muestra la leyenda de campo obligatorio antes del formulario", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     const legend = screen.getByText("Campo obligatorio");
     expect(legend).toHaveTextContent("* Campo obligatorio");
@@ -141,7 +149,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("marca con aria-required los nueve campos obligatorios y no el teléfono", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     const required = [
       screen.getByLabelText(/^Nombres/),
@@ -161,7 +169,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("muestra el asterisco rojo en nueve etiquetas y no en la del teléfono", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     const marks = Array.from(container.querySelectorAll("form span[aria-hidden='true'].text-accent"));
     expect(marks).toHaveLength(9);
@@ -169,13 +177,13 @@ describe("PersonalDataForm", () => {
   });
 
   it("muestra el botón Continuar al siguiente paso", () => {
-    render(<PersonalDataForm />);
+    renderForm();
 
     expect(screen.getByRole("button", { name: "Continuar al siguiente paso" })).toBeInTheDocument();
   });
 
   it("no recarga la página al enviar", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     const notPrevented = fireEvent.submit(container.querySelector("form") as HTMLFormElement);
 
@@ -183,7 +191,7 @@ describe("PersonalDataForm", () => {
   });
 
   it("no usa el término egresado", () => {
-    const { container } = render(<PersonalDataForm />);
+    const { container } = renderForm();
 
     expect(container.textContent).not.toMatch(/egres/i);
   });
