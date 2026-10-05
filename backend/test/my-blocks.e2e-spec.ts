@@ -5,15 +5,17 @@ import request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module.js';
-import { runSeed } from '../src/common/database/seeds.js';
 import type { PrismaClient } from '../src/prisma/client.js';
-import { MAX_WEEK_QUERY_MS } from '../src/modules/availability/constants/week-query.constants.js';
+import { SEED_USERS, SEED_PASSWORD } from '../src/modules/users/constants/seed-users.constants.js';
 import { getWeeks } from '../src/modules/availability/seeds/availability.seed.js';
+import { MAX_WEEK_QUERY_MS } from '../src/modules/availability/constants/week-query.constants.js';
+
+const _emailOf = (key: (typeof SEED_USERS)[number]['key']): string =>
+  SEED_USERS.find((user) => user.key === key)?.email ?? '';
 
 describe('GET /availability-blocks (mis bloques) - H2-E', () => {
   let app: INestApplication;
-  let prisma: PrismaClient;
-  let _seedSummary: Awaited<ReturnType<typeof runSeed>>;
+  let _prisma: PrismaClient;
   let mentorAToken: string;
   let mentorBToken: string;
   const weeks = getWeeks(new Date());
@@ -27,23 +29,23 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
     await app.init();
 
     const seedClient = (await import('../src/common/database/seeds.js')).createSeedClient();
-    prisma = seedClient;
-    await (await import('../src/common/database/seeds.js')).runSeed(prisma);
+    const client = seedClient;
+    await (await import('../src/common/database/seeds.js')).runSeed(client);
 
     const loginMentorA = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'mentor.a@umssy.test', password: 'Prueba123', roleTag: 'mentor' });
+      .send({ email: 'mentor.a@umssy.test', password: SEED_PASSWORD, roleTag: 'mentor' });
     mentorAToken = loginMentorA.body.accessToken;
 
     const loginMentorB = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'mentor.b@umssy.test', password: 'Prueba123', roleTag: 'mentor' });
+      .send({ email: 'mentor.b@umssy.test', password: SEED_PASSWORD, roleTag: 'mentor' });
     mentorBToken = loginMentorB.body.accessToken;
   });
 
   afterAll(async () => {
-    await prisma?.$disconnect();
-    await app?.close();
+    const seedClient = (await import('../src/common/database/seeds.js')).createSeedClient();
+    await seedClient.$disconnect();
   });
 
   const getMyBlocks = (token: string, from: string, to: string) =>
@@ -53,15 +55,15 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
       .query({ from, to });
 
   describe('Semana con bloques (mentorA tiene 50 bloques en la semana siguiente + trio en semana actual)', () => {
-    it('devuelve 200 y lista los bloques del mentor autenticado', async () => {
+    it('devuelve 200 y lista los bloques del mentor autenticado (>= 50)', async () => {
       const from = weeks.next.start.toISOString();
       const to = weeks.next.end.toISOString();
 
       const res = await getMyBlocks(mentorAToken, from, to);
 
       expect(res.status).toBe(200);
-      // Verificamos que la respuesta tenga datos (formato exacto depende del interceptor global)
-      expect(res.body).toBeDefined();
+      const data = Array.isArray(res.body.data) ? res.body.data : (Array.isArray(res.body) ? res.body : []);
+      expect(data.length).toBeGreaterThanOrEqual(50);
     });
 
     it('los bloques tienen la estructura correcta (id, startAt, endAt, state)', async () => {
@@ -70,27 +72,27 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
 
       const res = await getMyBlocks(mentorAToken, from, to);
 
-      // Verificamos estructura básica del primer bloque si hay datos
-      const data = res.body.data ?? res.body;
-      if (Array.isArray(data) && data.length > 0) {
-        expect(data[0]).toMatchObject({
-          id: expect.any(String),
-          startAt: expect.any(String),
-          endAt: expect.any(String),
-          state: expect.stringMatching(/^(free|pending|confirmed)$/),
-        });
-      }
+      const data = Array.isArray(res.body.data) ? res.body.data : (Array.isArray(res.body) ? res.body : []);
+      expect(data.length).toBeGreaterThan(0);
+      expect(data[0]).toMatchObject({
+        id: expect.any(String),
+        startAt: expect.any(String),
+        endAt: expect.any(String),
+        state: expect.stringMatching(/^(free|pending|confirmed)$/),
+      });
     });
   });
 
   describe('Semana vacía (mentorB no tiene bloques)', () => {
-    it('devuelve respuesta 200', async () => {
+    it('devuelve 200 con array vacío', async () => {
       const from = weeks.next.start.toISOString();
       const to = weeks.next.end.toISOString();
 
       const res = await getMyBlocks(mentorBToken, from, to);
 
       expect(res.status).toBe(200);
+      const data = Array.isArray(res.body.data) ? res.body.data : (Array.isArray(res.body) ? res.body : []);
+      expect(data).toEqual([]);
     });
   });
 
@@ -134,10 +136,12 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
 
       const start = Date.now();
       const res = await getMyBlocks(mentorAToken, from, to);
-      const duration = Date.now() - start;
+      const _duration = Date.now() - start;
 
       expect(res.status).toBe(200);
-      expect(duration).toBeLessThan(3000);
+      const data = Array.isArray(res.body.data) ? res.body.data : (Array.isArray(res.body) ? res.body : []);
+      expect(data.length).toBeGreaterThanOrEqual(50);
+      expect(Date.now() - start).toBeLessThan(3000);
     });
   });
 });
