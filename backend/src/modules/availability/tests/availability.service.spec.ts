@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { APPOINTMENT_STATUS_PENDING } from '../constants/appointment-status.constants.js';
+import { AppointmentStatusTitle } from '../enums/appointment-status-title.enum.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import {
   BlockHasAppointmentException,
@@ -9,7 +9,7 @@ import {
   MentorNotFoundException,
 } from '../exceptions/index.js';
 import { AvailabilityService } from '../services/availability.service.js';
-import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
+import type { CreateBlockDto } from '../requests/create-block.request.js';
 
 const QUERY = { from: '2026-10-05T04:00:00.000Z', to: '2026-10-12T03:59:59.999Z' };
 
@@ -40,7 +40,7 @@ describe('AvailabilityService', () => {
     create: vi.fn(),
   };
   const mentorId = 'ed9934b9-1a4e-4b8d-bbed-b8772154cba8';
-  const payload: CreateBlockPayload = {
+  const payload: CreateBlockDto = {
     startAt: new Date('2026-11-03T22:00:00.000Z'),
     endAt: new Date('2026-11-04T00:00:00.000Z'),
   };
@@ -77,7 +77,7 @@ describe('AvailabilityService', () => {
     it('devuelve los bloques mapeados con su estado', async () => {
       availabilityRepository.findMentorBlocksInRange.mockResolvedValue([
         block('block-1'),
-        block('block-2', [APPOINTMENT_STATUS_PENDING]),
+        block('block-2', [AppointmentStatusTitle.PENDING]),
       ]);
 
       const result = await service.findMyBlocks('mentor-1', QUERY);
@@ -113,7 +113,7 @@ describe('AvailabilityService', () => {
     });
 
     it('responde 409 si el bloque tiene una cita pendiente o confirmada', async () => {
-      availabilityRepository.findById.mockResolvedValue(block('block-1', [APPOINTMENT_STATUS_PENDING]));
+      availabilityRepository.findById.mockResolvedValue(block('block-1', [AppointmentStatusTitle.PENDING]));
 
       await expect(service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD)).rejects.toThrow(
         BlockHasAppointmentException,
@@ -234,7 +234,7 @@ describe('AvailabilityService', () => {
     });
 
     it('lanza 409 si el bloque tiene citas activas', async () => {
-      repository.findById.mockResolvedValue(block('block-x', [APPOINTMENT_STATUS_PENDING]));
+      repository.findById.mockResolvedValue(block('block-x', [AppointmentStatusTitle.PENDING]));
 
       await expect(removeService.remove('mentor-1', 'block-x')).rejects.toThrow(BlockHasAppointmentException);
       expect(repository.delete).not.toHaveBeenCalled();
