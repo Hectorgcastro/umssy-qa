@@ -7,6 +7,7 @@ export { DeleteBlockDialog } from "./components/delete-block-dialog";
 export { BlockSelection } from "./components/block-selection/block-selection";
 export { useAvailability } from "./hooks/use-availability";
 export { useMentorFreeBlocks } from "./hooks/use-mentor-free-blocks";
+export { useMyBlocks } from "./hooks/use-my-blocks";
 export { useCreateAvailabilityBlock } from "./hooks/use-create-availability-block";
 export { useDeleteBlock } from "./hooks/use-delete-block";
 export { availabilityApi } from "./services/availability.api";
