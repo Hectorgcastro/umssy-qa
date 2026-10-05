@@ -1,4 +1,4 @@
-import { NAME_MAX_LENGTH, PROFILE_VALIDATION_MESSAGES } from "../config/profile-validation.config";
+import { NAME_MAX_LENGTH, PROFILE_VALIDATION_MESSAGES } from "../constants/profile-validation.constants";
 import type { PersonalInfoErrors } from "../types/personal-info-errors.types";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 import { isValidEmail } from "./is-valid-email";

@@ -1,4 +1,4 @@
-import { PROFILE_ERROR_MESSAGES_BY_STATUS } from "../config/profile-feedback.config";
+import { PROFILE_ERROR_MESSAGES_BY_STATUS } from "../constants/profile-feedback.constants";
 import { getHttpStatus } from "./get-http-status";
 
 export function getProfileErrorMessage(error: unknown, fallbackMessage: string): string {

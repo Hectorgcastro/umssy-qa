@@ -4,7 +4,7 @@ import {
   PERSONAL_INFO_ENDPOINT,
   PRESENTATION_ENDPOINT,
   PROFILE_ENDPOINT,
-} from "../config/profile-api.config";
+} from "../constants/profile-api.constants";
 import type { ApiResponse } from "../types/api-response.types";
 import type { CityOption } from "../types/city-option.types";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";

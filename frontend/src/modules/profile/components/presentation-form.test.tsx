@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_PRESENTATION_VALUES } from "../config/profile-form-defaults.config";
-import { PROFILE_VALIDATION_MESSAGES } from "../config/profile-validation.config";
+import { PROFILE_VALIDATION_MESSAGES } from "../constants/profile-validation.constants";
 import type { PresentationValues } from "../types/presentation-values.types";
 import { PresentationForm } from "./presentation-form";
 
@@ -53,6 +53,34 @@ describe("PresentationForm", () => {
     expect(screen.getByText("VQ")).toBeInTheDocument();
     expect(screen.getByText("Desarrolladora web junior")).toBeInTheDocument();
     expect(screen.getByText("Remote work", { selector: "p" })).toBeInTheDocument();
+  });
+
+  it("shows the server field errors next to their fields", () => {
+    render(
+      <PresentationForm
+        initialValues={EMPTY_PRESENTATION_VALUES}
+        fullName=""
+        serverErrors={{ headline: "Ingresa un titular con hasta 150 caracteres." }}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText(/Titular profesional/)).toHaveAccessibleDescription(
+      "Ingresa un titular con hasta 150 caracteres.",
+    );
+  });
+
+  it("rejects a headline longer than 150 characters", async () => {
+    const { onSubmit, user } = renderForm();
+
+    await user.type(screen.getByLabelText(/Titular profesional/), "a".repeat(151));
+    await user.type(screen.getByLabelText(/Acerca de/), "Graduate.");
+    await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Titular profesional/)).toHaveAccessibleDescription(
+      PROFILE_VALIDATION_MESSAGES.headlineTooLong,
+    );
   });
 
   it("submits the trimmed values", async () => {

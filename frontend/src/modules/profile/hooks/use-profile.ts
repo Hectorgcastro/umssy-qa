@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PROFILE_FEEDBACK_MESSAGES } from "../config/profile-feedback.config";
+import { PROFILE_FEEDBACK_MESSAGES } from "../constants/profile-feedback.constants";
 import { profileService } from "../services/profile.service";
 import type { ProfileResponse } from "../types/profile-response.types";
 import { getProfileErrorMessage } from "../utils/get-profile-error-message";

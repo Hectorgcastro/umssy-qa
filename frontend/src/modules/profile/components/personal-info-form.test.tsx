@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_PERSONAL_INFO_VALUES } from "../config/profile-form-defaults.config";
-import { PROFILE_VALIDATION_MESSAGES } from "../config/profile-validation.config";
+import { PROFILE_VALIDATION_MESSAGES } from "../constants/profile-validation.constants";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 import { PersonalInfoForm } from "./personal-info-form";
 
