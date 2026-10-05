@@ -9,6 +9,7 @@ vi.mock("@/shared/services/api-client", () => ({
     get: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -58,6 +59,13 @@ describe("workExperienceService", () => {
       PAYLOAD,
       AUTH_CONFIG,
     );
+  });
+
+  it("deletes a work experience", async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue({ data: { data: null } });
+
+    await expect(workExperienceService.deleteWorkExperience("experience-1")).resolves.toBeUndefined();
+    expect(apiClient.delete).toHaveBeenCalledWith("/work-experiences/experience-1", AUTH_CONFIG);
   });
 
   it("lets the errors reach the caller", async () => {
