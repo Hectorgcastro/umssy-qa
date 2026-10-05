@@ -24,6 +24,12 @@ const ACCESS_REQUEST_SELECT = {
   status: { select: { title: true } },
 } satisfies Prisma.AccessRequestSelect;
 
+const ACTIVE_STATUSES: string[] = [
+  ACCESS_REQUEST_STATUS.PENDING,
+  ACCESS_REQUEST_STATUS.IN_REVIEW,
+  ACCESS_REQUEST_STATUS.APPROVED,
+];
+
 @Injectable()
 export class AccessRequestsRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -37,6 +43,24 @@ export class AccessRequestsRepository {
 
   findById(id: string) {
     return this.prisma.accessRequest.findUnique({ where: { id }, select: ACCESS_REQUEST_SELECT });
+  }
+
+  // Borradores y rechazadas no cuentan; excludeId evita chocar con la propia solicitud
+  findActiveDuplicates(fields: { email?: string; idCardNumber?: string; sisCode?: string; excludeId?: string }) {
+    const { email, idCardNumber, sisCode, excludeId } = fields;
+    const matches: Prisma.AccessRequestWhereInput[] = [];
+    if (email !== undefined) matches.push({ email: { equals: email, mode: 'insensitive' } });
+    if (idCardNumber !== undefined) matches.push({ idCardNumber });
+    if (sisCode !== undefined) matches.push({ sisCode });
+
+    return this.prisma.accessRequest.findMany({
+      where: {
+        OR: matches,
+        status: { title: { in: ACTIVE_STATUSES } },
+        ...(excludeId !== undefined && { id: { not: excludeId } }),
+      },
+      select: { email: true, idCardNumber: true, sisCode: true },
+    });
   }
 
   async updateDraft(id: string, data: UpdateAccessRequestDto) {

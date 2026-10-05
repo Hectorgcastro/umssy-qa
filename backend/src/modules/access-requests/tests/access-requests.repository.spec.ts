@@ -15,7 +15,7 @@ const dto = {
 };
 
 function build() {
-  const accessRequest = { create: vi.fn(), findUnique: vi.fn(), update: vi.fn() };
+  const accessRequest = { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() };
   return { accessRequest, repository: new AccessRequestsRepository({ accessRequest } as any) };
 }
 
@@ -37,6 +37,34 @@ describe('AccessRequestsRepository', () => {
 
     await expect(repository.findById('id-1')).resolves.toBeNull();
     expect(accessRequest.findUnique.mock.calls[0][0].where).toEqual({ id: 'id-1' });
+  });
+
+  it('busca duplicados solo en solicitudes pendientes, en revisión o aprobadas', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.findMany.mockResolvedValue([]);
+
+    await repository.findActiveDuplicates({ email: 'ana@umss.edu.bo', idCardNumber: '123', sisCode: '456' });
+
+    const args = accessRequest.findMany.mock.calls[0][0];
+    expect(args.where.OR).toEqual([
+      { email: { equals: 'ana@umss.edu.bo', mode: 'insensitive' } },
+      { idCardNumber: '123' },
+      { sisCode: '456' },
+    ]);
+    expect(args.where.status).toEqual({ title: { in: ['pending', 'in_review', 'approved'] } });
+    expect(args.where).not.toHaveProperty('id');
+    expect(args.select).toEqual({ email: true, idCardNumber: true, sisCode: true });
+  });
+
+  it('busca duplicados solo de los campos enviados y excluye el propio id', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.findMany.mockResolvedValue([]);
+
+    await repository.findActiveDuplicates({ sisCode: '456', excludeId: 'id-1' });
+
+    const args = accessRequest.findMany.mock.calls[0][0];
+    expect(args.where.OR).toEqual([{ sisCode: '456' }]);
+    expect(args.where.id).toEqual({ not: 'id-1' });
   });
 
   it('actualiza solo mientras el estado sea draft', async () => {
