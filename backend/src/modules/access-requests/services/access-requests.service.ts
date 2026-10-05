@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { FilesService } from '../../files/services/files.service.js';
+import { FileNotFoundException } from '../../files/exceptions/index.js';
 import { AuthService } from '../../auth/services/auth.service.js';
 import { AccessRequestsRepository } from '../repositories/access-requests.repository.js';
 import {
@@ -26,6 +28,7 @@ export class AccessRequestsService {
   constructor(
     private readonly accessRequestsRepository: AccessRequestsRepository,
     private readonly authService: AuthService,
+    private readonly filesService: FilesService,
   ) {}
 
   async create(dto: CreateAccessRequestDto) {
@@ -53,6 +56,32 @@ export class AccessRequestsService {
 
     const updated = await this.accessRequestsRepository.updateDraft(id, dto);
     return toAccessRequestResponse(updated);
+  }
+
+  async delete(id: string) {
+    const current = await this.accessRequestsRepository.findById(id);
+    if (!current) {
+      throw new AccessRequestNotFoundException();
+    }
+    if (current.status.title !== ACCESS_REQUEST_STATUS.DRAFT) {
+      throw new AccessRequestNotEditableException('La solicitud ya fue enviada y no se puede eliminar');
+    }
+
+    // TODO: primero se elimina la solicitud (condicional por estado draft) y después el archivo, para no destruir el documento de una solicitud enviada en una carrera.
+    // Si falla el segundo paso queda un archivo huérfano que habrá que limpiar en el futuro.
+    await this.accessRequestsRepository.deleteDraft(id);
+
+    if (current.documentFileId) {
+      try {
+        await this.filesService.delete(current.documentFileId);
+      } catch (error) {
+        if (!(error instanceof FileNotFoundException)) {
+          throw error;
+        }
+      }
+    }
+
+    return { id };
   }
 
   // En el PATCH solo se revisan los campos enviados; excludeId deja editar el propio borrador

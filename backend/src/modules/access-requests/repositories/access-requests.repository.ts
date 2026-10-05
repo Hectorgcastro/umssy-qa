@@ -77,4 +77,16 @@ export class AccessRequestsRepository {
       throw error;
     }
   }
+
+  // El filtro por estado hace que la eliminación sea atómica: si la solicitud cambió de estado o desapareció, lanza P2025
+  async deleteDraft(id: string) {
+    try {
+      await this.prisma.accessRequest.delete({ where: { id, status: { title: ACCESS_REQUEST_STATUS.DRAFT } } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new AccessRequestNotFoundException();
+      }
+      throw error;
+    }
+  }
 }

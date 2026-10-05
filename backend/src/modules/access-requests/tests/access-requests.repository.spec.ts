@@ -15,7 +15,7 @@ const dto = {
 };
 
 function build() {
-  const accessRequest = { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() };
+  const accessRequest = { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), delete: vi.fn() };
   return { accessRequest, repository: new AccessRequestsRepository({ accessRequest } as any) };
 }
 
@@ -89,5 +89,29 @@ describe('AccessRequestsRepository', () => {
     accessRequest.update.mockRejectedValue(boom);
 
     await expect(repository.updateDraft('id-1', { phone: '71234567' })).rejects.toBe(boom);
+  });
+
+  it('elimina solo mientras el estado sea draft', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.delete.mockResolvedValue({ id: 'id-1' });
+
+    await expect(repository.deleteDraft('id-1')).resolves.toBeUndefined();
+
+    expect(accessRequest.delete.mock.calls[0][0].where).toEqual({ id: 'id-1', status: { title: 'draft' } });
+  });
+
+  it('convierte P2025 al eliminar en 404 de dominio', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.delete.mockRejectedValue(new Prisma.PrismaClientKnownRequestError('no record', { code: 'P2025', clientVersion: 'test' }));
+
+    await expect(repository.deleteDraft('id-1')).rejects.toBeInstanceOf(AccessRequestNotFoundException);
+  });
+
+  it('propaga cualquier otro error al eliminar', async () => {
+    const { accessRequest, repository } = build();
+    const boom = new Error('db caída');
+    accessRequest.delete.mockRejectedValue(boom);
+
+    await expect(repository.deleteDraft('id-1')).rejects.toBe(boom);
   });
 });

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { FileNotFoundException } from '../../files/exceptions/index.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import {
   AccessRequestNotEditableException,
@@ -29,13 +30,14 @@ function row(overrides: Record<string, unknown> = {}) {
 }
 
 describe('AccessRequestsService', () => {
-  const repository = { createDraft: vi.fn(), findById: vi.fn(), findActiveDuplicates: vi.fn(), updateDraft: vi.fn() };
+  const repository = { createDraft: vi.fn(), findById: vi.fn(), findActiveDuplicates: vi.fn(), updateDraft: vi.fn(), deleteDraft: vi.fn() };
+  const filesService = { delete: vi.fn() };
   const authService = { existsByEmail: vi.fn() };
   let service: AccessRequestsService;
 
   beforeEach(() => {
     vi.resetAllMocks();
-    service = new AccessRequestsService(repository as any, authService as any);
+    service = new AccessRequestsService(repository as any, authService as any, filesService as any);
     authService.existsByEmail.mockResolvedValue(false);
     repository.findActiveDuplicates.mockResolvedValue([]);
   });
@@ -179,6 +181,73 @@ describe('AccessRequestsService', () => {
       await expect(service.update('id-1', { sisCode: '456' })).rejects.toBeInstanceOf(AccessRequestNotEditableException);
 
       expect(repository.findActiveDuplicates).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    it('elimina la solicitud y después su archivo, y devuelve el id', async () => {
+      repository.findById.mockResolvedValue(row({ documentFileId: 'file-1' }));
+      repository.deleteDraft.mockResolvedValue(undefined);
+      filesService.delete.mockResolvedValue(undefined);
+
+      await expect(service.delete('id-1')).resolves.toEqual({ id: 'id-1' });
+
+      expect(repository.deleteDraft).toHaveBeenCalledWith('id-1');
+      expect(filesService.delete).toHaveBeenCalledWith('file-1');
+      expect(repository.deleteDraft.mock.invocationCallOrder[0]).toBeLessThan(filesService.delete.mock.invocationCallOrder[0]);
+    });
+
+    it('no llama a FilesService si no hay archivo adjunto', async () => {
+      repository.findById.mockResolvedValue(row({ documentFileId: null }));
+
+      await expect(service.delete('id-1')).resolves.toEqual({ id: 'id-1' });
+
+      expect(repository.deleteDraft).toHaveBeenCalledWith('id-1');
+      expect(filesService.delete).not.toHaveBeenCalled();
+    });
+
+    it('ignora FileNotFoundException del archivo', async () => {
+      repository.findById.mockResolvedValue(row({ documentFileId: 'file-1' }));
+      filesService.delete.mockRejectedValue(new FileNotFoundException());
+
+      await expect(service.delete('id-1')).resolves.toEqual({ id: 'id-1' });
+    });
+
+    it('propaga cualquier otro error del archivo', async () => {
+      const boom = new Error('db caída');
+      repository.findById.mockResolvedValue(row({ documentFileId: 'file-1' }));
+      filesService.delete.mockRejectedValue(boom);
+
+      await expect(service.delete('id-1')).rejects.toBe(boom);
+      expect(repository.deleteDraft).toHaveBeenCalled();
+    });
+
+    it('responde 404 si la solicitud no existe', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(service.delete('id-1')).rejects.toBeInstanceOf(AccessRequestNotFoundException);
+      expect(repository.deleteDraft).not.toHaveBeenCalled();
+      expect(filesService.delete).not.toHaveBeenCalled();
+    });
+
+    it('responde 409 con mensaje propio si la solicitud ya fue enviada', async () => {
+      repository.findById.mockResolvedValue(row({ status: { title: 'pending' }, documentFileId: 'file-1' }));
+
+      const error = await service.delete('id-1').catch((e) => e);
+
+      expect(error).toBeInstanceOf(AccessRequestNotEditableException);
+      expect(error.statusCode).toBe(409);
+      expect(error.message).toBe('La solicitud ya fue enviada y no se puede eliminar');
+      expect(repository.deleteDraft).not.toHaveBeenCalled();
+      expect(filesService.delete).not.toHaveBeenCalled();
+    });
+
+    it('si la fila desaparece entre la lectura y el borrado responde 404 y no toca el archivo', async () => {
+      repository.findById.mockResolvedValue(row({ documentFileId: 'file-1' }));
+      repository.deleteDraft.mockRejectedValue(new AccessRequestNotFoundException());
+
+      await expect(service.delete('id-1')).rejects.toBeInstanceOf(AccessRequestNotFoundException);
+      expect(filesService.delete).not.toHaveBeenCalled();
     });
   });
 });
