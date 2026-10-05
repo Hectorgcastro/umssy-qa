@@ -7,4 +7,5 @@ export const FIND_MY_BLOCKS_DOCS = {
 export const DELETE_BLOCK_DOCS = {
   summary: 'Elimina un bloque de disponibilidad del mentor en sesión',
   description: 'Borra el bloque; si tiene citas activas asociadas responde con 409',
+  idDescription: 'UUID del bloque a eliminar',
 } as const;

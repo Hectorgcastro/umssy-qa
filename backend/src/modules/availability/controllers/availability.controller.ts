@@ -35,7 +35,7 @@ export class AvailabilityController {
   @UseGuards(ProvisionalSessionGuard, RolesGuard)
   @Roles('mentor')
   @ApiOperation({ summary: DELETE_BLOCK_DOCS.summary, description: DELETE_BLOCK_DOCS.description })
-  @ApiParam({ name: 'id', description: 'UUID del bloque a eliminar' })
+  @ApiParam({ name: 'id', description: DELETE_BLOCK_DOCS.idDescription })
   remove(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', new ZodValidationPipe(blockIdSchema)) id: string,
