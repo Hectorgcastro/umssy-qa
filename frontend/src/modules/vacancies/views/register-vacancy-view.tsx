@@ -7,7 +7,7 @@ import { InformationStep } from "../components/information-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
-    const { currentStep, conditions, updateField, selectModality } = useVacancyRegisterWizard();
+    const { currentStep, conditions, updateField, selectModality } = useJobOfferForm();
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-8">
