@@ -205,25 +205,37 @@ describe('Certification issue date', () => {
 });
 
 describe('Certification sanitization', () => {
-  const hostileValues = [
-    '<script>alert(1)</script>',
-    "'; DROP TABLE certifications;--",
-    'O\'Reilly "Cloud" <b>Architect</b>',
-  ];
+  it('rejects values with HTML or script tags', () => {
+    const hostileHtml = [
+      '<script>alert(1)</script>',
+      'O\'Reilly "Cloud" <b>Architect</b>',
+    ];
 
-  it.each(hostileValues)(
-    'keeps %s as plain text without altering it',
-    (value) => {
-      const result = createPipe.transform({
+    for (const value of hostileHtml) {
+      const issues = createCertificationSchema.safeParse({
         ...validBody,
         name: value,
         issuingOrganization: value,
-      });
+      }).error?.issues;
 
-      expect(result.name).toBe(value);
-      expect(result.issuingOrganization).toBe(value);
-    },
-  );
+      expect(issues?.map((issue) => issue.message)).toEqual([
+        'No se permiten etiquetas HTML ni scripts',
+        'No se permiten etiquetas HTML ni scripts',
+      ]);
+    }
+  });
+
+  it('keeps SQL injection attempts as plain text without altering it', () => {
+    const sqlValue = "'; DROP TABLE certifications;--";
+    const result = createPipe.transform({
+      ...validBody,
+      name: sqlValue,
+      issuingOrganization: sqlValue,
+    });
+
+    expect(result.name).toBe(sqlValue);
+    expect(result.issuingOrganization).toBe(sqlValue);
+  });
 });
 
 describe('Certification validation when editing', () => {

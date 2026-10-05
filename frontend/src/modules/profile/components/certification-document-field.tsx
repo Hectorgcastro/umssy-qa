@@ -10,9 +10,9 @@ import { formatFileSize } from "../utils/format-file-size";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { FormField } from "./form-field";
 
-const DOCUMENT_INPUT_ID = "certification-document";
 
 export function CertificationDocumentField({
+  id = "certification-document",
   selectedFile,
   error,
   disabled = false,
@@ -31,16 +31,16 @@ export function CertificationDocumentField({
   };
 
   return (
-    <FormField id={DOCUMENT_INPUT_ID} label="Archivo de respaldo" isRequired error={error}>
+    <FormField id={id} label="Archivo de respaldo" isRequired error={error}>
       <Input
         ref={fileInputRef}
-        id={DOCUMENT_INPUT_ID}
+        id={id}
         type="file"
         accept={CERTIFICATE_FILE_ACCEPT}
         className="hidden"
         disabled={disabled}
         onChange={handleFileChange}
-        {...getFieldErrorProps(DOCUMENT_INPUT_ID, error)}
+        {...getFieldErrorProps(id, error)}
       />
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-dashed border-border-strong bg-surface-soft px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">

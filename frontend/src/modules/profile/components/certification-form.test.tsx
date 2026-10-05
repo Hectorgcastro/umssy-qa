@@ -130,17 +130,33 @@ describe("CertificationForm", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it("submits special characters without altering them", async () => {
+  it("shows an inline error for html or script tags", async () => {
     const { onSubmit, user } = renderForm();
     const name = "<script>alert(1)</script>";
-    const issuingOrganization = "O'Reilly \"Media\"";
+    const issuingOrganization = "<b>Media</b>";
 
     fireEvent.change(getNameInput(), { target: { value: name } });
     fireEvent.change(getOrganizationInput(), { target: { value: issuingOrganization } });
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
     await user.click(saveButton());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" });
+    expect(screen.getAllByText("No se permiten etiquetas HTML ni scripts")).toHaveLength(2);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("submits special characters without altering them", async () => {
+    const { onSubmit, user } = renderForm();
+    const name = "O'Reilly \"Media\"";
+    const issuingOrganization = "'; DROP TABLE certifications;--";
+
+    fireEvent.change(getNameInput(), { target: { value: name } });
+    fireEvent.change(getOrganizationInput(), { target: { value: issuingOrganization } });
+    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
+    const fileInputs = screen.getAllByLabelText(/Archivo de respaldo/);
+    await user.upload(fileInputs[0], new File(["certificate"], "certificate.pdf", { type: "application/pdf" }));
+    await user.click(saveButton());
+
+    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" }, expect.any(File));
   });
 
   it("shows an inline error for a future issue date", async () => {
@@ -170,13 +186,15 @@ describe("CertificationForm", () => {
     await user.type(getNameInput(), "  Scrum Master  ");
     await user.type(getOrganizationInput(), " Scrum Alliance ");
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
+    const fileInputs = screen.getAllByLabelText(/Archivo de respaldo/);
+    await user.upload(fileInputs[0], new File(["certificate"], "certificate.pdf", { type: "application/pdf" }));
     await user.click(saveButton());
 
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Scrum Master",
       issuingOrganization: "Scrum Alliance",
       issueDate: "2025-04-20",
-    });
+    }, expect.any(File));
   });
 
   it("disables the inputs and buttons while the submit is in progress", async () => {

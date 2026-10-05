@@ -9,7 +9,9 @@ import type { CertificationFormProps } from "../types/certification-form-props.t
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { trimFormValues } from "../utils/trim-form-values";
+import { validateCertificateFile } from "../utils/validate-certificate-file";
 import { getTodayIsoDate, validateCertification } from "../utils/validate-certification";
+import { CertificationDocumentField } from "./certification-document-field";
 import { FormField } from "./form-field";
 
 const EMPTY_CERTIFICATION_VALUES: CreateCertificationDto = {
@@ -28,6 +30,8 @@ export function CertificationForm({
     initialData ?? EMPTY_CERTIFICATION_VALUES,
   );
   const [errors, setErrors] = useState<CertificationErrors>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(initialData);
   const isBusy = isPending || isSubmitting;
@@ -40,9 +44,27 @@ export function CertificationForm({
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
 
+  const handleSelectFile = (file: File) => {
+    const error = validateCertificateFile(file);
+    if (error) {
+      setFileError(error);
+      setSelectedFile(null);
+    } else {
+      setSelectedFile(file);
+      setFileError(undefined);
+    }
+  };
+
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setFileError(undefined);
+  };
+
   const handleCancel = () => {
     setValues(EMPTY_CERTIFICATION_VALUES);
     setErrors({});
+    setSelectedFile(null);
+    setFileError(undefined);
     onCancel();
   };
 
@@ -50,15 +72,22 @@ export function CertificationForm({
     event.preventDefault();
     const trimmedValues = trimFormValues(values);
     const validationErrors = validateCertification(trimmedValues);
+    
+    let currentFileError = fileError;
+    if (!isEditing && !selectedFile) {
+      currentFileError = "El documento de respaldo es obligatorio para crear una certificación.";
+      setFileError(currentFileError);
+    }
+
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length > 0) {
+    if (Object.keys(validationErrors).length > 0 || currentFileError) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await onSubmit(trimmedValues);
+      await onSubmit(trimmedValues, selectedFile);
     } finally {
       setIsSubmitting(false);
     }
@@ -123,6 +152,16 @@ export function CertificationForm({
           />
         </FormField>
       </div>
+      {!isEditing ? (
+        <CertificationDocumentField
+          id="create-certification-document"
+          selectedFile={selectedFile}
+          error={fileError}
+          disabled={isBusy}
+          onSelectFile={handleSelectFile}
+          onClearFile={handleClearFile}
+        />
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <p className="text-[13px] text-text-secondary">* Campos obligatorios</p>
         <div className="flex gap-3">

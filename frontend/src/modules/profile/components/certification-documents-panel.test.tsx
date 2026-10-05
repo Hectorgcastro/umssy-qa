@@ -23,6 +23,53 @@ const CERTIFICATE_PDF = new File(["certificate"], "scrum_fundamentals.pdf", {
   type: "application/pdf",
 });
 
+import { useState } from "react";
+import type { UploadedDocumentInfo } from "../types/uploaded-document-info.types";
+import { getFileFormat } from "../utils/get-file-format";
+import { formatIssueDate } from "../utils/format-issue-date";
+import { getTodayIsoDate } from "../utils/validate-certification";
+
+function PanelTestWrapper(props: Parameters<typeof CertificationDocumentsPanel>[0]) {
+
+  const [uploadedInfo, setUploadedInfo] = useState<Record<string, UploadedDocumentInfo>>({});
+
+  const handleUpload = async (cert: Certification, file: File) => {
+    const success = await props.onUpload(cert, file);
+    if (success) {
+      setUploadedInfo(prev => ({
+        ...prev,
+        [cert.id]: {
+          fileName: file.name,
+          format: getFileFormat(file.name),
+          uploadedAt: formatIssueDate(getTodayIsoDate()),
+        }
+      }));
+    }
+    return success;
+  };
+
+  const handleRemove = async (cert: Certification) => {
+    const success = await props.onRemove(cert);
+    if (success) {
+      setUploadedInfo(prev => {
+        const next = { ...prev };
+        delete next[cert.id];
+        return next;
+      });
+    }
+    return success;
+  };
+
+  return (
+    <CertificationDocumentsPanel
+      {...props}
+      uploadedInfo={uploadedInfo}
+      onUpload={handleUpload}
+      onRemove={handleRemove}
+    />
+  );
+}
+
 function renderPanel({
   certifications = [SCRUM, AWS],
   isBusy = false,
@@ -37,7 +84,7 @@ function renderPanel({
   const onView = vi.fn();
   const onInvalidFile = vi.fn();
   render(
-    <CertificationDocumentsPanel
+    <PanelTestWrapper
       certifications={certifications}
       isBusy={isBusy}
       onUpload={onUpload}
