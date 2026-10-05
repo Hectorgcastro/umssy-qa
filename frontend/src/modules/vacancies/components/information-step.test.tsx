@@ -77,7 +77,7 @@ describe('InformationStep', () => {
   
   it('renderiza correctamente con datos pre-cargados', () => {
      const fullConditions: VacancyConditions = {
-        title: "Desarrollador Backend", modality: "Híbrido", mapsLink: "https://maps.google.com/?q=...", contractType: "Tiempo completo",
+        title: "Desarrollador Backend", modality: "Hibrido", mapsLink: "https://maps.google.com/?q=...", contractType: "Tiempo completo",
         category: "Tecnología", vacancyCount: "1", salary: "Bs 6.500 - 8.000", languages: "Español",
       };
       
