@@ -1,9 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { InformationStep } from './information-step';
 import { VacancyConditions } from '../hooks/use-job-offer-form';
 
 describe('InformationStep', () => {
+  // Con esto obligamos a Vitest a borrar la pantalla entre cada test
+  afterEach(() => {
+    cleanup();
+  });
+
   const mockConditions = {
     title: "",
     modality: "",
@@ -39,9 +44,9 @@ describe('InformationStep', () => {
       />
     );
 
-    // Usamos getAllByRole y seleccionamos el primer botón del arreglo [0]
-    const remotoBtns = screen.getAllByRole('button', { name: 'Remoto' });
-    fireEvent.click(remotoBtns[0]);
+    // Como la pantalla está limpia, ahora sí hay un solo botón y usamos getByRole normal
+    const remotoBtn = screen.getByRole('button', { name: 'Remoto' });
+    fireEvent.click(remotoBtn);
     expect(selectModalityMock).toHaveBeenCalledWith('Remoto');
 
     const tituloInput = screen.getByLabelText(/Titulo del puesto/i);
