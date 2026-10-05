@@ -12,6 +12,7 @@ import { CV_FILE_INPUT_ACCEPT } from "../constants/cv-upload.constants";
 import { useCvDocument } from "../hooks/use-cv-document";
 import type { Feedback } from "../types/feedback.types";
 import { getCvErrorMessage } from "../utils/get-cv-error-message";
+import { isCvFileRejection } from "../utils/is-cv-file-rejection";
 import { validateCvFile } from "../utils/validate-cv-file";
 
 export function DocumentsCvView() {
@@ -58,14 +59,17 @@ export function DocumentsCvView() {
 
     try {
       await uploadCv(file);
+      setSelectedFile(null);
       setFeedback({
         type: "success",
         message: isReplacing ? "Tu CV se reemplazó correctamente." : "Tu CV se cargó correctamente.",
       });
     } catch (error) {
+      if (isCvFileRejection(error)) {
+        setSelectedFile(null);
+      }
       setFeedback({ type: "error", message: getCvErrorMessage(error, CV_ERROR_MESSAGES.upload) });
     } finally {
-      setSelectedFile(null);
       setIsUploading(false);
     }
   };

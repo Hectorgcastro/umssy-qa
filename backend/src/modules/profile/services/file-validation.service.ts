@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FILE_SIGNATURES } from '../constants/file-signatures.constants.js';
+import { CorruptedFileException } from '../exceptions/corrupted-file.exception.js';
 import { EmptyFileException } from '../exceptions/empty-file.exception.js';
 import { FileTooLargeException } from '../exceptions/file-too-large.exception.js';
 import { InvalidFileTypeException } from '../exceptions/invalid-file-type.exception.js';
@@ -37,7 +38,7 @@ export class FileValidationService {
     }
 
     if (!this.isStructurallyIntact(file.buffer, signature.type)) {
-      throw new InvalidFileTypeException();
+      throw new CorruptedFileException();
     }
 
     return {
@@ -93,4 +94,3 @@ export class FileValidationService {
     return false;
   }
 }
-

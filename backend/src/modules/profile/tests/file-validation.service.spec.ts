@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { CorruptedFileException } from '../exceptions/corrupted-file.exception.js';
 import { EmptyFileException } from '../exceptions/empty-file.exception.js';
 import { FileTooLargeException } from '../exceptions/file-too-large.exception.js';
 import { InvalidFileTypeException } from '../exceptions/invalid-file-type.exception.js';
@@ -119,7 +120,7 @@ describe('FileValidationService', () => {
       });
 
       expect(() => service.validate(file, cvRules)).toThrow(
-        InvalidFileTypeException,
+        CorruptedFileException,
       );
     });
 
@@ -130,7 +131,7 @@ describe('FileValidationService', () => {
       });
 
       expect(() => service.validate(file, documentRules)).toThrow(
-        InvalidFileTypeException,
+        CorruptedFileException,
       );
     });
 
@@ -141,7 +142,7 @@ describe('FileValidationService', () => {
       });
 
       expect(() => service.validate(file, documentRules)).toThrow(
-        InvalidFileTypeException,
+        CorruptedFileException,
       );
     });
   });
@@ -157,7 +158,7 @@ describe('FileValidationService', () => {
       });
 
       expect(() => service.validate(file, cvRules)).toThrow(
-        InvalidFileTypeException,
+        CorruptedFileException,
       );
     });
 
@@ -171,7 +172,7 @@ describe('FileValidationService', () => {
       });
 
       expect(() => service.validate(file, documentRules)).toThrow(
-        InvalidFileTypeException,
+        CorruptedFileException,
       );
     });
 
@@ -185,7 +186,7 @@ describe('FileValidationService', () => {
       });
 
       expect(() => service.validate(file, documentRules)).toThrow(
-        InvalidFileTypeException,
+        CorruptedFileException,
       );
     });
   });

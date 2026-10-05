@@ -14,6 +14,7 @@ describe("getCvErrorMessage", () => {
     [404, "No encontramos tu CV. Recarga la página."],
     [413, "El archivo supera el límite de 5 MB."],
     [415, "El CV debe estar en formato PDF."],
+    [422, "El archivo está dañado o incompleto. Selecciona otro PDF."],
   ])("translates the status %i to a spanish message", (status, message) => {
     expect(getCvErrorMessage(createHttpError(status), FALLBACK_MESSAGE)).toBe(message);
   });
