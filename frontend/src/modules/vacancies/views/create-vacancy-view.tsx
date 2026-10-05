@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "../../../components/ui/input";
 import { Button } from "../../../components/ui/button";
 
@@ -13,6 +13,34 @@ export function CreateVacancyView() {
   const [vacancyCount, setVacancyCount] = useState("1");
   const [salary, setSalary] = useState("");
   const [languages, setLanguages] = useState("");
+
+  // Variable que determina si el usuario ya escribió algo importante
+  const hasUnsavedChanges = jobTitle !== "" || salary !== "" || googleMapsLink !== "" || languages !== "" || vacancyCount !== "1";
+
+  // Interceptar F5 o cierre de pestaña
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = ""; // Esto dispara la alerta nativa del navegador
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Manejador del botón Cancelar
+  const handleCancel = () => {
+    if (hasUnsavedChanges) {
+      const isConfirmed = window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los datos ingresados.");
+      if (!isConfirmed) return; // Si el usuario dice que no, cancelamos la acción
+    }
+    
+    // Si dice que sí (o no había cambios), limpiamos el formulario o redirigimos
+    console.log("Redirigiendo al inicio o limpiando formulario...");
+    // Aquí a futuro irá la lógica de tu router (ej: router.push('/vacancies'))
+  };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
@@ -132,7 +160,7 @@ export function CreateVacancyView() {
       </div>
 
       <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={() => console.log("Cancelar click")}>Cancelar</Button>
+        <Button variant="outline" onClick={handleCancel}>Cancelar</Button>
         <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={() => setCurrentStep(2)}>Continuar</Button>
       </div>
     </div>
