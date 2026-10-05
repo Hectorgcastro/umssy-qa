@@ -2,25 +2,34 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { addWeeks, getWeekRange } from "@/shared/utils/date-time";
 import { cn } from "cn";
-import { NEW_BLOCK_PATH } from "../constants/availability.constants";
+import { MY_AVAILABILITY_PATH, NEW_BLOCK_PATH } from "../constants/availability.constants";
 import { MY_AVAILABILITY_TEXT } from "../constants/my-availability.constants";
 import { AvailabilityLoading } from "../components/availability-loading";
-import { DeleteBlockDialog } from "../components/delete-block-dialog";
 import { WeekGrid } from "../components/week-grid/week-grid";
 import { useMyBlocks } from "../hooks/use-my-blocks";
 import type { AvailabilityBlock } from "../types/availability-block.types";
+import type { WeekStartProps } from "../types/week-start-props.types";
 import { formatWeekLabel } from "../utils/format-week-label";
 
-export function MentorAvailabilityView() {
-  const [weekStart, setWeekStart] = useState(() => getWeekRange(new Date()).startAt);
-  const [blockToDelete, setBlockToDelete] = useState<AvailabilityBlock | null>(null);
-  const { blocks, isLoading, error, refetch } = useMyBlocks(weekStart);
+export function MentorAvailabilityView({ initialWeekStart }: WeekStartProps) {
+  const router = useRouter();
+  const [weekStart, setWeekStart] = useState(
+    () => initialWeekStart ?? getWeekRange(new Date()).startAt,
+  );
+  const { blocks, isLoading, error } = useMyBlocks(weekStart);
   const weekRange = getWeekRange(weekStart);
   const currentWeekStart = getWeekRange(new Date()).startAt;
+
+  const handleEditBlock = (block: AvailabilityBlock) => {
+    router.push(
+      `${MY_AVAILABILITY_PATH}/${block.id}/edit?week=${encodeURIComponent(weekStart)}`,
+    );
+  };
 
   return (
     <div className="space-y-4 p-6">
@@ -82,23 +91,13 @@ export function MentorAvailabilityView() {
           </Link>
         </section>
       ) : (
-        // TODO: abrir el panel de detalle del bloque (#164) en lugar del diálogo de eliminar
         <WeekGrid
           blocks={blocks}
           weekRange={weekRange}
           variant="owner"
-          onEditBlock={setBlockToDelete}
+          onEditBlock={handleEditBlock}
         />
       )}
-
-      <DeleteBlockDialog
-        block={blockToDelete}
-        open={blockToDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setBlockToDelete(null);
-        }}
-        onDeleted={refetch}
-      />
     </div>
   );
 }
