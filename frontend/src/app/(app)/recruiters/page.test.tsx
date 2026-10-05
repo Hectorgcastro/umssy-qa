@@ -1,9 +1,10 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import RecruitersPage from './page';
+import React from 'react';
 
 vi.mock('@/modules/recruiters/views/recruiters-base-view', () => ({
-  RecruitersBaseView: ({ children }: any) => <div data-testid="base-view">{children}</div>
+  RecruitersBaseView: ({ children }: { children: React.ReactNode }) => <div data-testid="base-view">{children}</div>
 }));
 
 describe('RecruitersPage', () => {
