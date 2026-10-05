@@ -22,7 +22,9 @@ export function useBlockSelection(fetchFreeBlocks: () => Promise<AvailabilityBlo
       const freeBlocks = await fetchFreeBlocks();
       if (requestId !== lastRequestRef.current) return;
 
-      const isStillFree = freeBlocks.some((freeBlock) => freeBlock.id === block.id && freeBlock.state === "free");
+      const isStillFree = freeBlocks.some(
+        (freeBlock) => freeBlock.id === block.id && freeBlock.state === "free",
+      );
       if (isStillFree) {
         setSelectedBlock(block);
         return;
