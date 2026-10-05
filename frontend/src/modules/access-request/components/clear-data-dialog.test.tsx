@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AccessRequestProvider } from "../contexts/access-request-context";
+import { AccessRequestProvider, useAccessRequestForm } from "../contexts/access-request-context";
 import { accessRequestService } from "../services/access-request.service";
 import type { ApiResult } from "../types/access-request.types";
 import { PersonalDataForm } from "./personal-data-form";
@@ -23,10 +23,17 @@ const SUBMIT_NAME = "Continuar al siguiente paso";
 const SHORT_DESCRIPTION = "Se vaciarán todos los campos.";
 const DRAFT_DESCRIPTION = "Se vaciarán todos los campos y se eliminará el borrador guardado.";
 
+// Sonda de prueba: el paso 1 ya no muestra aviso de éxito, así que se observa el paso actual del Context
+function StepProbe() {
+  const { currentStep } = useAccessRequestForm();
+  return <p>{`paso-actual:${currentStep}`}</p>;
+}
+
 function renderForm() {
   return render(
     <AccessRequestProvider>
       <PersonalDataForm />
+      <StepProbe />
     </AccessRequestProvider>,
   );
 }
@@ -59,7 +66,7 @@ const failure = (status: number, message: string): ApiResult<never> => ({ ok: fa
 async function saveDraft() {
   create.mockResolvedValueOnce({ ok: true, data: { id: "draft-1" } });
   await userEvent.setup().click(screen.getByRole("button", { name: SUBMIT_NAME }));
-  await screen.findByText("Tus datos se guardaron correctamente.");
+  await screen.findByText("paso-actual:2");
 }
 
 // Botón del formulario (el del diálogo tiene el mismo nombre pero vive dentro del alertdialog)
@@ -143,7 +150,7 @@ describe("ClearDataDialog", () => {
     expect(screen.getByRole("combobox", { name: "Expedido" })).toHaveTextContent("Elegir");
     expect(screen.getByRole("combobox", { name: "Carrera" })).toHaveTextContent("Selecciona tu carrera");
     expect(remove).not.toHaveBeenCalled();
-    expect(screen.queryByText("Tus datos se guardaron correctamente.")).toBeNull();
+    expect(screen.getByText("paso-actual:1")).toBeInTheDocument();
   });
 
   it("siempre pide confirmación, también con el formulario vacío", async () => {
@@ -171,7 +178,7 @@ describe("ClearDataDialog", () => {
     expect(remove).toHaveBeenCalledTimes(1);
     expect(remove).toHaveBeenCalledWith("draft-1");
     expect(screen.getByLabelText(/^Nombres/)).toHaveValue("");
-    expect(screen.queryByText("Tus datos se guardaron correctamente.")).toBeNull();
+    expect(screen.getByText("paso-actual:1")).toBeInTheDocument();
   });
 
   it.each([
