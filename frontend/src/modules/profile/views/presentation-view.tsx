@@ -4,7 +4,8 @@ import { useState } from "react";
 import { FeedbackMessage } from "../components/feedback-message";
 import { PresentationForm } from "../components/presentation-form";
 import { ProfilePageLayout } from "../components/profile-page-layout";
-import { PROFILE_FEEDBACK_MESSAGES } from "../config/profile-feedback.config";
+import { ProfilePhotoFeedback } from "../components/profile-photo-feedback";
+import { PROFILE_FEEDBACK_MESSAGES } from "../constants/profile-feedback.constants";
 import { useProfile } from "../hooks/use-profile";
 import { useProfilePhoto } from "../hooks/use-profile-photo";
 import { useSaveProfile } from "../hooks/use-save-profile";
@@ -14,8 +15,8 @@ import { toPresentationValues } from "../utils/to-presentation-values";
 
 export function PresentationView() {
   const { profile, isLoading, error: loadError, setProfile } = useProfile();
-  const { savePresentation, isSaving, feedback } = useSaveProfile(setProfile);
-  const { photoUrl } = useProfilePhoto();
+  const { savePresentation, isSaving, feedback, fieldErrors, clearFeedback } = useSaveProfile(setProfile);
+  const { photoUrl, isLoading: isPhotoLoading, loadError: photoLoadError, reloadPhoto } = useProfilePhoto();
   // Kept in the page until the users.interested_opportunities column exists.
   const [interestedOpportunities, setInterestedOpportunities] = useState("");
 
@@ -50,11 +51,20 @@ export function PresentationView() {
       {profile ? (
         <>
           <FeedbackMessage feedback={feedback} />
+          <ProfilePhotoFeedback
+            error={photoLoadError}
+            isLoading={isPhotoLoading}
+            onRetry={() => void reloadPhoto()}
+          />
           <PresentationForm
             initialValues={{ ...toPresentationValues(profile), interestedOpportunities }}
             fullName={getFullName(profile)}
             photoUrl={photoUrl}
             isSaving={isSaving}
+            serverErrors={fieldErrors}
+            onEdit={(field) =>
+              clearFeedback(field === "interestedOpportunities" ? undefined : field)
+            }
             onSubmit={(values) => void handleSubmit(values)}
           />
         </>

@@ -1,33 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import { PROFILE_FEEDBACK_MESSAGES } from "../config/profile-feedback.config";
+import { useEffect, useRef, useState } from "react";
+import { PROFILE_FEEDBACK_MESSAGES } from "../constants/profile-feedback.constants";
 import { profileService } from "../services/profile.service";
 import type { Feedback } from "../types/feedback.types";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 import type { PresentationPayload } from "../types/presentation-payload.types";
 import type { ProfileResponse } from "../types/profile-response.types";
+import type { ProfileFieldErrors } from "../types/profile-field-errors.types";
 import { getProfileErrorMessage } from "../utils/get-profile-error-message";
+import { getProfileFieldErrors } from "../utils/get-profile-field-errors";
 
 export function useSaveProfile(onSaved: (profile: ProfileResponse) => void) {
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({});
+  const savingRef = useRef(false);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  function clearFeedback(field?: keyof ProfileFieldErrors) {
+    setFeedback(null);
+    setFieldErrors((current) => {
+      if (!field) return {};
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
 
   async function save(request: () => Promise<ProfileResponse>, successMessage: string) {
+    if (savingRef.current || !mountedRef.current) return false;
+    savingRef.current = true;
     setIsSaving(true);
-    setFeedback(null);
+    clearFeedback();
     try {
-      onSaved(await request());
+      const profile = await request();
+      if (!mountedRef.current) return false;
+      onSaved(profile);
       setFeedback({ type: "success", message: successMessage });
       return true;
     } catch (error) {
+      if (!mountedRef.current) return false;
+      setFieldErrors(getProfileFieldErrors(error));
       setFeedback({
         type: "error",
         message: getProfileErrorMessage(error, PROFILE_FEEDBACK_MESSAGES.saveError),
       });
       return false;
     } finally {
-      setIsSaving(false);
+      savingRef.current = false;
+      if (mountedRef.current) setIsSaving(false);
     }
   }
 
@@ -45,5 +74,5 @@ export function useSaveProfile(onSaved: (profile: ProfileResponse) => void) {
     );
   }
 
-  return { savePersonalInfo, savePresentation, isSaving, feedback };
+  return { savePersonalInfo, savePresentation, isSaving, feedback, fieldErrors, clearFeedback };
 }

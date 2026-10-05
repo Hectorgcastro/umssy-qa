@@ -73,7 +73,7 @@ describe("ProfileOverviewView", () => {
     render(<ProfileOverviewView />);
 
     expect(await screen.findByText("Valeria Quispe")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Completa tu perfil");
+    expect(screen.getByText(/Completa tu perfil/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Completar perfil" })).toHaveAttribute(
       "href",
       "/profile/personal-info",

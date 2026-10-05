@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PROFILE_VALIDATION_MESSAGES } from "../config/profile-validation.config";
+import { PROFILE_VALIDATION_MESSAGES } from "../constants/profile-validation.constants";
 import type { PersonalInfoValues } from "../types/personal-info-values.types";
 import { getFieldErrorId, getFieldErrorProps } from "./get-field-error-props";
 import { isValidEmail } from "./is-valid-email";

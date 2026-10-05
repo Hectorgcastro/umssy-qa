@@ -3,7 +3,8 @@
 import { FeedbackMessage } from "../components/feedback-message";
 import { PersonalInfoForm } from "../components/personal-info-form";
 import { ProfilePageLayout } from "../components/profile-page-layout";
-import { PROFILE_FEEDBACK_MESSAGES } from "../config/profile-feedback.config";
+import { ProfilePhotoFeedback } from "../components/profile-photo-feedback";
+import { PROFILE_FEEDBACK_MESSAGES } from "../constants/profile-feedback.constants";
 import { useCities } from "../hooks/use-cities";
 import { useProfile } from "../hooks/use-profile";
 import { useProfilePhoto } from "../hooks/use-profile-photo";
@@ -14,8 +15,8 @@ import { toPersonalInfoValues } from "../utils/to-personal-info-values";
 export function PersonalInfoView() {
   const { profile, isLoading, error: loadError, setProfile } = useProfile();
   const { cities, error: citiesError } = useCities();
-  const { savePersonalInfo, isSaving, feedback } = useSaveProfile(setProfile);
-  const { photoUrl, isUploading, error: photoError, uploadPhoto } = useProfilePhoto();
+  const { savePersonalInfo, isSaving, feedback, fieldErrors, clearFeedback } = useSaveProfile(setProfile);
+  const photo = useProfilePhoto();
 
   const handleSubmit = (values: PersonalInfoValues) => {
     void savePersonalInfo(values);
@@ -49,8 +50,26 @@ export function PersonalInfoView() {
             initialValues={toPersonalInfoValues(profile)}
             cities={cities}
             isSaving={isSaving}
-            photo={{ photoUrl, isUploading, error: photoError, onSelectPhoto: uploadPhoto }}
+            serverErrors={fieldErrors}
+            onEdit={clearFeedback}
+            photo={{
+              photoUrl: photo.photoUrl,
+              previewUrl: photo.previewUrl,
+              isUploading: photo.isUploading,
+              isDeleting: photo.isDeleting,
+              error: photo.error,
+              onSelectPhoto: photo.selectPhoto,
+              onConfirmPhoto: () => void photo.confirmPhoto(),
+              onCancelPhoto: photo.cancelPhoto,
+              onDeletePhoto: () => void photo.deletePhoto(),
+            }}
             onSubmit={handleSubmit}
+          />
+          <ProfilePhotoFeedback
+            error={photo.loadError}
+            isLoading={photo.isLoading}
+            isUploading={photo.isUploading || photo.isDeleting}
+            onRetry={() => void photo.reloadPhoto()}
           />
         </>
       ) : null}

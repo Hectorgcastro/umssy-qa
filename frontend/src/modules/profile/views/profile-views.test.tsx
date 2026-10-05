@@ -87,9 +87,9 @@ describe("PersonalInfoView", () => {
       phone: "+591 71111111",
       personalEmail: "valeria@correo.com",
     });
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      "Tus datos personales se guardaron correctamente.",
-    );
+    expect(
+      await screen.findByText("Tus datos personales se guardaron correctamente."),
+    ).toBeInTheDocument();
   }, 15000);
 
   it("restores the saved values when cancelling after saving", async () => {
@@ -180,10 +180,35 @@ describe("PresentationView", () => {
       headline: "Desarrolladora frontend",
       aboutMe: "Systems engineering graduate from UMSS.",
     });
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      "Tu presentación se guardó correctamente.",
-    );
+    expect(await screen.findByText("Tu presentación se guardó correctamente.")).toBeInTheDocument();
     expect(screen.getByLabelText(/Oportunidades que me interesan/)).toHaveValue("Remote work");
+  });
+
+  it("shows the server field errors in Spanish next to each field", async () => {
+    const user = userEvent.setup();
+    vi.mocked(profileService.updatePresentation).mockRejectedValue({
+      response: {
+        status: 400,
+        data: {
+          statusCode: 400,
+          data: [{ field: "headline", message: "Too big: expected string to have <=150 characters" }],
+          detail: "headline: Too big",
+          ok: false,
+        },
+      },
+    });
+    render(<PresentationView />);
+
+    await screen.findByLabelText(/Titular profesional/);
+    await user.click(screen.getByRole("button", { name: "Guardar presentación" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Revisa los datos ingresados e inténtalo de nuevo.",
+    );
+    expect(screen.getByLabelText(/Titular profesional/)).toHaveAccessibleDescription(
+      "Ingresa un titular con hasta 150 caracteres.",
+    );
+    expect(screen.queryByText(/Too big/)).not.toBeInTheDocument();
   });
 
   it("restores the saved values when cancelling after saving", async () => {

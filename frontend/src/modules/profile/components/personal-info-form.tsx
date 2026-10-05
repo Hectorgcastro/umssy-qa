@@ -19,13 +19,17 @@ export function PersonalInfoForm({
   initialValues,
   cities = [],
   isSaving = false,
+  serverErrors = {},
+  onEdit,
   photo,
   onSubmit,
 }: PersonalInfoFormProps) {
   const [values, setValues] = useState<PersonalInfoValues>(initialValues);
-  const [errors, setErrors] = useState<PersonalInfoErrors>({});
+  const [localErrors, setErrors] = useState<PersonalInfoErrors>({});
+  const errors = { ...localErrors, ...serverErrors };
 
   const updateField = (field: keyof PersonalInfoValues, value: string) => {
+    onEdit?.(field);
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
@@ -39,12 +43,14 @@ export function PersonalInfoForm({
   };
 
   const handleCancel = () => {
+    onEdit?.();
     setValues(initialValues);
     setErrors({});
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSaving) return;
     const trimmedValues = trimFormValues(values);
     const validationErrors = validatePersonalInfo(trimmedValues);
     setErrors(validationErrors);

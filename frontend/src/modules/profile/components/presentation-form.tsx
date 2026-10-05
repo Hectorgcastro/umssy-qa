@@ -21,25 +21,31 @@ export function PresentationForm({
   fullName,
   photoUrl,
   isSaving = false,
+  serverErrors = {},
+  onEdit,
   onSubmit,
 }: PresentationFormProps) {
   const [values, setValues] = useState<PresentationValues>(initialValues);
-  const [errors, setErrors] = useState<PresentationErrors>({});
+  const [localErrors, setErrors] = useState<PresentationErrors>({});
+  const errors = { ...localErrors, ...serverErrors };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const field = event.target.name as keyof PresentationValues;
+    onEdit?.(field);
     const { value } = event.target;
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
 
   const handleCancel = () => {
+    onEdit?.();
     setValues(initialValues);
     setErrors({});
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSaving) return;
     const trimmedValues = trimFormValues(values);
     const validationErrors = validatePresentation(trimmedValues);
     setErrors(validationErrors);

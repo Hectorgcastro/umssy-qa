@@ -1,4 +1,4 @@
-import { PHONE_MAX_DIGITS, PHONE_MIN_DIGITS } from "../config/profile-validation.config";
+import { PHONE_MAX_DIGITS, PHONE_MIN_DIGITS } from "../constants/profile-validation.constants";
 import { PHONE_PATTERN } from "../constants/validation.constants";
 
 export function isValidPhone(phone: string): boolean {
