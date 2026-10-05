@@ -1,6 +1,7 @@
 export { MentorAvailabilityView } from "./views/mentor-availability-view";
 export { MentorPublicAvailabilityView } from "./views/mentor-public-availability-view";
 export { AddBlockView } from "./views/add-block-view";
+export { EditBlockView } from "./views/edit-block-view";
 export { BlockForm } from "./components/block-form";
 export { AvailabilityBlockList } from "./components/availability-block-list";
 export { DeleteBlockDialog } from "./components/delete-block-dialog";
