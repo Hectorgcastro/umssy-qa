@@ -11,13 +11,14 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { toBoliviaTime, toUtcIso } from "@/shared/utils/date-time";
+import { cn } from "cn";
 import { FORM_TEXT, REQUIRED_MESSAGES, TIME_OPTIONS } from "../constants/availability.constants";
 import type { BlockFormErrors } from "../types/block-form-errors.types";
 import type { BlockFormField } from "../types/block-form-field.types";
 import type { BlockFormProps } from "../types/block-form-props.types";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 import { validateBlock } from "../utils/block-validation";
-import { formatLongDate, getBoliviaToday, toCalendarDate, toDateString } from "../utils/calendar-date";
+import { formatDayAndMonth, formatLongDate, getBoliviaToday, toCalendarDate, toDateString } from "../utils/calendar-date";
 
 function RequiredMark() {
   return (
@@ -98,7 +99,12 @@ export function BlockForm({
   };
 
   return (
-    <Card className="w-full [--card-spacing:--spacing(4)] sm:[--card-spacing:--spacing(6)]">
+    <Card
+      className={cn(
+        "w-full [--card-spacing:--spacing(4)] sm:[--card-spacing:--spacing(6)]",
+        mode === "edit" && "ring-1 ring-border-strong",
+      )}
+    >
       <CardHeader>
         <CardTitle className="text-lg font-bold">{text.title}</CardTitle>
         <CardDescription>{text.description}</CardDescription>
@@ -106,46 +112,83 @@ export function BlockForm({
 
       <form onSubmit={handleSubmit} noValidate className="contents">
         <CardContent className="flex flex-col gap-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className={cn("grid gap-6", mode !== "edit" && "md:grid-cols-2")}>
             <Field data-invalid={errors.date ? true : undefined}>
               <FieldLabel htmlFor="date" className="font-semibold">
-                Fecha
+                {text.dateLabel}
                 <RequiredMark />
               </FieldLabel>
               <div className="relative">
-                <Input
-                  id="date"
-                  readOnly
-                  value={date ? formatLongDate(date) : ""}
-                  placeholder="Selecciona una fecha en el calendario"
-                  aria-invalid={errors.date ? true : undefined}
-                  aria-describedby={errors.date ? "date-error" : "date-hint"}
-                  className="h-10 pr-10"
-                />
-                <CalendarDaysIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-                />
+                {mode === "edit" ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "flex h-10 items-center rounded-lg border border-transparent px-3 text-sm font-medium",
+                        "bg-danger/10 text-ink",
+                      )}
+                    >
+                      {date ? formatDayAndMonth(date) : ""}
+                    </span>
+                    <input
+                      id="date"
+                      type="date"
+                      value={date}
+                      min={toDateString(today)}
+                      onChange={(event) =>
+                        handleDateSelect(event.target.value ? toCalendarDate(event.target.value) : undefined)
+                      }
+                      aria-invalid={errors.date ? true : undefined}
+                      aria-describedby={errors.date ? "date-error" : undefined}
+                      className={cn(
+                        "absolute inset-0 h-full w-full cursor-pointer opacity-0",
+                        "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
+                      )}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      id="date"
+                      readOnly
+                      value={date ? formatLongDate(date) : ""}
+                      placeholder="Selecciona una fecha en el calendario"
+                      aria-invalid={errors.date ? true : undefined}
+                      aria-describedby={errors.date ? "date-error" : "date-hint"}
+                      className="h-10 pr-10"
+                    />
+                    <CalendarDaysIcon
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                  </>
+                )}
               </div>
-              <Calendar
-                mode="single"
-                locale={es}
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                defaultMonth={selectedDate ?? today}
-                disabled={{ before: today }}
-                className="w-full rounded-lg border [--cell-size:--spacing(9)]"
-              />
-              <FieldDescription id="date-hint" className="text-xs">
-                Los días anteriores a hoy no se pueden elegir.
-              </FieldDescription>
+              {mode !== "edit" && (
+                <>
+                  <Calendar
+                    mode="single"
+                    locale={es}
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    defaultMonth={selectedDate ?? today}
+                    disabled={{ before: today }}
+                    className="w-full rounded-lg border [--cell-size:--spacing(9)]"
+                  />
+                  <FieldDescription id="date-hint" className="text-xs">
+                    Los días anteriores a hoy no se pueden elegir.
+                  </FieldDescription>
+                </>
+              )}
               {errors.date && <FieldError id="date-error">{errors.date}</FieldError>}
             </Field>
 
-            <FieldGroup className="gap-4">
+            <FieldGroup
+              className={cn("gap-4", mode === "edit" && "md:grid md:grid-cols-2")}
+            >
               <Field data-invalid={errors.startAt ? true : undefined}>
                 <FieldLabel htmlFor="startAt" className="font-semibold">
-                  Hora de inicio
+                  {text.startLabel}
                   <RequiredMark />
                 </FieldLabel>
                 <NativeSelect
@@ -169,7 +212,7 @@ export function BlockForm({
 
               <Field data-invalid={errors.endAt ? true : undefined}>
                 <FieldLabel htmlFor="endAt" className="font-semibold">
-                  Hora de fin
+                  {text.endLabel}
                   <RequiredMark />
                 </FieldLabel>
                 <NativeSelect
@@ -191,9 +234,11 @@ export function BlockForm({
                 {errors.endAt && <FieldError id="endAt-error">{errors.endAt}</FieldError>}
               </Field>
 
-              <FieldDescription className="text-xs">
-                La hora de fin debe ser posterior a la de inicio. Horario en hora de Bolivia (GMT-4).
-              </FieldDescription>
+              {mode !== "edit" && (
+                <FieldDescription className="text-xs">
+                  La hora de fin debe ser posterior a la de inicio. Horario en hora de Bolivia (GMT-4).
+                </FieldDescription>
+              )}
             </FieldGroup>
           </div>
 
@@ -205,11 +250,31 @@ export function BlockForm({
           )}
         </CardContent>
 
-        <CardFooter className="flex-col-reverse gap-2 bg-transparent sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto" onClick={onCancel}>
+        <CardFooter
+          className={cn(
+            "flex-col-reverse gap-2 bg-transparent",
+            mode === "edit" ? "items-stretch" : "sm:flex-row sm:justify-end",
+          )}
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className={cn("w-full", mode !== "edit" && "sm:w-auto")}
+            onClick={onCancel}
+          >
             Cancelar
           </Button>
-          <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            size="lg"
+            className={cn(
+              "w-full",
+              mode !== "edit" && "sm:w-auto",
+              mode === "edit" && "bg-danger text-surface hover:bg-danger/90",
+            )}
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Guardando..." : text.submit}
           </Button>
         </CardFooter>

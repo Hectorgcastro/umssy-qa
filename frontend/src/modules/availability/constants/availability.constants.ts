@@ -22,18 +22,29 @@ export const BLOCK_MESSAGES = {
   differentDays: "El bloque debe empezar y terminar el mismo día",
 } as const;
 
-export const FORM_TEXT: Record<BlockFormMode, { title: string; description: string; submit: string }> = {
+export const FORM_TEXT: Record<
+  BlockFormMode,
+  { title: string; description: string; submit: string; dateLabel: string; startLabel: string; endLabel: string }
+> = {
   create: {
     title: "Nuevo bloque de disponibilidad",
     description: "Elige la fecha y el horario en que puedes atender sesiones de mentoría.",
     submit: "Guardar bloque",
+    dateLabel: "Fecha",
+    startLabel: "Hora de inicio",
+    endLabel: "Hora de fin",
   },
   edit: {
     title: "Editar bloque",
     description: "Modifica la fecha o el horario del bloque.",
     submit: "Guardar cambios",
+    dateLabel: "Día",
+    startLabel: "Desde",
+    endLabel: "Hasta",
   },
 };
+
+export const EDIT_BLOCK_HINT = "Solo se puede editar si el bloque no tiene ninguna cita asociada.";
 
 export const EDIT_BLOCK_LABEL = FORM_TEXT.edit.title;
 
