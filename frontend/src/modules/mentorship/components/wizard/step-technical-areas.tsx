@@ -1,14 +1,16 @@
 "use client";
 
-import { TECHNICAL_AREAS } from "../../data/technical-areas";
+import type { TechnicalAreaResponse } from "../../types/technical-area-response.types";
 import { TechnicalAreaCard } from "./technical-area-card";
 
 type StepTechnicalAreasProps = {
+  technicalAreas: TechnicalAreaResponse[];
   selectedIds: string[];
   onToggle: (id: string) => void;
 };
 
 export function StepTechnicalAreas({
+  technicalAreas,
   selectedIds,
   onToggle,
 }: StepTechnicalAreasProps) {
@@ -37,7 +39,7 @@ export function StepTechnicalAreas({
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {TECHNICAL_AREAS.map((area) => (
+        {technicalAreas.map((area) => (
           <TechnicalAreaCard
             key={area.id}
             area={area}

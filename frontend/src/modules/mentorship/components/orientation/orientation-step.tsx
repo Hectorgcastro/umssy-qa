@@ -1,14 +1,16 @@
 "use client";
 
 import { CheckCircle } from "lucide-react";
-import { ORIENTATION_TYPES } from "../../data/orientation-types";
+import type { OrientationTypeResponse } from "../../types/orientation-type-response.types";
 
 type OrientationStepProps = {
+  orientationTypes: OrientationTypeResponse[];
   selectedOrientationTypeIds: string[];
   onSelectionChange: (ids: string[]) => void;
 };
 
 export function OrientationStep({
+  orientationTypes,
   selectedOrientationTypeIds,
   onSelectionChange,
 }: OrientationStepProps) {
@@ -47,18 +49,16 @@ export function OrientationStep({
       </div>
 
       {!hasSelection && (
-        <p
-          className="text-sm font-medium text-red-600"
-          role="alert"
-        >
+        <p className="text-sm font-medium text-red-600" role="alert">
           Debe seleccionarse al menos un tipo de orientación para continuar
         </p>
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {ORIENTATION_TYPES.map((orientation) => {
-          const isSelected =
-            selectedOrientationTypeIds.includes(orientation.id);
+        {orientationTypes.map((orientation) => {
+          const isSelected = selectedOrientationTypeIds.includes(
+            orientation.id,
+          );
 
           return (
             <button
@@ -75,7 +75,7 @@ export function OrientationStep({
             >
               <div className="flex w-full items-start justify-between">
                 <span className="text-sm font-semibold text-ink">
-                  {orientation.label}
+                  {orientation.name}
                 </span>
 
                 <div

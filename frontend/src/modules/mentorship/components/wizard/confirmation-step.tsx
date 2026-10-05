@@ -1,18 +1,20 @@
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ORIENTATION_TYPES } from "../../data/orientation-types";
-import { TECHNICAL_AREAS } from "../../data/technical-areas";
+import type { OrientationTypeResponse } from "../../types/orientation-type-response.types";
+import type { TechnicalAreaResponse } from "../../types/technical-area-response.types";
 
 type ConfirmationStepProps = {
   wantsToParticipate: boolean;
-  selectedTechnicalAreaIds: string[];
-  selectedOrientationTypeIds: string[];
+  selectedTechnicalAreas: TechnicalAreaResponse[];
+  selectedOrientationTypes: OrientationTypeResponse[];
   isActivating: boolean;
+  activationError: string | null;
   onEditTechnicalAreas: () => void;
   onEditOrientationTypes: () => void;
   onActivate: () => void;
@@ -20,21 +22,14 @@ type ConfirmationStepProps = {
 
 export function ConfirmationStep({
   wantsToParticipate,
-  selectedTechnicalAreaIds,
-  selectedOrientationTypeIds,
+  selectedTechnicalAreas,
+  selectedOrientationTypes,
   isActivating,
+  activationError,
   onEditTechnicalAreas,
   onEditOrientationTypes,
   onActivate,
 }: ConfirmationStepProps) {
-  const selectedTechnicalAreas = TECHNICAL_AREAS.filter((area) =>
-    selectedTechnicalAreaIds.includes(area.id),
-  );
-
-  const selectedOrientationTypes = ORIENTATION_TYPES.filter((orientation) =>
-    selectedOrientationTypeIds.includes(orientation.id),
-  );
-
   return (
     <div className="space-y-6">
       <div>
@@ -134,13 +129,18 @@ export function ConfirmationStep({
                 key={orientation.id}
                 className="rounded-full border border-border px-3 py-1 text-sm text-ink"
               >
-                {orientation.label}
+                {orientation.name}
               </span>
             ))}
           </div>
         </CardContent>
       </Card>
 
+      {activationError ? (
+        <Alert variant="destructive" className="px-4 py-3">
+          <AlertDescription>{activationError}</AlertDescription>
+        </Alert>
+      ) : null}
       <Button
         type="button"
         onClick={onActivate}

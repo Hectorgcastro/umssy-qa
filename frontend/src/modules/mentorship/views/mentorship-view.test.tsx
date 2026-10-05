@@ -1,12 +1,96 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithQuery } from "@/shared/testing/render-with-query";
+import { MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY } from "../constants/mentorship-wizard.constants";
+import { clearMentorshipWizardDraft } from "../services/mentorship-wizard-draft.service";
 import { MentorshipView } from "./mentorship-view";
 
-afterEach(cleanup);
+const integrationMocks = vi.hoisted(() => ({
+  activateMentor: vi.fn(),
+  retryTechnicalAreas: vi.fn(),
+  retryOrientationTypes: vi.fn(),
+  isTechnicalAreasError: false,
+  isOrientationTypesError: false,
+}));
+
+vi.mock("../services/mentor-activation.service", () => ({
+  activateMentor: integrationMocks.activateMentor,
+}));
+
+vi.mock("../hooks/use-mentorship-catalogs", () => ({
+  useMentorshipCatalogs: () => ({
+    technicalAreas: [
+      {
+        id: "550e8400-e29b-41d4-a716-446655440001",
+        name: "Backend",
+        description: "Desarrollo backend",
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440002",
+        name: "Frontend",
+        description: "Desarrollo frontend",
+      },
+    ],
+    orientationTypes: [
+      {
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "Orientación profesional",
+        description: "Orientación profesional",
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440004",
+        name: "Orientación técnica",
+        description: "Orientación técnica",
+      },
+    ],
+    isTechnicalAreasLoading: false,
+    isTechnicalAreasError: integrationMocks.isTechnicalAreasError,
+    retryTechnicalAreas: integrationMocks.retryTechnicalAreas,
+    isOrientationTypesLoading: false,
+    isOrientationTypesError: integrationMocks.isOrientationTypesError,
+    retryOrientationTypes: integrationMocks.retryOrientationTypes,
+  }),
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  integrationMocks.isTechnicalAreasError = false;
+  integrationMocks.isOrientationTypesError = false;
+  integrationMocks.activateMentor.mockResolvedValue({
+    id: "550e8400-e29b-41d4-a716-446655440005",
+  });
+});
+
+afterEach(() => {
+  cleanup();
+  clearMentorshipWizardDraft();
+});
+
+function advanceToConfirmation() {
+  fireEvent.click(screen.getByRole("checkbox"));
+
+  const nextButton = screen.getByRole("button", {
+    name: /Continuar/i,
+  });
+
+  fireEvent.click(nextButton);
+  fireEvent.click(screen.getByRole("button", { name: /Backend/i }));
+  fireEvent.click(nextButton);
+  fireEvent.click(
+    screen.getByRole("button", { name: /Orientación profesional/i }),
+  );
+  fireEvent.click(nextButton);
+}
 
 describe("MentorshipView", () => {
   it("renderiza inicialmente el paso 1 con participación desmarcada", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     expect(
       screen.getByRole("heading", { name: "Participación" }),
@@ -28,7 +112,7 @@ describe("MentorshipView", () => {
   });
 
   it("habilita Continuar al seleccionar participación", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     const checkbox = screen.getByRole("checkbox");
 
@@ -44,7 +128,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite seleccionar participación desde toda la fila sin duplicar el cambio", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByText("Quiero participar como mentor"));
 
@@ -56,7 +140,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite avanzar entre los pasos después de aceptar participación", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -72,7 +156,7 @@ describe("MentorshipView", () => {
   });
 
   it("no permite avanzar del paso 2 sin seleccionar un área", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -96,7 +180,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite avanzar del paso 2 al seleccionar al menos un área", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -124,7 +208,7 @@ describe("MentorshipView", () => {
   });
 
   it("deshabilita Volver en el primer paso", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     const backButton = screen.getByRole("button", {
       name: /Volver/i,
@@ -136,7 +220,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite regresar al paso anterior", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -160,7 +244,7 @@ describe("MentorshipView", () => {
   });
 
   it("conserva la participación al avanzar y regresar", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     const checkbox = screen.getByRole("checkbox");
 
@@ -184,7 +268,7 @@ describe("MentorshipView", () => {
   });
 
   it("muestra el título principal del wizard", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     expect(
       screen.getByText("Participa como mentor"),
@@ -192,7 +276,7 @@ describe("MentorshipView", () => {
   });
 
   it("actualiza el contador al seleccionar áreas", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -218,7 +302,7 @@ describe("MentorshipView", () => {
   });
 
   it("deshabilita Continuar en el paso 3 sin orientación seleccionada", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -254,7 +338,7 @@ describe("MentorshipView", () => {
   });
 
   it("habilita Continuar en el paso 3 al seleccionar una orientación", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -284,7 +368,7 @@ describe("MentorshipView", () => {
   });
 
   it("muestra la confirmación en el último paso", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -324,7 +408,7 @@ describe("MentorshipView", () => {
   });
 
   it("muestra las orientaciones y permite seleccionar varias", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -367,7 +451,7 @@ describe("MentorshipView", () => {
   });
 
   it("conserva las orientaciones al avanzar y regresar", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -416,5 +500,114 @@ describe("MentorshipView", () => {
     expect(
       professionalButton.getAttribute("aria-pressed"),
     ).toBe("true");
+  });
+
+  it("retries only technical areas from their error state", () => {
+    integrationMocks.isTechnicalAreasError = true;
+    renderWithQuery(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Continuar/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(integrationMocks.retryTechnicalAreas).toHaveBeenCalledTimes(1);
+    expect(integrationMocks.retryOrientationTypes).not.toHaveBeenCalled();
+  });
+
+  it("does not show a technical-area error when orientation types fail", () => {
+    integrationMocks.isOrientationTypesError = true;
+    renderWithQuery(<MentorshipView />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Continuar/i }));
+
+    expect(screen.getByText("Paso 2: Áreas técnicas")).toBeInTheDocument();
+    expect(screen.getByText("Backend")).toBeInTheDocument();
+    expect(
+      screen.queryByText("No se pudieron cargar las áreas técnicas."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows success only after one activation resolves and clears the draft", async () => {
+    let resolveActivation!: (value: { id: string }) => void;
+    integrationMocks.activateMentor.mockReturnValue(
+      new Promise((resolve) => {
+        resolveActivation = resolve;
+      }),
+    );
+    renderWithQuery(<MentorshipView />);
+    advanceToConfirmation();
+
+    await waitFor(() => {
+      expect(
+        localStorage.getItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY),
+      ).not.toBeNull();
+    });
+
+    const activateButton = screen.getByRole("button", {
+      name: "Activar participación",
+    });
+    fireEvent.click(activateButton);
+    fireEvent.click(activateButton);
+
+    expect(integrationMocks.activateMentor).toHaveBeenCalledTimes(1);
+    expect(integrationMocks.activateMentor).toHaveBeenCalledWith({
+      technicalAreaIds: ["550e8400-e29b-41d4-a716-446655440001"],
+      orientationTypeIds: ["550e8400-e29b-41d4-a716-446655440003"],
+    });
+    expect(
+      screen.queryByRole("heading", {
+        name: "Tu participación como mentor está activa",
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      localStorage.getItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY),
+    ).not.toBeNull();
+
+    await act(async () => {
+      resolveActivation({ id: "550e8400-e29b-41d4-a716-446655440005" });
+    });
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Tu participación como mentor está activa",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      localStorage.getItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY),
+    ).toBeNull();
+  });
+
+  it("keeps selections and the draft when activation returns a conflict", async () => {
+    integrationMocks.activateMentor.mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 409 },
+    });
+    renderWithQuery(<MentorshipView />);
+    advanceToConfirmation();
+
+    await waitFor(() => {
+      expect(
+        localStorage.getItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY),
+      ).not.toBeNull();
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Activar participación" }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Tu participación como mentor ya está activa.",
+    );
+    expect(screen.getByText("Backend")).toBeInTheDocument();
+    expect(screen.getByText("Orientación profesional")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", {
+        name: "Tu participación como mentor está activa",
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      localStorage.getItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY),
+    ).not.toBeNull();
   });
 });
