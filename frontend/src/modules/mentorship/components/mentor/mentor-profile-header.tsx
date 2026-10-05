@@ -90,12 +90,13 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
 
                 <div className="mt-2 flex flex-wrap gap-2">
                   {mentor.professionalInterests.map((interest) => (
-                    <span
+                    <Badge
                       key={interest}
-                      className="rounded-lg border border-umssy-border bg-umssy-background px-3 py-1 text-sm text-umssy-secondary"
+                      variant="outline"
+                      className="h-auto rounded-lg border-umssy-border bg-umssy-background px-3 py-1 text-sm font-normal text-umssy-secondary"
                     >
                       {interest}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>

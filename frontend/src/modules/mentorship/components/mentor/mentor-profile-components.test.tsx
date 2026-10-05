@@ -109,9 +109,13 @@ describe("Mentor profile components", () => {
       container.querySelector('[data-slot="avatar-fallback"]'),
     ).toHaveTextContent("AR");
     expect(screen.getByText("Intereses profesionales")).toBeInTheDocument();
-    expect(screen.getByText("Arquitectura de software")).toBeInTheDocument();
-    expect(screen.getByText("Cloud Computing")).toBeInTheDocument();
-    expect(screen.getByText("Sistemas distribuidos")).toBeInTheDocument();
+    [
+      "Arquitectura de software",
+      "Cloud Computing",
+      "Sistemas distribuidos",
+    ].forEach((interest) => {
+      expect(screen.getByText(interest)).toHaveAttribute("data-slot", "badge");
+    });
     expect(screen.getByText(/Ingeniería de Sistemas/)).toBeInTheDocument();
   });
 
