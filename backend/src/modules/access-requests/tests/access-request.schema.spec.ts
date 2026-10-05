@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAccessRequestSchema } from '../requests/create-access-request.schema.js';
 import { updateAccessRequestSchema } from '../requests/update-access-request.schema.js';
-import { isAdult, isEntryYearCoherent } from '../requests/access-request-fields.js';
+import { isAdult, isGraduationYearCoherent } from '../requests/access-request-fields.js';
 
 const validPayload = {
   firstName: 'María José',
@@ -12,7 +12,8 @@ const validPayload = {
   email: 'Maria@Umss.edu.bo',
   phone: '71234567',
   birthDate: '2000-05-10',
-  entryYear: 2019,
+  career: 'Licenciatura en Ingeniería de Sistemas',
+  graduationYear: 2019,
 };
 
 function messagesOf(payload: unknown, schema: typeof createAccessRequestSchema | typeof updateAccessRequestSchema = createAccessRequestSchema) {
@@ -72,16 +73,17 @@ describe('createAccessRequestSchema', () => {
   it('rechaza campos faltantes con mensajes en español', () => {
     const messages = messagesOf({});
     expect(messages).toContain('firstName: Los nombres son obligatorios');
-    expect(messages).toContain('entryYear: El año de ingreso es obligatorio');
+    expect(messages).toContain('graduationYear: El año de titulación es obligatorio');
+    expect(messages).toContain('career: La carrera no es válida');
   });
 
   describe('mayoría de edad (con fecha fija 2026-10-05)', () => {
     it('acepta quien cumple 18 hoy', () => {
-      expect(createAccessRequestSchema.safeParse({ ...validPayload, birthDate: '2008-10-05', entryYear: 2023 }).success).toBe(true);
+      expect(createAccessRequestSchema.safeParse({ ...validPayload, birthDate: '2008-10-05', graduationYear: 2026 }).success).toBe(true);
     });
 
     it('rechaza quien cumple 18 mañana', () => {
-      expect(messagesOf({ ...validPayload, birthDate: '2008-10-06', entryYear: 2023 })).toContain('birthDate: Debes ser mayor de 18 años');
+      expect(messagesOf({ ...validPayload, birthDate: '2008-10-06', graduationYear: 2026 })).toContain('birthDate: Debes ser mayor de 18 años');
     });
 
     it('rechaza un nacimiento en el futuro', () => {
@@ -94,23 +96,43 @@ describe('createAccessRequestSchema', () => {
     });
   });
 
-  describe('año de ingreso (con fecha fija 2026-10-05)', () => {
+  describe('año de titulación (con fecha fija 2026-10-05)', () => {
     it('acepta el año actual', () => {
-      expect(createAccessRequestSchema.safeParse({ ...validPayload, entryYear: 2026 }).success).toBe(true);
+      expect(createAccessRequestSchema.safeParse({ ...validPayload, graduationYear: 2026 }).success).toBe(true);
     });
 
     it('rechaza un año futuro', () => {
-      expect(messagesOf({ ...validPayload, entryYear: 2027 })).toContain('entryYear: El año de ingreso no puede ser futuro');
+      expect(messagesOf({ ...validPayload, graduationYear: 2027 })).toContain('graduationYear: El año de titulación no puede ser futuro');
     });
 
-    it('rechaza ingresar antes de los 15 años (nace en 2000, mínimo 2015)', () => {
-      expect(createAccessRequestSchema.safeParse({ ...validPayload, entryYear: 2015 }).success).toBe(true);
-      expect(messagesOf({ ...validPayload, entryYear: 2014 })).toContain('entryYear: El año de ingreso no puede ser anterior a los 15 años de edad');
+    it('rechaza titularse antes de los 18 años (nace en 2000, mínimo 2018)', () => {
+      expect(createAccessRequestSchema.safeParse({ ...validPayload, graduationYear: 2018 }).success).toBe(true);
+      expect(messagesOf({ ...validPayload, graduationYear: 2017 })).toContain('graduationYear: El año de titulación no puede ser anterior a los 18 años de edad');
     });
 
     it('rechaza decimales y textos', () => {
-      expect(messagesOf({ ...validPayload, entryYear: 2019.5 })).toContain('entryYear: El año de ingreso debe ser un número entero');
-      expect(messagesOf({ ...validPayload, entryYear: '2019' }).some((m) => m.startsWith('entryYear'))).toBe(true);
+      expect(messagesOf({ ...validPayload, graduationYear: 2019.5 })).toContain('graduationYear: El año de titulación debe ser un número entero');
+      expect(messagesOf({ ...validPayload, graduationYear: '2019' }).some((m) => m.startsWith('graduationYear'))).toBe(true);
+    });
+
+    it('es obligatorio', () => {
+      const { graduationYear: _graduationYear, ...rest } = validPayload;
+      expect(messagesOf(rest)).toContain('graduationYear: El año de titulación es obligatorio');
+    });
+  });
+
+  describe('carrera', () => {
+    it.each(['Licenciatura en Ingeniería de Sistemas', 'Licenciatura Ingeniería en Informática'])('acepta "%s"', (career) => {
+      expect(createAccessRequestSchema.safeParse({ ...validPayload, career }).success).toBe(true);
+    });
+
+    it.each(['Ingeniería de Sistemas', 'licenciatura en ingeniería de sistemas', ''])('rechaza "%s"', (career) => {
+      expect(messagesOf({ ...validPayload, career })).toContain('career: La carrera no es válida');
+    });
+
+    it('es obligatoria', () => {
+      const { career: _career, ...rest } = validPayload;
+      expect(messagesOf(rest)).toContain('career: La carrera no es válida');
     });
   });
 });
@@ -142,11 +164,19 @@ describe('updateAccessRequestSchema', () => {
     expect(messagesOf({ sisCode: 'abc' }, updateAccessRequestSchema)).toContain('sisCode: El código SIS solo puede contener dígitos');
   });
 
+  it('acepta solo graduationYear, sin birthDate', () => {
+    expect(updateAccessRequestSchema.safeParse({ graduationYear: 1990 }).success).toBe(true);
+  });
+
   it('valida la coherencia solo si llegan ambos campos', () => {
-    expect(updateAccessRequestSchema.safeParse({ entryYear: 1990 }).success).toBe(true);
-    expect(messagesOf({ entryYear: 2014, birthDate: '2000-05-10' }, updateAccessRequestSchema)).toContain(
-      'entryYear: El año de ingreso no puede ser anterior a los 15 años de edad',
+    expect(messagesOf({ graduationYear: 2017, birthDate: '2000-05-10' }, updateAccessRequestSchema)).toContain(
+      'graduationYear: El año de titulación no puede ser anterior a los 18 años de edad',
     );
+  });
+
+  it('acepta career opcional y rechaza null', () => {
+    expect(updateAccessRequestSchema.safeParse({ career: 'Licenciatura Ingeniería en Informática' }).success).toBe(true);
+    expect(messagesOf({ career: null }, updateAccessRequestSchema)).toContain('career: La carrera no es válida');
   });
 });
 
@@ -157,8 +187,8 @@ describe('reglas de fecha', () => {
     expect(isAdult(new Date('2008-03-01T00:00:00Z'), now)).toBe(false);
   });
 
-  it('isEntryYearCoherent usa el año de nacimiento más 15', () => {
-    expect(isEntryYearCoherent(2015, new Date('2000-12-31T00:00:00Z'))).toBe(true);
-    expect(isEntryYearCoherent(2014, new Date('2000-01-01T00:00:00Z'))).toBe(false);
+  it('isGraduationYearCoherent usa el año de nacimiento más 18', () => {
+    expect(isGraduationYearCoherent(2018, new Date('2000-12-31T00:00:00Z'))).toBe(true);
+    expect(isGraduationYearCoherent(2017, new Date('2000-01-01T00:00:00Z'))).toBe(false);
   });
 });

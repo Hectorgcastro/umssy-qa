@@ -5,7 +5,7 @@ import {
   AccessRequestNotEditableException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
-  InvalidEntryYearException,
+  InvalidGraduationYearException,
 } from '../exceptions/index.js';
 
 function row(overrides: Record<string, unknown> = {}) {
@@ -20,7 +20,8 @@ function row(overrides: Record<string, unknown> = {}) {
     email: 'ana@umss.edu.bo',
     phone: null,
     birthDate: new Date('2000-05-10T00:00:00Z'),
-    entryYear: 2019,
+    graduationYear: 2019,
+    career: { title: 'Licenciatura en Ingeniería de Sistemas' },
     documentFileId: null,
     createdAt: now,
     updatedAt: now,
@@ -75,17 +76,26 @@ describe('AccessRequestsService', () => {
     expect(result).toMatchObject({ id: 'id-1', phone: '71234567', status: 'draft', birthDate: '2000-05-10' });
   });
 
-  it('update valida el año de ingreso nuevo contra la fecha de nacimiento guardada', async () => {
+  it('update valida el año de titulación nuevo contra la fecha de nacimiento guardada', async () => {
     repository.findById.mockResolvedValue(row());
 
-    await expect(service.update('id-1', { entryYear: 2014 })).rejects.toBeInstanceOf(InvalidEntryYearException);
+    await expect(service.update('id-1', { graduationYear: 2017 })).rejects.toBeInstanceOf(InvalidGraduationYearException);
     expect(repository.updateDraft).not.toHaveBeenCalled();
   });
 
-  it('update valida la fecha de nacimiento nueva contra el año de ingreso guardado', async () => {
+  it('update valida la fecha de nacimiento nueva contra el año de titulación guardado', async () => {
     repository.findById.mockResolvedValue(row());
 
-    await expect(service.update('id-1', { birthDate: new Date('2008-01-01T00:00:00Z') })).rejects.toBeInstanceOf(InvalidEntryYearException);
+    await expect(service.update('id-1', { birthDate: new Date('2008-01-01T00:00:00Z') })).rejects.toBeInstanceOf(InvalidGraduationYearException);
+  });
+
+  it('update acepta solo graduationYear coherente con la fecha de nacimiento guardada', async () => {
+    repository.findById.mockResolvedValue(row());
+    repository.updateDraft.mockResolvedValue(row({ graduationYear: 2018 }));
+
+    await service.update('id-1', { graduationYear: 2018 });
+
+    expect(repository.updateDraft).toHaveBeenCalledWith('id-1', { graduationYear: 2018 });
   });
 
   describe('duplicados', () => {

@@ -202,6 +202,11 @@ export type AccessRequestDocumentType = Prisma.AccessRequestDocumentTypeModel
  */
 export type File = Prisma.FileModel
 /**
+ * Model Career
+ * 
+ */
+export type Career = Prisma.CareerModel
+/**
  * Model AccessRequest
  * 
  */

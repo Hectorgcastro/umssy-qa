@@ -553,6 +553,18 @@ model File {
   @@map("files")
 }
 
+model Career {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  accessRequests AccessRequest[]
+
+  @@map("careers")
+}
+
 model AccessRequest {
   id              String    @id @default(uuid()) @db.Uuid
   requestCode     String?   @unique @map("request_code") @db.VarChar(20)
@@ -564,7 +576,8 @@ model AccessRequest {
   email           String    @db.VarChar(150)
   phone           String?   @db.VarChar(8)
   birthDate       DateTime  @map("birth_date") @db.Date
-  entryYear       Int       @map("entry_year") @db.SmallInt
+  graduationYear  Int       @map("graduation_year") @db.SmallInt
+  careerId        String    @map("career_id") @db.Uuid
   statusId        String    @map("status_id") @db.Uuid
   documentTypeId  String?   @map("document_type_id") @db.Uuid
   documentFileId  String?   @unique @map("document_file_id") @db.Uuid
@@ -579,10 +592,12 @@ model AccessRequest {
   documentType AccessRequestDocumentType? @relation(fields: [documentTypeId], references: [id], onDelete: Restrict)
   documentFile File?                      @relation(fields: [documentFileId], references: [id], onDelete: SetNull)
   reviewedBy   User?                      @relation("AccessRequestReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  career       Career                     @relation(fields: [careerId], references: [id], onDelete: Restrict)
 
   activationOtps ActivationOtp[]
 
   @@index([statusId])
+  @@index([careerId])
   @@index([sisCode])
   @@index([idCardNumber])
   @@index([email])

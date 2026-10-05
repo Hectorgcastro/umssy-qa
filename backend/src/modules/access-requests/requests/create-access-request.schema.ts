@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { ENTRY_YEAR_COHERENCE_MESSAGE, accessRequestFields, hasEntryYearConflict } from './access-request-fields.js';
+import { GRADUATION_YEAR_COHERENCE_MESSAGE, accessRequestFields, hasGraduationYearConflict } from './access-request-fields.js';
 
 export const createAccessRequestSchema = z.object(accessRequestFields).superRefine((data, ctx) => {
-  if (hasEntryYearConflict(data)) {
-    ctx.addIssue({ code: 'custom', path: ['entryYear'], message: ENTRY_YEAR_COHERENCE_MESSAGE });
+  if (hasGraduationYearConflict(data)) {
+    ctx.addIssue({ code: 'custom', path: ['graduationYear'], message: GRADUATION_YEAR_COHERENCE_MESSAGE });
   }
 });
 

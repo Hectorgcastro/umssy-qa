@@ -83,6 +83,7 @@ export const ModelName = {
   AccessRequestStatus: 'AccessRequestStatus',
   AccessRequestDocumentType: 'AccessRequestDocumentType',
   File: 'File',
+  Career: 'Career',
   AccessRequest: 'AccessRequest',
   ActivationOtp: 'ActivationOtp'
 } as const
@@ -525,6 +526,17 @@ export const FileScalarFieldEnum = {
 export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
 
 
+export const CareerScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CareerScalarFieldEnum = (typeof CareerScalarFieldEnum)[keyof typeof CareerScalarFieldEnum]
+
+
 export const AccessRequestScalarFieldEnum = {
   id: 'id',
   requestCode: 'requestCode',
@@ -536,7 +548,8 @@ export const AccessRequestScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   birthDate: 'birthDate',
-  entryYear: 'entryYear',
+  graduationYear: 'graduationYear',
+  careerId: 'careerId',
   statusId: 'statusId',
   documentTypeId: 'documentTypeId',
   documentFileId: 'documentFileId',
