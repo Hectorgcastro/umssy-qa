@@ -3,7 +3,7 @@ import {
   CERTIFICATION_VALIDATION_MESSAGES,
   ISSUING_ORGANIZATION_MAX_LENGTH,
 } from "../config/certification-validation.config";
-import { ISO_DATE_PATTERN } from "../constants/validation.constants";
+import { BUSINESS_TIMEZONE, ISO_DATE_PATTERN } from "../constants/validation.constants";
 import type { CertificationErrors } from "../types/certification-errors.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 
@@ -16,10 +16,12 @@ function isValidIsoDate(value: string): boolean {
 }
 
 export function getTodayIsoDate(): string {
-  const today = new Date();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${today.getFullYear()}-${month}-${day}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
 export function validateCertification(values: CreateCertificationDto): CertificationErrors {

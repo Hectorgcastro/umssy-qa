@@ -7,10 +7,16 @@ const CERTIFICATE_PDF = new File(["certificate"], "certificate.pdf", { type: "ap
 
 function renderField(props: Partial<Parameters<typeof CertificationDocumentField>[0]> = {}) {
   const onSelectFile = vi.fn();
+  const onClearFile = vi.fn();
   render(
-    <CertificationDocumentField selectedFile={null} onSelectFile={onSelectFile} {...props} />,
+    <CertificationDocumentField
+      selectedFile={null}
+      onSelectFile={onSelectFile}
+      onClearFile={onClearFile}
+      {...props}
+    />,
   );
-  return { onSelectFile, user: userEvent.setup() };
+  return { onSelectFile, onClearFile, user: userEvent.setup() };
 }
 
 function getFileInput(): HTMLInputElement {
@@ -74,5 +80,32 @@ describe("CertificationDocumentField", () => {
 
     expect(screen.getByRole("button", { name: "Seleccionar archivo" })).toBeDisabled();
     expect(getFileInput()).toBeDisabled();
+  });
+
+  it("does not offer to remove a file when none is selected", () => {
+    renderField();
+
+    expect(screen.queryByRole("button", { name: "Quitar archivo seleccionado" })).not.toBeInTheDocument();
+  });
+
+  it("notifies when the pending file is removed", async () => {
+    const { onClearFile, user } = renderField({ selectedFile: CERTIFICATE_PDF });
+
+    await user.click(screen.getByRole("button", { name: "Quitar archivo seleccionado" }));
+
+    expect(onClearFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the upload status and disables removal while uploading", () => {
+    renderField({ selectedFile: CERTIFICATE_PDF, disabled: true, isUploading: true });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Subiendo documento...");
+    expect(screen.getByRole("button", { name: "Quitar archivo seleccionado" })).toBeDisabled();
+  });
+
+  it("hides the upload status when no upload is running", () => {
+    renderField({ selectedFile: CERTIFICATE_PDF });
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

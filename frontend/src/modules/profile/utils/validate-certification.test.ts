@@ -12,7 +12,7 @@ const VALID_VALUES: CreateCertificationDto = {
 describe("validateCertification", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date(2026, 5, 15, 12));
+    vi.setSystemTime(new Date("2026-06-15T16:00:00Z"));
   });
 
   afterEach(() => {
@@ -108,6 +108,25 @@ describe("validateCertification", () => {
     expect(validateCertification({ ...VALID_VALUES, issueDate: "2026-06-15" })).toEqual({});
   });
 
+  it("treats the date in America/La_Paz as today shortly after midnight UTC", () => {
+    vi.setSystemTime(new Date("2026-06-16T02:00:00Z"));
+
+    expect(validateCertification({ ...VALID_VALUES, issueDate: "2026-06-15" })).toEqual({});
+    expect(validateCertification({ ...VALID_VALUES, issueDate: "2026-06-16" })).toEqual({
+      issueDate: CERTIFICATION_VALIDATION_MESSAGES.futureDate,
+    });
+  });
+
+  it("switches to the next day exactly at 04:00 UTC", () => {
+    vi.setSystemTime(new Date("2026-06-16T03:59:59Z"));
+    expect(validateCertification({ ...VALID_VALUES, issueDate: "2026-06-16" })).toEqual({
+      issueDate: CERTIFICATION_VALIDATION_MESSAGES.futureDate,
+    });
+
+    vi.setSystemTime(new Date("2026-06-16T04:00:00Z"));
+    expect(validateCertification({ ...VALID_VALUES, issueDate: "2026-06-16" })).toEqual({});
+  });
+
   it("rejects a future issue date", () => {
     expect(validateCertification({ ...VALID_VALUES, issueDate: "2026-06-16" })).toEqual({
       issueDate: CERTIFICATION_VALIDATION_MESSAGES.futureDate,
@@ -120,10 +139,24 @@ describe("getTodayIsoDate", () => {
     vi.useRealTimers();
   });
 
-  it("formats the local date as yyyy-mm-dd", () => {
+  it("formats the America/La_Paz date as yyyy-mm-dd", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date(2026, 0, 5, 9));
+    vi.setSystemTime(new Date("2026-01-05T13:00:00Z"));
 
     expect(getTodayIsoDate()).toBe("2026-01-05");
+  });
+
+  it("keeps the previous day between 00:00 and 04:00 UTC", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-01-06T03:30:00Z"));
+
+    expect(getTodayIsoDate()).toBe("2026-01-05");
+  });
+
+  it("rolls over the year using the La_Paz calendar", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-01-01T03:59:00Z"));
+
+    expect(getTodayIsoDate()).toBe("2025-12-31");
   });
 });

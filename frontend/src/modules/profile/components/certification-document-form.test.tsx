@@ -171,6 +171,49 @@ describe("CertificationDocumentForm", () => {
     );
   });
 
+  it("removes the pending file and requires a new one before saving", async () => {
+    const { onSubmit, user } = renderForm();
+
+    await chooseCertification(user, "Scrum Master");
+    await user.upload(getFileInput(), CERTIFICATE_PDF);
+    await user.click(screen.getByRole("button", { name: "Quitar archivo seleccionado" }));
+
+    expect(screen.queryByText(/certificate\.pdf/)).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /Certificación asociada/ })).toHaveTextContent(
+      "Scrum Master",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Guardar documento" }));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(CERTIFICATION_DOCUMENT_VALIDATION_MESSAGES.fileRequired),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the upload status while the document is being saved", async () => {
+    let resolveSave: (value: boolean) => void = () => undefined;
+    const onSubmit = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+    const { user } = renderForm({ onSubmit });
+
+    await chooseCertification(user, "Scrum Master");
+    await user.upload(getFileInput(), CERTIFICATE_PDF);
+    await user.click(screen.getByRole("button", { name: "Guardar documento" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Subiendo documento...");
+    expect(screen.getByRole("button", { name: "Quitar archivo seleccionado" })).toBeDisabled();
+
+    resolveSave(false);
+    expect(await screen.findByRole("button", { name: "Guardar documento" })).toBeEnabled();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByText(/certificate\.pdf/)).toBeInTheDocument();
+  });
+
   it("disables the form while a save is pending", () => {
     renderForm({ isPending: true });
 
