@@ -99,6 +99,22 @@ describe("DeleteBlockDialog", () => {
     expect(onDeleted).not.toHaveBeenCalled()
   })
 
+  it("muestra el detalle del backend (409) y mantiene el modal abierto", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(availabilityApi, "deleteAvailabilityBlock").mockRejectedValue({
+      response: { data: { statusCode: 409, detail: "El bloque tiene una cita asociada", ok: false } },
+    })
+    const onDeleted = vi.fn()
+
+    render(<Harness onDeleted={onDeleted} />)
+
+    await user.click(await screen.findByRole("button", { name: "Eliminar bloque" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("El bloque tiene una cita asociada")
+    expect(screen.getByText("¿Eliminar este bloque?")).toBeInTheDocument()
+    expect(onDeleted).not.toHaveBeenCalled()
+  })
+
   it("deshabilita los botones mientras la eliminación está en curso", async () => {
     const user = userEvent.setup()
     let resolveDelete!: () => void

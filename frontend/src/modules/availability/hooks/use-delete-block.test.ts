@@ -50,6 +50,22 @@ describe("useDeleteBlock", () => {
     expect(result.current.isDeleting).toBe(false)
   })
 
+  it("muestra el detalle del backend cuando responde con un error de negocio", async () => {
+    vi.spyOn(availabilityApi, "deleteAvailabilityBlock").mockRejectedValue({
+      response: { data: { statusCode: 409, detail: "El bloque tiene una cita asociada", ok: false } },
+    })
+    const { result } = renderHook(() => useDeleteBlock())
+
+    let removed: boolean | undefined
+    await act(async () => {
+      removed = await result.current.deleteBlock("b1")
+    })
+
+    expect(removed).toBe(false)
+    expect(result.current.error).toBe("El bloque tiene una cita asociada")
+    expect(result.current.isDeleting).toBe(false)
+  })
+
   it("marca isDeleting mientras la petición está en curso", async () => {
     let resolveDelete!: () => void
     vi.spyOn(availabilityApi, "deleteAvailabilityBlock").mockImplementation(
