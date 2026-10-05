@@ -4,11 +4,10 @@ import type { MentorDirectoryItem } from "../../types/mentor-directory.types";
 import { MentorCard } from "./mentor-card";
 
 const mentor: MentorDirectoryItem = {
-  id: "1",
+  id: "0424f370-00f0-43cf-9b8a-997af81840b9",
   fullName: "María Fernanda Rodríguez",
-  jobTitle: "Desarrolladora Backend Senior",
+  headline: "Desarrolladora Backend Senior",
   technicalAreas: ["Backend", "APIs", "Bases de datos"],
-  isAvailable: true,
 };
 
 afterEach(cleanup);
@@ -22,33 +21,22 @@ describe("MentorCard", () => {
     expect(screen.getByText("Backend")).toBeDefined();
     expect(screen.getByText("APIs")).toBeDefined();
     expect(screen.getByText("Bases de datos")).toBeDefined();
-    expect(screen.getByText("Disponible")).toBeDefined();
+    expect(screen.queryByText("Disponible")).toBeNull();
+    expect(screen.queryByText("No disponible")).toBeNull();
   });
 
-  it("muestra un valor alternativo cuando el cargo no está registrado", () => {
+  it("no fabrica un cargo cuando headline es null", () => {
     render(
       <MentorCard
         mentor={{
           ...mentor,
-          jobTitle: null,
+          headline: null,
         }}
       />,
     );
 
-    expect(screen.getByText("Cargo no registrado")).toBeDefined();
-  });
-
-  it("muestra el estado no disponible", () => {
-    render(
-      <MentorCard
-        mentor={{
-          ...mentor,
-          isAvailable: false,
-        }}
-      />,
-    );
-
-    expect(screen.getByText("No disponible")).toBeDefined();
+    expect(screen.queryByText("Desarrolladora Backend Senior")).toBeNull();
+    expect(screen.queryByText("Cargo no registrado")).toBeNull();
   });
 
   it("renderiza múltiples áreas técnicas", () => {
@@ -66,15 +54,17 @@ describe("MentorCard", () => {
       name: `Ver perfil de ${mentor.fullName}`,
     });
 
-    expect(profileLink.getAttribute("href")).toBe("/mentors/1");
+    expect(profileLink.getAttribute("href")).toBe(
+      "/mentors/0424f370-00f0-43cf-9b8a-997af81840b9",
+    );
   });
 
-  it("genera la ruta correcta para el mentor con ID 2", () => {
+  it("genera la ruta correcta para otro UUID de mentor", () => {
     render(
       <MentorCard
         mentor={{
           ...mentor,
-          id: "2",
+          id: "0fa5e6de-63a4-430e-87fb-22f5eb700ecd",
           fullName: "Carlos Andrés Vargas",
         }}
       />,
@@ -84,7 +74,9 @@ describe("MentorCard", () => {
       name: "Ver perfil de Carlos Andrés Vargas",
     });
 
-    expect(profileLink.getAttribute("href")).toBe("/mentors/2");
+    expect(profileLink.getAttribute("href")).toBe(
+      "/mentors/0fa5e6de-63a4-430e-87fb-22f5eb700ecd",
+    );
   });
 
   it("muestra un mensaje cuando no existen áreas técnicas", () => {

@@ -1,7 +1,6 @@
 export interface MentorDirectoryItem {
   id: string;
   fullName: string;
-  jobTitle: string | null;
+  headline: string | null;
   technicalAreas: string[];
-  isAvailable: boolean;
 }

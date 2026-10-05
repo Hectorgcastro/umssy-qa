@@ -1,4 +1,3 @@
-import { MENTOR_DIRECTORY_FIXTURES } from "../fixtures/mentor-directory.fixtures";
 import { MENTOR_PROFILES } from "../fixtures/mentor-profiles.fixtures";
 
 const failedDemoRequests = new Set<string>();
@@ -27,11 +26,6 @@ async function simulateRequest(key: string, signal?: AbortSignal) {
     throw new Error("No se pudo cargar la información. Intenta nuevamente.");
   }
   return demo;
-}
-
-export async function getMentorDirectory(signal?: AbortSignal) {
-  const demo = await simulateRequest("directory", signal);
-  return demo === "empty" ? [] : MENTOR_DIRECTORY_FIXTURES;
 }
 
 export async function getMentorProfile(mentorId: string, signal?: AbortSignal) {
