@@ -26,7 +26,7 @@ const initialConditions: VacancyConditions = {
     languages: "",
 };
 
-export function useVacancyRegisterWizard() {
+export function useJobOfferForm() {
     const [currentStep, setCurrentStep] = useState(1);
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
