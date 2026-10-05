@@ -1,5 +1,5 @@
 export interface MentorGuidanceType {
-  id: number;
+  id: string;
   name: string;
-  description: string;
+  description: string | null;
 }

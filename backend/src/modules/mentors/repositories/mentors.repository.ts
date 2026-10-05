@@ -57,6 +57,184 @@ export class MentorsRepository {
     });
   }
 
+  findActiveMentors(now: Date) {
+    return this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        roles: {
+          some: {
+            deletedAt: null,
+            startAt: {
+              lte: now,
+            },
+            role: {
+              name: MENTOR_ROLE_NAME,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        headline: true,
+        mentorTechnicalAreas: {
+          select: {
+            technicalArea: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        {
+          firstName: 'asc',
+        },
+        {
+          lastName: 'asc',
+        },
+      ],
+    });
+  }
+
+  findActiveMentorById(userId: string, now: Date) {
+    return this.prisma.user.findFirst({
+      where: {
+        id: userId,
+        isActive: true,
+        roles: {
+          some: {
+            deletedAt: null,
+            startAt: {
+              lte: now,
+            },
+            role: {
+              name: MENTOR_ROLE_NAME,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        headline: true,
+        aboutMe: true,
+        photoUrl: true,
+        city: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        educations: {
+          select: {
+            id: true,
+            institution: true,
+            degree: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+          },
+          orderBy: {
+            startDate: 'desc',
+          },
+        },
+        workExperiences: {
+          select: {
+            id: true,
+            position: true,
+            startDate: true,
+            endDate: true,
+            isCurrent: true,
+            description: true,
+            company: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+          orderBy: [
+            {
+              isCurrent: 'desc',
+            },
+            {
+              startDate: 'desc',
+            },
+          ],
+        },
+        userSkills: {
+          select: {
+            skill: {
+              select: {
+                id: true,
+                name: true,
+                isCustom: true,
+              },
+            },
+          },
+          orderBy: {
+            skill: {
+              name: 'asc',
+            },
+          },
+        },
+        certifications: {
+          select: {
+            id: true,
+            name: true,
+            issuingOrganization: true,
+            issueDate: true,
+            documentUrl: true,
+          },
+          orderBy: {
+            issueDate: 'desc',
+          },
+        },
+        mentorTechnicalAreas: {
+          select: {
+            technicalArea: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+          orderBy: {
+            technicalArea: {
+              name: 'asc',
+            },
+          },
+        },
+        mentorOrientationTypes: {
+          where: {
+            orientationType: {
+              isActive: true,
+            },
+          },
+          select: {
+            orientationType: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+          orderBy: {
+            orientationType: {
+              name: 'asc',
+            },
+          },
+        },
+      },
+    });
+  }
+
   activate(
     userId: string,
     roleId: string,

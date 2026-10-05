@@ -5,18 +5,16 @@ import { MentorDirectoryGrid } from "./mentor-directory-grid";
 
 const mentors: MentorDirectoryItem[] = [
   {
-    id: "1",
+    id: "0424f370-00f0-43cf-9b8a-997af81840b9",
     fullName: "Mentor Uno",
-    jobTitle: "Backend Developer",
+    headline: "Backend Developer",
     technicalAreas: ["Backend"],
-    isAvailable: true,
   },
   {
-    id: "2",
+    id: "0fa5e6de-63a4-430e-87fb-22f5eb700ecd",
     fullName: "Mentor Dos",
-    jobTitle: "QA Engineer",
+    headline: "QA Engineer",
     technicalAreas: ["QA"],
-    isAvailable: false,
   },
 ];
 

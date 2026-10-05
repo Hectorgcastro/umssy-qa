@@ -3,6 +3,40 @@ import { MentorsController } from '../controllers/mentors.controller.js';
 import type { MentorsService } from '../services/mentors.service.js';
 
 describe('MentorsController', () => {
+  it('delega la consulta del directorio al service', async () => {
+    const directoryResult = [
+      {
+        id: 'user-1',
+        fullName: 'Ana Rojas',
+        headline: 'Arquitecta de Software',
+        technicalAreas: ['Backend', 'Cloud'],
+      },
+    ];
+    const findAll = vi.fn().mockResolvedValue(directoryResult);
+    const service = { findAll } as unknown as MentorsService;
+    const controller = new MentorsController(service);
+
+    const result = await controller.findAll();
+
+    expect(findAll).toHaveBeenCalledTimes(1);
+    expect(result).toBe(directoryResult);
+  });
+
+  it('delega la consulta del perfil con el id real del usuario', async () => {
+    const profileResult = {
+      id: '0424f370-00f0-43cf-9b8a-997af81840b9',
+      fullName: 'Ana Rojas',
+    };
+    const findOne = vi.fn().mockResolvedValue(profileResult);
+    const service = { findOne } as unknown as MentorsService;
+    const controller = new MentorsController(service);
+
+    const result = await controller.findOne(profileResult.id);
+
+    expect(findOne).toHaveBeenCalledWith(profileResult.id);
+    expect(result).toBe(profileResult);
+  });
+
   it('delega la activacion con el id del usuario autenticado', async () => {
     const activationResult = { id: 'user-1' };
     const activate = vi.fn().mockResolvedValue(activationResult);

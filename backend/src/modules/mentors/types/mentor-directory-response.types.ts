@@ -1,4 +1,4 @@
-export interface MentorDirectoryItem {
+export interface MentorDirectoryResponse {
   id: string;
   fullName: string;
   headline: string | null;

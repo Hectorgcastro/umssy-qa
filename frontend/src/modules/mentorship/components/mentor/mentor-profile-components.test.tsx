@@ -1,25 +1,16 @@
-import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { mentorsMock } from "../../services/mentor-profile.mock";
+import { MENTOR_PROFILE_FIXTURE } from "../../testing/mentor-profile.fixture";
+import { MentorCareer } from "./mentor-career";
 import { MentorGuidanceTypes } from "./mentor-guidance-types";
 import { MentorProfileHeader } from "./mentor-profile-header";
 import { MentorTechnicalAreas } from "./mentor-technical-areas";
 import { MentorProfileNavigation } from "./mentor-profile-navigation";
 
-vi.mock("next/image", () => ({
-  default: (
-    props: React.ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean },
-  ) => {
-    const { fill, ...imageProps } = props;
-    void fill;
-
-    return React.createElement("img", imageProps);
-  },
-}));
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
 describe("Mentor profile components", () => {
@@ -30,6 +21,7 @@ describe("Mentor profile components", () => {
       screen.getByText("No hay áreas técnicas registradas."),
     ).toBeInTheDocument();
   });
+
   it("permite volver al directorio de mentores", () => {
     render(<MentorProfileNavigation mentorName="Ana Rojas" />);
 
@@ -41,27 +33,33 @@ describe("Mentor profile components", () => {
     expect(backLink).toHaveAttribute("href", "/mentorship/mentors");
   });
 
-  it("muestra todas las áreas técnicas", () => {
+  it("muestra todas las áreas técnicas reales", () => {
     render(
-      <MentorTechnicalAreas areas={["Backend", "Arquitectura", "Cloud"]} />,
+      <MentorTechnicalAreas areas={MENTOR_PROFILE_FIXTURE.technicalAreas} />,
     );
 
     expect(screen.getByText("Backend")).toBeInTheDocument();
     expect(screen.getByText("Arquitectura")).toBeInTheDocument();
-    expect(screen.getByText("Cloud")).toBeInTheDocument();
   });
 
   it("muestra mensaje cuando no existen tipos de orientación", () => {
-    render(<MentorGuidanceTypes guidanceTypes={[]} />);
+    const { container } = render(
+      <MentorGuidanceTypes orientationTypes={[]} />,
+    );
 
     expect(
       screen.getByText("Este mentor todavía no registró tipos de orientación."),
     ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="toggle-group"]'),
+    ).not.toBeInTheDocument();
   });
 
   it("muestra los tipos de orientación registrados", () => {
     render(
-      <MentorGuidanceTypes guidanceTypes={mentorsMock[0].guidanceTypes} />,
+      <MentorGuidanceTypes
+        orientationTypes={MENTOR_PROFILE_FIXTURE.orientationTypes}
+      />,
     );
 
     expect(screen.getByText("Revisión de CV")).toBeInTheDocument();
@@ -69,76 +67,128 @@ describe("Mentor profile components", () => {
   });
 
   it("actualiza la descripción al seleccionar un tipo de orientación", () => {
-    render(
-      <MentorGuidanceTypes guidanceTypes={mentorsMock[0].guidanceTypes} />,
+    const { container } = render(
+      <MentorGuidanceTypes
+        orientationTypes={MENTOR_PROFILE_FIXTURE.orientationTypes}
+      />,
     );
 
+    const technicalGuidanceOption = screen.getByRole("button", {
+      name: "Orientación técnica",
+    });
+    const reviewCvOption = screen.getByRole("button", {
+      name: "Revisión de CV",
+    });
+
+    expect(container.querySelector('[data-slot="toggle-group"]')).toHaveAttribute(
+      "aria-label",
+      "Tipos de orientación",
+    );
+    expect(technicalGuidanceOption).toHaveAttribute(
+      "data-slot",
+      "toggle-group-item",
+    );
+    expect(technicalGuidanceOption).toHaveAttribute("aria-pressed", "true");
+    expect(reviewCvOption).toHaveAttribute("aria-pressed", "false");
     expect(
-      screen.getByText(
-        "Orientación para mejorar hojas de vida enfocadas en roles tecnológicos.",
-      ),
+      screen.getByText("Revisión de decisiones técnicas."),
     ).toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "Orientación técnica",
-      }),
-    );
+    fireEvent.click(reviewCvOption);
 
+    expect(technicalGuidanceOption).toHaveAttribute("aria-pressed", "false");
+    expect(reviewCvOption).toHaveAttribute("aria-pressed", "true");
     expect(
-      screen.getByText(
-        "Asesoramiento sobre arquitectura de software, patrones de diseño y preparación técnica.",
-      ),
+      screen.getByText("Revisión del contenido y estructura del currículum."),
     ).toBeInTheDocument();
   });
 
-  it("muestra las iniciales cuando el mentor no tiene fotografía", () => {
-    render(<MentorProfileHeader mentor={mentorsMock[0]} />);
+  it("muestra datos reales e iniciales cuando no existe fotografía", () => {
+    const { container } = render(
+      <MentorProfileHeader mentor={MENTOR_PROFILE_FIXTURE} />,
+    );
 
-    expect(screen.getByText("AR")).toBeInTheDocument();
-    expect(screen.getByText("Intereses profesionales")).toBeInTheDocument();
-    expect(screen.getByText("Arquitectura de software")).toBeInTheDocument();
-    expect(screen.getByText("Cloud Computing")).toBeInTheDocument();
-    expect(screen.getByText("Sistemas distribuidos")).toBeInTheDocument();
-    expect(screen.getByText(/Ingeniería de Sistemas/)).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="avatar"]')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="avatar-fallback"]'),
+    ).toHaveTextContent("AR");
+    expect(screen.getByText("Habilidades")).toBeInTheDocument();
+    ["TypeScript", "Arquitectura de software"].forEach((skill) => {
+      expect(screen.getByText(skill)).toHaveAttribute("data-slot", "badge");
+    });
+    expect(
+      screen.getByText(/Licenciatura en Ingeniería de Sistemas/),
+    ).toBeInTheDocument();
   });
 
-  it("habilita solicitar mentoría cuando el mentor está disponible", () => {
-    render(<MentorProfileHeader mentor={mentorsMock[0]} />);
-
-    expect(screen.getByText("Disponible para mentoría")).toBeInTheDocument();
+  it("no fabrica un estado de disponibilidad ausente del contrato", () => {
+    const { container } = render(
+      <MentorProfileHeader mentor={MENTOR_PROFILE_FIXTURE} />,
+    );
 
     expect(
-      screen.getByRole("button", {
-        name: "Solicitar mentoría",
-      }),
+      screen.queryByText("Disponible para mentoría"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("No disponible")).not.toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="avatar-badge"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Solicitar mentoría" }),
     ).toBeEnabled();
   });
 
-  it("deshabilita solicitar mentoría cuando el mentor no está disponible", () => {
-    render(<MentorProfileHeader mentor={mentorsMock[1]} />);
+  it("muestra la experiencia y formación entregadas por backend", () => {
+    render(<MentorCareer mentor={MENTOR_PROFILE_FIXTURE} />);
 
-    expect(screen.getByText("No disponible")).toBeInTheDocument();
-
+    expect(screen.getByText("Tech Lead")).toBeInTheDocument();
+    expect(screen.getByText("Acme")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", {
-        name: "Solicitar mentoría",
-      }),
-    ).toBeDisabled();
+      screen.getByText("Licenciatura en Ingeniería de Sistemas"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Universidad Mayor de San Simón"),
+    ).toBeInTheDocument();
   });
 
-  it("muestra la fotografía cuando el mentor tiene una imagen", () => {
+  it("omite trayectoria cuando backend no devuelve datos relacionados", () => {
+    const { container } = render(
+      <MentorCareer
+        mentor={{
+          ...MENTOR_PROFILE_FIXTURE,
+          educations: [],
+          workExperiences: [],
+        }}
+      />,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("muestra la fotografía cuando el mentor tiene una imagen", async () => {
     const mentorWithImage = {
-      ...mentorsMock[0],
-      profileImage: "/mentor-test.jpg",
+      ...MENTOR_PROFILE_FIXTURE,
+      photoUrl: "/mentor-test.jpg",
     };
 
-    render(<MentorProfileHeader mentor={mentorWithImage} />);
+    vi.spyOn(window, "Image").mockImplementation(function ImageMock() {
+      return {
+        complete: true,
+        naturalWidth: 100,
+      } as HTMLImageElement;
+    });
 
-    expect(
-      screen.getByRole("img", {
-        name: `Foto de ${mentorWithImage.name}`,
-      }),
-    ).toBeInTheDocument();
+    const { container } = render(
+      <MentorProfileHeader mentor={mentorWithImage} />,
+    );
+
+    const image = await screen.findByRole("img", {
+      name: `Foto de ${mentorWithImage.fullName}`,
+    });
+    expect(image).toHaveAttribute("src", "/mentor-test.jpg");
+    expect(image).toHaveAttribute("data-slot", "avatar-image");
+    expect(container.querySelector('[data-slot="avatar"]')).toContainElement(
+      image,
+    );
   });
 });
