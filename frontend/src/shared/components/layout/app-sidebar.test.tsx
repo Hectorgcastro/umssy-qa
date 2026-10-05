@@ -41,7 +41,7 @@ describe("AppSidebar", () => {
     renderSidebar();
 
     const navigation = screen.getByRole("navigation", { name: "Menú principal" });
-    expect(within(navigation).queryAllByRole("listitem")).toHaveLength(0);
+    expect(within(navigation).queryAllByRole("listitem")).toHaveLength(4);
   });
 
   it("renders the items and user received by props", () => {
