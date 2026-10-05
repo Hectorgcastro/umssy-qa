@@ -1,10 +1,10 @@
 "use client";
 
-import type { TechnicalArea } from "../../types/technical-area.types";
+import type { TechnicalAreaResponse } from "../../types/technical-area-response.types";
 import { TechnicalAreaCard } from "./technical-area-card";
 
 type StepTechnicalAreasProps = {
-  technicalAreas: TechnicalArea[];
+  technicalAreas: TechnicalAreaResponse[];
   selectedIds: string[];
   onToggle: (id: string) => void;
 };

@@ -41,7 +41,7 @@ export function OrientationConfigView() {
       if (currentParticipation) {
         setSelectedValues(
           ORIENTATION_TYPES.filter((orientation) =>
-            currentParticipation.orientations.includes(orientation.name),
+            currentParticipation.orientations.includes(orientation.label),
           ).map((orientation) => orientation.id),
         );
       }
@@ -71,7 +71,7 @@ export function OrientationConfigView() {
 
     const orientations = ORIENTATION_TYPES.filter((orientation) =>
       selectedValues.includes(orientation.id),
-    ).map((orientation) => orientation.name);
+    ).map((orientation) => orientation.label);
 
     updateMentorParticipation({ orientations });
     setErrorMessage(null);
@@ -177,7 +177,7 @@ export function OrientationConfigView() {
                           id={`orientation-label-${option.id}`}
                           className="min-w-0 break-words text-sm font-semibold text-ink"
                         >
-                          {option.name}
+                          {option.label}
                         </span>
                       </div>
 

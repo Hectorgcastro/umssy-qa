@@ -1,6 +1,5 @@
+import { MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY } from "../constants/mentorship-wizard.constants";
 import type { MentorshipWizardState } from "../types/mentorship-wizard-state.types";
-
-const STORAGE_KEY = "umssy-mentorship-wizard-draft";
 
 export function saveMentorshipWizardDraft(
   state: MentorshipWizardState,
@@ -9,7 +8,10 @@ export function saveMentorshipWizardDraft(
     return;
   }
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  window.localStorage.setItem(
+    MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY,
+    JSON.stringify(state),
+  );
 }
 
 export function loadMentorshipWizardDraft(): MentorshipWizardState | null {
@@ -17,7 +19,9 @@ export function loadMentorshipWizardDraft(): MentorshipWizardState | null {
     return null;
   }
 
-  const stored = window.localStorage.getItem(STORAGE_KEY);
+  const stored = window.localStorage.getItem(
+    MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY,
+  );
 
   if (!stored) {
     return null;
@@ -26,7 +30,7 @@ export function loadMentorshipWizardDraft(): MentorshipWizardState | null {
   try {
     return JSON.parse(stored) as MentorshipWizardState;
   } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY);
     return null;
   }
 }
@@ -36,5 +40,5 @@ export function clearMentorshipWizardDraft(): void {
     return;
   }
 
-  window.localStorage.removeItem(STORAGE_KEY);
+  window.localStorage.removeItem(MENTORSHIP_WIZARD_DRAFT_STORAGE_KEY);
 }

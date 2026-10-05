@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 
+import { Button } from "@/components/ui/button";
 import { activateMentor } from "../services/mentor-activation.service";
 import { OrientationStep } from "../components/orientation/orientation-step";
 import { ParticipationStep } from "../components/participation/participation-step";
@@ -31,10 +32,13 @@ export function MentorshipView() {
 
   const {
     technicalAreas,
+    isTechnicalAreasLoading,
+    isTechnicalAreasError,
+    retryTechnicalAreas,
     orientationTypes,
-    isLoading: isCatalogLoading,
-    isError: isCatalogError,
-    retry: retryCatalogs,
+    isOrientationTypesLoading,
+    isOrientationTypesError,
+    retryOrientationTypes,
   } = useMentorshipCatalogs();
 
   const [isActivating, setIsActivating] = useState(false);
@@ -81,8 +85,6 @@ export function MentorshipView() {
       });
 
       clearMentorshipWizardDraft();
-      setIsActivated(true);
-
       setIsActivated(true);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -141,17 +143,17 @@ export function MentorshipView() {
     }
 
     if (currentStep === 2) {
-      if (isCatalogLoading) {
+      if (isTechnicalAreasLoading) {
         return <p>Cargando áreas técnicas...</p>;
       }
 
-      if (isCatalogError) {
+      if (isTechnicalAreasError) {
         return (
           <div>
             <p>No se pudieron cargar las áreas técnicas.</p>
-            <button type="button" onClick={retryCatalogs}>
+            <Button type="button" onClick={retryTechnicalAreas}>
               Reintentar
-            </button>
+            </Button>
           </div>
         );
       }
@@ -170,17 +172,17 @@ export function MentorshipView() {
     }
 
     if (currentStep === 3) {
-      if (isCatalogLoading) {
+      if (isOrientationTypesLoading) {
         return <p>Cargando tipos de orientación...</p>;
       }
 
-      if (isCatalogError) {
+      if (isOrientationTypesError) {
         return (
           <div>
             <p>No se pudieron cargar los tipos de orientación.</p>
-            <button type="button" onClick={retryCatalogs}>
+            <Button type="button" onClick={retryOrientationTypes}>
               Reintentar
-            </button>
+            </Button>
           </div>
         );
       }

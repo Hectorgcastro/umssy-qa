@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { INITIAL_MENTORSHIP_WIZARD_STATE } from "../constants/mentorship-wizard.constants";
 import {
   loadMentorshipWizardDraft,
@@ -10,13 +10,40 @@ import type { MentorshipStep } from "../types/mentorship-step.types";
 import type { MentorshipWizardState } from "../types/mentorship-wizard-state.types";
 
 export function useMentorshipWizard() {
-  const [state, setState] = useState<MentorshipWizardState>(() => {
-  return loadMentorshipWizardDraft() ?? INITIAL_MENTORSHIP_WIZARD_STATE;
-});
+  const [state, setState] = useState<MentorshipWizardState>(
+    INITIAL_MENTORSHIP_WIZARD_STATE,
+  );
+  const [isDraftHydrated, setIsDraftHydrated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
+    queueMicrotask(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      const draft = loadMentorshipWizardDraft();
+
+      if (draft) {
+        setState(draft);
+      }
+
+      setIsDraftHydrated(true);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isDraftHydrated) {
+      return;
+    }
+
     saveMentorshipWizardDraft(state);
-  }, [state]);
+  }, [isDraftHydrated, state]);
 
   const goToStep = useCallback((step: MentorshipStep) => {
     setState((prev) => ({

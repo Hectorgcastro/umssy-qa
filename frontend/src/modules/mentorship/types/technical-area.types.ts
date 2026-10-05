@@ -1,6 +1,6 @@
 export interface TechnicalArea {
   id: string;
   name: string;
-  description: string | null;
-  icon?: string;
+  description: string;
+  icon: string;
 }

@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { OrientationType } from "../../types/orientation-type.types";
-import type { TechnicalArea } from "../../types/technical-area.types";
+import type { OrientationTypeResponse } from "../../types/orientation-type-response.types";
+import type { TechnicalAreaResponse } from "../../types/technical-area-response.types";
 
 type ConfirmationStepProps = {
   wantsToParticipate: boolean;
-  selectedTechnicalAreas: TechnicalArea[];
-  selectedOrientationTypes: OrientationType[];
+  selectedTechnicalAreas: TechnicalAreaResponse[];
+  selectedOrientationTypes: OrientationTypeResponse[];
   isActivating: boolean;
   activationError: string | null;
   onEditTechnicalAreas: () => void;
@@ -136,12 +137,9 @@ export function ConfirmationStep({
       </Card>
 
       {activationError ? (
-        <div
-           role="alert"
-           className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-           {activationError}
-          </div>
+        <Alert variant="destructive" className="px-4 py-3">
+          <AlertDescription>{activationError}</AlertDescription>
+        </Alert>
       ) : null}
       <Button
         type="button"

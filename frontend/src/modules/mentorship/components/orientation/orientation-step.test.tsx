@@ -6,11 +6,11 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OrientationStep } from "./orientation-step";
-import type { OrientationType } from "../../types/orientation-type.types";
+import type { OrientationTypeResponse } from "../../types/orientation-type-response.types";
 
 afterEach(cleanup);
 
-const ORIENTATION_TYPES: OrientationType[] = [
+const ORIENTATION_TYPES: OrientationTypeResponse[] = [
   {
     id: "career-guidance",
     name: "Orientación profesional",

@@ -17,13 +17,15 @@ export function useMentorshipCatalogs() {
 
   return {
     technicalAreas: technicalAreasQuery.data ?? [],
-    orientationTypes: orientationTypesQuery.data ?? [],
-    isLoading:
-      technicalAreasQuery.isLoading || orientationTypesQuery.isLoading,
-    isError: technicalAreasQuery.isError || orientationTypesQuery.isError,
-    error: technicalAreasQuery.error ?? orientationTypesQuery.error ?? null,
-    retry: () => {
+    isTechnicalAreasLoading: technicalAreasQuery.isLoading,
+    isTechnicalAreasError: technicalAreasQuery.isError,
+    retryTechnicalAreas: () => {
       void technicalAreasQuery.refetch();
+    },
+    orientationTypes: orientationTypesQuery.data ?? [],
+    isOrientationTypesLoading: orientationTypesQuery.isLoading,
+    isOrientationTypesError: orientationTypesQuery.isError,
+    retryOrientationTypes: () => {
       void orientationTypesQuery.refetch();
     },
   };

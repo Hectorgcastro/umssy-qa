@@ -1,13 +1,6 @@
 import { apiClient } from "@/shared/services/api-client";
-
-export type ActivateMentorPayload = {
-  technicalAreaIds: string[];
-  orientationTypeIds: string[];
-};
-
-export type ActivateMentorResponse = {
-  id: string;
-};
+import type { ActivateMentorPayload } from "../types/activate-mentor-payload.types";
+import type { ActivateMentorResponse } from "../types/activate-mentor-response.types";
 
 export async function activateMentor(
   payload: ActivateMentorPayload,

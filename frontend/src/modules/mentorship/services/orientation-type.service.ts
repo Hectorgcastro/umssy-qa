@@ -1,7 +1,11 @@
 import { apiClient } from "@/shared/services/api-client";
-import type { OrientationType } from "../types/orientation-type.types";
+import type { OrientationTypeResponse } from "../types/orientation-type-response.types";
 
-export async function getOrientationTypes(): Promise<OrientationType[]> {
-  const response = await apiClient.get<OrientationType[]>("/orientation-types");
+export async function getOrientationTypes(): Promise<
+  OrientationTypeResponse[]
+> {
+  const response = await apiClient.get<OrientationTypeResponse[]>(
+    "/orientation-types",
+  );
   return response.data;
 }

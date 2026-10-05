@@ -1,11 +1,10 @@
 "use client";
 
 import { CheckCircle, Server } from "lucide-react";
-import { TECHNICAL_AREA_ICON_MAP } from "../../constants/technical-area-icon-map.constants";
-import type { TechnicalArea } from "../../types/technical-area.types";
+import type { TechnicalAreaResponse } from "../../types/technical-area-response.types";
 
 type TechnicalAreaCardProps = {
-  area: TechnicalArea;
+  area: TechnicalAreaResponse;
   isSelected: boolean;
   onToggle: (id: string) => void;
 };
@@ -15,7 +14,6 @@ export function TechnicalAreaCard({
   isSelected,
   onToggle,
 }: TechnicalAreaCardProps) {
-  const Icon = area.icon ? TECHNICAL_AREA_ICON_MAP[area.icon] ?? Server : Server;
   return (
     <button
       type="button"
@@ -35,7 +33,7 @@ export function TechnicalAreaCard({
             isSelected ? "bg-red-600 text-white" : "bg-white text-slate-600",
           ].join(" ")}
         >
-          <Icon className="h-5 w-5" aria-hidden />
+          <Server className="h-5 w-5" aria-hidden />
         </div>
 
         <div

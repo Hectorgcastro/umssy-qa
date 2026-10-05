@@ -1,7 +1,9 @@
 import { apiClient } from "@/shared/services/api-client";
-import type { TechnicalArea } from "../types/technical-area.types";
+import type { TechnicalAreaResponse } from "../types/technical-area-response.types";
 
-export async function getTechnicalAreas(): Promise<TechnicalArea[]> {
-  const response = await apiClient.get<TechnicalArea[]>("/technical-areas");
+export async function getTechnicalAreas(): Promise<TechnicalAreaResponse[]> {
+  const response = await apiClient.get<TechnicalAreaResponse[]>(
+    "/technical-areas",
+  );
   return response.data;
 }

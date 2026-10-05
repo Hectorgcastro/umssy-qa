@@ -50,8 +50,8 @@ describe("OrientationConfigView", () => {
 
     await screen.findByRole("checkbox", { name: "Orientación técnica" });
     expect(screen.getAllByRole("checkbox")).toHaveLength(ORIENTATION_TYPES.length);
-    ORIENTATION_TYPES.forEach(({ name }) => {
-      expect(screen.getByRole("checkbox", { name: name })).toBeInTheDocument();
+    ORIENTATION_TYPES.forEach(({ label }) => {
+      expect(screen.getByRole("checkbox", { name: label })).toBeInTheDocument();
     });
   });
 

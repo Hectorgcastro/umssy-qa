@@ -1,10 +1,10 @@
 "use client";
 
 import { CheckCircle } from "lucide-react";
-import type { OrientationType } from "../../types/orientation-type.types";
+import type { OrientationTypeResponse } from "../../types/orientation-type-response.types";
 
 type OrientationStepProps = {
-  orientationTypes: OrientationType[];
+  orientationTypes: OrientationTypeResponse[];
   selectedOrientationTypeIds: string[];
   onSelectionChange: (ids: string[]) => void;
 };
