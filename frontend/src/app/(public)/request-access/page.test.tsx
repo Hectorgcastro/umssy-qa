@@ -1,6 +1,9 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import RequestAccessPage, { metadata } from "./page";
+
+// El encabezado usa useRouter, que necesita el App Router montado
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe("RequestAccessPage", () => {
   afterEach(() => cleanup());

@@ -1,6 +1,9 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { RequestAccessView } from "./request-access-view";
+
+// El encabezado usa useRouter, que necesita el App Router montado
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe("RequestAccessView", () => {
   afterEach(() => cleanup());
@@ -33,5 +36,16 @@ describe("RequestAccessView", () => {
     const wrapper = container.querySelector("section > div");
     expect(wrapper).toHaveClass("mx-auto", "w-full", "max-w-190", "2xl:max-w-5xl");
     expect(wrapper).toContainElement(screen.getByRole("heading", { name: "Solicita tu acceso a la comunidad" }));
+  });
+
+  it("muestra el encabezado con el enlace a /login sobre el formulario, fuera de la barra de pasos", () => {
+    const { container } = render(<RequestAccessView />);
+
+    const header = container.querySelector("header");
+    expect(header).not.toBeNull();
+    expect(header).toContainElement(screen.getByRole("link", { name: "Iniciar sesión" }));
+    expect(container.querySelector("aside")).not.toContainElement(header as HTMLElement);
+    const section = container.querySelector("section") as HTMLElement;
+    expect((header as HTMLElement).compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
