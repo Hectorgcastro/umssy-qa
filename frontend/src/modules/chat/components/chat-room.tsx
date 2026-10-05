@@ -35,7 +35,7 @@ export function ChatRoom({
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll al final del contenedor de mensajes cuando cambia la coleccion
+ 
   useEffect(() => {
     if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
