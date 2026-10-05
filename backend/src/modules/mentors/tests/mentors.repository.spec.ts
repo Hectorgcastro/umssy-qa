@@ -93,6 +93,72 @@ describe('MentorsRepository', () => {
     expect(result).toBe(orientationTypes);
   });
 
+  it('consulta solo mentores activos con sus areas tecnicas', async () => {
+    const now = new Date('2026-10-04T20:00:00.000Z');
+    const mentors = [
+      {
+        id: 'user-1',
+        firstName: 'Ana',
+        lastName: 'Rojas',
+        headline: 'Arquitecta de Software',
+        mentorTechnicalAreas: [
+          {
+            technicalArea: {
+              name: 'Backend',
+            },
+          },
+        ],
+      },
+    ];
+    const findMany = vi.fn().mockResolvedValue(mentors);
+    const prisma = { user: { findMany } } as unknown as PrismaService;
+    const repository = new MentorsRepository(prisma);
+
+    const result = await repository.findActiveMentors(now);
+
+    expect(findMany).toHaveBeenCalledTimes(1);
+    expect(findMany).toHaveBeenCalledWith({
+      where: {
+        isActive: true,
+        roles: {
+          some: {
+            deletedAt: null,
+            startAt: {
+              lte: now,
+            },
+            role: {
+              name: MENTOR_ROLE_NAME,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        headline: true,
+        mentorTechnicalAreas: {
+          select: {
+            technicalArea: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        {
+          firstName: 'asc',
+        },
+        {
+          lastName: 'asc',
+        },
+      ],
+    });
+    expect(result).toBe(mentors);
+  });
+
   it('crea atomicamente el rol y las relaciones del mentor', async () => {
     const createUserRole = vi.fn().mockResolvedValue({ id: 'user-role-id' });
     const createTechnicalAreas = vi.fn().mockResolvedValue({ count: 2 });
