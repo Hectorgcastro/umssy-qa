@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { WORK_EXPERIENCE_FEEDBACK_MESSAGES } from "../config/work-experience-feedback.config";
 import { workExperienceService } from "../services/work-experience.service";
 import type { WorkExperienceItem } from "../types/work-experience-item.types";
@@ -19,6 +19,8 @@ export function useWorkExperiences() {
   const [experiences, setExperiences] = useState<WorkExperienceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
+  const isMountedRef = useRef(false);
 
   const applyResult = useCallback((result: WorkExperiencesResult) => {
     if (result.experiences) {
@@ -29,20 +31,29 @@ export function useWorkExperiences() {
   }, []);
 
   useEffect(() => {
-    let isActive = true;
+    isMountedRef.current = true;
+    const requestId = ++requestIdRef.current;
     void requestWorkExperiences().then((result) => {
-      if (isActive) {
+      if (isMountedRef.current && requestId === requestIdRef.current) {
         applyResult(result);
       }
     });
     return () => {
-      isActive = false;
+      isMountedRef.current = false;
+      requestIdRef.current += 1;
     };
   }, [applyResult]);
 
   const reload = useCallback(async () => {
+    if (!isMountedRef.current) {
+      return;
+    }
+    const requestId = ++requestIdRef.current;
     setIsLoading(true);
-    applyResult(await requestWorkExperiences());
+    const result = await requestWorkExperiences();
+    if (isMountedRef.current && requestId === requestIdRef.current) {
+      applyResult(result);
+    }
   }, [applyResult]);
 
   return { experiences, isLoading, error, reload };

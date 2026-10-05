@@ -211,6 +211,32 @@ describe("WorkExperienceView", () => {
     expect(screen.getByText("Asistente de laboratorio")).toBeInTheDocument();
   });
 
+  it("blocks editing and deleting other experiences while one is being saved", async () => {
+    const user = userEvent.setup();
+    let finishSave: (value: WorkExperienceItem) => void = () => undefined;
+    vi.mocked(workExperienceService.updateWorkExperience).mockReturnValue(
+      new Promise((resolve) => {
+        finishSave = resolve;
+      }),
+    );
+    render(<WorkExperienceView />);
+    await screen.findByText("Asistente de laboratorio");
+
+    await user.click(screen.getByRole("button", { name: "Editar Asistente de laboratorio" }));
+    await user.click(screen.getByRole("button", { name: "Guardar experiencia" }));
+
+    expect(screen.getByRole("button", { name: "Editar Desarrolladora web junior" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Eliminar Desarrolladora web junior" })).toBeDisabled();
+
+    finishSave(PAST_JOB);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Editar Desarrolladora web junior" }),
+      ).toBeEnabled(),
+    );
+  });
+
   it("goes back to the add form when the edition is cancelled", async () => {
     const user = userEvent.setup();
     render(<WorkExperienceView />);
