@@ -26,3 +26,24 @@ export const SKILLS_VALIDATION_MESSAGES = {
   emptyName: "El nombre no puede estar vacío.",
   duplicated: "Esta habilidad ya existe en el catálogo o en tus habilidades.",
 } as const;
+
+export const SKILLS_UI_TEXTS = {
+  pageTitle: "Trayectoria",
+  pageDescription: "Selecciona tecnologías y herramientas que dominas o agrega las tuyas.",
+  sectionTitle: "Habilidades técnicas",
+  mySkillsTitle: "Mis habilidades",
+  emptySelected: "No tienes habilidades seleccionadas aún.",
+  searchLabel: "Buscar en el catálogo",
+  searchPlaceholder: "Buscar en el catálogo",
+  emptyCatalog: "No se encontraron coincidencias en el catálogo.",
+  customSkillLabel: "Agregar habilidad propia",
+  customSkillPlaceholder: "Ej. Docker",
+  addButton: "Agregar",
+  addCatalogButton: "Añadir",
+  addedCatalogButton: "Agregada",
+  saveButton: "Guardar habilidades",
+  savingButton: "Guardando...",
+  retryButton: "Reintentar",
+  loadingText: "Cargando habilidades...",
+  removeAriaLabel: (name: string) => `Quitar ${name}`,
+} as const;

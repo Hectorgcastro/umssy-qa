@@ -6,6 +6,7 @@ import { LoaderCircle, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { SKILLS_UI_TEXTS } from "../constants/skills.constants";
 import type { SkillsSelectorProps } from "../types/skills-selector-props.types";
 import { getFieldErrorProps } from "../utils/get-field-error-props";
 import { validateCustomSkill } from "../utils/validate-custom-skill";
@@ -65,9 +66,9 @@ export function SkillsSelector({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h3 className="mb-3 text-[15px] font-semibold text-ink">Mis habilidades</h3>
+        <h3 className="mb-3 text-[15px] font-semibold text-ink">{SKILLS_UI_TEXTS.mySkillsTitle}</h3>
         {(selectedSkills ?? []).length === 0 ? (
-          <p className="text-[13px] text-text-secondary">No tienes habilidades seleccionadas aún.</p>
+          <p className="text-[13px] text-text-secondary">{SKILLS_UI_TEXTS.emptySelected}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {(selectedSkills ?? []).map((skill) => (
@@ -83,7 +84,7 @@ export function SkillsSelector({
       </div>
 
       <div className="flex flex-col gap-3">
-        <FormField id="skills-search" label="Buscar en el catálogo">
+        <FormField id="skills-search" label={SKILLS_UI_TEXTS.searchLabel}>
           <div className="relative">
             <Search
               aria-hidden="true"
@@ -92,7 +93,7 @@ export function SkillsSelector({
             <Input
               id="skills-search"
               type="text"
-              placeholder="Buscar en el catálogo"
+              placeholder={SKILLS_UI_TEXTS.searchPlaceholder}
               value={searchTerm}
               disabled={isMutateDisabled}
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -103,7 +104,7 @@ export function SkillsSelector({
 
         <ul className="max-h-64 divide-y divide-border overflow-y-auto">
           {(filteredCatalog ?? []).length === 0 ? (
-            <li className="py-3 text-[13px] text-text-secondary">No se encontraron coincidencias en el catálogo.</li>
+            <li className="py-3 text-[13px] text-text-secondary">{SKILLS_UI_TEXTS.emptyCatalog}</li>
           ) : (
             (filteredCatalog ?? []).map((skill) => {
               const isSelected = selectedIds.has(skill.id);
@@ -125,7 +126,7 @@ export function SkillsSelector({
                     className="gap-1 text-[13px] font-semibold text-ink hover:bg-transparent hover:text-accent disabled:text-text-secondary"
                   >
                     <Plus aria-hidden="true" className="size-3.5" />
-                    {isSelected ? "Agregada" : "Añadir"}
+                    {isSelected ? SKILLS_UI_TEXTS.addedCatalogButton : SKILLS_UI_TEXTS.addCatalogButton}
                   </Button>
                 </li>
               );
@@ -137,14 +138,14 @@ export function SkillsSelector({
       <form noValidate onSubmit={handleCreateCustomSkill}>
         <FormField
           id="custom-skill"
-          label="Agregar habilidad propia"
+          label={SKILLS_UI_TEXTS.customSkillLabel}
           error={customSkillError}
         >
           <div className="flex gap-3">
             <Input
               id="custom-skill"
               type="text"
-              placeholder="Ej. Docker"
+              placeholder={SKILLS_UI_TEXTS.customSkillPlaceholder}
               value={customSkillName}
               disabled={isMutateDisabled}
               onChange={(event) => {
@@ -160,7 +161,7 @@ export function SkillsSelector({
               disabled={isMutateDisabled}
               className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft disabled:opacity-60"
             >
-              Agregar
+              {SKILLS_UI_TEXTS.addButton}
             </Button>
           </div>
         </FormField>
@@ -175,7 +176,7 @@ export function SkillsSelector({
             onClick={onRetry}
             className="h-10 w-full border-border-strong bg-surface text-[14px] font-semibold text-ink hover:bg-surface-soft"
           >
-            Reintentar
+            {SKILLS_UI_TEXTS.retryButton}
           </Button>
         ) : null}
         <Button
@@ -185,7 +186,7 @@ export function SkillsSelector({
           className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "w-full")}
         >
           {isSaving ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
-          {isSaving ? "Guardando..." : "Guardar habilidades"}
+          {isSaving ? SKILLS_UI_TEXTS.savingButton : SKILLS_UI_TEXTS.saveButton}
         </Button>
       </div>
     </div>

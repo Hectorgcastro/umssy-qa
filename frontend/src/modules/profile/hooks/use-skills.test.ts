@@ -163,4 +163,37 @@ describe("useSkills", () => {
 
     expect(result.current.feedback).toBeNull();
   });
+
+  it("blocks mutations (add, remove, custom create) while saveSkills is pending", async () => {
+    let resolveSave!: (value: typeof PYTHON[]) => void;
+    const savePromise = new Promise<typeof PYTHON[]>((resolve) => {
+      resolveSave = resolve;
+    });
+    vi.mocked(skillsService.saveMySkills).mockReturnValue(savePromise);
+
+    const { result } = await renderLoadedHook();
+    expect(result.current.selectedSkills).toEqual([PYTHON]);
+
+    let saveActionPromise: Promise<void> | undefined;
+    act(() => {
+      saveActionPromise = result.current.saveSkills();
+    });
+    expect(result.current.isSaving).toBe(true);
+
+    act(() => {
+      result.current.addSkill(SQL);
+      result.current.removeSkill(PYTHON.id);
+      result.current.createCustomSkill("Docker");
+    });
+
+    expect(result.current.selectedSkills).toEqual([PYTHON]);
+
+    await act(async () => {
+      resolveSave([PYTHON]);
+      await saveActionPromise;
+    });
+
+    expect(result.current.isSaving).toBe(false);
+    expect(result.current.selectedSkills).toEqual([PYTHON]);
+  });
 });
