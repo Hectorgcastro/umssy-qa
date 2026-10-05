@@ -12,11 +12,13 @@ export function SkillsView() {
     selectedSkills,
     isLoading,
     isSaving,
+    hasLoadError,
     feedback,
     addSkill,
     removeSkill,
     createCustomSkill,
     saveSkills,
+    reload,
   } = useSkills();
 
   return (
@@ -40,6 +42,8 @@ export function SkillsView() {
             onCreateCustomSkill={createCustomSkill}
             onSave={() => void saveSkills()}
             isSaving={isSaving}
+            hasLoadError={hasLoadError}
+            onRetry={() => void reload()}
             feedback={feedback}
           />
         )}

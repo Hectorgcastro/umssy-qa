@@ -1,4 +1,4 @@
-import { SKILLS_ERROR_MESSAGES_BY_STATUS } from "../config/skills-messages.config";
+import { SKILLS_ERROR_MESSAGES_BY_STATUS } from "../constants/skills.constants";
 import type { HttpError } from "../types/http-error.types";
 
 export function getSkillsErrorMessage(error: unknown, fallbackMessage: string): string {

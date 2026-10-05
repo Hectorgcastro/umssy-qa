@@ -6,9 +6,11 @@ export interface UseSkillsResult {
   selectedSkills: SkillItem[];
   isLoading: boolean;
   isSaving: boolean;
+  hasLoadError: boolean;
   feedback: Feedback | null;
   addSkill: (skill: SkillItem) => void;
   removeSkill: (skillId: string) => void;
   createCustomSkill: (name: string) => void;
   saveSkills: () => Promise<void>;
+  reload: () => Promise<void>;
 }

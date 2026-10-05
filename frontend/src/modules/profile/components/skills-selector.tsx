@@ -21,33 +21,43 @@ export function SkillsSelector({
   onCreateCustomSkill,
   onSave,
   isSaving = false,
+  hasLoadError = false,
+  onRetry,
   feedback = null,
 }: SkillsSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [customSkillName, setCustomSkillName] = useState("");
   const [customSkillError, setCustomSkillError] = useState("");
 
+  const isMutateDisabled = isSaving || hasLoadError;
+
   const selectedIds = useMemo(
-    () => new Set(selectedSkills.map((skill) => skill.id)),
+    () => new Set((selectedSkills ?? []).map((skill) => skill.id)),
     [selectedSkills],
   );
 
   const filteredCatalog = useMemo(() => {
-    const normalizedTerm = searchTerm.trim().toLowerCase();
-    if (!normalizedTerm) return catalogSkills;
-    return catalogSkills.filter((skill) => skill.name.toLowerCase().includes(normalizedTerm));
+    const normalizedTerm = (searchTerm ?? "").trim().toLowerCase();
+    if (!normalizedTerm) return catalogSkills ?? [];
+    return (catalogSkills ?? []).filter((skill) =>
+      (skill?.name ?? "").toLowerCase().includes(normalizedTerm),
+    );
   }, [catalogSkills, searchTerm]);
 
   const handleCreateCustomSkill = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isMutateDisabled) return;
 
-    const error = validateCustomSkill(customSkillName, [...catalogSkills, ...selectedSkills]);
+    const error = validateCustomSkill(customSkillName, [
+      ...(catalogSkills ?? []),
+      ...(selectedSkills ?? []),
+    ]);
     if (error) {
       setCustomSkillError(error);
       return;
     }
 
-    onCreateCustomSkill(customSkillName.trim());
+    onCreateCustomSkill((customSkillName ?? "").trim());
     setCustomSkillName("");
     setCustomSkillError("");
   };
@@ -56,12 +66,17 @@ export function SkillsSelector({
     <div className="flex flex-col gap-6">
       <div>
         <h3 className="mb-3 text-[15px] font-semibold text-ink">Mis habilidades</h3>
-        {selectedSkills.length === 0 ? (
+        {(selectedSkills ?? []).length === 0 ? (
           <p className="text-[13px] text-text-secondary">No tienes habilidades seleccionadas aún.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {selectedSkills.map((skill) => (
-              <SkillBadge key={skill.id} skill={skill} onRemove={onRemoveSkill} />
+            {(selectedSkills ?? []).map((skill) => (
+              <SkillBadge
+                key={skill.id}
+                skill={skill}
+                onRemove={onRemoveSkill}
+                disabled={isMutateDisabled}
+              />
             ))}
           </div>
         )}
@@ -79,6 +94,7 @@ export function SkillsSelector({
               type="text"
               placeholder="Buscar en el catálogo"
               value={searchTerm}
+              disabled={isMutateDisabled}
               onChange={(event) => setSearchTerm(event.target.value)}
               className={cn("w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0", "pl-11")}
             />
@@ -86,10 +102,10 @@ export function SkillsSelector({
         </FormField>
 
         <ul className="max-h-64 divide-y divide-border overflow-y-auto">
-          {filteredCatalog.length === 0 ? (
+          {(filteredCatalog ?? []).length === 0 ? (
             <li className="py-3 text-[13px] text-text-secondary">No se encontraron coincidencias en el catálogo.</li>
           ) : (
-            filteredCatalog.map((skill) => {
+            (filteredCatalog ?? []).map((skill) => {
               const isSelected = selectedIds.has(skill.id);
 
               return (
@@ -104,7 +120,7 @@ export function SkillsSelector({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    disabled={isSelected}
+                    disabled={isSelected || isMutateDisabled}
                     onClick={() => onAddSkill(skill)}
                     className="gap-1 text-[13px] font-semibold text-ink hover:bg-transparent hover:text-accent disabled:text-text-secondary"
                   >
@@ -130,6 +146,7 @@ export function SkillsSelector({
               type="text"
               placeholder="Ej. Docker"
               value={customSkillName}
+              disabled={isMutateDisabled}
               onChange={(event) => {
                 setCustomSkillName(event.target.value);
                 setCustomSkillError("");
@@ -137,7 +154,12 @@ export function SkillsSelector({
               className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
               {...getFieldErrorProps("custom-skill", customSkillError)}
             />
-            <Button type="submit" variant="outline" className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft">
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={isMutateDisabled}
+              className="h-12 border-border-strong bg-surface px-6 text-[14px] font-semibold text-ink hover:bg-surface-soft disabled:opacity-60"
+            >
               Agregar
             </Button>
           </div>
@@ -146,10 +168,20 @@ export function SkillsSelector({
 
       <div className="flex flex-col gap-4">
         {feedback ? <FeedbackMessage feedback={feedback} /> : null}
+        {hasLoadError && onRetry ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onRetry}
+            className="h-10 w-full border-border-strong bg-surface text-[14px] font-semibold text-ink hover:bg-surface-soft"
+          >
+            Reintentar
+          </Button>
+        ) : null}
         <Button
           type="button"
           onClick={onSave}
-          disabled={isSaving}
+          disabled={isSaving || hasLoadError}
           className={cn("h-12 bg-accent px-6 text-[14px] font-semibold text-white hover:bg-danger", "w-full")}
         >
           {isSaving ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}

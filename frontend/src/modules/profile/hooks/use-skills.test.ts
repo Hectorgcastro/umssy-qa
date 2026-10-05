@@ -46,10 +46,42 @@ describe("useSkills", () => {
 
     const { result } = await renderLoadedHook();
 
+    expect(result.current.hasLoadError).toBe(true);
     expect(result.current.feedback).toEqual({
       type: "error",
       message: "Tu sesión no es válida. Inicia sesión nuevamente.",
     });
+  });
+
+  it("blocks saving and mutations when initial load fails", async () => {
+    vi.mocked(skillsService.getMySkills).mockRejectedValue(new Error("Network Error"));
+
+    const { result } = await renderLoadedHook();
+
+    expect(result.current.hasLoadError).toBe(true);
+    expect(result.current.selectedSkills).toEqual([]);
+
+    act(() => result.current.addSkill(SQL));
+    expect(result.current.selectedSkills).toEqual([]);
+
+    act(() => result.current.createCustomSkill("Docker"));
+    expect(result.current.selectedSkills).toEqual([]);
+
+    await act(() => result.current.saveSkills());
+    expect(skillsService.saveMySkills).not.toHaveBeenCalled();
+  });
+
+  it("reloads the catalog and user skills when reload is called", async () => {
+    vi.mocked(skillsService.getMySkills).mockRejectedValueOnce(new Error("Network Error"));
+
+    const { result } = await renderLoadedHook();
+    expect(result.current.hasLoadError).toBe(true);
+
+    vi.mocked(skillsService.getMySkills).mockResolvedValue([PYTHON]);
+    await act(() => result.current.reload());
+
+    expect(result.current.hasLoadError).toBe(false);
+    expect(result.current.selectedSkills).toEqual([PYTHON]);
   });
 
   it("does not update the state after unmounting", async () => {

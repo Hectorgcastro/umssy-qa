@@ -1,8 +1,8 @@
-import { SKILLS_VALIDATION_MESSAGES } from "../config/skills-messages.config";
+import { SKILLS_VALIDATION_MESSAGES } from "../constants/skills.constants";
 import type { SkillItem } from "../types/skill-item.types";
 
 function normalizeSkillName(name: string): string {
-  return name.trim().toLowerCase();
+  return (name ?? "").trim().toLowerCase();
 }
 
 export function validateCustomSkill(name: string, existingSkills: SkillItem[]): string | null {
@@ -12,8 +12,8 @@ export function validateCustomSkill(name: string, existingSkills: SkillItem[]): 
     return SKILLS_VALIDATION_MESSAGES.emptyName;
   }
 
-  const isDuplicated = existingSkills.some(
-    (skill) => normalizeSkillName(skill.name) === normalizedName,
+  const isDuplicated = (existingSkills ?? []).some(
+    (skill) => normalizeSkillName(skill?.name ?? "") === normalizedName,
   );
 
   return isDuplicated ? SKILLS_VALIDATION_MESSAGES.duplicated : null;
