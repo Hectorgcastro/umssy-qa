@@ -1,15 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { Info, Search } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { EventCard } from '../components/event-card';
 import { EventDetailPanel } from '../components/event-detail-panel';
 import { useEvents } from '../hooks/use-events';
+import { useEventsFilters } from '../hooks/use-events-filters';
+import { useEventCategories } from '../hooks/use-event-categories';
+import { EventsSearchInput } from '../components/events-search-input';
+import { CategoryFilterChips } from '../components/category-filter-chips';
 import type { EventItem } from '../types/event.types';
 
-const MOCKUP_CATEGORIES = ['Todos', 'Tecnologia', 'IA & Datos', 'Diseno', 'Seguridad'];
-
 export function EventsView() {
+  const { searchInput, setSearchInput, categoryId, setCategoryId, filters } =
+    useEventsFilters();
+  const { categories } = useEventCategories();
   const {
     events,
     error,
@@ -18,7 +23,7 @@ export function EventsView() {
     isLoadingMore,
     loadMore,
     retry,
-  } = useEvents();
+  } = useEvents(filters);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const handleSelectEvent = (selectedEvent: EventItem) => {
@@ -46,30 +51,12 @@ export function EventsView() {
           aria-label="Filtros de talleres"
           className="flex flex-wrap items-center gap-2.5"
         >
-          <div className="w-full sm:w-64 h-10 rounded-full bg-surface border border-border px-4 flex items-center gap-2.5 shadow-2xs">
-            <Search className="w-4 h-4 text-text-secondary shrink-0" aria-hidden="true" />
-            <span className="text-sm text-text-secondary truncate">
-              Buscar taller...
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {MOCKUP_CATEGORIES.map((categoryName, index) => {
-              const isSelected = index === 0;
-              return (
-                <span
-                  key={categoryName}
-                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
-                    isSelected
-                      ? 'bg-ink text-white'
-                      : 'bg-surface text-ink border border-border'
-                  }`}
-                >
-                  {categoryName}
-                </span>
-              );
-            })}
-          </div>
+          <EventsSearchInput value={searchInput} onChange={setSearchInput} />
+          <CategoryFilterChips
+            categories={categories}
+            selectedId={categoryId}
+            onSelect={setCategoryId}
+          />
         </div>
 
 
