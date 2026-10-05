@@ -1,7 +1,7 @@
 import { ExecutionContext } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 import { getCurrentUser } from '../decorators/current-user.decorator.js';
-import { AuthenticatedUser } from '../decorators/roles.decorator.js';
+import type { AuthenticatedUser } from '../types/authenticated-user.types.js';
 
 function createContext(user?: AuthenticatedUser) {
   return {

@@ -1,7 +1,8 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { describe, expect, it, vi } from 'vitest';
-import { ROLES_KEY, Roles } from '../decorators/roles.decorator.js';
+import { ROLES_KEY } from '../constants/roles.constants.js';
+import { Roles } from '../decorators/roles.decorator.js';
 import { RolesGuard } from '../guards/roles.guard.js';
 import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
 import { ForbiddenRoleException } from '../exceptions/forbidden-role.exception.js';
