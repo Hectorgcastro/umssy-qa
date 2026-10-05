@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import LoginView from './login-view';
+import { LoginView } from './login-view'; // <-- ¡Aquí estaba el detalle!
 
-// Simulamos (mock) el router de Next.js por si tu vista lo usa para redirigir tras el login
+// Simulamos (mock) el router de Next.js
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
