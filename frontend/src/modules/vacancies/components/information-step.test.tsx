@@ -22,9 +22,12 @@ describe('InformationStep', () => {
   it('renderiza el formulario y sus elementos principales', () => {
     const { container } = render(
       <InformationStep 
-        conditions={mockConditions} 
+         conditions={mockConditions} 
+        errors={{}}
         updateField={vi.fn()} 
         selectModality={vi.fn()} 
+        validateMapsLink={vi.fn()}
+        onContinue={vi.fn()}
       />
     );
     expect(container).toBeTruthy();
@@ -36,9 +39,12 @@ describe('InformationStep', () => {
 
     render(
       <InformationStep 
-        conditions={mockConditions} 
+         conditions={mockConditions} 
+        errors={{}}
         updateField={updateFieldMock} 
         selectModality={selectModalityMock} 
+        validateMapsLink={vi.fn()}
+        onContinue={vi.fn()}
       />
     );
 
