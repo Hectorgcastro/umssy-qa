@@ -5,6 +5,8 @@ import { AuthService } from '../../auth/services/auth.service.js';
 import { AccessRequestsRepository } from '../repositories/access-requests.repository.js';
 import {
   AccessRequestNotEditableException,
+  ActiveAccessRequestExistsException,
+  DocumentRequiredToSubmitException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
   InvalidDocumentTypeException,
@@ -12,6 +14,7 @@ import {
   MissingDocumentFileException,
 } from '../exceptions/index.js';
 import { toAccessRequestResponse } from '../mappers/access-request.mapper.js';
+import { toRequestStatusResponse } from '../mappers/request-status.mapper.js';
 import { isGraduationYearCoherent } from '../requests/access-request-fields.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
@@ -129,6 +132,44 @@ export class AccessRequestsService {
     }
 
     return { id, documentFileId: null };
+  }
+
+  async submit(id: string) {
+    const current = await this.findEditableDraft(id);
+    if (!current.documentFileId || !current.documentType) {
+      throw new DocumentRequiredToSubmitException();
+    }
+
+    // Unicidad definitiva: cuenta existente con el correo y luego solicitudes activas (el borrador y las rechazadas no cuentan)
+    if (await this.authService.existsByEmail(current.email)) {
+      throw new DuplicateAccessRequestDataException('El correo ya está registrado');
+    }
+    const duplicates = await this.accessRequestsRepository.findActiveDuplicates({
+      email: current.email,
+      idCardNumber: current.idCardNumber,
+      sisCode: current.sisCode,
+      excludeId: id,
+    });
+    if (duplicates.length > 0) {
+      throw new ActiveAccessRequestExistsException();
+    }
+
+    const submitted = await this.accessRequestsRepository.submitWithGeneratedCode(id);
+    return {
+      id: submitted.id,
+      requestCode: submitted.requestCode,
+      status: submitted.status.title,
+      submittedAt: submitted.submittedAt?.toISOString() ?? null,
+    };
+  }
+
+  // Un código inexistente y un correo distinto dan el mismo 404 para no revelar si la solicitud existe
+  async getStatus(requestCode: string, email: string) {
+    const found = await this.accessRequestsRepository.findByRequestCode(requestCode, email.trim().toLowerCase());
+    if (!found) {
+      throw new AccessRequestNotFoundException();
+    }
+    return toRequestStatusResponse(found);
   }
 
   private async findEditableDraft(id: string) {
