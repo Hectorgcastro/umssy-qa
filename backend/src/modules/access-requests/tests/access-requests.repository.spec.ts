@@ -11,7 +11,8 @@ const dto = {
   sisCode: '456',
   email: 'ana@umss.edu.bo',
   birthDate: new Date('2000-05-10T00:00:00Z'),
-  entryYear: 2019,
+  career: 'Licenciatura en Ingeniería de Sistemas' as const,
+  graduationYear: 2019,
 };
 
 function build() {
@@ -28,7 +29,10 @@ describe('AccessRequestsRepository', () => {
 
     const args = accessRequest.create.mock.calls[0][0];
     expect(args.data.status).toEqual({ connect: { title: 'draft' } });
+    expect(args.data.career).toEqual({ connect: { title: 'Licenciatura en Ingeniería de Sistemas' } });
+    expect(args.data.graduationYear).toBe(2019);
     expect(args.select).not.toHaveProperty('documentFile');
+    expect(args.select.career).toEqual({ select: { title: true } });
   });
 
   it('busca por id', async () => {
@@ -74,6 +78,28 @@ describe('AccessRequestsRepository', () => {
     await repository.updateDraft('id-1', { phone: '71234567' });
 
     expect(accessRequest.update.mock.calls[0][0].where).toEqual({ id: 'id-1', status: { title: 'draft' } });
+  });
+
+  it('actualiza la carrera conectándola por título', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.update.mockResolvedValue({ id: 'id-1' });
+
+    await repository.updateDraft('id-1', { career: 'Licenciatura Ingeniería en Informática', phone: '71234567' });
+
+    expect(accessRequest.update.mock.calls[0][0].data).toEqual({
+      phone: '71234567',
+      career: { connect: { title: 'Licenciatura Ingeniería en Informática' } },
+    });
+  });
+
+  it('no incluye la clave career si no viene en el PATCH', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.update.mockResolvedValue({ id: 'id-1' });
+
+    await repository.updateDraft('id-1', { phone: '71234567' });
+
+    expect(accessRequest.update.mock.calls[0][0].data).toEqual({ phone: '71234567' });
+    expect(accessRequest.update.mock.calls[0][0].data).not.toHaveProperty('career');
   });
 
   it('convierte P2025 en 404 de dominio', async () => {

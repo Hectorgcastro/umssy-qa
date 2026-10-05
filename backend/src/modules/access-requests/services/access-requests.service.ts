@@ -7,10 +7,10 @@ import {
   AccessRequestNotEditableException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
-  InvalidEntryYearException,
+  InvalidGraduationYearException,
 } from '../exceptions/index.js';
 import { toAccessRequestResponse } from '../mappers/access-request.mapper.js';
-import { isEntryYearCoherent } from '../requests/access-request-fields.js';
+import { isGraduationYearCoherent } from '../requests/access-request-fields.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
 import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
@@ -46,10 +46,10 @@ export class AccessRequestsService {
       throw new AccessRequestNotEditableException();
     }
 
-    const entryYear = dto.entryYear ?? current.entryYear;
+    const graduationYear = dto.graduationYear ?? current.graduationYear;
     const birthDate = dto.birthDate ?? current.birthDate;
-    if (!isEntryYearCoherent(entryYear, birthDate)) {
-      throw new InvalidEntryYearException();
+    if (!isGraduationYearCoherent(graduationYear, birthDate)) {
+      throw new InvalidGraduationYearException();
     }
 
     await this.assertNoDuplicates(dto, id);

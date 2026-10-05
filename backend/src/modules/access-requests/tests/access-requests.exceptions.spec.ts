@@ -4,7 +4,7 @@ import {
   AccessRequestNotEditableException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
-  InvalidEntryYearException,
+  InvalidGraduationYearException,
 } from '../exceptions/index.js';
 
 describe('excepciones de access-requests', () => {
@@ -12,7 +12,7 @@ describe('excepciones de access-requests', () => {
     [AccessRequestNotFoundException, 404, 'La solicitud de acceso no existe'],
     [AccessRequestNotEditableException, 409, 'La solicitud ya fue enviada y no se puede modificar'],
     [DuplicateAccessRequestDataException, 409, 'Ya existe una cuenta o solicitud con estos datos'],
-    [InvalidEntryYearException, 400, 'El año de ingreso no puede ser anterior a los 15 años de edad'],
+    [InvalidGraduationYearException, 400, 'El año de titulación no puede ser anterior a los 18 años de edad'],
   ])('%o usa el código y mensaje por defecto', (Exception, statusCode, message) => {
     const error = new Exception();
     expect(error).toBeInstanceOf(DomainException);

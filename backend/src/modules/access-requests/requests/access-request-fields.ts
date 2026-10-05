@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { CAREER } from '../types/career.enum.js';
 import { ID_CARD_ISSUED_IN } from '../types/id-card-issued-in.enum.js';
 
 export const MIN_AGE = 18;
-export const MIN_ENTRY_AGE = 15;
 
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: +[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
 const DIGITS_REGEX = /^\d+$/;
@@ -19,17 +19,17 @@ export function isAdult(birthDate: Date, now = new Date()): boolean {
   return birthDate.getTime() <= cutoff;
 }
 
-export function isEntryYearCoherent(entryYear: number, birthDate: Date): boolean {
-  return entryYear >= birthDate.getUTCFullYear() + MIN_ENTRY_AGE;
+export function isGraduationYearCoherent(graduationYear: number, birthDate: Date): boolean {
+  return graduationYear >= birthDate.getUTCFullYear() + MIN_AGE;
 }
 
 // El superRefine del objeto corre aunque un campo ya haya fallado: solo compara valores ya válidos
-export function hasEntryYearConflict(data: { entryYear?: unknown; birthDate?: unknown }): boolean {
-  const { entryYear, birthDate } = data;
-  if (typeof entryYear !== 'number' || !(birthDate instanceof Date) || Number.isNaN(birthDate.getTime())) {
+export function hasGraduationYearConflict(data: { graduationYear?: unknown; birthDate?: unknown }): boolean {
+  const { graduationYear, birthDate } = data;
+  if (typeof graduationYear !== 'number' || !(birthDate instanceof Date) || Number.isNaN(birthDate.getTime())) {
     return false;
   }
-  return !isEntryYearCoherent(entryYear, birthDate);
+  return !isGraduationYearCoherent(graduationYear, birthDate);
 }
 
 // Los dos campos de nombre van en plural ("Los nombres", "Los apellidos")
@@ -72,10 +72,11 @@ export const accessRequestFields = {
     .refine(isRealIsoDate, 'La fecha de nacimiento no es válida')
     .transform((value) => new Date(`${value}T00:00:00.000Z`))
     .refine((value) => Number.isNaN(value.getTime()) || isAdult(value), `Debes ser mayor de ${MIN_AGE} años`),
-  entryYear: z
-    .number({ error: 'El año de ingreso es obligatorio' })
-    .int('El año de ingreso debe ser un número entero')
-    .refine((value) => value <= new Date().getUTCFullYear(), 'El año de ingreso no puede ser futuro'),
+  career: z.enum(CAREER, { error: 'La carrera no es válida' }),
+  graduationYear: z
+    .number({ error: 'El año de titulación es obligatorio' })
+    .int('El año de titulación debe ser un número entero')
+    .refine((value) => value <= new Date().getUTCFullYear(), 'El año de titulación no puede ser futuro'),
 };
 
-export const ENTRY_YEAR_COHERENCE_MESSAGE = `El año de ingreso no puede ser anterior a los ${MIN_ENTRY_AGE} años de edad`;
+export const GRADUATION_YEAR_COHERENCE_MESSAGE = `El año de titulación no puede ser anterior a los ${MIN_AGE} años de edad`;

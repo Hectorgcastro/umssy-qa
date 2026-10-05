@@ -17,11 +17,12 @@ const ACCESS_REQUEST_SELECT = {
   email: true,
   phone: true,
   birthDate: true,
-  entryYear: true,
+  graduationYear: true,
   documentFileId: true,
   createdAt: true,
   updatedAt: true,
   status: { select: { title: true } },
+  career: { select: { title: true } },
 } satisfies Prisma.AccessRequestSelect;
 
 const ACTIVE_STATUSES: string[] = [
@@ -35,8 +36,13 @@ export class AccessRequestsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   createDraft(data: CreateAccessRequestDto) {
+    const { career, ...rest } = data;
     return this.prisma.accessRequest.create({
-      data: { ...data, status: { connect: { title: ACCESS_REQUEST_STATUS.DRAFT } } },
+      data: {
+        ...rest,
+        status: { connect: { title: ACCESS_REQUEST_STATUS.DRAFT } },
+        career: { connect: { title: career } },
+      },
       select: ACCESS_REQUEST_SELECT,
     });
   }
@@ -64,10 +70,11 @@ export class AccessRequestsRepository {
   }
 
   async updateDraft(id: string, data: UpdateAccessRequestDto) {
+    const { career, ...rest } = data;
     try {
       return await this.prisma.accessRequest.update({
         where: { id, status: { title: ACCESS_REQUEST_STATUS.DRAFT } },
-        data,
+        data: { ...rest, ...(career !== undefined && { career: { connect: { title: career } } }) },
         select: ACCESS_REQUEST_SELECT,
       });
     } catch (error) {
