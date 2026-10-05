@@ -7,12 +7,27 @@ import {
   MentorRoleNotFoundException,
 } from '../exceptions/index.js';
 import type { ActivateMentorDto } from '../requests/activate-mentor.schema.js';
+import type { MentorDirectoryResponse } from '../types/mentor-directory-response.types.js';
 
 @Injectable()
 export class MentorsService {
   constructor(
     private readonly mentorsRepository: MentorsRepository,
   ) {}
+
+  async findAll(): Promise<MentorDirectoryResponse[]> {
+    const now = new Date();
+    const mentors = await this.mentorsRepository.findActiveMentors(now);
+
+    return mentors.map((mentor) => ({
+      id: mentor.id,
+      fullName: `${mentor.firstName} ${mentor.lastName}`,
+      headline: mentor.headline,
+      technicalAreas: mentor.mentorTechnicalAreas.map(
+        (relation) => relation.technicalArea.name,
+      ),
+    }));
+  }
 
   async activate(
     userId: string,
