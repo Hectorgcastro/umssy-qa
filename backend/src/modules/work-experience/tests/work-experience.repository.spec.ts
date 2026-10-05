@@ -42,6 +42,18 @@ const expectedSelect = {
   updatedAt: true,
   company: { select: { id: true, title: true } },
 };
+const expectedPeriod = {
+  startDate: new Date('2025-03-01T00:00:00.000Z'),
+  endDate: null,
+  isCurrent: true,
+};
+const expectedWhere = {
+  id: workExperienceId,
+  userId,
+  startDate: expectedPeriod.startDate,
+  endDate: null,
+  isCurrent: true,
+};
 const expectedCompanyWrite = {
   connectOrCreate: {
     where: { title: 'Synapse Labs' },
@@ -125,17 +137,19 @@ describe('WorkExperienceRepository', () => {
     });
   });
 
-  it('updates only the owner record and relinks the company when its name changes', async () => {
+  it('updates only the owner record with the period it was validated against and relinks the company', async () => {
     workExperience.update.mockResolvedValue(record);
 
     await expect(
-      repository.update(workExperienceId, userId, {
-        companyName: 'Synapse Labs',
-        position: 'Web developer',
-      }),
+      repository.update(
+        workExperienceId,
+        userId,
+        { companyName: 'Synapse Labs', position: 'Web developer' },
+        expectedPeriod,
+      ),
     ).resolves.toEqual(record);
     expect(workExperience.update).toHaveBeenCalledWith({
-      where: { id: workExperienceId, userId },
+      where: expectedWhere,
       data: { position: 'Web developer', company: expectedCompanyWrite },
       select: expectedSelect,
     });
@@ -144,20 +158,30 @@ describe('WorkExperienceRepository', () => {
   it('keeps the company when the update does not include a company name', async () => {
     workExperience.update.mockResolvedValue(record);
 
-    await repository.update(workExperienceId, userId, { isCurrent: false });
+    await repository.update(
+      workExperienceId,
+      userId,
+      { isCurrent: false },
+      expectedPeriod,
+    );
 
     expect(workExperience.update).toHaveBeenCalledWith({
-      where: { id: workExperienceId, userId },
+      where: expectedWhere,
       data: { isCurrent: false },
       select: expectedSelect,
     });
   });
 
-  it('returns null when the record to update does not exist for the owner', async () => {
+  it('returns null when the record does not exist or its period changed', async () => {
     workExperience.update.mockRejectedValue(buildPrismaError('P2025'));
 
     await expect(
-      repository.update(workExperienceId, userId, { position: 'Web developer' }),
+      repository.update(
+        workExperienceId,
+        userId,
+        { position: 'Web developer' },
+        expectedPeriod,
+      ),
     ).resolves.toBeNull();
   });
 
@@ -166,7 +190,12 @@ describe('WorkExperienceRepository', () => {
     workExperience.update.mockRejectedValue(error);
 
     await expect(
-      repository.update(workExperienceId, userId, { position: 'Web developer' }),
+      repository.update(
+        workExperienceId,
+        userId,
+        { position: 'Web developer' },
+        expectedPeriod,
+      ),
     ).rejects.toBe(error);
   });
 

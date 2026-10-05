@@ -39,16 +39,24 @@ export function WorkExperienceView() {
     void reload();
   });
 
+  const isBusy = saveMutation.isSaving || deleteMutation.isDeleting;
+
   const listFeedback: Feedback | null =
     deleteMutation.feedback ?? (error ? { type: "error", message: error } : null);
 
   const handleEdit = (experience: WorkExperienceItem) => {
+    if (isBusy) {
+      return;
+    }
     saveMutation.clearFeedback();
     deleteMutation.clearFeedback();
     setEditingExperience(experience);
   };
 
   const handleDelete = (experience: WorkExperienceItem) => {
+    if (isBusy) {
+      return;
+    }
     saveMutation.clearFeedback();
     deleteMutation.clearFeedback();
     setPendingDelete(experience);
@@ -62,6 +70,9 @@ export function WorkExperienceView() {
   };
 
   const handleSubmit = async (values: WorkExperienceFormValues) => {
+    if (deleteMutation.isDeleting) {
+      return;
+    }
     deleteMutation.clearFeedback();
     await saveMutation.save(toWorkExperiencePayload(values), editingExperience?.id);
   };
@@ -78,7 +89,7 @@ export function WorkExperienceView() {
         <WorkExperienceListCard
           experiences={experiences}
           isLoading={isLoading}
-          isBusy={deleteMutation.isDeleting}
+          isBusy={isBusy}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />

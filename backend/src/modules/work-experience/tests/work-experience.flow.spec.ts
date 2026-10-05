@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DomainExceptionFilter } from '../../../common/filters/domain-exception.filter.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { WorkExperienceRepository } from '../repositories/work-experience.repository.js';
+import type { WorkExperiencePeriodSnapshot } from '../types/work-experience-period-snapshot.type.js';
 import type { WorkExperienceRecord } from '../types/work-experience-record.type.js';
 import type { WorkExperienceWriteData } from '../types/work-experience-write-data.type.js';
 import { WorkExperienceModule } from '../work-experience.module.js';
@@ -60,9 +61,15 @@ function createInMemoryRepository() {
       id: string,
       userId: string,
       data: Partial<WorkExperienceWriteData>,
+      expectedPeriod: WorkExperiencePeriodSnapshot,
     ) => {
       const current = findOwned(id, userId);
-      if (!current) {
+      if (
+        !current ||
+        current.startDate.getTime() !== expectedPeriod.startDate.getTime() ||
+        current.endDate?.getTime() !== expectedPeriod.endDate?.getTime() ||
+        current.isCurrent !== expectedPeriod.isCurrent
+      ) {
         return Promise.resolve(null);
       }
       const { companyName, ...fields } = data;

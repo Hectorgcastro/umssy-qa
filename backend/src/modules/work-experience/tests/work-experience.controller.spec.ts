@@ -120,9 +120,12 @@ describe('WorkExperienceController', () => {
       .send({ position: ' Lead ' })
       .expect(200);
     expect(updated.body.data.position).toBe('Lead');
-    expect(repository.update).toHaveBeenCalledWith(workExperienceId, userId, {
-      position: 'Lead',
-    });
+    expect(repository.update).toHaveBeenCalledWith(
+      workExperienceId,
+      userId,
+      { position: 'Lead' },
+      { startDate: record.startDate, endDate: record.endDate, isCurrent: false },
+    );
 
     const deleted = await request(app.getHttpServer())
       .delete(`/api/work-experiences/${workExperienceId}`)
