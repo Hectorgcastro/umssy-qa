@@ -7,17 +7,29 @@ export interface UserSummary {
   isOnline: boolean;
 }
 
+export type MessageStatus = 'sending' | 'sent' | 'error';
+
 export interface LastMessage {
   id: string;
   senderId: string;
   content: string;
-  isAttachment: boolean;
-  attachmentType?: AttachmentType | null;
   createdAt: string;
+  timestamp?: string;
+  status?: MessageStatus;
+  isAttachment?: boolean;
+  attachmentType?: AttachmentType | null;
 }
 
-export interface Message extends LastMessage {
+export interface Message {
+  id: string;
   conversationId: string;
+  senderId: string;
+  content: string;
+  timestamp: string;
+  status: MessageStatus;
+  createdAt: string;
+  isAttachment?: boolean;
+  attachmentType?: AttachmentType | null;
 }
 
 export interface Conversation {
@@ -43,3 +55,17 @@ export interface StandardApiResponse<T> {
   detail: string;
   ok: boolean;
 }
+
+export interface SendMessagePayload {
+  conversationId: string;
+  senderId?: string;
+  content: string;
+}
+
+export interface SendMessageOptions {
+  forceError?: boolean;
+  forceOffline?: boolean;
+  latencyMs?: number;
+}
+
+export type SendMessageResponse = StandardApiResponse<Message>;
