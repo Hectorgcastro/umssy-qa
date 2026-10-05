@@ -25,4 +25,15 @@ export class AvailabilityRepository {
       include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
     });
   }
+
+  findById(id: string): Promise<AvailabilityBlockWithAppointments | null> {
+    return this.prisma.availabilityBlock.findUnique({
+      where: { id },
+      include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+    });
+  }
+
+  delete(id: string): Promise<AvailabilityBlock> {
+    return this.prisma.availabilityBlock.delete({ where: { id } });
+  }
 }

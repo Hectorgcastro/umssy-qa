@@ -59,4 +59,8 @@ describe('AvailabilityMapper', () => {
       ['block-2', 'pending'],
     ]);
   });
+
+  it('arma la respuesta de borrado solo con el id del bloque', () => {
+    expect(mapper.toDeletedResponse(buildBlock())).toEqual({ id: 'block-1' });
+  });
 });
