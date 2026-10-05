@@ -9,6 +9,30 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: buildDatabaseConnectionString() }),
 });
 
+const SKILL_NAMES = [
+  'Python',
+  'Java',
+  'JavaScript',
+  'TypeScript',
+  'React',
+  'Node.js',
+  'SQL',
+  'PostgreSQL',
+  'Docker',
+  'Kubernetes',
+  'Git',
+  'Linux',
+  'Django',
+  'FastAPI',
+  'Vue.js',
+  'Angular',
+  'MongoDB',
+  'Redis',
+  'Rust',
+  'Assembly',
+];
+
+
 async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
@@ -35,8 +59,17 @@ async function main() {
     await prisma.userRole.create({ data: { userId: testUser.id, roleId: tituladoRole.id } });
   }
 
+  for (const name of SKILL_NAMES) {
+    await prisma.skill.upsert({
+      where: { name },
+      update: { isCustom: false },
+      create: { name, isCustom: false },
+    });
+  }
+
   console.log('Roles creados:', ROLE_NAMES.join(', '));
   console.log('Usuario de prueba: prueba@umss.edu.bo / Prueba123 (rol: titulado)');
+  console.log('Tecnologías cargadas:', SKILL_NAMES.length);
 }
 
 main()
