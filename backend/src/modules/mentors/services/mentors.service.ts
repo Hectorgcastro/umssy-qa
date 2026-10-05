@@ -4,10 +4,12 @@ import {
   AlreadyMentorException,
   InvalidOrientationTypesException,
   InvalidTechnicalAreasException,
+  MentorNotFoundException,
   MentorRoleNotFoundException,
 } from '../exceptions/index.js';
 import type { ActivateMentorDto } from '../requests/activate-mentor.schema.js';
 import type { MentorDirectoryResponse } from '../types/mentor-directory-response.types.js';
+import type { MentorProfileResponse } from '../types/mentor-profile-response.types.js';
 
 @Injectable()
 export class MentorsService {
@@ -27,6 +29,40 @@ export class MentorsService {
         (relation) => relation.technicalArea.name,
       ),
     }));
+  }
+
+  async findOne(userId: string): Promise<MentorProfileResponse> {
+    const now = new Date();
+    const mentor = await this.mentorsRepository.findActiveMentorById(
+      userId,
+      now,
+    );
+
+    if (!mentor) {
+      throw new MentorNotFoundException();
+    }
+
+    return {
+      id: mentor.id,
+      fullName: `${mentor.firstName} ${mentor.lastName}`,
+      headline: mentor.headline,
+      aboutMe: mentor.aboutMe,
+      photoUrl: this.bytesToString(mentor.photoUrl),
+      city: mentor.city,
+      educations: mentor.educations,
+      workExperiences: mentor.workExperiences,
+      skills: mentor.userSkills.map((relation) => relation.skill),
+      certifications: mentor.certifications.map((certification) => ({
+        ...certification,
+        documentUrl: this.bytesToString(certification.documentUrl),
+      })),
+      technicalAreas: mentor.mentorTechnicalAreas.map(
+        (relation) => relation.technicalArea,
+      ),
+      orientationTypes: mentor.mentorOrientationTypes.map(
+        (relation) => relation.orientationType,
+      ),
+    };
   }
 
   async activate(
@@ -73,5 +109,9 @@ export class MentorsService {
       data.technicalAreaIds,
       data.orientationTypeIds,
     );
+  }
+
+  private bytesToString(value: Uint8Array | null): string | null {
+    return value ? Buffer.from(value).toString('utf8') : null;
   }
 }
