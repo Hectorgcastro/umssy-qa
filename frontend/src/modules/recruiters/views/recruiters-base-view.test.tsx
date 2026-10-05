@@ -1,9 +1,10 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { RecruitersBaseView } from './recruiters-base-view';
+import React from 'react';
 
 vi.mock('@/shared/components/layout/app-shell', () => ({
-  AppShell: ({ children }: any) => <div data-testid="app-shell">{children}</div>
+  AppShell: ({ children }: { children: React.ReactNode }) => <div data-testid="app-shell">{children}</div>
 }));
 vi.mock('@/shared/components/layout/app-sidebar', () => ({
   AppSidebar: () => <div data-testid="app-sidebar">Sidebar</div>
