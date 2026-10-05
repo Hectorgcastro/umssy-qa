@@ -135,24 +135,65 @@ describe("useMentorFreeBlocks", () => {
   })
 
   it("obtiene los bloques usando el rango semanal", async () => {
-  const spy = vi
-    .spyOn(availabilityApi, "getMentorFreeBlocks")
-    .mockResolvedValue([mockBlock])
+    const spy = vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockResolvedValue([mockBlock])
 
-  const weekRange = {
-    startAt: "2024-01-15T00:00:00Z",
-    endAt: "2024-01-21T23:59:59Z",
-  }
+    const weekRange = {
+      startAt: "2024-01-15T00:00:00Z",
+      endAt: "2024-01-21T23:59:59Z",
+    }
 
-  const { result } = renderHook(() =>
-    useMentorFreeBlocks("m1", weekRange)
-  )
+    const { result } = renderHook(() =>
+      useMentorFreeBlocks("m1", weekRange),
+    )
 
-  await waitFor(() => {
-    expect(result.current.isLoading).toBe(false)
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(spy).toHaveBeenCalledWith("m1", weekRange)
+    expect(result.current.blocks).toEqual([mockBlock])
   })
 
-  expect(spy).toHaveBeenCalledWith("m1", weekRange)
-  expect(result.current.blocks).toEqual([mockBlock])
-})
+  it("reutiliza la disponibilidad mientras la caché sigue fresca", async () => {
+    const spy = vi
+      .spyOn(availabilityApi, "getMentorFreeBlocks")
+      .mockResolvedValue([mockBlock])
+
+    const weekOne = {
+      startAt: "2024-01-15T00:00:00Z",
+      endAt: "2024-01-21T23:59:59Z",
+    }
+
+    const weekTwo = {
+      startAt: "2024-01-22T00:00:00Z",
+      endAt: "2024-01-28T23:59:59Z",
+    }
+
+    const { result, rerender } = renderHook(
+      ({ weekRange }) => useMentorFreeBlocks("m1", weekRange),
+      {
+        initialProps: { weekRange: weekOne },
+      },
+    )
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    rerender({ weekRange: weekTwo })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    rerender({ weekRange: weekOne })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(spy).toHaveBeenCalledTimes(2)
+  })
 })
