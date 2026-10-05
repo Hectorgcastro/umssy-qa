@@ -41,3 +41,6 @@ jobs:
 
       - name: Build application
         run: pnpm build
+        env:
+          NEXT_PUBLIC_APP_ENV: local
+          NEXT_PUBLIC_API_URL_LOCAL: http://localhost:8080/api
