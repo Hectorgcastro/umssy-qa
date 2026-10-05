@@ -12,6 +12,10 @@ export default defineConfig({
   test: {
 setupFiles: ['./vitest.setup.ts'],
     environment: 'jsdom',
+    env: {
+      NEXT_PUBLIC_APP_ENV: 'local',
+      NEXT_PUBLIC_API_URL_LOCAL: 'http://localhost:8080/api',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
