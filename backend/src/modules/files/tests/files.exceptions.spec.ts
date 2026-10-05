@@ -11,7 +11,7 @@ describe('excepciones de files', () => {
   it.each([
     [EmptyFileException, 400, 'El archivo está vacío'],
     [FileTooLargeException, 413, 'El archivo no puede superar los 10 MB'],
-    [InvalidFileTypeException, 415, 'Solo se permiten archivos JPG, PNG o PDF'],
+    [InvalidFileTypeException, 400, 'Solo se permiten archivos JPG, PNG o PDF'],
     [FileNotFoundException, 404, 'El archivo no existe'],
   ])('%o usa el código y mensaje por defecto', (Exception, statusCode, message) => {
     const error = new Exception();
