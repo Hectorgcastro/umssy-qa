@@ -9,9 +9,11 @@ import {
 } from '../exceptions/index.js';
 import type { ActivateMentorDto } from '../requests/activate-mentor.schema.js';
 import type { UpdateMentorTechnicalAreasDto } from '../requests/update-mentor-technical-areas.schema.js';
+import type { UpdateMentorOrientationTypesDto } from '../requests/update-mentor-orientation-types.schema.js';
 import type { MentorDirectoryResponse } from '../types/mentor-directory-response.types.js';
 import type { MentorProfileResponse } from '../types/mentor-profile-response.types.js';
 import type { TechnicalAreaResponse } from '../../technical-areas/types/technical-area-response.types.js';
+import type { OrientationTypeResponse } from '../../orientation-types/types/orientation-type-response.types.js';
 
 @Injectable()
 export class MentorsService {
@@ -92,6 +94,38 @@ export class MentorsService {
     );
 
     return { technicalAreaIds: data.technicalAreaIds };
+  }
+
+  async findMyOrientationTypes(
+    userId: string,
+  ): Promise<OrientationTypeResponse[]> {
+    await this.assertActiveMentor(userId);
+    const relations =
+      await this.mentorsRepository.findMentorOrientationTypes(userId);
+
+    return relations.map((relation) => relation.orientationType);
+  }
+
+  async updateMyOrientationTypes(
+    userId: string,
+    data: UpdateMentorOrientationTypesDto,
+  ) {
+    await this.assertActiveMentor(userId);
+    const orientationTypes =
+      await this.mentorsRepository.findActiveOrientationTypes(
+        data.orientationTypeIds,
+      );
+
+    if (orientationTypes.length !== data.orientationTypeIds.length) {
+      throw new InvalidOrientationTypesException();
+    }
+
+    await this.mentorsRepository.replaceMentorOrientationTypes(
+      userId,
+      data.orientationTypeIds,
+    );
+
+    return { orientationTypeIds: data.orientationTypeIds };
   }
 
   async activate(userId: string, data: ActivateMentorDto) {

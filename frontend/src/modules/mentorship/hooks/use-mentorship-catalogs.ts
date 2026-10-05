@@ -12,7 +12,7 @@ export function useMentorshipCatalogs() {
 
   const orientationTypesQuery = useQuery({
     queryKey: ["mentorship", "orientation-types"],
-    queryFn: getOrientationTypes,
+    queryFn: ({ signal }) => getOrientationTypes(signal),
   });
 
   return {

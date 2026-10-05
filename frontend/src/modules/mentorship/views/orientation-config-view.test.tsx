@@ -1,135 +1,203 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { renderToString } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getMentorParticipation,
-  saveMentorParticipation,
-} from "@/shared/services/mentor-participation.service";
-import { ORIENTATION_TYPES } from "../data/orientation-types";
+  getMentorOrientationTypes,
+  getOrientationTypes,
+  updateMentorOrientationTypes,
+} from "../services/orientation-type.service";
 import { OrientationConfigView } from "./orientation-config-view";
 
-const activeParticipation = {
-  status: "active" as const,
-  areas: ["Backend", "Cloud"],
-  orientations: ["Orientación técnica", "Búsqueda de empleo"],
-};
+vi.mock("../services/orientation-type.service", () => ({
+  getOrientationTypes: vi.fn(),
+  getMentorOrientationTypes: vi.fn(),
+  updateMentorOrientationTypes: vi.fn(),
+}));
+
+const catalog = [
+  {
+    id: "0424f370-00f0-43cf-9b8a-997af81840b9",
+    name: "Búsqueda de empleo",
+    description: "Preparación para oportunidades laborales",
+  },
+  {
+    id: "0fa5e6de-63a4-430e-87fb-22f5eb700ecd",
+    name: "Orientación profesional",
+    description: null,
+  },
+  {
+    id: "b679c31a-2545-43a9-91ac-f254b49e7b0c",
+    name: "Orientación técnica",
+    description: "Decisiones y crecimiento técnico",
+  },
+];
+
+const selectedOrientations = [catalog[0], catalog[2]];
+const checkbox = (name: RegExp | string) =>
+  screen.getByRole("checkbox", { name });
 
 describe("OrientationConfigView", () => {
   beforeEach(() => {
-    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(getOrientationTypes).mockResolvedValue(catalog);
+    vi.mocked(getMentorOrientationTypes).mockResolvedValue(
+      selectedOrientations,
+    );
+    vi.mocked(updateMentorOrientationTypes).mockResolvedValue();
   });
 
-  afterEach(() => {
-    cleanup();
-    localStorage.clear();
-  });
+  afterEach(cleanup);
 
-  it("renderiza un estado inicial estable mientras resuelve la participación", () => {
-    const markup = renderToString(<OrientationConfigView />);
-
-    expect(markup).toContain("Cargando tu participación como mentor");
-    expect(markup).not.toContain("Activar participación como mentor");
-    expect(markup).not.toContain("Guardar cambios");
-  });
-
-  it("precarga las orientaciones guardadas durante la activación", async () => {
-    saveMentorParticipation(activeParticipation);
+  it("muestra loading mientras carga las consultas", () => {
+    vi.mocked(getOrientationTypes).mockReturnValue(new Promise(() => {}));
+    vi.mocked(getMentorOrientationTypes).mockReturnValue(new Promise(() => {}));
 
     render(<OrientationConfigView />);
 
-    await screen.findByRole("checkbox", { name: "Orientación técnica" });
-    expect(screen.getByRole("checkbox", { name: "Orientación técnica" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "Búsqueda de empleo" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "Orientación profesional" })).not.toBeChecked();
-  });
-
-  it("muestra exactamente el catálogo compartido por HU3", async () => {
-    saveMentorParticipation(activeParticipation);
-
-    render(<OrientationConfigView />);
-
-    await screen.findByRole("checkbox", { name: "Orientación técnica" });
-    expect(screen.getAllByRole("checkbox")).toHaveLength(ORIENTATION_TYPES.length);
-    ORIENTATION_TYPES.forEach(({ label }) => {
-      expect(screen.getByRole("checkbox", { name: label })).toBeInTheDocument();
-    });
-  });
-
-  it("permite agregar y quitar múltiples orientaciones", async () => {
-    saveMentorParticipation(activeParticipation);
-
-    render(<OrientationConfigView />);
-
-    await screen.findByRole("checkbox", { name: "Orientación técnica" });
-    const professional = screen.getByRole("checkbox", { name: "Orientación profesional" });
-    const technical = screen.getByRole("checkbox", { name: "Orientación técnica" });
-
-    fireEvent.click(professional);
-    fireEvent.click(technical);
-
-    expect(professional).toBeChecked();
-    expect(technical).not.toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "Búsqueda de empleo" })).toBeChecked();
-  });
-
-  it("impide guardar cuando no queda ninguna orientación seleccionada", async () => {
-    saveMentorParticipation({
-      ...activeParticipation,
-      orientations: ["Orientación técnica"],
-    });
-
-    render(<OrientationConfigView />);
-    await screen.findByRole("checkbox", { name: "Orientación técnica" });
-    fireEvent.click(screen.getByRole("checkbox", { name: "Orientación técnica" }));
-
-    expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled();
-    expect(getMentorParticipation()).toEqual({
-      ...activeParticipation,
-      orientations: ["Orientación técnica"],
-    });
-  });
-
-  it("guarda las etiquetas elegidas y preserva áreas y estado", async () => {
-    saveMentorParticipation(activeParticipation);
-
-    render(<OrientationConfigView />);
-    await screen.findByRole("checkbox", { name: "Orientación técnica" });
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("checkbox", { name: "Orientación profesional" }));
-    fireEvent.click(screen.getByRole("checkbox", { name: "Orientación técnica" }));
-    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
-
-    expect(getMentorParticipation()).toEqual({
-      status: "active",
-      areas: ["Backend", "Cloud"],
-      orientations: ["Orientación profesional", "Búsqueda de empleo"],
-    });
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Tipos de orientación actualizados correctamente",
+      "Cargando tu participación como mentor",
     );
   });
 
-  it("mantiene Volver dirigido a Mi participación", async () => {
-    saveMentorParticipation(activeParticipation);
-
-    render(<OrientationConfigView />);
-
-    await screen.findByRole("link", { name: "Volver" });
-    expect(screen.getByRole("link", { name: "Volver" })).toHaveAttribute(
-      "href",
-      "/mentors/participation",
-    );
-  });
-
-  it("bloquea la edición sin participación y enlaza al flujo de activación", async () => {
+  it("carga el catalogo real y precarga los UUID guardados", async () => {
     render(<OrientationConfigView />);
 
     expect(
-      await screen.findByText(/Primero debes activar tu participación como mentor/i),
+      await screen.findByText(catalog[0].description ?? ""),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole("checkbox")).toHaveLength(catalog.length);
+    expect(checkbox("Búsqueda de empleo")).toBeChecked();
+    expect(checkbox("Orientación técnica")).toBeChecked();
+    expect(checkbox("Orientación profesional")).not.toBeChecked();
+    expect(getOrientationTypes).toHaveBeenCalledTimes(1);
+    expect(getMentorOrientationTypes).toHaveBeenCalledTimes(1);
+  });
+
+  it("permite agregar y quitar multiples orientaciones", async () => {
+    render(<OrientationConfigView />);
+    await screen.findByRole("checkbox", { name: "Orientación profesional" });
+
+    fireEvent.click(checkbox("Orientación profesional"));
+    fireEvent.click(checkbox("Orientación técnica"));
+
+    expect(checkbox("Orientación profesional")).toBeChecked();
+    expect(checkbox("Orientación técnica")).not.toBeChecked();
+    expect(checkbox("Búsqueda de empleo")).toBeChecked();
+  });
+
+  it("exige al menos una orientacion", async () => {
+    vi.mocked(getMentorOrientationTypes).mockResolvedValue([catalog[0]]);
+    render(<OrientationConfigView />);
+    await screen.findByRole("checkbox", { name: "Búsqueda de empleo" });
+
+    fireEvent.click(checkbox("Búsqueda de empleo"));
+
+    expect(
+      screen.getByRole("button", { name: "Guardar cambios" }),
+    ).toBeDisabled();
+    expect(updateMentorOrientationTypes).not.toHaveBeenCalled();
+  });
+
+  it("guarda exactamente los UUID seleccionados y muestra exito", async () => {
+    render(<OrientationConfigView />);
+    await screen.findByRole("checkbox", { name: "Orientación profesional" });
+
+    fireEvent.click(checkbox("Orientación profesional"));
+    fireEvent.click(checkbox("Orientación técnica"));
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+    expect(
+      await screen.findByText(
+        "Tipos de orientación actualizados correctamente",
+      ),
+    ).toBeInTheDocument();
+    expect(updateMentorOrientationTypes).toHaveBeenCalledWith([
+      catalog[0].id,
+      catalog[1].id,
+    ]);
+  });
+
+  it("conserva la seleccion si falla el guardado", async () => {
+    vi.mocked(updateMentorOrientationTypes).mockRejectedValueOnce(
+      new Error("500"),
+    );
+    render(<OrientationConfigView />);
+    await screen.findByRole("checkbox", { name: "Orientación profesional" });
+
+    fireEvent.click(checkbox("Orientación profesional"));
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+    expect(
+      await screen.findByText(
+        "No se pudieron guardar los cambios. Intente nuevamente.",
+      ),
+    ).toBeInTheDocument();
+    expect(checkbox("Orientación profesional")).toBeChecked();
+    expect(checkbox("Búsqueda de empleo")).toBeChecked();
+    expect(checkbox("Orientación técnica")).toBeChecked();
+  });
+
+  it("muestra error de carga y reintenta ambas consultas", async () => {
+    vi.mocked(getOrientationTypes)
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+      .mockResolvedValueOnce(catalog);
+    render(<OrientationConfigView />);
+
+    expect(
+      await screen.findByText(
+        "No se pudieron cargar los tipos de orientación.",
+      ),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(
+      await screen.findByRole("checkbox", { name: "Orientación técnica" }),
+    ).toBeChecked();
+    expect(getOrientationTypes).toHaveBeenCalledTimes(2);
+    expect(getMentorOrientationTypes).toHaveBeenCalledTimes(2);
+  });
+
+  it("muestra activacion cuando el backend informa que no es mentor activo", async () => {
+    vi.mocked(getMentorOrientationTypes).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 404 },
+    });
+    render(<OrientationConfigView />);
+
+    expect(
+      await screen.findByText(
+        /Primero debes activar tu participación como mentor/i,
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Activar participación como mentor" }),
     ).toHaveAttribute("href", "/mentorship");
+  });
+
+  it("no depende de localStorage", async () => {
+    const readStorage = vi.spyOn(Storage.prototype, "getItem");
+    const writeStorage = vi.spyOn(Storage.prototype, "setItem");
+
+    render(<OrientationConfigView />);
+    await screen.findByRole("checkbox", { name: "Orientación técnica" });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+    await screen.findByText("Tipos de orientación actualizados correctamente");
+    expect(readStorage).not.toHaveBeenCalled();
+    expect(writeStorage).not.toHaveBeenCalled();
+    readStorage.mockRestore();
+    writeStorage.mockRestore();
+  });
+
+  it("mantiene Volver dirigido a Mi participación", async () => {
+    render(<OrientationConfigView />);
+
+    expect(await screen.findByRole("link", { name: "Volver" })).toHaveAttribute(
+      "href",
+      "/mentors/participation",
+    );
   });
 });
