@@ -72,7 +72,6 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
         });
       }
 
-      // 22:00 del mismo día es válido como fin; 00:00 del día siguiente no.
       if (start.day !== end.day) {
         ctx.addIssue({
           code: 'custom',
