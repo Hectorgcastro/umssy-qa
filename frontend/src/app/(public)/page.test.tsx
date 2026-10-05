@@ -1,33 +1,24 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, afterEach } from 'vitest'
-import { apiClient } from '@/shared/services/api-client'
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
 import Home from './page'
 
 describe('Home Page', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
+  it('renderiza el formulario de descripción de trabajo y selector de habilidades', () => {
+    render(<Home />)
+    
+    // Test that the main heading is present
+    expect(screen.getByText('Requisitos técnicos')).toBeDefined()
+    
+    // Test that the chip label is present
+    expect(screen.getByText('CHIPS SELECCIONABLES')).toBeDefined()
   })
 
-  it('renderiza el título principal y muestra la respuesta GET del backend via Axios', async () => {
-    vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
-      data: 'Hello World!',
-    })
-
+  it('renderiza las habilidades técnicas iniciales', () => {
     render(<Home />)
-    expect(screen.getByText('PWA Egresados UMSS')).toBeDefined()
-
-    await waitFor(() => {
-      expect(screen.getByText('Hello World!')).toBeDefined()
-    })
-  })
-
-  it('muestra mensaje de error si falla la petición con Axios', async () => {
-    vi.spyOn(apiClient, 'get').mockRejectedValueOnce(new Error('Network error'))
-
-    render(<Home />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Error connecting to backend')).toBeDefined()
-    })
+    
+    // Test that initial skills are rendered
+    expect(screen.getByText('Python')).toBeDefined()
+    expect(screen.getByText('Docker')).toBeDefined()
+    expect(screen.getByText('Kali')).toBeDefined()
   })
 })
