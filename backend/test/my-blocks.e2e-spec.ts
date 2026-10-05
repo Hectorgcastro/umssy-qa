@@ -12,7 +12,6 @@ import { MAX_WEEK_QUERY_MS } from '../src/modules/availability/constants/week-qu
 import type { PrismaClient } from '../src/prisma/client.js';
 
 const MAX_RESPONSE_MS = 3000;
-const EXPECTED_BLOCKS = 50;
 
 const seedUserOf = (key: (typeof SEED_USERS)[number]['key']) =>
   SEED_USERS.find((user) => user.key === key);
@@ -22,7 +21,8 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
   let prisma: PrismaClient;
   let mentorAToken: string;
   let mentorBToken: string;
-  const weeks = getWeeks(new Date());
+  let weeks = getWeeks(new Date());
+  let expectedBlocks = 0;
 
   const getMyBlocks = (token: string, from: string, to: string) =>
     request(app.getHttpServer())
@@ -39,7 +39,11 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
     await app.init();
 
     prisma = createSeedClient();
-    await runSeed(prisma);
+    const summary = await runSeed(prisma);
+    weeks = summary.weeks;
+    expectedBlocks = summary.plan.blocks.filter(
+      (block) => block.start >= weeks.next.start && block.start < weeks.next.end,
+    ).length;
 
     const loginMentorA = await request(app.getHttpServer())
       .post('/auth/login')
@@ -66,7 +70,7 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
   });
 
   describe('Semana con bloques (mentorA)', () => {
-    it('devuelve 200 y lista los 50 bloques de la semana siguiente', async () => {
+    it('devuelve 200 y lista los bloques de la semana siguiente', async () => {
       const from = weeks.next.start.toISOString();
       const to = weeks.next.end.toISOString();
 
@@ -74,7 +78,8 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body).toHaveLength(EXPECTED_BLOCKS);
+      expect(expectedBlocks).toBeGreaterThan(0);
+      expect(res.body).toHaveLength(expectedBlocks);
     });
 
     it('devuelve cada bloque con la estructura de la HU-02', async () => {
@@ -139,7 +144,7 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
   });
 
   describe('Rendimiento', () => {
-    it(`responde los ${EXPECTED_BLOCKS} bloques en menos de ${MAX_RESPONSE_MS} ms`, async () => {
+    it(`responde los bloques de la semana siguiente en menos de ${MAX_RESPONSE_MS} ms`, async () => {
       const from = weeks.next.start.toISOString();
       const to = weeks.next.end.toISOString();
 
@@ -148,7 +153,7 @@ describe('GET /availability-blocks (mis bloques) - H2-E', () => {
       const duration = Date.now() - start;
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(EXPECTED_BLOCKS);
+      expect(res.body).toHaveLength(expectedBlocks);
       expect(duration).toBeLessThan(MAX_RESPONSE_MS);
     });
   });
