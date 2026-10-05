@@ -7,7 +7,7 @@ export function RequestAccessView() {
       <div className="flex min-h-screen flex-col lg:flex-row">
         <RequestStepsSidebar currentStep={1} />
         <section className="flex flex-1 flex-col justify-center px-6 py-10 lg:px-16">
-          <div className="mx-auto flex w-full max-w-3xl justify-center">
+          <div className="mx-auto flex w-full max-w-190 justify-center 2xl:max-w-5xl">
             <PersonalDataForm />
           </div>
         </section>

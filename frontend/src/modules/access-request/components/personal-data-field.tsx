@@ -21,7 +21,7 @@ export function PersonalDataField({
 
   return (
     <div className={className}>
-      <Label htmlFor={id} className="mb-1.5 text-[12.5px] font-semibold text-ink">
+      <Label htmlFor={id} className="mb-1.5 text-[12.5px] font-semibold text-ink 2xl:text-base">
         {label}
       </Label>
       <div className="relative">
@@ -34,14 +34,14 @@ export function PersonalDataField({
           id={id}
           name={id}
           aria-describedby={helpId}
-          className={`h-[42px] rounded-md border-border bg-surface text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction md:text-[15px] ${
+          className={`h-[42px] rounded-md border-border bg-surface text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction md:text-[15px] 2xl:h-12 2xl:text-base ${
             icon ? "pl-10" : "px-3"
           }`}
           {...inputProps}
         />
       </div>
       {help ? (
-        <p id={helpId} className="mt-1.5 text-[12.5px] text-text-secondary">
+        <p id={helpId} className="mt-1.5 text-[12.5px] text-text-secondary 2xl:text-base">
           {help}
         </p>
       ) : null}

@@ -74,7 +74,7 @@ describe("RequestStepsSidebar", () => {
     const { container } = render(<RequestStepsSidebar />);
 
     const aside = container.querySelector("aside");
-    expect(aside).toHaveClass("w-full", "lg:w-[380px]", "lg:min-h-screen");
+    expect(aside).toHaveClass("w-full", "lg:w-95", "2xl:w-110", "lg:min-h-screen");
     expect(aside?.className).not.toMatch(/\bmd:/);
   });
 

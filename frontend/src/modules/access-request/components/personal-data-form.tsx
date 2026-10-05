@@ -22,18 +22,18 @@ export function PersonalDataForm() {
   }
 
   return (
-    <div className="flex w-full max-w-[760px] flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight text-ink">
+        <h1 className="text-3xl font-extrabold tracking-tight text-ink 2xl:text-4xl">
           Solicita tu acceso a la comunidad
         </h1>
-        <p className="max-w-[620px] text-[15px] text-text-secondary">
+        <p className="max-w-155 text-[15px] text-text-secondary 2xl:text-lg">
           La carrera verifica cada solicitud con tu documento académico. Así la comunidad reúne
           solo a titulados reales de Ingeniería de Sistemas e Informática.
         </p>
       </div>
 
-      <form noValidate onSubmit={handleSubmit} className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <form noValidate onSubmit={handleSubmit} className="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-x-8 2xl:gap-y-6">
         <PersonalDataField
           id="firstName"
           label="Nombres"
@@ -59,13 +59,13 @@ export function PersonalDataForm() {
           />
 
           <div className="w-24 shrink-0">
-            <Label htmlFor="idCardIssuedIn" className="mb-1.5 text-[12.5px] font-semibold text-ink">
+            <Label htmlFor="idCardIssuedIn" className="mb-1.5 text-[12.5px] font-semibold text-ink 2xl:text-base">
               Expedido
             </Label>
             <Select name="idCardIssuedIn">
               <SelectTrigger
                 id="idCardIssuedIn"
-                className="w-full rounded-md border-border bg-surface px-3 text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px]"
+                className="w-full rounded-md border-border bg-surface px-3 text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] 2xl:text-base 2xl:data-[size=default]:h-12"
               >
                 <SelectValue placeholder="Elegir" />
               </SelectTrigger>
@@ -128,13 +128,13 @@ export function PersonalDataForm() {
         />
 
         <div className="md:col-span-2">
-          <Label htmlFor="career" className="mb-1.5 text-[12.5px] font-semibold text-ink">
+          <Label htmlFor="career" className="mb-1.5 text-[12.5px] font-semibold text-ink 2xl:text-base">
             Carrera
           </Label>
           <Select name="career">
             <SelectTrigger
               id="career"
-              className="w-full rounded-md border-border bg-surface px-3 text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px]"
+              className="w-full rounded-md border-border bg-surface px-3 text-[15px] text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] 2xl:text-base 2xl:data-[size=default]:h-12"
             >
               <SelectValue placeholder="Selecciona tu carrera" />
             </SelectTrigger>
@@ -153,7 +153,7 @@ export function PersonalDataForm() {
         </div>
 
         <div className="flex justify-end border-t border-border pt-5 md:col-span-2">
-          <Button type="submit" className="h-[42px] rounded-md bg-ink px-5 text-[14.5px] font-semibold text-surface hover:bg-ink/90">
+          <Button type="submit" className="h-[42px] 2xl:h-12 rounded-md bg-ink px-5 text-[14.5px] font-semibold text-surface hover:bg-ink/90">
             Continuar al siguiente paso
             <ChevronRight aria-hidden="true" />
           </Button>

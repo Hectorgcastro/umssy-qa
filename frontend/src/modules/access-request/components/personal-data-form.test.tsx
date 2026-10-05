@@ -54,7 +54,7 @@ describe("PersonalDataForm", () => {
     render(<PersonalDataForm />);
 
     const trigger = screen.getByRole("combobox", { name: "Expedido" });
-    expect(trigger).toHaveClass("data-[size=default]:h-[42px]", "focus-visible:border-accent");
+    expect(trigger).toHaveClass("data-[size=default]:h-[42px]", "2xl:data-[size=default]:h-12", "focus-visible:border-accent");
     expect(trigger).not.toHaveClass("data-[size=default]:h-8");
   });
 
@@ -62,7 +62,7 @@ describe("PersonalDataForm", () => {
     const { container } = render(<PersonalDataForm />);
 
     const button = screen.getByRole("button", { name: "Continuar al siguiente paso" });
-    expect(button).toHaveClass("bg-ink", "text-surface");
+    expect(button).toHaveClass("bg-ink", "text-surface", "2xl:h-12");
     expect(button.querySelector("svg.lucide-chevron-right")).not.toBeNull();
     expect(button.parentElement).toHaveClass("justify-end");
     expect(container.querySelector(".border-t")).toBe(button.parentElement);
@@ -120,6 +120,15 @@ describe("PersonalDataForm", () => {
     const trigger = screen.getByRole("combobox", { name: "Carrera" });
     expect(trigger).toHaveClass("w-full", "data-[size=default]:h-[42px]");
     expect(trigger.closest("div.md\\:col-span-2")).not.toBeNull();
+  });
+
+  it("escala tipografía y separación desde 2xl sin fijar el ancho del formulario", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    expect(container.firstElementChild?.className).not.toMatch(/max-w-/);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveClass("text-3xl", "2xl:text-4xl");
+    expect(container.querySelector("form")).toHaveClass("2xl:gap-x-8", "2xl:gap-y-6");
+    expect(screen.getByText("Carrera")).toHaveClass("2xl:text-base");
   });
 
   it("muestra el botón Continuar al siguiente paso", () => {

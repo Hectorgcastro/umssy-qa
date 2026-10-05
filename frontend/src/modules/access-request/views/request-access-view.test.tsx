@@ -31,7 +31,7 @@ describe("RequestAccessView", () => {
     const { container } = render(<RequestAccessView />);
 
     const wrapper = container.querySelector("section > div");
-    expect(wrapper).toHaveClass("mx-auto", "w-full", "max-w-3xl");
+    expect(wrapper).toHaveClass("mx-auto", "w-full", "max-w-190", "2xl:max-w-5xl");
     expect(wrapper).toContainElement(screen.getByRole("heading", { name: "Solicita tu acceso a la comunidad" }));
   });
 });

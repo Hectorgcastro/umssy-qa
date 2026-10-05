@@ -17,10 +17,10 @@ interface RequestStepsSidebarProps {
 
 export function RequestStepsSidebar({ currentStep = 1 }: RequestStepsSidebarProps) {
   return (
-    <aside className="flex w-full flex-col justify-between gap-10 bg-ink px-9 py-10 text-surface lg:min-h-screen lg:w-[380px]">
+    <aside className="flex w-full flex-col justify-between gap-10 bg-ink px-9 py-10 text-surface lg:min-h-screen lg:w-95 2xl:w-110">
       <div>
         <h2 className="text-[22px] font-bold">Solicitud de acceso</h2>
-        <p className="mt-2 mb-[22px] max-w-[300px] text-[13px] text-surface/65">
+        <p className="mt-2 mb-[22px] max-w-75 text-[13px] text-surface/65">
           Cuatro pasos para unirte a la comunidad verificada de la carrera.
         </p>
 
@@ -34,7 +34,7 @@ export function RequestStepsSidebar({ currentStep = 1 }: RequestStepsSidebarProp
                 <li key={step.number} aria-current={isActive ? "step" : undefined}>
                   <div className="flex items-center gap-3.5 py-3">
                     <span
-                      className={`flex size-[30px] shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
+                      className={`flex size-7.5 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
                         isActive
                           ? "border-accent bg-accent text-surface"
                           : "border-surface/35 text-surface/70"
