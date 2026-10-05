@@ -74,7 +74,7 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
 
     if (result.ok) {
       if (!currentDraftId) {
-        updateDraftId((result.data as { id: string }).id);
+        updateDraftId(result.data.id ?? null);
       }
       // TODO: avanzar al paso 2 (documento de respaldo) cuando exista
       setNotice({ type: "success", text: "Tus datos se guardaron correctamente." });

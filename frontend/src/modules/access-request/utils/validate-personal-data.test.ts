@@ -26,6 +26,13 @@ describe("validatePersonalData", () => {
     expect(errorsOf({ phone: "" })).toEqual({});
   });
 
+  it("no se rompe si phone es undefined y lo trata como vacío", () => {
+    const withoutPhone = { ...valid, phone: undefined } as unknown as PersonalDataValues;
+
+    expect(() => validatePersonalData(withoutPhone, NOW)).not.toThrow();
+    expect(validatePersonalData(withoutPhone, NOW)).toEqual({});
+  });
+
   it("exige nombres y apellidos", () => {
     expect(errorsOf({ firstName: "  " }).firstName).toBe("Los nombres son obligatorios");
     expect(errorsOf({ lastName: "" }).lastName).toBe("Los apellidos son obligatorios");

@@ -164,6 +164,21 @@ describe("PersonalDataForm: guardado del borrador", () => {
     expect(screen.getByLabelText(/^Nombres/)).not.toHaveAttribute("aria-invalid");
   });
 
+  it("tras un 2xx inválido (status 0, sin id) no queda draftId y el reintento crea", async () => {
+    create.mockResolvedValueOnce(failure(0, "No se pudo completar la solicitud. Inténtalo de nuevo."));
+    create.mockResolvedValueOnce({ ok: true, data: { id: "draft-1" } });
+    const user = userEvent.setup();
+    renderForm();
+    await fillValidForm();
+
+    await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo completar la solicitud. Inténtalo de nuevo.");
+    await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
+
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(2));
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("un 404 borra el id y el siguiente envío crea un borrador nuevo", async () => {
     create.mockResolvedValueOnce({ ok: true, data: { id: "draft-1" } });
     update.mockResolvedValueOnce(failure(404, "La solicitud ya no existe"));

@@ -39,6 +39,25 @@ describe("accessRequestService", () => {
     expect(config?.headers).toBeUndefined();
   });
 
+  it.each([
+    ["sin id", {}],
+    ["con id numérico", { id: 123 }],
+    ["con id vacío", { id: "" }],
+    ["con id solo de espacios", { id: "   " }],
+    ["con id nulo", { id: null }],
+  ])("createAccessRequest con 201 %s devuelve el error con status 0", async (_name, body) => {
+    reply(201, body);
+
+    const result = await accessRequestService.createAccessRequest(payload);
+
+    expect(result).toEqual({
+      ok: false,
+      status: 0,
+      fieldErrors: {},
+      message: "No se pudo completar la solicitud. Inténtalo de nuevo.",
+    });
+  });
+
   it("updateAccessRequest hace PATCH al id", async () => {
     reply(200, { id: "id-1" });
 

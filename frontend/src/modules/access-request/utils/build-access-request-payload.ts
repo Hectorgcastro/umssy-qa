@@ -7,7 +7,7 @@ export function buildAccessRequestPayload(
   values: PersonalDataValues,
   mode: "create" | "update",
 ): AccessRequestPayload {
-  const phone = values.phone.trim();
+  const phone = (values.phone ?? "").trim();
   const payload: AccessRequestPayload = {
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),

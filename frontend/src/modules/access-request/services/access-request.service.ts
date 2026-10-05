@@ -106,9 +106,18 @@ async function send<T>(
   }
 }
 
+// Un 2xx sin un id de texto no sirve para guardar el borrador: se trata como respuesta inválida
+async function createAccessRequest(payload: AccessRequestPayload): Promise<ApiResult<CreateAccessRequestResponse>> {
+  const result = await send<Record<string, unknown>>("post", "/access-requests", payload);
+  if (!result.ok) return result;
+  const { id } = result.data;
+  if (typeof id !== "string" || id.trim().length === 0) return failure(0, GENERIC_ERROR_MESSAGE);
+  return { ok: true, data: { id } };
+}
+
 export const accessRequestService = {
-  createAccessRequest: (payload: AccessRequestPayload) =>
-    send<CreateAccessRequestResponse>("post", "/access-requests", payload),
+  createAccessRequest,
+  // La respuesta del PATCH no se usa para el id: el borrador ya lo tiene
   updateAccessRequest: (id: string, payload: AccessRequestPayload) =>
-    send<unknown>("patch", `/access-requests/${id}`, payload),
+    send<Partial<CreateAccessRequestResponse>>("patch", `/access-requests/${id}`, payload),
 };

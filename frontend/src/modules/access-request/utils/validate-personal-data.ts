@@ -75,7 +75,7 @@ export function validatePersonalData(values: PersonalDataValues, now: Date = new
   assign("sisCode", validateDigits(values.sisCode, "El código SIS"));
   assign("email", validateEmail(values.email));
 
-  const phone = values.phone.trim();
+  const phone = (values.phone ?? "").trim();
   if (phone.length > 0 && !/^\d{8}$/.test(phone)) {
     errors.phone = "El teléfono debe tener 8 dígitos";
   }

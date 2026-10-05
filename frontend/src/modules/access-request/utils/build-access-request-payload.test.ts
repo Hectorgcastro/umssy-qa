@@ -40,6 +40,13 @@ describe("buildAccessRequestPayload", () => {
     expect(buildAccessRequestPayload({ ...values, phone: "" }, "update").phone).toBeNull();
   });
 
+  it("trata phone undefined como vacío: se omite en POST y es null en PATCH", () => {
+    const withoutPhone = { ...values, phone: undefined } as unknown as PersonalDataValues;
+
+    expect(buildAccessRequestPayload(withoutPhone, "create")).not.toHaveProperty("phone");
+    expect(buildAccessRequestPayload(withoutPhone, "update").phone).toBeNull();
+  });
+
   it("envía el teléfono en PATCH si está lleno", () => {
     expect(buildAccessRequestPayload(values, "update").phone).toBe("71234567");
   });
