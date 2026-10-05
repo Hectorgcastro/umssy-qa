@@ -24,6 +24,9 @@ export function HomeView() {
         </CardHeader>
         <CardContent>
           <Button>Botón de ejemplo</Button>
+          	<Button asChild>
+    			<a href="/vacantes">Vacantes</a>
+  		</Button>
         </CardContent>
       </Card>
     </div>
