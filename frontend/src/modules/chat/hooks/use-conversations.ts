@@ -9,7 +9,8 @@ const PAGE_SIZE = 10;
 
 export function useConversations() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<ConversationFilter>('all');
+  const [filter, setFilter] = useState<ConversationFilter>('all');
+  const [keptInUnreadId, setKeptInUnreadId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [conversationsData, setConversationsData] = useState<Conversation[]>([]);
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
@@ -50,8 +51,8 @@ export function useConversations() {
   const filteredConversations = useMemo(() => {
     let list = sortedConversations;
 
-    if (activeFilter === 'unread') {
-      list = list.filter((item) => item.unreadCount > 0);
+    if (filter === 'unread') {
+      list = list.filter((item) => item.unreadCount > 0 || item.id === keptInUnreadId);
     }
 
     if (searchQuery.trim().length > 0) {
@@ -71,11 +72,16 @@ export function useConversations() {
     }
 
     return list;
-  }, [sortedConversations, activeFilter, searchQuery]);
+  }, [sortedConversations, filter, searchQuery, keptInUnreadId]);
 
   const paginatedConversations = useMemo(() => {
     return filteredConversations.slice(0, visibleCount);
   }, [filteredConversations, visibleCount]);
+
+  const selectedConversation = useMemo(() => {
+    if (!selectedId) return null;
+    return conversationsData.find((item) => item.id === selectedId) || null;
+  }, [conversationsData, selectedId]);
 
   const hasMore = visibleCount < filteredConversations.length;
 
@@ -85,8 +91,20 @@ export function useConversations() {
     }
   };
 
+  const setActiveFilter = (newFilter: ConversationFilter) => {
+    setFilter(newFilter);
+    setSelectedId(null);
+    setKeptInUnreadId(null);
+  };
+
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedId(conversation.id);
+
+    if (filter === 'unread' && conversation.unreadCount > 0) {
+      setKeptInUnreadId(conversation.id);
+    } else if (filter === 'all') {
+      setKeptInUnreadId(null);
+    }
 
     if (conversation.unreadCount > 0) {
       setConversationsData((prev) =>
@@ -99,6 +117,7 @@ export function useConversations() {
 
   const clearSelectedConversation = () => {
     setSelectedId(null);
+    setKeptInUnreadId(null);
   };
 
   const simulateIncomingMessage = (conversationId: string, newContent: string) => {
@@ -125,39 +144,38 @@ export function useConversations() {
   };
 
   const startConversationWithContact = async (contactUser: User) => {
-  // Guard: ignore if another selection is already in flight (AC #13)
-  if (pendingContactId) return;
+    if (pendingContactId) return;
 
-  // Fast path: conversation with this contact already in session
-  const alreadyInList = conversationsData.find(
-    (conv) => conv.contact.id === contactUser.id
-  );
-  if (alreadyInList) {
-    handleSelectConversation(alreadyInList);
-    return;
-  }
+    const alreadyInList = conversationsData.find(
+      (conv) => conv.contact.id === contactUser.id
+    );
+    if (alreadyInList) {
+      handleSelectConversation(alreadyInList);
+      return;
+    }
 
-  setPendingContactId(contactUser.id);
-  try {
-    const conversation = await getOrCreateConversation(contactUser.id);
+    setPendingContactId(contactUser.id);
+    try {
+      const conversation = await getOrCreateConversation(contactUser.id);
 
-    setConversationsData((prev) => {
-      const exists = prev.some((c) => c.id === conversation.id);
-      return exists ? prev : [conversation, ...prev];
-    });
+      setConversationsData((prev) => {
+        const exists = prev.some((c) => c.id === conversation.id);
+        return exists ? prev : [conversation, ...prev];
+      });
 
-    setSelectedId(conversation.id);
-  } finally {
-    setPendingContactId(null);
-  }
-};
+      setSelectedId(conversation.id);
+    } finally {
+      setPendingContactId(null);
+    }
+  };
 
   return {
     conversations: paginatedConversations,
+    selectedConversation,
     totalCount: filteredConversations.length,
     hasMore,
     selectedId,
-    activeFilter,
+    activeFilter: filter,
     searchQuery,
     isLoading,
     isError,
@@ -167,6 +185,6 @@ export function useConversations() {
     handleSelectConversation,
     clearSelectedConversation,
     simulateIncomingMessage,
-    startConversationWithContact, // Exportada para usarla en el ChatView
+    startConversationWithContact,
   };
 }

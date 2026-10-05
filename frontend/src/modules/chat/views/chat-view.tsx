@@ -12,6 +12,7 @@ import { ContactSearchModal } from '../components/contact-search-modal';
 import { ChatRoom } from '../components/chat-room';
 
 import { Conversation } from '../types/conversation.types';
+import { User } from '../types/user.types';
 import { sendMessage } from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 
@@ -23,6 +24,7 @@ export function ChatView() {
 
   const {
     conversations,
+    selectedConversation,
     hasMore,
     loadMore,
     selectedId,
@@ -45,47 +47,44 @@ export function ChatView() {
     isLoadingMoreMessages,
   } = useMessages(selectedId);
 
-  const selectedConversation = conversations.find(
-    (item) => item.id === selectedId
-  );
+  const handleBackToList = () => {
+    clearSelectedConversation();
+  };
 
   const handleSelectChat = (conversation: Conversation) => {
     handleSelectConversation(conversation);
   };
 
-  const handleStartChatWithContact = async (
-    contactUser: Parameters<typeof startConversationWithContact>[0]
-  ) => {
+  const handleStartNewChat = () => {
+    if (activeFilter !== 'all') {
+      setActiveFilter('all');
+    }
+    setIsSearchModalOpen(true);
+  };
+
+  const handleStartChatWithContact = async (contactUser: User) => {
+    if (activeFilter !== 'all') {
+      setActiveFilter('all');
+    }
     await startConversationWithContact(contactUser);
     setIsSearchModalOpen(false);
-  };
-
-  const handleBackToList = () => {
-    clearSelectedConversation();
-  };
-
-  const handleStartNewChat = () => {
-    setIsSearchModalOpen(true);
   };
 
   const handleSendMessage = async (content: string) => {
     if (!selectedId || isSending) return;
 
     setIsSending(true);
-
     try {
       await sendMessage({
         conversationId: selectedId,
-        senderId: CURRENT_USER_ID,
         content,
+        senderId: CURRENT_USER_ID,
       });
 
-      // Actualiza el historial mediante TanStack Query.
       await queryClient.invalidateQueries({
         queryKey: messagesQueryKey(selectedId),
       });
     } catch {
-      // Manejo de errores
     } finally {
       setIsSending(false);
     }
