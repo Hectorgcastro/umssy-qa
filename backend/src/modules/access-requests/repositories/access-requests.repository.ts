@@ -100,6 +100,45 @@ export class AccessRequestsRepository {
     }
   }
 
+  // Lee y actualiza dentro de una transacción para devolver el archivo anterior sin seleccionar nunca su contenido
+  setDocument(id: string, fileId: string, documentType: string) {
+    return this.replaceDocument(id, {
+      documentFile: { connect: { id: fileId } },
+      documentType: { connect: { title: documentType } },
+    });
+  }
+
+  // documentTypeId es opcional en el schema, así que se limpia junto con el archivo
+  clearDocument(id: string) {
+    return this.replaceDocument(id, { documentFile: { disconnect: true }, documentType: { disconnect: true } });
+  }
+
+  private async replaceDocument(id: string, data: Prisma.AccessRequestUpdateInput) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const previous = await tx.accessRequest.findFirst({
+          where: { id, status: { title: ACCESS_REQUEST_STATUS.DRAFT } },
+          select: { documentFileId: true },
+        });
+        await tx.accessRequest.update({
+          where: { id, status: { title: ACCESS_REQUEST_STATUS.DRAFT } },
+          data,
+          select: { id: true },
+        });
+        return previous?.documentFileId ?? null;
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        // Mismo criterio que updateDraft: meta.model indica un connect fallido (archivo o tipo de documento sin sembrar)
+        if (typeof error.meta?.model === 'string') {
+          throw new AccessRequestCatalogMissingException();
+        }
+        throw new AccessRequestNotFoundException();
+      }
+      throw error;
+    }
+  }
+
   // El filtro por estado hace que la eliminación sea atómica: si la solicitud cambió de estado o desapareció, lanza P2025
   async deleteDraft(id: string) {
     try {

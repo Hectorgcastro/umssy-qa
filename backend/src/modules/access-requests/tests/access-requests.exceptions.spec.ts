@@ -5,7 +5,9 @@ import {
   AccessRequestNotEditableException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
+  InvalidDocumentTypeException,
   InvalidGraduationYearException,
+  MissingDocumentFileException,
 } from '../exceptions/index.js';
 
 describe('excepciones de access-requests', () => {
@@ -18,6 +20,8 @@ describe('excepciones de access-requests', () => {
     ],
     [AccessRequestNotEditableException, 409, 'La solicitud ya fue enviada y no se puede modificar'],
     [DuplicateAccessRequestDataException, 409, 'Ya existe una cuenta o solicitud con estos datos'],
+    [InvalidDocumentTypeException, 400, 'El tipo de documento no es válido'],
+    [MissingDocumentFileException, 400, 'Debes adjuntar un archivo'],
     [InvalidGraduationYearException, 400, 'El año de titulación no puede ser anterior a los 18 años de edad'],
   ])('%o usa el código y mensaje por defecto', (Exception, statusCode, message) => {
     const error = new Exception();

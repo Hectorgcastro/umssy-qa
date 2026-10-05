@@ -7,13 +7,16 @@ import {
   AccessRequestNotEditableException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
+  InvalidDocumentTypeException,
   InvalidGraduationYearException,
+  MissingDocumentFileException,
 } from '../exceptions/index.js';
 import { toAccessRequestResponse } from '../mappers/access-request.mapper.js';
 import { isGraduationYearCoherent } from '../requests/access-request-fields.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
-import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
+import { ACCESS_REQUEST_DOCUMENT_TYPE, ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
+import type { AttachDocumentInput } from '../types/uploaded-file.types.js';
 
 const DUPLICATE_LABELS = {
   email: 'el correo',
@@ -82,6 +85,75 @@ export class AccessRequestsService {
     }
 
     return { id };
+  }
+
+  async attachDocument(id: string, input: AttachDocumentInput) {
+    await this.findEditableDraft(id);
+
+    const { file, documentType } = input;
+    if (!file) {
+      throw new MissingDocumentFileException();
+    }
+    // Se valida antes de crear el archivo para no dejar huérfanos por un tipo inválido
+    if (!this.isDocumentType(documentType)) {
+      throw new InvalidDocumentTypeException();
+    }
+
+    const created = await this.filesService.create({ name: file.originalname, content: file.buffer });
+
+    let previousFileId: string | null;
+    try {
+      previousFileId = await this.accessRequestsRepository.setDocument(id, created.id, documentType);
+    } catch (error) {
+      await this.discardFile(created.id);
+      throw error;
+    }
+
+    if (previousFileId && previousFileId !== created.id) {
+      await this.discardFile(previousFileId);
+    }
+
+    return { id, documentFileId: created.id, documentType };
+  }
+
+  async removeDocument(id: string) {
+    const current = await this.findEditableDraft(id);
+    if (!current.documentFileId) {
+      return { id, documentFileId: null };
+    }
+
+    // Primero se limpia la referencia (condicional por estado draft) y después se borra el archivo
+    const previousFileId = await this.accessRequestsRepository.clearDocument(id);
+    if (previousFileId) {
+      await this.discardFile(previousFileId);
+    }
+
+    return { id, documentFileId: null };
+  }
+
+  private async findEditableDraft(id: string) {
+    const current = await this.accessRequestsRepository.findById(id);
+    if (!current) {
+      throw new AccessRequestNotFoundException();
+    }
+    if (current.status.title !== ACCESS_REQUEST_STATUS.DRAFT) {
+      throw new AccessRequestNotEditableException();
+    }
+    return current;
+  }
+
+  private isDocumentType(value: string | undefined): value is string {
+    return Object.values<string>(ACCESS_REQUEST_DOCUMENT_TYPE).includes(value as string);
+  }
+
+  // Un fallo al borrar no debe romper la operación principal: el archivo queda huérfano
+  // TODO: limpiar archivos huérfanos si falla el borrado del anterior
+  private async discardFile(fileId: string) {
+    try {
+      await this.filesService.delete(fileId);
+    } catch {
+      // FileNotFoundException u otro error: se ignora a propósito (ver TODO)
+    }
   }
 
   // En el PATCH solo se revisan los campos enviados; excludeId deja editar el propio borrador
