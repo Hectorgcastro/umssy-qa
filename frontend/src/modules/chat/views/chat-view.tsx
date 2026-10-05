@@ -80,22 +80,27 @@ export function ChatView() {
     await startConversationWithContact(contactUser);
   };
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!selectedId || isSending) return;
     setIsSending(true);
     try {
-      const newMsg = await sendMessage(selectedId, text, CURRENT_USER_ID);
-      setMessages((prev) => [...prev, newMsg]);
+      const response = await sendMessage({
+        conversationId: selectedId,
+        content,
+        senderId: CURRENT_USER_ID,
+      });
+      setMessages((prev) => [...prev, response.data]);
     } catch {
+      // Manejo de errores
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 overflow-hidden font-sans">
+    <div className="flex h-screen h-[100dvh] w-full max-w-full bg-slate-50 overflow-hidden font-sans">
       <aside
-        className={`w-full md:w-80 lg:w-96 h-full shrink-0 ${
+        className={`w-full md:w-80 lg:w-96 h-full shrink-0 overflow-hidden ${
           selectedId ? 'hidden md:block' : 'block'
         }`}
       >
@@ -115,7 +120,7 @@ export function ChatView() {
       </aside>
 
       <main
-        className={`flex-1 h-full bg-white flex flex-col ${
+        className={`flex-1 h-full min-w-0 min-h-0 bg-white flex flex-col overflow-hidden ${
           !selectedId ? 'hidden md:flex' : 'flex'
         }`}
       >
