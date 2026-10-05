@@ -14,6 +14,7 @@ import type {
 export class GeneratedReportsRepository implements OnModuleInit {
   private readonly logger = new Logger(GeneratedReportsRepository.name);
   private reports: GeneratedReport[] = [];
+  private refreshPromise: Promise<void> | null = null;
 
   constructor(@Optional() private readonly prisma?: PrismaService) {}
 
@@ -22,6 +23,22 @@ export class GeneratedReportsRepository implements OnModuleInit {
   }
 
   async refresh(): Promise<void> {
+    if (!this.prisma) {
+      return;
+    }
+
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this.doRefresh().finally(() => {
+      this.refreshPromise = null;
+    });
+
+    return this.refreshPromise;
+  }
+
+  private async doRefresh(): Promise<void> {
     if (!this.prisma) {
       return;
     }
@@ -74,8 +91,18 @@ export class GeneratedReportsRepository implements OnModuleInit {
           // TODO: registrar al administrador autenticado en vez del primer usuario de la BD.
           const user = await prisma.user.findFirst();
           if (user) {
-            await prisma.adminExportHistory.create({
-              data: {
+            await prisma.adminExportHistory.upsert({
+              where: {
+                userId_createdAt: {
+                  userId: user.id,
+                  createdAt: new Date(report.generatedAt),
+                },
+              },
+              update: {
+                reportName: report.fileName,
+                reportType: report.reportType,
+              },
+              create: {
                 userId: user.id,
                 reportName: report.fileName,
                 reportType: report.reportType,

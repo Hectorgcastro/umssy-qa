@@ -24,6 +24,7 @@ const ROLE_NAME_TO_USER_TYPE: Record<string, ReportUserType> = {
 export class ReportUsersRepository implements OnModuleInit {
   private readonly logger = new Logger(ReportUsersRepository.name);
   private cache: ReportUser[] = [];
+  private refreshPromise: Promise<void> | null = null;
 
   constructor(@Optional() private readonly prisma?: PrismaService) {}
 
@@ -32,6 +33,22 @@ export class ReportUsersRepository implements OnModuleInit {
   }
 
   async refresh(): Promise<void> {
+    if (!this.prisma) {
+      return;
+    }
+
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this.doRefresh().finally(() => {
+      this.refreshPromise = null;
+    });
+
+    return this.refreshPromise;
+  }
+
+  private async doRefresh(): Promise<void> {
     if (!this.prisma) {
       return;
     }
@@ -46,6 +63,9 @@ export class ReportUsersRepository implements OnModuleInit {
             where: {
               deletedAt: null,
             },
+            orderBy: {
+              startAt: 'asc',
+            },
           },
         },
         orderBy: {
@@ -54,7 +74,7 @@ export class ReportUsersRepository implements OnModuleInit {
       });
 
       this.cache = users.map((user) => {
-        const primaryRoleName = user.roles[0]?.role?.name;
+        const primaryRoleName = user.roles[0]?.role?.name?.toLowerCase().trim();
         const userType: ReportUserType =
           (primaryRoleName && ROLE_NAME_TO_USER_TYPE[primaryRoleName]) ||
           'STUDENT';
