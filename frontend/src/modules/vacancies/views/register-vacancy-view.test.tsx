@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { RegisterVacancyView } from './register-vacancy-view';
 import * as useJobOfferFormHook from '../hooks/use-job-offer-form';
+import type { VacancyConditions } from '../hooks/use-job-offer-form';
 
 vi.mock('../hooks/use-job-offer-form', () => ({
   useJobOfferForm: vi.fn(),
@@ -18,10 +19,21 @@ vi.mock('../components/preview-step', () => ({
 }));
 
 describe('RegisterVacancyView', () => {
+  const mockConditions: VacancyConditions = {
+    title: "",
+    modality: null,
+    mapsLink: "",
+    contractType: "",
+    category: "",
+    vacancyCount: "",
+    salary: "",
+    languages: "",
+  };
+
   it('renderiza el paso 1 cuando currentStep es 1', () => {
     vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
       currentStep: 1,
-      conditions: {} as any,
+      conditions: mockConditions,
       updateField: vi.fn(),
       selectModality: vi.fn(),
       goNext: vi.fn()
@@ -35,7 +47,7 @@ describe('RegisterVacancyView', () => {
   it('renderiza el paso 3 cuando currentStep es 3', () => {
     vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
       currentStep: 3,
-      conditions: {} as any,
+      conditions: mockConditions,
       updateField: vi.fn(),
       selectModality: vi.fn(),
       goNext: vi.fn()
