@@ -6,6 +6,8 @@ import { cn } from "cn";
 import {
   DAY_LABELS,
   HOUR_HEIGHT_PX,
+  SELECTED_BLOCK_CLASSES,
+  SELECTED_LEGEND_LABEL,
   STATE_BUTTON_CLASSES,
   STATE_BUTTON_VARIANT,
   STATE_LABELS_ES,
@@ -22,6 +24,7 @@ export function WeekGrid({
   variant,
   startHour = WEEK_GRID_START_HOUR,
   endHour = WEEK_GRID_END_HOUR,
+  selectedBlockId,
   onSelectBlock,
   onEditBlock,
 }: WeekGridProps) {
@@ -93,6 +96,7 @@ export function WeekGrid({
                     (variant === "selectable" || variant === "owner") &&
                     block.state === "free";
 
+                  const isSelected = block.id === selectedBlockId;
                   const stateLabel = STATE_LABELS_ES[block.state];
                   const timeRange = `${toBoliviaTime(block.startAt).time} a ${toBoliviaTime(block.endAt).time}`;
 
@@ -109,8 +113,10 @@ export function WeekGrid({
                         onClick={() => handleBlockClick(block)}
                         className={cn(
                           "h-full w-full rounded px-1 text-[9px]",
-                          STATE_BUTTON_CLASSES[block.state]
+                          STATE_BUTTON_CLASSES[block.state],
+                          isSelected && SELECTED_BLOCK_CLASSES
                         )}
+                        aria-pressed={isSelected || undefined}
                         aria-label={`${stateLabel}, ${timeRange}`}
                       >
                         {block.state === "free" ? "Libre" : toBoliviaTime(block.startAt).time}
@@ -137,6 +143,15 @@ export function WeekGrid({
           <span aria-hidden="true" className="inline-block w-3 h-3 rounded-sm bg-ink" />
           Cita confirmada
         </li>
+        {variant === "selectable" && (
+          <li className="flex items-center gap-1">
+            <span
+              aria-hidden="true"
+              className={cn("inline-block w-3 h-3 rounded-sm", SELECTED_BLOCK_CLASSES)}
+            />
+            {SELECTED_LEGEND_LABEL}
+          </li>
+        )}
       </ul>
     </section>
   );
