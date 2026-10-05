@@ -11,7 +11,7 @@ import { ProfilePhotoService } from '../services/profile-photo.service.js';
 import type { MulterFile } from '../types/multer-file.type.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
-const jpgBytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+const jpgBytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0xff, 0xd9]);
 const pdfBytes = Buffer.from([0x25, 0x50, 0x44, 0x46]);
 
 const buildFile = (buffer: Buffer, overrides: Partial<MulterFile> = {}): MulterFile => ({

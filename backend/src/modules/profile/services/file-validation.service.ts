@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FILE_SIGNATURES } from '../constants/file-signatures.constants.js';
+import { CorruptedFileException } from '../exceptions/corrupted-file.exception.js';
 import { EmptyFileException } from '../exceptions/empty-file.exception.js';
 import { FileTooLargeException } from '../exceptions/file-too-large.exception.js';
 import { InvalidFileTypeException } from '../exceptions/invalid-file-type.exception.js';
@@ -28,6 +29,10 @@ export class FileValidationService {
       throw new InvalidFileTypeException();
     }
 
+    if (!this.hasEndMarker(file.buffer, signature)) {
+      throw new CorruptedFileException();
+    }
+
     return {
       ...file,
       detectedType: signature.type,
@@ -43,5 +48,14 @@ export class FileValidationService {
     return FILE_SIGNATURES.find((signature) =>
       signature.bytes.every((byte, index) => buffer[index] === byte),
     );
+  }
+
+  private hasEndMarker(buffer: Buffer, signature: FileSignature): boolean {
+    const searchStart = Math.max(
+      signature.bytes.length,
+      buffer.length - signature.endMarkerSearchBytes,
+    );
+
+    return buffer.subarray(searchStart).includes(Buffer.from(signature.endMarker));
   }
 }
