@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 import { MAX_WEEK_QUERY_MS, WEEK_QUERY_MESSAGES } from '../constants/week-query.constants.js';
 
 const isoDateTime = z.iso.datetime({ offset: true, error: WEEK_QUERY_MESSAGES.invalidDate });
@@ -21,3 +22,5 @@ export const weekQuerySchema = z
       ctx.addIssue({ code: 'custom', path: ['to'], message: WEEK_QUERY_MESSAGES.rangeTooLong });
     }
   });
+
+export class WeekQueryDto extends createZodDto(weekQuerySchema) {}

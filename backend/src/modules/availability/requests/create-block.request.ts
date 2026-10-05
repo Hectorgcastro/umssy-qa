@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 import { toBoliviaTime } from '../../../common/utils/date-time.js';
 import {
   BLOCK_MAX_HOUR,
@@ -98,3 +99,5 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
     });
 
 export const createBlockSchema = buildCreateBlockSchema();
+
+export class CreateBlockDto extends createZodDto(createBlockSchema) {}
