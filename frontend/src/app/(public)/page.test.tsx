@@ -10,11 +10,11 @@ describe('Home Page', () => {
 
   it('renderiza el título principal y muestra la respuesta GET del backend via Axios', async () => {
     vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
-      data: 'Hello World!',
+      data: { statusCode: 200, ok: true, detail: 'Operación exitosa', data: 'Hello World!' },
     })
 
     render(<Home />)
-    expect(screen.getByText('PWA Egresados UMSS')).toBeDefined()
+    expect(screen.getByText('UMSSY')).toBeDefined()
 
     await waitFor(() => {
       expect(screen.getByText('Hello World!')).toBeDefined()

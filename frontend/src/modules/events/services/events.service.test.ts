@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { AxiosHeaders, type AxiosResponse } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from '@/shared/services/api-client';
@@ -24,7 +25,14 @@ describe('eventsService', () => {
 
   it('consulta GET /events con paginacion y devuelve el DTO del backend', async () => {
     const response = {
-      data: MOCK_RESPONSE,
+      data: {
+        statusCode: 200,
+        ok: true,
+        detail: 'Operación exitosa',
+        data: { items: MOCK_RESPONSE.data, total: 0, limit: 50, totalPages: 0 },
+        page: MOCK_RESPONSE.page,
+        offset: MOCK_RESPONSE.offset,
+      },
       status: 200,
       statusText: 'OK',
       headers: {},
@@ -39,6 +47,7 @@ describe('eventsService', () => {
     expect(getSpy).toHaveBeenCalledWith('/events', {
       params: { page: 1, limit: 50 },
       signal: abortController.signal,
+      timeout: 10_000,
     });
   });
 

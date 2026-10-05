@@ -2,17 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { eventsService } from '../services/events.service';
+import { EVENTS_PAGE_SIZE, NO_EVENT_FILTERS } from '../constants/events.constants';
 import type { EventItem } from '../types/event.types';
 import type { EventFiltersPayload } from '../types/event-filters.types';
 
-const EVENTS_PAGE_SIZE = 50;
-
-const NO_FILTERS: EventFiltersPayload = {
-  search: '',
-  categoryId: null,
-};
-
-export function useEvents(filters: EventFiltersPayload = NO_FILTERS) {
+export function useEvents(filters: EventFiltersPayload = NO_EVENT_FILTERS) {
   const { search, categoryId } = filters;
   const trimmedSearch = search.trim();
   const filtersKey = JSON.stringify([trimmedSearch, categoryId]);

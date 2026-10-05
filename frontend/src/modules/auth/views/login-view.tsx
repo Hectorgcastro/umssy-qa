@@ -30,7 +30,8 @@ export function LoginView() {
     const result = await login({ email, password, roleTag });
     if (result) {
       sessionStorage.setItem("accessToken", result.accessToken);
-      router.push("/");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next === "/events/my-passes" ? next : "/");
     }
   }
 

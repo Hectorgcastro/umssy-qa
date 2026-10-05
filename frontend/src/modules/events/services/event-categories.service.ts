@@ -1,26 +1,21 @@
 import type { EventCategoryItem } from '../types/event.types';
+import { apiClient } from '@/shared/services/api-client';
 
-const MOCK_EVENT_CATEGORIES: EventCategoryItem[] = [
-  {
-    id: '22222222-2222-2222-2222-222222222221',
-    name: 'Tecnología',
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222231',
-    name: 'IA & Datos',
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222232',
-    name: 'Diseño',
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222233',
-    name: 'Seguridad',
-  },
-];
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export const eventCategoriesService = {
   async getAll(): Promise<EventCategoryItem[]> {
-    return MOCK_EVENT_CATEGORIES;
+    if (!apiClient.defaults.baseURL) {
+      throw new Error('La URL del backend no está configurada.');
+    }
+
+    const response = await apiClient.get<{
+      data: { items: EventCategoryItem[] };
+    }>('/event-categories', {
+      params: { page: 1, limit: 50 },
+      timeout: REQUEST_TIMEOUT_MS,
+    });
+
+    return response.data.data.items;
   },
 };
