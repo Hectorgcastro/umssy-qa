@@ -47,6 +47,7 @@ describe('eventsService', () => {
     expect(getSpy).toHaveBeenCalledWith('/events', {
       params: { page: 1, limit: 50 },
       signal: abortController.signal,
+      timeout: 10_000,
     });
   });
 
