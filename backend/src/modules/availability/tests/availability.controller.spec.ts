@@ -23,4 +23,20 @@ describe('AvailabilityController', () => {
     const roles = new Reflector().get<string[]>(ROLES_KEY, handler);
     expect(roles).toEqual(['mentor']);
   });
+
+  it('delega la eliminación con el mentor en sesión y el id recibido', async () => {
+    const availabilityService = { remove: vi.fn().mockResolvedValue({ id: 'block-1' }) };
+    const controller = new AvailabilityController(availabilityService as any);
+
+    const result = await controller.remove(USER, 'block-1');
+
+    expect(availabilityService.remove).toHaveBeenCalledWith('mentor-1', 'block-1');
+    expect(result).toEqual({ id: 'block-1' });
+  });
+
+  it('exige el rol mentor en remove', () => {
+    const handler = Object.getOwnPropertyDescriptor(AvailabilityController.prototype, 'remove')?.value;
+    const roles = new Reflector().get<string[]>(ROLES_KEY, handler);
+    expect(roles).toEqual(['mentor']);
+  });
 });
