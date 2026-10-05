@@ -17,7 +17,6 @@ const MODALITIES = ["Presencial", "Remoto", "Hibrido"];
 const CONTRACT_TYPES = ["Tiempo completo", "Medio tiempo", "Pasantia"];
 
 export function InformationStep({ conditions, updateField, selectModality }: InformationStepProps) {
-  // Lógica de seguridad: Cambios sin guardar
   const hasUnsavedChanges = 
     conditions.title !== "" || 
     conditions.salary !== "" || 
@@ -42,10 +41,8 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
       const isConfirmed = window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los datos ingresados.");
       if (!isConfirmed) return;
     }
-    // Lógica futura del router o reseteo de estado
   };
 
-  // Validaciones del Título (Alfanumérico y 60 caracteres max)
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
     if (allowedKeys.includes(e.key)) return;
@@ -56,7 +53,6 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
     }
   };
 
-  // Validaciones del número de vacantes (Solo números, max 500)
   const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
     if (allowedKeys.includes(e.key)) return;
@@ -79,7 +75,6 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
     }
   };
 
-  // Lógica de máscara salarial en vivo
   const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^\d-]/g, "");
     if (!rawValue) {
@@ -100,7 +95,6 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
     updateField("salary", formatted);
   };
 
-  // Validación de rango de salario (Invertir si min > max)
   const handleSalaryBlur = () => {
     if (!conditions.salary) return;
     const rawValue = conditions.salary.replace(/[^\d-]/g, "");
