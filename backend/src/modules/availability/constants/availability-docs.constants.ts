@@ -8,13 +8,21 @@ export const FIND_MY_BLOCKS_DOCS = {
   toDescription: 'Fin del rango en ISO 8601 UTC; como máximo 7 días después de from',
 } as const;
 
-export const UPDATE_BLOCK_DOCS = {
-  summary: 'Edita un bloque de disponibilidad propio que no tenga citas pendientes o confirmadas',
-  idDescription: 'ID del bloque de disponibilidad a editar',
+export const FIND_MENTOR_FREE_BLOCKS_DOCS = {
+  summary:
+    'Lista los bloques libres de un mentor dentro de un rango de hasta 7 días: sin bloques pasados ni con cita pendiente o confirmada',
+  idDescription: 'Identificador (UUID) del mentor',
+  fromDescription: FIND_MY_BLOCKS_DOCS.fromDescription,
+  toDescription: FIND_MY_BLOCKS_DOCS.toDescription,
 } as const;
 
 export const DELETE_BLOCK_DOCS = {
   summary: 'Elimina un bloque de disponibilidad del mentor en sesión',
   description: 'Borra el bloque; si tiene citas activas asociadas responde con 409',
   idDescription: 'UUID del bloque a eliminar',
+} as const;
+
+export const UPDATE_BLOCK_DOCS = {
+  summary: 'Edita un bloque de disponibilidad propio que no tenga citas pendientes o confirmadas',
+  idDescription: 'ID del bloque de disponibilidad a editar',
 } as const;
