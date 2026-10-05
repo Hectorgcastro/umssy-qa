@@ -21,7 +21,14 @@ describe("getTechnicalAreas", () => {
 
     const result = await getTechnicalAreas();
 
-    expect(request).toHaveBeenCalledWith("/technical-areas");
+    expect(request).toHaveBeenCalledWith("/technical-areas", { signal: undefined });
     expect(result).toBe(technicalAreas);
+  });
+
+  it("forwards the AbortSignal to the API", async () => {
+    const signal = new AbortController().signal;
+    const request = vi.spyOn(apiClient, "get").mockResolvedValue({ data: [] });
+    await expect(getTechnicalAreas(signal)).resolves.toEqual([]);
+    expect(request).toHaveBeenCalledWith("/technical-areas", { signal });
   });
 });

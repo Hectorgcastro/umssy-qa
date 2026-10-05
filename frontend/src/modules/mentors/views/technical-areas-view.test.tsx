@@ -8,18 +8,20 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getMentorTechnicalAreas,
-  getTechnicalAreas,
   updateMentorTechnicalAreas,
 } from "../services/technical-areas.service";
 import { TechnicalAreasView } from "./technical-areas-view";
+import { getTechnicalAreas } from "@/modules/mentorship/services/technical-area.service";
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("../services/technical-areas.service", () => ({
-  getTechnicalAreas: vi.fn(),
   getMentorTechnicalAreas: vi.fn(),
   updateMentorTechnicalAreas: vi.fn(),
+}));
+vi.mock("@/modules/mentorship/services/technical-area.service", () => ({
+  getTechnicalAreas: vi.fn(),
 }));
 
 const catalog = [

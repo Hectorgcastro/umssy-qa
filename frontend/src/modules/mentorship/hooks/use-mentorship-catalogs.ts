@@ -7,7 +7,7 @@ import { getTechnicalAreas } from "../services/technical-area.service";
 export function useMentorshipCatalogs() {
   const technicalAreasQuery = useQuery({
     queryKey: ["mentorship", "technical-areas"],
-    queryFn: getTechnicalAreas,
+    queryFn: ({ signal }) => getTechnicalAreas(signal),
   });
 
   const orientationTypesQuery = useQuery({

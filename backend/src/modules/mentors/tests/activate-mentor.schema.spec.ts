@@ -11,6 +11,15 @@ describe('activateMentorSchema', () => {
     expect(activateMentorSchema.safeParse(validPayload).success).toBe(true);
   });
 
+  it('rechaza propiedades adicionales', () => {
+    expect(
+      activateMentorSchema.safeParse({
+        ...validPayload,
+        userId: '550e8400-e29b-41d4-a716-446655440001',
+      }).success,
+    ).toBe(false);
+  });
+
   it('rechaza un arreglo vacio de areas tecnicas', () => {
     expect(
       activateMentorSchema.safeParse({

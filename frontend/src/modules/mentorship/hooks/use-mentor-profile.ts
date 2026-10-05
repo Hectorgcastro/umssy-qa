@@ -9,4 +9,3 @@ export function useMentorProfile(mentorId: string) {
     queryFn: ({ signal }) => getMentorProfile(mentorId, signal),
   });
 }
-
