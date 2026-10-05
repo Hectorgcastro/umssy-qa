@@ -19,7 +19,7 @@ describe('EventRegistrationsRepository', () => {
     await repository.findByUserId('user-1');
 
     expect(findMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1' },
+      where: { userId: 'user-1', cancelledAt: null, status: { title: 'Confirmada' } },
       select: {
         id: true,
         status: { select: { title: true } },

@@ -37,7 +37,7 @@ export function MyPassesView() {
 
   return (
     <div className="flex flex-col lg:flex-row h-full w-full min-h-screen bg-transparent">
-      <div className="flex-1 p-8 pt-4 lg:p-12 lg:pt-6">
+      <div className="min-w-0 flex-1 p-8 pt-4 lg:p-12 lg:pt-6">
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-ink mb-1">Mis Inscripciones</h1>
           <p className="text-text-secondary text-sm">{registrations.length} {registrations.length === 1 ? 'pase' : 'pases'}</p>
@@ -54,6 +54,7 @@ export function MyPassesView() {
           <div className="max-w-md space-y-4">
             {registrations.map((item) => <PassCard key={item.id} title={item.eventName}
               date={formatRegistrationDate(item.date)} status={item.status}
+              location={item.location} registrationId={item.id}
               isSelected={selected?.id === item.id} onClick={() => setSelectedId(item.id)} />)}
           </div>
         )}

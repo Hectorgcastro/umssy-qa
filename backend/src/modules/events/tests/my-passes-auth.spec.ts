@@ -25,7 +25,7 @@ describe('identidad en Mis pases', () => {
         const context = { switchToHttp: () => ({ getRequest: () => request }) } as unknown as ExecutionContext;
         await guard.canActivate(context);
         await expect(controller.findMine(request)).resolves.toEqual([]);
-        expect(findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: { userId: sub } }));
+        expect(findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: { userId: sub, cancelledAt: null, status: { title: 'Confirmada' } } }));
       }
     } finally {
       await moduleRef.close();
