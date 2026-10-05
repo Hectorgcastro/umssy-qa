@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
@@ -10,7 +20,7 @@ import {
   CREATE_BLOCK_DOCS,
   DELETE_BLOCK_DOCS,
   FIND_MY_BLOCKS_DOCS,
-  UPDATE_BLOCK_DOCS
+  UPDATE_BLOCK_DOCS,
 } from '../constants/availability-docs.constants.js';
 import { CreateBlockDto } from '../requests/create-block.request.js';
 import { WeekQueryDto } from '../requests/week-query.request.js';
@@ -56,7 +66,7 @@ export class AvailabilityController {
   @ApiParam({ name: 'id', description: UPDATE_BLOCK_DOCS.idDescription })
   updateBlock(
     @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', new ZodValidationPipe(blockIdSchema)) id: string,
     @Body() body: UpdateBlockDto,
   ): Promise<AvailabilityBlockResponse> {
     return this.availabilityService.updateBlock(user.id, id, body);

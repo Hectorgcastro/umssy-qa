@@ -6,11 +6,7 @@ import {
   WITHOUT_ACTIVE_APPOINTMENTS_WHERE,
 } from '../constants/block-query.constants.js';
 import type { AvailabilityBlockWithAppointments } from '../types/availability-block-with-appointments.types.js';
-
-interface UpdateBlockData {
-  startAt: Date;
-  endAt: Date;
-}
+import type { UpdateBlockData } from '../types/update-block-data.types.js';
 
 @Injectable()
 export class AvailabilityRepository {

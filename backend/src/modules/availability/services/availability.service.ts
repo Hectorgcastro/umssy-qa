@@ -13,7 +13,7 @@ import type { AvailabilityBlockResponse } from '../types/availability-block-resp
 import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
 import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
 import type { DeletedBlockResponse } from '../types/deleted-block-response.types.js';
-import type { UpdateBlockPayload } from '../requests/update-block.request.js';
+import type { UpdateBlockPayload } from '../types/update-block-payload.types.js';
 
 @Injectable()
 export class AvailabilityService {
@@ -80,7 +80,7 @@ export class AvailabilityService {
       throw error;
     }
   }
-  
+
   async create(mentorId: string, payload: CreateBlockPayload): Promise<AvailabilityBlockResponse> {
     try {
       const block = await this.availabilityRepository.create(
