@@ -5,6 +5,8 @@ import { CERTIFICATION_VALIDATION_MESSAGES } from '../constants/certification.co
 import { createCertificationSchema } from '../requests/create-certification.request.js';
 import { updateCertificationSchema } from '../requests/update-certification.request.js';
 
+const BUSINESS_TIMEZONE = 'America/La_Paz';
+
 const validBody = {
   name: 'AWS Solutions Architect',
   issuingOrganization: 'Amazon',
@@ -14,12 +16,24 @@ const validBody = {
 const createPipe = new RequestValidationPipe(createCertificationSchema);
 const updatePipe = new RequestValidationPipe(updateCertificationSchema);
 
-function formatDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
+
+
+function todayInBolivia(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: BUSINESS_TIMEZONE,
+  }).format(new Date());
 }
 
-function daysFromToday(days: number): string {
-  return formatDate(new Date(Date.now() + days * 24 * 60 * 60 * 1000));
+function tomorrowInBolivia(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIMEZONE }).format(d);
+}
+
+function yesterdayInBolivia(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIMEZONE }).format(d);
 }
 
 describe('Certification validation messages', () => {
@@ -163,7 +177,7 @@ describe('Certification length limits', () => {
 
 describe('Certification issue date', () => {
   it('accepts today and rejects tomorrow', () => {
-    const today = formatDate(new Date());
+    const today = todayInBolivia();
 
     expect(
       createCertificationSchema.safeParse({ ...validBody, issueDate: today })
@@ -172,7 +186,7 @@ describe('Certification issue date', () => {
 
     const issues = createCertificationSchema.safeParse({
       ...validBody,
-      issueDate: daysFromToday(2),
+      issueDate: tomorrowInBolivia(),
     }).error?.issues;
 
     expect(issues).toHaveLength(1);
@@ -221,7 +235,7 @@ describe('Certification validation when editing', () => {
     const issues = updateCertificationSchema.safeParse({
       name: '',
       issuingOrganization: 'a'.repeat(101),
-      issueDate: daysFromToday(2),
+      issueDate: tomorrowInBolivia(),
     }).error?.issues;
 
     expect(issues?.map((issue) => issue.message)).toEqual([
@@ -236,7 +250,40 @@ describe('Certification validation when editing', () => {
       updateCertificationSchema.safeParse({
         name: 'a'.repeat(150),
         issuingOrganization: 'a'.repeat(100),
-        issueDate: formatDate(new Date()),
+        issueDate: todayInBolivia(),
+      }).success,
+    ).toBe(true);
+  });
+});
+
+describe('Certification issue date — Bolivia timezone (W10)', () => {
+  it('accepts today in America/La_Paz', () => {
+    expect(
+      createCertificationSchema.safeParse({
+        ...validBody,
+        issueDate: todayInBolivia(),
+      }).success,
+    ).toBe(true);
+  });
+
+  it('rejects tomorrow in America/La_Paz', () => {
+    const issues = createCertificationSchema.safeParse({
+      ...validBody,
+      issueDate: tomorrowInBolivia(),
+    }).error?.issues;
+
+    expect(issues).toHaveLength(1);
+    expect(issues?.[0]).toMatchObject({
+      path: ['issueDate'],
+      message: CERTIFICATION_VALIDATION_MESSAGES.futureDate,
+    });
+  });
+
+  it('accepts yesterday in America/La_Paz', () => {
+    expect(
+      createCertificationSchema.safeParse({
+        ...validBody,
+        issueDate: yesterdayInBolivia(),
       }).success,
     ).toBe(true);
   });

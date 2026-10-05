@@ -14,7 +14,7 @@ const userId = '11111111-1111-4111-8111-111111111111';
 const otherUserId = '22222222-2222-4222-8222-222222222222';
 const certificationId = '33333333-3333-4333-8333-333333333333';
 const documentPath = `/api/certifications/${certificationId}/document`;
-const pdfBytes = Buffer.from('%PDF-1\n%%EOF');
+const pdfBytes = Buffer.from("%PDF-1.4\n" + " ".repeat(50) + "\n%%EOF\n");
 const record = {
   id: certificationId,
   userId,
