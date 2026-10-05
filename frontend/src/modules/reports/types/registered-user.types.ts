@@ -1,3 +1,5 @@
+import type { PaginatedData } from "@/shared/types/api-response.types";
+
 export type UserType = "STUDENT" | "GRADUATE" | "DEGREE_HOLDER" | "MENTOR" | "COMPANY" | "ADMIN";
 
 export type UserDocumentType =
@@ -29,4 +31,10 @@ export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType"
 export interface ExportedFile {
   file: Blob;
   fileName: string;
+}
+
+export interface RegisteredUsersState {
+  requestKey: string;
+  result?: PaginatedData<RegisteredUser>;
+  errorMessage?: string;
 }

@@ -1,3 +1,4 @@
+import type { PaginatedData } from "@/shared/types/api-response.types";
 import type { UserDocumentType } from "./registered-user.types";
 
 export interface RejectedUser {
@@ -16,3 +17,9 @@ export interface RejectedUsersParams {
 }
 
 export type RejectedUsersExportParams = Pick<RejectedUsersParams, "search">;
+
+export interface RejectedUsersState {
+  requestKey: string;
+  result?: PaginatedData<RejectedUser>;
+  errorMessage?: string;
+}

@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Sin modo oscuro: dark: solo aplica bajo .dark, no según el tema del sistema operativo. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -58,18 +57,17 @@
   --color-border: #E3E7EC;
   --color-border-strong: #C9CFD8;
 
-  /* Escala tipográfica UMSSY (Sprint 1) */
-  --text-xs: 0.78125rem;            /* 12.5px — Código SIS, etiquetas */
+  --text-xs: 0.78125rem;
   --text-xs--line-height: 1.4;
-  --text-sm: 0.875rem;              /* 14px — texto de apoyo */
+  --text-sm: 0.875rem;
   --text-sm--line-height: 1.45;
-  --text-base: 0.9375rem;           /* 15px — texto de cuerpo */
+  --text-base: 0.9375rem;
   --text-base--line-height: 1.5;
-  --text-lg: 1.0625rem;             /* 17px — subtítulo (Inter Bold) */
+  --text-lg: 1.0625rem;
   --text-lg--line-height: 1.4;
-  --text-2xl: 1.375rem;             /* 22px — título de sección */
+  --text-2xl: 1.375rem;
   --text-2xl--line-height: 1.3;
-  --text-3xl: 1.875rem;             /* 30px — título de página (Extra Bold) */
+  --text-3xl: 1.875rem;
   --text-3xl--line-height: 1.2;
 }
 

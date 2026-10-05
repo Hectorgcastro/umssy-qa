@@ -32,7 +32,6 @@ function getSearchInput() {
   return screen.getByPlaceholderText<HTMLInputElement>("Buscar por correo electrónico");
 }
 
-// Escribe en el buscador y espera a que la tabla muestre el resultado de la búsqueda.
 async function searchFor(value: string, expectedSummary: string) {
   fireEvent.change(getSearchInput(), { target: { value } });
   await waitFor(() => {
@@ -101,7 +100,6 @@ describe("RejectedUsersReportView", () => {
     });
     expect(reportsService.getRejectedUsers).not.toHaveBeenCalledWith(expect.objectContaining({ search: "juan.perez@" }));
 
-    // Espera ~300 ms después de dejar de escribir antes de consultar.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(299);
     });
@@ -129,7 +127,6 @@ describe("RejectedUsersReportView", () => {
     expect(screen.queryByRole("button", { name: "Limpiar búsqueda" })).toBeNull();
   });
 
-  // El buscador solo busca por correo: un nombre o un identificador no encuentran usuarios.
   it.each(["noexiste@correo.com", "Juan Carlos", "201900000"])(
     'muestra el aviso del correo cuando "%s" no encuentra usuarios',
     async (searchTerm) => {

@@ -1,4 +1,3 @@
-// Contrato estandarizado de respuesta del backend (sección 1.8 del manual).
 export interface ApiResponse<T> {
   statusCode: number;
   data: T;

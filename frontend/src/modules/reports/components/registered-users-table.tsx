@@ -2,18 +2,13 @@ import { FileText } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate } from "@/shared/utils/date.utils";
 import { USER_DOCUMENT_LABELS, USER_TYPE_LABELS } from "../constants/registered-users.constants";
-import type { RegisteredUser } from "../types/registered-user.types";
+import {
+  REGISTERED_USERS_COLUMN_COUNT as COLUMN_COUNT,
+  TABLE_CELL_CLASSES as CELL_CLASSES,
+  USERS_TABLE_HEAD_CLASSES as HEAD_CLASSES,
+} from "../constants/report-table.constants";
+import type { RegisteredUsersTableProps } from "../types/registered-users-table-props.types";
 import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
-
-interface RegisteredUsersTableProps {
-  users: RegisteredUser[];
-  isLoading: boolean;
-  errorMessage?: string;
-}
-
-const COLUMN_COUNT = 6;
-const HEAD_CLASSES = "h-auto px-6 py-3 font-semibold text-ink";
-const CELL_CLASSES = "px-6 py-4 text-ink-soft";
 
 export function RegisteredUsersTable({ users, isLoading, errorMessage }: RegisteredUsersTableProps) {
   const renderBody = () => {

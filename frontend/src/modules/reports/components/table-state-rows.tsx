@@ -1,15 +1,11 @@
 import { FileSearchCorner } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
-
-const SKELETON_ROWS = 5;
-
-interface TableSkeletonRowsProps {
-  columnCount: number;
-}
+import { TABLE_SKELETON_ROWS } from "../constants/report-table.constants";
+import type { TableMessageRowProps, TableSkeletonRowsProps } from "../types/table-state-rows-props.types";
 
 export function TableSkeletonRows({ columnCount }: TableSkeletonRowsProps) {
-  return Array.from({ length: SKELETON_ROWS }, (_, index) => (
+  return Array.from({ length: TABLE_SKELETON_ROWS }, (_, index) => (
     <TableRow key={index} data-testid="skeleton-row" className="border-border hover:bg-transparent">
       {Array.from({ length: columnCount }, (_, cellIndex) => (
         <TableCell key={cellIndex} className="px-6 py-4">
@@ -18,11 +14,6 @@ export function TableSkeletonRows({ columnCount }: TableSkeletonRowsProps) {
       ))}
     </TableRow>
   ));
-}
-
-interface TableMessageRowProps {
-  columnCount: number;
-  message: string;
 }
 
 export function TableMessageRow({ columnCount, message }: TableMessageRowProps) {
@@ -35,7 +26,6 @@ export function TableMessageRow({ columnCount, message }: TableMessageRowProps) 
   );
 }
 
-// Estado vacío con ícono para cuando una búsqueda no encuentra resultados.
 export function TableNoResultsRow({ columnCount, message }: TableMessageRowProps) {
   return (
     <TableRow className="hover:bg-transparent">

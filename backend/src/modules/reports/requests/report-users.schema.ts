@@ -7,7 +7,6 @@ const MAX_SEARCH_LENGTH = 100;
 
 const searchSchema = z.string().trim().max(MAX_SEARCH_LENGTH).optional();
 
-// Sin userType se devuelven todos los tipos de usuario.
 export const registeredUsersFiltersSchema = z.object({
   userType: z.enum(REPORT_USER_TYPES).optional(),
   year: z.coerce.number().int().min(FIRST_REPORT_YEAR).optional(),
@@ -18,7 +17,6 @@ export const registeredUsersQuerySchema = paginationSchema.extend(
   registeredUsersFiltersSchema.shape,
 );
 
-// En rechazados el buscador filtra solo por correo.
 export const rejectedUsersFiltersSchema = z.object({
   search: searchSchema,
 });

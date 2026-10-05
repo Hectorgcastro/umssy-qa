@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types.js';
+import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module.js';
 
 describe('AppController (e2e)', () => {
@@ -17,12 +17,10 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer()).get('/').expect(200).expect({
-      statusCode: 200,
-      data: 'Hello World!',
-      detail: 'Solicitud procesada correctamente',
-      ok: true,
-    });
+    return request(app.getHttpServer())
+      .get('/')
+      .expect(200)
+      .expect('Hello World!');
   });
 
   afterEach(async () => {

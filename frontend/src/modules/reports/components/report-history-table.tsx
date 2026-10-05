@@ -1,24 +1,14 @@
 import { FileText } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTime } from "@/shared/utils/date.utils";
-import type { GeneratedReport, ReportType } from "../types/generated-report.types";
+import { REPORT_TYPE_LABELS } from "../constants/generated-report.constants";
+import {
+  REPORT_HISTORY_COLUMN_COUNT as COLUMN_COUNT,
+  REPORT_HISTORY_HEAD_CLASSES as HEAD_CLASSES,
+  TABLE_CELL_CLASSES as CELL_CLASSES,
+} from "../constants/report-table.constants";
+import type { ReportHistoryTableProps } from "../types/report-history-table-props.types";
 import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
-
-interface ReportHistoryTableProps {
-  reports: GeneratedReport[];
-  isLoading: boolean;
-  errorMessage?: string;
-}
-
-const REPORT_TYPE_LABELS: Record<ReportType, string> = {
-  REGISTERED_USERS: "Lista de Usuarios",
-  GRADUATES: "Egresados",
-  REJECTED_USERS: "Rechazados",
-};
-
-const COLUMN_COUNT = 3;
-const HEAD_CLASSES = "h-auto px-6 py-3 font-semibold text-text-secondary";
-const CELL_CLASSES = "px-6 py-4 text-ink-soft";
 
 export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportHistoryTableProps) {
   const renderBody = () => {

@@ -1,10 +1,8 @@
-// Marca de orden de bytes: permite que Excel abra el archivo como UTF-8 (tildes y ñ).
 export const CSV_BOM = '﻿';
 
 const CSV_SEPARATOR = ',';
 const CSV_LINE_BREAK = '\r\n';
 
-// Caracteres con los que Excel interpreta una celda como fórmula.
 const FORMULA_PREFIXES = ['=', '+', '-', '@', '\t', '\r'];
 
 function escapeCsvValue(value: string): string {

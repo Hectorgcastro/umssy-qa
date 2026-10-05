@@ -2,7 +2,6 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RefreshButton } from "./refresh-button";
 
-// jsdom no tiene AnimationEvent, así que React escucha la versión con prefijo webkit.
 function completeSpinTurn(element: Element) {
   fireEvent(element, new Event("animationiteration", { bubbles: true }));
   fireEvent(element, new Event("webkitAnimationIteration", { bubbles: true }));

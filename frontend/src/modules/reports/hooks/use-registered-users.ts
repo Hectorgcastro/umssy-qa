@@ -1,19 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { PaginatedData } from "@/shared/types/api-response.types";
+import { REGISTERED_USERS_PAGE_SIZE } from "../constants/reports.constants";
 import { reportsService } from "../services/reports.service";
-import type { RegisteredUser, UserType } from "../types/registered-user.types";
+import type { RegisteredUsersState, UserType } from "../types/registered-user.types";
 
-export const REGISTERED_USERS_PAGE_SIZE = 10;
-
-interface RegisteredUsersState {
-  requestKey: string;
-  result?: PaginatedData<RegisteredUser>;
-  errorMessage?: string;
-}
-
-// Se migrará a useQuery cuando TanStack Query esté instalado en el proyecto.
 export function useRegisteredUsers(page: number, userType?: UserType) {
   const [state, setState] = useState<RegisteredUsersState | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);

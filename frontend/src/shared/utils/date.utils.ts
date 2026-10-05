@@ -2,7 +2,6 @@ function padNumber(value: number): string {
   return value.toString().padStart(2, "0");
 }
 
-// Formato "AAAA-MM-DD HH:mm" en la hora local del usuario.
 export function formatDateTime(isoDate: string): string {
   const date = new Date(isoDate);
 
@@ -16,7 +15,6 @@ export function formatDateTime(isoDate: string): string {
   return `${datePart} ${timePart}`;
 }
 
-// Formato "DD/MM/AAAA" en la hora local del usuario.
 export function formatDate(isoDate: string): string {
   const date = new Date(isoDate);
 

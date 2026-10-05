@@ -23,7 +23,6 @@ export class ReportHistoryService {
     private readonly generatedReportsRepository: GeneratedReportsRepository,
   ) {}
 
-  // Historial de reportes generados, del más reciente al más antiguo.
   getReportHistory(
     query: ReportHistoryQuery,
   ): PaginatedResult<GeneratedReport> {
@@ -32,8 +31,6 @@ export class ReportHistoryService {
     return paginate(reports, query.page, query.limit);
   }
 
-  // Registra un reporte al completarse su exportación. Cada registro recibe su
-  // propio id, así varios reportes generados a la vez no se pisan entre sí.
   registerGeneratedReport(
     input: RegisterGeneratedReportInput,
   ): GeneratedReport {

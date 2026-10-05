@@ -1,6 +1,10 @@
 import { apiClient } from "@/shared/services/api-client";
 import type { ApiResponse, PaginatedData } from "@/shared/types/api-response.types";
 import { getFileNameFromDisposition } from "@/shared/utils/download-file";
+import {
+  REGISTERED_USERS_CSV_FALLBACK_NAME,
+  REJECTED_USERS_CSV_FALLBACK_NAME,
+} from "../constants/reports.constants";
 import type { GeneratedReport, ReportHistoryParams } from "../types/generated-report.types";
 import type {
   ExportedFile,
@@ -14,10 +18,6 @@ import type {
   RejectedUsersParams,
 } from "../types/rejected-user.types";
 
-const REGISTERED_USERS_CSV_FALLBACK_NAME = "usuarios-registrados.csv";
-const REJECTED_USERS_CSV_FALLBACK_NAME = "usuarios-rechazados.csv";
-
-// Descarga un CSV del backend y toma el nombre del archivo de la cabecera Content-Disposition.
 async function downloadCsv(url: string, params: object, fallbackName: string): Promise<ExportedFile> {
   const response = await apiClient.get<Blob>(url, { params, responseType: "blob" });
 

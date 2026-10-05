@@ -8,15 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-export interface BreadcrumbEntry {
-  label: string;
-  href?: string;
-}
-
-interface PageBreadcrumbProps {
-  items: BreadcrumbEntry[];
-}
+import type { PageBreadcrumbProps } from "@/shared/types/page-breadcrumb-props.types";
 
 export function PageBreadcrumb({ items }: PageBreadcrumbProps) {
   return (

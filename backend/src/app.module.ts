@@ -25,8 +25,6 @@ import { ReportsModule } from './modules/reports/reports.module.js';
   providers: [
     AppService,
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
-    // NestJS evalúa los filtros globales del último al primero: DomainExceptionFilter
-    // debe ir al final para atender las excepciones de dominio antes que el filtro general.
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_FILTER, useClass: DomainExceptionFilter },
   ],

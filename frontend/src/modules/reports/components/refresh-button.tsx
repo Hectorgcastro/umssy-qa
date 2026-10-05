@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface RefreshButtonProps {
-  label?: string;
-  onClick?: () => void;
-  isRefreshing?: boolean;
-}
+import type { RefreshButtonProps } from "../types/refresh-button-props.types";
 
 export function RefreshButton({ label = "actualizar", onClick, isRefreshing = false }: RefreshButtonProps) {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -19,7 +14,6 @@ export function RefreshButton({ label = "actualizar", onClick, isRefreshing = fa
     onClick();
   };
 
-  // Se detiene al terminar una vuelta completa, para que el ícono no salte.
   const handleAnimationIteration = () => {
     if (!isRefreshing) setIsSpinning(false);
   };

@@ -1,11 +1,9 @@
-const FILE_NAME_PATTERN = /filename="?([^";]+)"?/i;
+import { FILE_NAME_PATTERN } from "@/shared/constants/download-file.constants";
 
-// Obtiene el nombre del archivo desde la cabecera Content-Disposition del backend.
 export function getFileNameFromDisposition(disposition: string | undefined, fallbackName: string): string {
   return disposition?.match(FILE_NAME_PATTERN)?.[1] ?? fallbackName;
 }
 
-// Descarga en el navegador un archivo recibido del backend.
 export function downloadFile(file: Blob, fileName: string): void {
   const url = URL.createObjectURL(file);
   const link = document.createElement("a");

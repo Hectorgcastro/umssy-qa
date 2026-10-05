@@ -1,7 +1,6 @@
 import { BadRequestException, type PipeTransform } from '@nestjs/common';
 import { z } from 'zod';
 
-// Mensajes de validación de Zod en español para toda la API.
 z.config(z.locales.es());
 
 export class ZodValidationPipe<

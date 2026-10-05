@@ -8,11 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ACADEMIC_PERIODS } from "../constants/reports.constants";
 
-// Periodos de ejemplo hasta que el backend exponga la gestión académica.
-const ACADEMIC_PERIODS = ["I-2026", "II-2026", "I-2025", "II-2025"];
-
-// Solo abre y cierra el menú: las opciones se conectarán cuando el backend las exponga.
 export function ManagementMenu() {
   return (
     <DropdownMenu>

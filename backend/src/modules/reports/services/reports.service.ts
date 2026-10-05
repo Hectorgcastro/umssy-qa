@@ -29,7 +29,6 @@ import type {
 const REGISTERED_USERS_CSV_PREFIX = 'usuarios-registrados';
 const REJECTED_USERS_CSV_PREFIX = 'usuarios-rechazados';
 
-// Ignora mayúsculas y tildes para que "perez" encuentre "Pérez".
 function normalizeText(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
@@ -65,7 +64,6 @@ export class ReportsService {
     return paginate(this.findRegisteredUsers(query), query.page, query.limit);
   }
 
-  // Exporta todas las filas que cumplen los filtros, no solo la página visible.
   exportRegisteredUsersCsv(filters: RegisteredUsersFilters): ReportCsvFile {
     const rows = this.findRegisteredUsers(filters).map(toRegisteredUserCsvRow);
 
@@ -90,7 +88,6 @@ export class ReportsService {
     };
   }
 
-  // Usuarios registrados: solo los registros aprobados.
   private findRegisteredUsers(
     filters: RegisteredUsersFilters,
   ): RegisteredUserResponse[] {
@@ -116,7 +113,6 @@ export class ReportsService {
     return sortByNewest(users).map(toRegisteredUserResponse);
   }
 
-  // Usuarios rechazados: el buscador filtra solo por correo, según el diseño.
   private findRejectedUsers(
     filters: RejectedUsersFilters,
   ): RejectedUserResponse[] {
