@@ -6,6 +6,7 @@ vi.mock("@/shared/services/api-client", () => ({
   apiClient: {
     get: vi.fn(),
     put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -52,5 +53,13 @@ describe("profilePhotoService", () => {
     expect(config.headers).toEqual({});
     expect(endpoint).toBe("/profile/me/photo");
     expect(body.get("file")).toBe(photo);
+  });
+
+  it("deletes the photo of the current user", async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue({});
+
+    await profilePhotoService.deletePhoto();
+
+    expect(apiClient.delete).toHaveBeenCalledWith("/profile/me/photo", { headers: {} });
   });
 });
