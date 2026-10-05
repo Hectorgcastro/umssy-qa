@@ -1,0 +1,144 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it } from "vitest";
+import { PersonalDataForm } from "./personal-data-form";
+
+describe("PersonalDataForm", () => {
+  afterEach(() => cleanup());
+
+  it("muestra todos los campos del paso 1", () => {
+    render(<PersonalDataForm />);
+
+    expect(screen.getByLabelText("Nombres")).toBeInTheDocument();
+    expect(screen.getByLabelText("Apellidos")).toBeInTheDocument();
+    expect(screen.getByLabelText("Carnet de identidad")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Expedido" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Código SIS")).toBeInTheDocument();
+    expect(screen.getByLabelText("Correo electrónico")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Teléfono/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Fecha de nacimiento")).toBeInTheDocument();
+    expect(screen.getByLabelText("Año de titulación")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Carrera" })).toBeInTheDocument();
+  });
+
+  it("muestra el título y el subtítulo del formulario", () => {
+    render(<PersonalDataForm />);
+
+    expect(screen.getByRole("heading", { name: "Solicita tu acceso a la comunidad" })).toBeInTheDocument();
+    expect(screen.getByText(/La carrera verifica cada solicitud con tu documento académico/)).toBeInTheDocument();
+  });
+
+  it("muestra los textos de ayuda del código SIS y del correo", () => {
+    render(<PersonalDataForm />);
+
+    expect(screen.getByText("Figura en tu carnet universitario o en tu kárdex.")).toBeInTheDocument();
+    expect(screen.getByText("Aquí te enviaremos el resultado y el código de activación.")).toBeInTheDocument();
+  });
+
+  it("muestra el icono de correo y el placeholder del teléfono", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    expect(container.querySelector("svg.lucide-mail")).not.toBeNull();
+    expect(screen.getByPlaceholderText("Ej. 70712345")).toBeInTheDocument();
+  });
+
+  it("coloca el carnet y el expedido en la misma fila", () => {
+    render(<PersonalDataForm />);
+
+    const row = screen.getByLabelText("Carnet de identidad").closest(".flex.gap-2");
+    expect(row).not.toBeNull();
+    expect(row).toContainElement(screen.getByRole("combobox", { name: "Expedido" }));
+  });
+
+  it("el select de expedido usa la altura de 42 px en lugar de la de shadcn", () => {
+    render(<PersonalDataForm />);
+
+    const trigger = screen.getByRole("combobox", { name: "Expedido" });
+    expect(trigger).toHaveClass("data-[size=default]:h-[42px]", "focus-visible:border-accent");
+    expect(trigger).not.toHaveClass("data-[size=default]:h-8");
+  });
+
+  it("alinea el botón a la derecha con el chevron y el fondo tinta", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    const button = screen.getByRole("button", { name: "Continuar al siguiente paso" });
+    expect(button).toHaveClass("bg-ink", "text-surface");
+    expect(button.querySelector("svg.lucide-chevron-right")).not.toBeNull();
+    expect(button.parentElement).toHaveClass("justify-end");
+    expect(container.querySelector(".border-t")).toBe(button.parentElement);
+  });
+
+  it("marca el teléfono como opcional", () => {
+    render(<PersonalDataForm />);
+
+    expect(screen.getByText("(opcional)")).toBeInTheDocument();
+  });
+
+  it("usa los tipos de campo adecuados", () => {
+    render(<PersonalDataForm />);
+
+    expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute("type", "email");
+    expect(screen.getByLabelText("Fecha de nacimiento")).toHaveAttribute("type", "date");
+    expect(screen.getByLabelText(/Teléfono/)).toHaveAttribute("maxlength", "8");
+  });
+
+  it("ofrece los 9 códigos de expedición", async () => {
+    const user = userEvent.setup();
+    render(<PersonalDataForm />);
+
+    await user.click(screen.getByRole("combobox", { name: "Expedido" }));
+
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "CB", "LP", "SC", "OR", "PT", "CH", "TJ", "BE", "PD",
+    ]);
+  });
+
+  it("reemplaza el año de ingreso por el año de titulación", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    expect(container.textContent).not.toMatch(/ingreso/i);
+    expect(screen.getByLabelText("Año de titulación")).toHaveAttribute("maxlength", "4");
+  });
+
+  it("ofrece las dos carreras del catálogo", async () => {
+    const user = userEvent.setup();
+    render(<PersonalDataForm />);
+
+    await user.click(screen.getByRole("combobox", { name: "Carrera" }));
+
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "Licenciatura en Ingeniería de Sistemas",
+      "Licenciatura Ingeniería en Informática",
+    ]);
+  });
+
+  it("muestra la carrera en una fila propia de ancho completo", () => {
+    render(<PersonalDataForm />);
+
+    const trigger = screen.getByRole("combobox", { name: "Carrera" });
+    expect(trigger).toHaveClass("w-full", "data-[size=default]:h-[42px]");
+    expect(trigger.closest("div.md\\:col-span-2")).not.toBeNull();
+  });
+
+  it("muestra el botón Continuar al siguiente paso", () => {
+    render(<PersonalDataForm />);
+
+    expect(screen.getByRole("button", { name: "Continuar al siguiente paso" })).toBeInTheDocument();
+  });
+
+  it("no recarga la página al enviar", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    const notPrevented = fireEvent.submit(container.querySelector("form") as HTMLFormElement);
+
+    expect(notPrevented).toBe(false);
+  });
+
+  it("no usa el término egresado", () => {
+    const { container } = render(<PersonalDataForm />);
+
+    expect(container.textContent).not.toMatch(/egres/i);
+  });
+});
