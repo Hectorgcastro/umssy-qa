@@ -119,4 +119,24 @@ describe("EducationForm", () => {
     expect(onCancel).toHaveBeenCalledOnce();
     expect(onSubmit).not.toHaveBeenCalled();
   });
+
+  it("allows editing a legacy description with an empty non-required end date", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm initialValues={{ ...VALUES, endDate: "" }} allowMissingEndDate onSubmit={onSubmit} onCancel={vi.fn()} />);
+    expect(screen.getByLabelText(/Hasta/)).not.toBeRequired();
+    fireEvent.change(screen.getByLabelText(/Descripción/), { target: { value: "Updated description" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith({ ...VALUES, endDate: "", description: "Updated description" });
+  });
+
+  it("does not allow clearing an existing end date", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm initialValues={VALUES} onSubmit={onSubmit} onCancel={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText(/Hasta/), { target: { value: "" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Hasta/)).toBeRequired();
+  });
 });

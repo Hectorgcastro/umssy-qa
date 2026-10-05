@@ -3,6 +3,7 @@ import { EDUCATIONS_ENDPOINT } from "../constants/education-api.constants";
 import type { ApiResponse } from "../types/api-response.types";
 import type { EducationItem } from "../types/education-item.types";
 import type { EducationPayload } from "../types/education-payload.types";
+import type { UpdateEducationPayload } from "../types/update-education-payload.types";
 import { getAuthHeaders } from "../utils/get-auth-headers";
 
 export const educationsService = {
@@ -22,7 +23,7 @@ export const educationsService = {
     return response.data.data;
   },
 
-  updateEducation: async (id: string, payload: EducationPayload): Promise<EducationItem> => {
+  updateEducation: async (id: string, payload: UpdateEducationPayload): Promise<EducationItem> => {
     const response = await apiClient.patch<ApiResponse<EducationItem>>(
       `${EDUCATIONS_ENDPOINT}/${id}`,
       payload,

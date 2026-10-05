@@ -15,6 +15,7 @@ function isValidDate(value: string): boolean {
 
 export function validateEducationForm(
   values: EducationFormValues,
+  allowMissingEndDate = false,
 ): EducationFormErrors {
   const errors: EducationFormErrors = {};
   if (!(values.institution ?? "").trim()) {
@@ -29,13 +30,16 @@ export function validateEducationForm(
     errors.startDate = EDUCATION_VALIDATION_MESSAGES.invalidDate;
   }
   if (!values.endDate) {
-    errors.endDate = EDUCATION_VALIDATION_MESSAGES.endDateRequired;
+    if (!allowMissingEndDate) {
+      errors.endDate = EDUCATION_VALIDATION_MESSAGES.endDateRequired;
+    }
   } else if (!isValidDate(values.endDate)) {
     errors.endDate = EDUCATION_VALIDATION_MESSAGES.invalidDate;
   }
   if (
     !errors.startDate &&
     !errors.endDate &&
+    values.endDate &&
     values.endDate < values.startDate
   ) {
     errors.endDate = EDUCATION_VALIDATION_MESSAGES.invalidDateRange;

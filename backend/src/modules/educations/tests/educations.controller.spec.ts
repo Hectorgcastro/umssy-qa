@@ -120,6 +120,9 @@ describe('EducationsController', () => {
     expect(updated.body.data.degree).toBe('Updated degree');
     expect(repository.update).toHaveBeenCalledWith(educationId, userId, {
       degree: 'Updated degree',
+    }, {
+      startDate: record.startDate,
+      endDate: record.endDate,
     });
 
     const deleted = await request(app.getHttpServer())
@@ -292,6 +295,29 @@ describe('EducationsController', () => {
       },
     });
     expect(document.paths['/api/educations/{id}'].patch).toBeDefined();
+    expect(document.paths['/api/educations/{id}'].patch?.responses?.['409']).toBeDefined();
     expect(document.paths['/api/educations/{id}'].delete).toBeDefined();
+  });
+
+  it('returns a standard conflict response when the validated dates changed', async () => {
+    repository.update.mockResolvedValue(null);
+    const response = await request(app.getHttpServer())
+      .patch(`/api/educations/${educationId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startDate: '2023-01-01' })
+      .expect(409);
+    expect(response.body).toMatchObject({ statusCode: 409, ok: false, data: null });
+    expect(repository.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('edits a legacy record without requiring or replacing its missing end date', async () => {
+    repository.findByIdAndUserId.mockResolvedValue({ ...record, endDate: null });
+    repository.update.mockResolvedValue({ ...record, endDate: null, description: 'Updated' });
+    const response = await request(app.getHttpServer())
+      .patch(`/api/educations/${educationId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ description: 'Updated' })
+      .expect(200);
+    expect(response.body.data).toMatchObject({ endDate: null, description: 'Updated' });
   });
 });

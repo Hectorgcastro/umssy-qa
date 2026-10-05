@@ -11,6 +11,7 @@ import { EducationsModule } from '../educations.module.js';
 import type { CreateEducationRequest } from '../requests/create-education.request.js';
 import type { UpdateEducationRequest } from '../requests/update-education.request.js';
 import type { EducationRecord } from '../types/education-record.type.js';
+import type { EducationPeriodSnapshot } from '../types/education-period-snapshot.type.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
 const otherUserId = '22222222-2222-4222-8222-222222222222';
@@ -71,10 +72,13 @@ describe('Education HTTP flow', () => {
             where,
             data,
           }: {
-            where: { id: string; userId: string };
+            where: { id: string; userId: string } & EducationPeriodSnapshot;
             data: UpdateEducationRequest;
           }) => {
-            const updated = matching(where).map((record) => ({
+            const updated = matching({ id: where.id, userId: where.userId })
+              .filter((record) => record.startDate.getTime() === where.startDate.getTime()
+                && record.endDate?.getTime() === where.endDate?.getTime())
+              .map((record) => ({
               ...record,
               ...data,
               updatedAt: new Date(),
