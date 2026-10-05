@@ -5,5 +5,4 @@ export interface CertificationCardProps {
   isBusy?: boolean;
   onEdit: (certification: Certification) => void;
   onDelete: (certification: Certification) => void;
-  onViewDocument?: (certification: Certification) => void;
 }

@@ -2,7 +2,6 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CERTIFICATION_VALIDATION_MESSAGES } from "../config/certification-validation.config";
-import { FILE_VALIDATION_MESSAGES } from "../config/file-validation-messages.config";
 import type { CertificationFormProps } from "../types/certification-form-props.types";
 import type { CreateCertificationDto } from "../types/create-certification-dto.types";
 import { CertificationForm } from "./certification-form";
@@ -13,16 +12,12 @@ const SAVED_VALUES: CreateCertificationDto = {
   issueDate: "2025-03-10",
 };
 
-const CERTIFICATE_PDF = new File(["certificate"], "certificate.pdf", { type: "application/pdf" });
-
 function renderForm({
   initialData,
-  hasDocument = false,
   isPending = false,
   onSubmit = vi.fn(),
 }: {
   initialData?: CreateCertificationDto;
-  hasDocument?: boolean;
   isPending?: boolean;
   onSubmit?: CertificationFormProps["onSubmit"];
 } = {}) {
@@ -30,7 +25,6 @@ function renderForm({
   render(
     <CertificationForm
       initialData={initialData}
-      hasDocument={hasDocument}
       isPending={isPending}
       onSubmit={onSubmit}
       onCancel={onCancel}
@@ -44,15 +38,15 @@ function getNameInput() {
 }
 
 function getOrganizationInput() {
-  return screen.getByLabelText(/Organización emisora/);
-}
-
-function getFileInput(): HTMLInputElement {
-  return screen.getByLabelText("Archivo del certificado");
+  return screen.getByLabelText(/Entidad emisora/);
 }
 
 function getIssueDateInput() {
-  return screen.getByLabelText(/Fecha de emisión/);
+  return screen.getByLabelText(/Fecha de obtención/);
+}
+
+function saveButton() {
+  return screen.getByRole("button", { name: "Guardar certificación" });
 }
 
 describe("CertificationForm", () => {
@@ -66,25 +60,26 @@ describe("CertificationForm", () => {
     expect(screen.getByRole("form", { name: "Agregar certificación" })).toBeInTheDocument();
     expect(getNameInput()).toHaveValue("");
     expect(getOrganizationInput()).toHaveValue("");
-    expect(getIssueDateInput()).toHaveValue("");
     expect(getIssueDateInput()).toHaveAttribute("type", "date");
-    expect(getIssueDateInput()).toHaveAttribute("max");
-    expect(screen.getByRole("button", { name: "Guardar" })).toBeEnabled();
+    expect(screen.getByText("* Campos obligatorios")).toBeInTheDocument();
+    expect(saveButton()).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
   });
 
-  it("fills the inputs with the initial data to edit a certification", () => {
+  it("fills the inputs with the initial data and shows cancel when editing", () => {
     renderForm({ initialData: SAVED_VALUES });
 
     expect(screen.getByRole("form", { name: "Editar certificación" })).toBeInTheDocument();
     expect(getNameInput()).toHaveValue(SAVED_VALUES.name);
     expect(getOrganizationInput()).toHaveValue(SAVED_VALUES.issuingOrganization);
-    expect(getIssueDateInput()).toHaveValue(SAVED_VALUES.issueDate);
+    expect(getIssueDateInput()).toHaveValue("2025-03-10");
+    expect(screen.getByRole("button", { name: "Cancelar" })).toBeInTheDocument();
   });
 
   it("shows inline errors and does not submit invalid values", async () => {
     const { onSubmit, user } = renderForm();
 
-    await user.click(screen.getByRole("button", { name: "Guardar" }));
+    await user.click(saveButton());
 
     expect(screen.getAllByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toHaveLength(3);
     expect(getNameInput()).toHaveAttribute("aria-invalid", "true");
@@ -92,12 +87,68 @@ describe("CertificationForm", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it("shows the error only next to the field that is empty", async () => {
+    const { onSubmit, user } = renderForm({
+      initialData: { ...SAVED_VALUES, issueDate: "" },
+    });
+
+    await user.click(saveButton());
+
+    expect(screen.getAllByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toHaveLength(1);
+    expect(getIssueDateInput()).toHaveAttribute("aria-invalid", "true");
+    expect(getNameInput()).toHaveAttribute("aria-invalid", "false");
+    expect(getOrganizationInput()).toHaveAttribute("aria-invalid", "false");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("rejects a name made only of spaces", async () => {
+    const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
+
+    await user.clear(getNameInput());
+    await user.type(getNameInput(), "    ");
+    await user.click(saveButton());
+
+    expect(screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("applies the length limits when editing", async () => {
+    const { onSubmit, user } = renderForm({
+      initialData: {
+        ...SAVED_VALUES,
+        name: "a".repeat(151),
+        issuingOrganization: "b".repeat(101),
+      },
+    });
+
+    await user.click(saveButton());
+
+    expect(screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.nameTooLong)).toBeInTheDocument();
+    expect(
+      screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.organizationTooLong),
+    ).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("submits special characters without altering them", async () => {
+    const { onSubmit, user } = renderForm();
+    const name = "<script>alert(1)</script>";
+    const issuingOrganization = "O'Reilly \"Media\"";
+
+    fireEvent.change(getNameInput(), { target: { value: name } });
+    fireEvent.change(getOrganizationInput(), { target: { value: issuingOrganization } });
+    fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
+    await user.click(saveButton());
+
+    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" });
+  });
+
   it("shows an inline error for a future issue date", async () => {
     const { onSubmit, user } = renderForm({
       initialData: { ...SAVED_VALUES, issueDate: "2999-01-01" },
     });
 
-    await user.click(screen.getByRole("button", { name: "Guardar" }));
+    await user.click(saveButton());
 
     expect(screen.getByText(CERTIFICATION_VALIDATION_MESSAGES.futureDate)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
@@ -106,29 +157,26 @@ describe("CertificationForm", () => {
   it("clears the error of a field when it changes", async () => {
     const { user } = renderForm();
 
-    await user.click(screen.getByRole("button", { name: "Guardar" }));
+    await user.click(saveButton());
     await user.type(getNameInput(), "Scrum Master");
 
     expect(getNameInput()).toHaveAttribute("aria-invalid", "false");
     expect(screen.getAllByText(CERTIFICATION_VALIDATION_MESSAGES.required)).toHaveLength(2);
   });
 
-  it("submits the trimmed values", async () => {
+  it("submits the trimmed values with the chosen day", async () => {
     const { onSubmit, user } = renderForm();
 
     await user.type(getNameInput(), "  Scrum Master  ");
     await user.type(getOrganizationInput(), " Scrum Alliance ");
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
-    await user.click(screen.getByRole("button", { name: "Guardar" }));
+    await user.click(saveButton());
 
-    expect(onSubmit).toHaveBeenCalledWith(
-      {
-        name: "Scrum Master",
-        issuingOrganization: "Scrum Alliance",
-        issueDate: "2025-04-20",
-      },
-      { type: "keep" },
-    );
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: "Scrum Master",
+      issuingOrganization: "Scrum Alliance",
+      issueDate: "2025-04-20",
+    });
   });
 
   it("disables the inputs and buttons while the submit is in progress", async () => {
@@ -141,7 +189,7 @@ describe("CertificationForm", () => {
     );
     const { user } = renderForm({ initialData: SAVED_VALUES, onSubmit });
 
-    await user.click(screen.getByRole("button", { name: "Guardar" }));
+    await user.click(saveButton());
 
     expect(screen.getByRole("button", { name: "Guardando..." })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancelar" })).toBeDisabled();
@@ -149,7 +197,7 @@ describe("CertificationForm", () => {
 
     resolveSubmit();
 
-    expect(await screen.findByRole("button", { name: "Guardar" })).toBeEnabled();
+    expect(await screen.findByRole("button", { name: "Guardar certificación" })).toBeEnabled();
   });
 
   it("disables the submit button while the mutation is pending", () => {
@@ -159,133 +207,14 @@ describe("CertificationForm", () => {
     expect(screen.getByRole("button", { name: "Cancelar" })).toBeDisabled();
   });
 
-  it("discards the changes and notifies when cancelled", async () => {
+  it("notifies when editing is cancelled", async () => {
     const { onCancel, onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
 
     await user.clear(getNameInput());
     await user.type(getNameInput(), "Changed name");
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
-    expect(getNameInput()).toHaveValue(SAVED_VALUES.name);
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(onSubmit).not.toHaveBeenCalled();
-  });
-
-  describe("document field", () => {
-    it("shows the accepted formats when there is no document", () => {
-      renderForm();
-
-      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Seleccionar archivo" })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Quitar" })).not.toBeInTheDocument();
-      expect(getFileInput()).toHaveAttribute("accept", ".pdf,.png,.jpg,.jpeg");
-    });
-
-    it("opens the file picker from the select button", async () => {
-      const { user } = renderForm();
-      const clickSpy = vi.spyOn(getFileInput(), "click");
-
-      await user.click(screen.getByRole("button", { name: "Seleccionar archivo" }));
-
-      expect(clickSpy).toHaveBeenCalled();
-    });
-
-    it("submits a new document with the certification", async () => {
-      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
-
-      await user.upload(getFileInput(), CERTIFICATE_PDF);
-
-      expect(screen.getByText(/certificate\.pdf/)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Reemplazar archivo" })).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Guardar" }));
-
-      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, {
-        type: "replace",
-        file: CERTIFICATE_PDF,
-      });
-    });
-
-    it("shows an inline error for a file with an invalid type", () => {
-      renderForm();
-
-      fireEvent.change(getFileInput(), {
-        target: { files: [new File(["text"], "notes.txt", { type: "text/plain" })] },
-      });
-
-      expect(screen.getByText(FILE_VALIDATION_MESSAGES.invalidCertificateType)).toBeInTheDocument();
-      expect(getFileInput()).toHaveAttribute("aria-invalid", "true");
-      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
-    });
-
-    it("shows an inline error for a file that is too large", () => {
-      renderForm();
-      const largeFile = new File(["x"], "large.pdf", { type: "application/pdf" });
-      Object.defineProperty(largeFile, "size", { value: 6 * 1024 * 1024 });
-
-      fireEvent.change(getFileInput(), { target: { files: [largeFile] } });
-
-      expect(screen.getByText(FILE_VALIDATION_MESSAGES.fileTooLarge)).toBeInTheDocument();
-    });
-
-    it("ignores an empty file selection", () => {
-      renderForm();
-
-      fireEvent.change(getFileInput(), { target: { files: [] } });
-
-      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
-    });
-
-    it("discards a selected file before saving", async () => {
-      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES });
-
-      await user.upload(getFileInput(), CERTIFICATE_PDF);
-      await user.click(screen.getByRole("button", { name: "Quitar" }));
-      await user.click(screen.getByRole("button", { name: "Guardar" }));
-
-      expect(screen.queryByText(/certificate\.pdf/)).not.toBeInTheDocument();
-      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, { type: "keep" });
-    });
-
-    it("shows the current document when editing", () => {
-      renderForm({ initialData: SAVED_VALUES, hasDocument: true });
-
-      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Reemplazar archivo" })).toBeInTheDocument();
-    });
-
-    it("removes the current document when editing", async () => {
-      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES, hasDocument: true });
-
-      await user.click(screen.getByRole("button", { name: "Quitar" }));
-
-      expect(screen.getByText("PDF, PNG o JPG de hasta 5 MB.")).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Guardar" }));
-
-      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, { type: "remove" });
-    });
-
-    it("keeps the current document when a new selection is discarded", async () => {
-      const { onSubmit, user } = renderForm({ initialData: SAVED_VALUES, hasDocument: true });
-
-      await user.upload(getFileInput(), CERTIFICATE_PDF);
-      await user.click(screen.getByRole("button", { name: "Quitar" }));
-
-      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Guardar" }));
-
-      expect(onSubmit).toHaveBeenCalledWith(SAVED_VALUES, { type: "keep" });
-    });
-
-    it("restores the document state when cancelled", async () => {
-      const { user } = renderForm({ initialData: SAVED_VALUES, hasDocument: true });
-
-      await user.click(screen.getByRole("button", { name: "Quitar" }));
-      await user.click(screen.getByRole("button", { name: "Cancelar" }));
-
-      expect(screen.getByText("Documento actual adjunto")).toBeInTheDocument();
-    });
   });
 });

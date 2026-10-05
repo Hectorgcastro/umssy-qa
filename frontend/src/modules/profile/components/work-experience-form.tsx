@@ -8,8 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { EMPTY_WORK_EXPERIENCE_FORM_VALUES } from "../config/work-experience-form-defaults.config";
+import type { WorkExperienceErrors } from "../types/work-experience-errors.types";
 import type { WorkExperienceFormProps } from "../types/work-experience-form-props.types";
 import type { WorkExperienceFormValues } from "../types/work-experience-form-values.types";
+import { getFieldErrorProps } from "../utils/get-field-error-props";
+import { validateWorkExperience } from "../utils/validate-work-experience";
 import { FeedbackMessage } from "./feedback-message";
 import { FormField } from "./form-field";
 import { SectionCard } from "./section-card";
@@ -24,12 +27,14 @@ export function WorkExperienceForm({
   const [values, setValues] = useState<WorkExperienceFormValues>(
     initialValues ?? EMPTY_WORK_EXPERIENCE_FORM_VALUES,
   );
+  const [errors, setErrors] = useState<WorkExperienceErrors>({});
   const isEditing = Boolean(initialValues);
   const title = isEditing ? "Editar experiencia" : "Agregar experiencia";
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setValues((current) => ({ ...current, [name]: value }));
+    setErrors((current) => ({ ...current, [name]: undefined }));
   };
 
   const handleCurrentChange = (checked: boolean) => {
@@ -38,19 +43,26 @@ export function WorkExperienceForm({
       isCurrent: checked,
       endDate: checked ? "" : current.endDate,
     }));
+    setErrors((current) => ({ ...current, endDate: undefined }));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const validationErrors = validateWorkExperience(values);
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
     await onSubmit(values);
   };
 
   return (
     <SectionCard title={title}>
       <form aria-label={title} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <FormField id="work-experience-companyName" label="Empresa" isRequired>
+        <FormField id="work-experience-companyName" error={errors.companyName} label="Empresa" isRequired>
           <Input
             id="work-experience-companyName"
+            {...getFieldErrorProps("work-experience-companyName", errors.companyName)}
             name="companyName"
             type="text"
             placeholder="Nombre de la empresa"
@@ -60,9 +72,10 @@ export function WorkExperienceForm({
             className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
           />
         </FormField>
-        <FormField id="work-experience-position" label="Cargo" isRequired>
+        <FormField id="work-experience-position" error={errors.position} label="Cargo" isRequired>
           <Input
             id="work-experience-position"
+            {...getFieldErrorProps("work-experience-position", errors.position)}
             name="position"
             type="text"
             placeholder="Ej. Desarrollador frontend"
@@ -73,9 +86,10 @@ export function WorkExperienceForm({
           />
         </FormField>
         <div className="grid grid-cols-2 gap-5">
-          <FormField id="work-experience-startDate" label="Desde" isRequired>
+          <FormField id="work-experience-startDate" error={errors.startDate} label="Desde" isRequired>
             <Input
               id="work-experience-startDate"
+              {...getFieldErrorProps("work-experience-startDate", errors.startDate)}
               name="startDate"
               type="date"
               value={values.startDate}
@@ -84,9 +98,10 @@ export function WorkExperienceForm({
               className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             />
           </FormField>
-          <FormField id="work-experience-endDate" label="Hasta">
+          <FormField id="work-experience-endDate" error={errors.endDate} label="Hasta">
             <Input
               id="work-experience-endDate"
+              {...getFieldErrorProps("work-experience-endDate", errors.endDate)}
               name="endDate"
               type="date"
               value={values.endDate}

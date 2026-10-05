@@ -26,6 +26,7 @@ describe('CertificationMapper', () => {
       name: 'AWS Solutions Architect',
       issuingOrganization: 'Amazon',
       issueDate: '2024-05-10',
+      hasDocument: false,
       createdAt: '2024-05-11T10:00:00.000Z',
       updatedAt: '2024-05-12T10:00:00.000Z',
     });
@@ -47,6 +48,19 @@ describe('CertificationMapper', () => {
     ]);
 
     expect(responses.map((item) => item.id)).toEqual(['a', 'b']);
+  });
+
+  it('marks the document of the response when the certification has one', () => {
+    expect(mapper.toResponse(buildRecord(), true).hasDocument).toBe(true);
+  });
+
+  it('marks only the certifications included in the document ids', () => {
+    const responses = mapper.toResponseList(
+      [buildRecord({ id: 'a' }), buildRecord({ id: 'b' })],
+      new Set(['b']),
+    );
+
+    expect(responses.map((item) => item.hasDocument)).toEqual([false, true]);
   });
 
   it('maps an empty list to an empty list', () => {

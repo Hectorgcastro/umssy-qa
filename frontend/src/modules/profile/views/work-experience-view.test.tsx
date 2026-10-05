@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WORK_EXPERIENCE_FEEDBACK_MESSAGES } from "../config/work-experience-feedback.config";
@@ -11,6 +11,7 @@ vi.mock("../services/work-experience.service", () => ({
     getWorkExperiences: vi.fn(),
     createWorkExperience: vi.fn(),
     updateWorkExperience: vi.fn(),
+    deleteWorkExperience: vi.fn(),
   },
 }));
 
@@ -82,6 +83,7 @@ describe("WorkExperienceView", () => {
 
     await user.type(screen.getByLabelText(/Empresa/), "Synapse Labs");
     await user.type(screen.getByLabelText(/Cargo/), "Desarrolladora web junior");
+    fireEvent.change(screen.getByLabelText(/Desde/), { target: { value: "2025-03-01" } });
     await user.click(screen.getByRole("checkbox", { name: "Trabajo actualmente aquí" }));
     await user.click(screen.getByRole("button", { name: "Guardar experiencia" }));
 
@@ -136,6 +138,77 @@ describe("WorkExperienceView", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       WORK_EXPERIENCE_FEEDBACK_MESSAGES.updateError,
     );
+  });
+
+  it("asks for confirmation and keeps the experience when the deletion is cancelled", async () => {
+    const user = userEvent.setup();
+    render(<WorkExperienceView />);
+    await screen.findByText("Asistente de laboratorio");
+
+    await user.click(screen.getByRole("button", { name: "Eliminar Asistente de laboratorio" }));
+
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog).toHaveTextContent('Se eliminará "Asistente de laboratorio" de tu perfil.');
+
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+    expect(workExperienceService.deleteWorkExperience).not.toHaveBeenCalled();
+    expect(screen.getByText("Asistente de laboratorio")).toBeInTheDocument();
+  });
+
+  it("deletes the experience after confirming and reloads the list", async () => {
+    const user = userEvent.setup();
+    vi.mocked(workExperienceService.deleteWorkExperience).mockResolvedValue();
+    render(<WorkExperienceView />);
+    await screen.findByText("Asistente de laboratorio");
+
+    await user.click(screen.getByRole("button", { name: "Eliminar Asistente de laboratorio" }));
+    await user.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Eliminar" }),
+    );
+
+    expect(workExperienceService.deleteWorkExperience).toHaveBeenCalledWith("experience-2");
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      WORK_EXPERIENCE_FEEDBACK_MESSAGES.deleteSuccess,
+    );
+    await waitFor(() =>
+      expect(workExperienceService.getWorkExperiences).toHaveBeenCalledTimes(2),
+    );
+  });
+
+  it("clears the form when the experience being edited is deleted", async () => {
+    const user = userEvent.setup();
+    vi.mocked(workExperienceService.deleteWorkExperience).mockResolvedValue();
+    render(<WorkExperienceView />);
+    await screen.findByText("Asistente de laboratorio");
+
+    await user.click(screen.getByRole("button", { name: "Editar Asistente de laboratorio" }));
+    expect(screen.getByRole("form", { name: "Editar experiencia" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Eliminar Asistente de laboratorio" }));
+    await user.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Eliminar" }),
+    );
+
+    expect(await screen.findByRole("form", { name: "Agregar experiencia" })).toBeInTheDocument();
+  });
+
+  it("shows an error when the experience cannot be deleted", async () => {
+    const user = userEvent.setup();
+    vi.mocked(workExperienceService.deleteWorkExperience).mockRejectedValue(new Error("fail"));
+    render(<WorkExperienceView />);
+    await screen.findByText("Asistente de laboratorio");
+
+    await user.click(screen.getByRole("button", { name: "Eliminar Asistente de laboratorio" }));
+    await user.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Eliminar" }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      WORK_EXPERIENCE_FEEDBACK_MESSAGES.deleteError,
+    );
+    expect(screen.getByText("Asistente de laboratorio")).toBeInTheDocument();
   });
 
   it("goes back to the add form when the edition is cancelled", async () => {

@@ -7,6 +7,7 @@ const input = {
   institution: ' UMSS ',
   degree: ' Computer Science ',
   startDate: '2020-02-29',
+  endDate: '2024-12-31',
 };
 
 describe('Education requests', () => {
@@ -15,6 +16,7 @@ describe('Education requests', () => {
       institution: 'UMSS',
       degree: 'Computer Science',
       startDate: new Date('2020-02-29T00:00:00.000Z'),
+      endDate: new Date('2024-12-31T00:00:00.000Z'),
     });
   });
 
@@ -28,20 +30,18 @@ describe('Education requests', () => {
     expect(parsed.description).toBe('Research');
   });
 
-  it('accepts null for optional fields', () => {
+  it('accepts null for the optional description', () => {
     expect(
       createEducationSchema.parse({
         ...input,
-        endDate: null,
         description: null,
       }),
     ).toMatchObject({
-      endDate: null,
       description: null,
     });
   });
 
-  it.each(['institution', 'degree', 'startDate'] as const)(
+  it.each(['institution', 'degree', 'startDate', 'endDate'] as const)(
     'requires %s',
     (field) => {
       expect(
@@ -94,9 +94,18 @@ describe('Education requests', () => {
       degree: 'Updated',
     });
     expect(
-      updateEducationSchema.parse({ endDate: null, description: null }),
-    ).toEqual({ endDate: null, description: null });
+      updateEducationSchema.parse({ description: null }),
+    ).toEqual({ description: null });
   });
+
+  it.each(['institution', 'degree', 'startDate', 'endDate'] as const)(
+    'rejects clearing %s in partial edits',
+    (field) => {
+      for (const value of [null, '', ' ']) {
+        expect(updateEducationSchema.safeParse({ [field]: value }).success).toBe(false);
+      }
+    },
+  );
 
   it('rejects empty or undefined-only edits', () => {
     expect(updateEducationSchema.safeParse({}).success).toBe(false);

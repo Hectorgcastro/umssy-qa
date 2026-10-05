@@ -15,6 +15,7 @@ const response: CertificationResponse = {
   name: 'AWS Solutions Architect',
   issuingOrganization: 'Amazon',
   issueDate: '2024-05-10',
+  hasDocument: false,
   createdAt: '2024-05-11T10:00:00.000Z',
   updatedAt: '2024-05-11T10:00:00.000Z',
 };

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { EDUCATION_FEEDBACK_MESSAGES } from "../config/education-feedback.config";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../constants/education-feedback.constants";
+import { EDUCATION_UI_TEXTS } from "../constants/education-ui.constants";
 import type { EducationListCardProps } from "../types/education-list-card-props.types";
 import { formatEducationPeriod } from "../utils/format-education-period";
 import { FeedbackMessage } from "./feedback-message";
@@ -9,13 +10,25 @@ export function EducationListCard({
   educations = [],
   isLoading = false,
   error = null,
+  isBusy = false,
+  onAdd,
   onEdit,
   onDelete,
 }: EducationListCardProps) {
   return (
     <SectionCard
-      title="Formación registrada"
-      description="Puedes agregar varias entradas y actualizar cada una."
+      title={EDUCATION_UI_TEXTS.listTitle}
+      description={EDUCATION_UI_TEXTS.listDescription}
+      action={onAdd ? (
+        <Button
+          type="button"
+          onClick={onAdd}
+          disabled={isBusy}
+          className="h-10 bg-accent px-4 text-[14px] font-semibold text-white hover:bg-danger"
+        >
+          {EDUCATION_UI_TEXTS.addButton}
+        </Button>
+      ) : undefined}
     >
       {isLoading ? (
         <p role="status" className="text-[14px] text-text-secondary">
@@ -23,13 +36,13 @@ export function EducationListCard({
         </p>
       ) : error ? (
         <FeedbackMessage feedback={{ type: "error", message: error }} />
-      ) : educations.length === 0 ? (
+      ) : (educations ?? []).length === 0 ? (
         <p role="status" className="text-[14px] text-text-secondary">
           {EDUCATION_FEEDBACK_MESSAGES.empty}
         </p>
       ) : (
-        <ul aria-label="Formación registrada" className="divide-y divide-border">
-          {educations.map((education) => (
+        <ul aria-label={EDUCATION_UI_TEXTS.listTitle} className="divide-y divide-border">
+          {(educations ?? []).map((education) => (
             <li key={education.id} className="flex items-center justify-between gap-4 py-4 first:pt-0">
               <div className="min-w-0 break-words">
                 <h3 className="text-[15px] font-bold text-ink">{education.degree}</h3>
@@ -46,20 +59,22 @@ export function EducationListCard({
                 <Button
                   type="button"
                   variant="ghost"
-                  aria-label={`Editar ${education.degree}`}
+                  aria-label={`${EDUCATION_UI_TEXTS.editButton} ${education.degree}`}
+                  disabled={isBusy}
                   onClick={() => onEdit?.(education)}
                   className="h-8 px-2 text-[13px] font-semibold text-ink"
                 >
-                  Editar
+                  {EDUCATION_UI_TEXTS.editButton}
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
-                  aria-label={`Eliminar ${education.degree}`}
+                  aria-label={`${EDUCATION_UI_TEXTS.deleteButton} ${education.degree}`}
+                  disabled={isBusy}
                   onClick={() => onDelete?.(education)}
                   className="h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent"
                 >
-                  Eliminar
+                  {EDUCATION_UI_TEXTS.deleteButton}
                 </Button>
               </div>
             </li>
@@ -68,7 +83,7 @@ export function EducationListCard({
       )}
 
       <p className="mt-4 border-t border-border pt-4 text-[13px] text-text-secondary">
-        Los nuevos estudios aparecerán aquí después de guardar.
+        {EDUCATION_UI_TEXTS.listFooter}
       </p>
     </SectionCard>
   );

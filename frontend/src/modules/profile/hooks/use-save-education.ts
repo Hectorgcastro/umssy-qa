@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { EDUCATION_FEEDBACK_MESSAGES } from "../config/education-feedback.config";
+import { useRef, useState } from "react";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../constants/education-feedback.constants";
 import { educationsService } from "../services/educations.service";
 import type { EducationPayload } from "../types/education-payload.types";
 import type { Feedback } from "../types/feedback.types";
 
-export function useSaveEducation(onSaved: () => void) {
+export function useSaveEducation(onSaved: () => void | Promise<void>) {
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const isSavingRef = useRef(false);
 
   async function save(payload: EducationPayload, id?: string): Promise<void> {
+    if (isSavingRef.current) {
+      return;
+    }
+    isSavingRef.current = true;
     setIsSaving(true);
     setFeedback(null);
     try {
@@ -25,13 +30,14 @@ export function useSaveEducation(onSaved: () => void) {
           ? EDUCATION_FEEDBACK_MESSAGES.updateSuccess
           : EDUCATION_FEEDBACK_MESSAGES.createSuccess,
       });
-      onSaved();
+      await onSaved();
     } catch {
       setFeedback({
         type: "error",
         message: id ? EDUCATION_FEEDBACK_MESSAGES.updateError : EDUCATION_FEEDBACK_MESSAGES.createError,
       });
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   }

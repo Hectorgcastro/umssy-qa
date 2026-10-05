@@ -17,7 +17,7 @@ describe("SavedCvCard", () => {
   });
 
   it("shows the empty state without a saved cv", () => {
-    render(<SavedCvCard savedCv={null} />);
+    render(<SavedCvCard savedCv={null} onReplace={vi.fn()} onDelete={vi.fn()} />);
 
     expect(screen.getByText("Archivo guardado")).toBeInTheDocument();
     expect(
@@ -60,16 +60,16 @@ describe("SavedCvCard", () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("disables the actions until they are provided", () => {
-    render(<SavedCvCard savedCv={SAVED_CV} />);
+  it("shows a loading placeholder instead of the empty state while the cv loads", () => {
+    render(
+      <SavedCvCard savedCv={null} isLoading onReplace={vi.fn()} onDelete={vi.fn()} />,
+    );
 
-    const replaceButton = screen.getByRole("button", { name: "Reemplazar CV" });
-    const deleteButton = screen.getByRole("button", { name: "Eliminar CV" });
-
-    expect(replaceButton).toBeDisabled();
-    expect(replaceButton).toHaveAttribute("title", "Disponible próximamente");
-    expect(deleteButton).toBeDisabled();
-    expect(deleteButton).toHaveAttribute("title", "Disponible próximamente");
+    expect(screen.getByText("Cargando tu CV...")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Al confirmar la carga, el archivo se mostrará aquí."),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reemplazar CV" })).not.toBeInTheDocument();
   });
 
   it("disables the actions while busy", () => {
@@ -79,8 +79,6 @@ describe("SavedCvCard", () => {
     const deleteButton = screen.getByRole("button", { name: "Eliminar CV" });
 
     expect(replaceButton).toBeDisabled();
-    expect(replaceButton).not.toHaveAttribute("title");
     expect(deleteButton).toBeDisabled();
-    expect(deleteButton).not.toHaveAttribute("title");
   });
 });

@@ -7,7 +7,9 @@ import { SectionCard } from "./section-card";
 export function WorkExperienceListCard({
   experiences = [],
   isLoading = false,
+  isBusy = false,
   onEdit,
+  onDelete,
 }: WorkExperienceListCardProps) {
   const sortedExperiences = sortWorkExperiences(experiences);
 
@@ -37,6 +39,7 @@ export function WorkExperienceListCard({
                 variant="ghost"
                 aria-label={`Editar ${experience.position}`}
                 className="h-8 px-2 text-[13px] font-semibold text-ink"
+                disabled={isBusy}
                 onClick={() => onEdit?.(experience)}
               >
                 Editar
@@ -46,6 +49,8 @@ export function WorkExperienceListCard({
                 variant="ghost"
                 aria-label={`Eliminar ${experience.position}`}
                 className="h-8 px-2 text-[13px] font-semibold text-accent hover:bg-interaction hover:text-accent"
+                disabled={isBusy}
+                onClick={() => onDelete?.(experience)}
               >
                 Eliminar
               </Button>
