@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
-import { cleanupOpenApiDoc, ZodValidationPipe } from 'nestjs-zod';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module.js';
 import { buildSwaggerConfig } from './config/swagger.config.js';
 
@@ -15,7 +15,6 @@ async function bootstrap(): Promise<void> {
 
   app.enableCors(corsOrigins.length > 0 ? { origin: corsOrigins } : {});
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(new ZodValidationPipe());
 
   const config = buildSwaggerConfig();
 
