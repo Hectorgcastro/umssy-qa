@@ -32,6 +32,20 @@ const SKILL_NAMES = [
   'Assembly',
 ];
 
+const COMPANIES = [
+  {
+    title: 'TechBolivia S.R.L.',
+    description: 'Empresa de desarrollo de software con sede en Cochabamba.',
+  },
+  {
+    title: 'NovaSoft Bolivia',
+    description: 'Consultora de tecnología especializada en aplicaciones web.',
+  },
+  {
+    title: 'Andes Data Labs',
+    description: 'Laboratorio de análisis de datos e inteligencia artificial.',
+  },
+];
 
 async function main() {
   for (const name of ROLE_NAMES) {
@@ -67,9 +81,18 @@ async function main() {
     });
   }
 
+  for (const company of COMPANIES) {
+    await prisma.company.upsert({
+      where: { title: company.title },
+      update: { description: company.description },
+      create: company,
+    });
+  }
+
   console.log('Roles creados:', ROLE_NAMES.join(', '));
   console.log('Usuario de prueba: prueba@umss.edu.bo / Prueba123 (rol: titulado)');
   console.log('Tecnologías cargadas:', SKILL_NAMES.length);
+  console.log('Empresas cargadas:', COMPANIES.length);
 }
 
 main()
