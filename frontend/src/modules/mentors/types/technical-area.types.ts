@@ -1,5 +1,5 @@
 export type TechnicalArea = {
-  id: number;
+  id: string;
   name: string;
-  description: string;
+  description: string | null;
 };

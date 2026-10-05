@@ -1,93 +1,166 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
-import { TechnicalAreasView } from "./technical-areas-view"
-import { saveMentorAreas } from "../services/technical-areas.mock"
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  getMentorTechnicalAreas,
+  getTechnicalAreas,
+  updateMentorTechnicalAreas,
+} from "../services/technical-areas.service";
+import { TechnicalAreasView } from "./technical-areas-view";
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }))
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }))
-vi.mock("../services/technical-areas.mock", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/technical-areas.mock")>()
-  return { ...actual, saveMentorAreas: vi.fn() }
-})
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("../services/technical-areas.service", () => ({
+  getTechnicalAreas: vi.fn(),
+  getMentorTechnicalAreas: vi.fn(),
+  updateMentorTechnicalAreas: vi.fn(),
+}));
 
-const card = (name: RegExp) => screen.getByRole("checkbox", { name })
-const button = (name: RegExp | string) => screen.getByRole("button", { name })
+const catalog = [
+  {
+    id: "0424f370-00f0-43cf-9b8a-997af81840b9",
+    name: "Backend",
+    description: "APIs y lógica de negocio",
+  },
+  {
+    id: "0fa5e6de-63a4-430e-87fb-22f5eb700ecd",
+    name: "QA",
+    description: "Testing y calidad",
+  },
+  {
+    id: "b679c31a-2545-43a9-91ac-f254b49e7b0c",
+    name: "Cloud",
+    description: null,
+  },
+];
+
+const selectedAreas = [catalog[0], catalog[2]];
+const card = (name: RegExp) => screen.getByRole("checkbox", { name });
+const button = (name: RegExp | string) => screen.getByRole("button", { name });
 
 describe("TechnicalAreasView", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(saveMentorAreas).mockResolvedValue()
-  })
+    vi.clearAllMocks();
+    vi.mocked(getTechnicalAreas).mockResolvedValue(catalog);
+    vi.mocked(getMentorTechnicalAreas).mockResolvedValue(selectedAreas);
+    vi.mocked(updateMentorTechnicalAreas).mockResolvedValue();
+  });
 
-  afterEach(() => {
-    cleanup()
-  })
+  afterEach(cleanup);
 
-  describe("modo edit", () => {
-    it("carga marcadas las áreas del mentor (Backend, Cloud, Arquitectura)", async () => {
-      await act(async () => { render(<TechnicalAreasView />) })
-      expect(card(/Backend/).getAttribute("aria-checked")).toBe("true")
-      expect(card(/Cloud/).getAttribute("aria-checked")).toBe("true")
-      expect(card(/Arquitectura/).getAttribute("aria-checked")).toBe("true")
-      expect(card(/QA/).getAttribute("aria-checked")).toBe("false")
-      expect(screen.getByText("3 seleccionadas")).toBeTruthy()
-    })
+  it("muestra carga y precarga la seleccion persistida", async () => {
+    render(<TechnicalAreasView />);
 
-    it("desmarcar todo muestra la alerta y bloquea Guardar", async () => {
-      await act(async () => { render(<TechnicalAreasView />) })
-      fireEvent.click(card(/Backend/))
-      fireEvent.click(card(/Cloud/))
-      fireEvent.click(card(/Arquitectura/))
-      expect(screen.getByRole("alert")).toBeTruthy()
-      expect((button(/Guardar cambios/) as HTMLButtonElement).disabled).toBe(true)
-    })
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Cargando áreas técnicas",
+    );
+    expect(await screen.findByText("2 seleccionadas")).toBeInTheDocument();
+    expect(card(/Backend/)).toHaveAttribute("aria-checked", "true");
+    expect(card(/Cloud/)).toHaveAttribute("aria-checked", "true");
+    expect(card(/QA/)).toHaveAttribute("aria-checked", "false");
+  });
 
-    it("guardar con éxito envía las áreas y muestra el toast", async () => {
-      await act(async () => { render(<TechnicalAreasView />) })
-      fireEvent.click(card(/QA/))
-      fireEvent.click(button(/Guardar cambios/))
-      expect(
-        await screen.findByText("Áreas técnicas actualizadas correctamente")
-      ).toBeTruthy()
-      expect(saveMentorAreas).toHaveBeenCalledWith([1, 6, 8, 4])
-    })
+  it("desmarcar todo muestra la alerta y bloquea Guardar", async () => {
+    render(<TechnicalAreasView />);
+    await screen.findByText("2 seleccionadas");
 
-    it("si falla el guardado muestra el mensaje de error", async () => {
-      vi.mocked(saveMentorAreas).mockRejectedValueOnce(new Error("500"))
-      await act(async () => { render(<TechnicalAreasView />) })
-      fireEvent.click(card(/QA/))
-      fireEvent.click(button(/Guardar cambios/))
-      expect(
-        await screen.findByText(
-          "No se pudieron guardar los cambios. Intente nuevamente."
-        )
-      ).toBeTruthy()
-    })
+    fireEvent.click(card(/Backend/));
+    fireEvent.click(card(/Cloud/));
 
-    it("Volver sin cambios regresa directo a Mi participación", async () => {
-      await act(async () => { render(<TechnicalAreasView />) })
-      fireEvent.click(button(/Volver/))
-      expect(push).toHaveBeenCalledWith("/mentors/participation")
-    })
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Debe seleccionarse al menos un área",
+    );
+    expect(button(/Guardar cambios/)).toBeDisabled();
+  });
 
-    it("Volver con cambios abre el modal y Seguir editando lo cierra", async () => {
-      await act(async () => { render(<TechnicalAreasView />) })
-      fireEvent.click(card(/QA/))
-      fireEvent.click(button(/Volver/))
-      expect(screen.getByText("¿Descartar cambios?")).toBeTruthy()
-      fireEvent.click(button("Seguir editando"))
-      expect(screen.queryByText("¿Descartar cambios?")).toBeNull()
-      expect(push).not.toHaveBeenCalled()
-    })
+  it("guarda UUID reales y muestra el mensaje de exito", async () => {
+    render(<TechnicalAreasView />);
+    await screen.findByText("2 seleccionadas");
 
-    it("Descartar en el modal regresa a Mi participación", async () => {
-      await act(async () => { render(<TechnicalAreasView />) })
-      fireEvent.click(card(/QA/))
-      fireEvent.click(button(/Volver/))
-      fireEvent.click(button("Descartar"))
-      expect(push).toHaveBeenCalledWith("/mentors/participation")
-    })
-  })
-})
+    fireEvent.click(card(/QA/));
+    fireEvent.click(button(/Guardar cambios/));
+
+    expect(
+      await screen.findByText("Áreas técnicas actualizadas correctamente"),
+    ).toBeInTheDocument();
+    expect(updateMentorTechnicalAreas).toHaveBeenCalledWith([
+      catalog[0].id,
+      catalog[2].id,
+      catalog[1].id,
+    ]);
+  });
+
+  it("si falla el guardado conserva la seleccion actual", async () => {
+    vi.mocked(updateMentorTechnicalAreas).mockRejectedValueOnce(
+      new Error("500"),
+    );
+    render(<TechnicalAreasView />);
+    await screen.findByText("2 seleccionadas");
+
+    fireEvent.click(card(/QA/));
+    fireEvent.click(button(/Guardar cambios/));
+
+    expect(
+      await screen.findByText(
+        "No se pudieron guardar los cambios. Intente nuevamente.",
+      ),
+    ).toBeInTheDocument();
+    expect(card(/QA/)).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByText("3 seleccionadas")).toBeInTheDocument();
+  });
+
+  it("muestra error de carga y permite reintentar", async () => {
+    vi.mocked(getTechnicalAreas)
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(catalog);
+    render(<TechnicalAreasView />);
+
+    expect(
+      await screen.findByText("No se pudieron cargar las áreas técnicas."),
+    ).toBeInTheDocument();
+    fireEvent.click(button("Reintentar"));
+
+    expect(await screen.findByText("2 seleccionadas")).toBeInTheDocument();
+    expect(getTechnicalAreas).toHaveBeenCalledTimes(2);
+    expect(getMentorTechnicalAreas).toHaveBeenCalledTimes(2);
+  });
+
+  it("Volver sin cambios regresa directo a Mi participación", async () => {
+    render(<TechnicalAreasView />);
+    await screen.findByText("2 seleccionadas");
+
+    fireEvent.click(button(/Volver/));
+
+    expect(push).toHaveBeenCalledWith("/mentors/participation");
+  });
+
+  it("confirma antes de salir con cambios sin guardar", async () => {
+    render(<TechnicalAreasView />);
+    await screen.findByText("2 seleccionadas");
+
+    fireEvent.click(card(/QA/));
+    fireEvent.click(button(/Volver/));
+    expect(screen.getByText("¿Descartar cambios?")).toBeInTheDocument();
+
+    fireEvent.click(button("Seguir editando"));
+    expect(screen.queryByText("¿Descartar cambios?")).not.toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("descarta los cambios y regresa a Mi participación", async () => {
+    render(<TechnicalAreasView />);
+    await screen.findByText("2 seleccionadas");
+
+    fireEvent.click(card(/QA/));
+    fireEvent.click(button(/Volver/));
+    await act(async () => fireEvent.click(button("Descartar")));
+
+    expect(push).toHaveBeenCalledWith("/mentors/participation");
+  });
+});

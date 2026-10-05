@@ -4,7 +4,7 @@ import type { TechnicalArea } from "../types/technical-area.types";
 type TechnicalAreaCardProps = {
   area: TechnicalArea;
   isSelected: boolean;
-  onToggle: (id: number) => void;
+  onToggle: (id: string) => void;
 };
 
 export function TechnicalAreaCard({
@@ -35,7 +35,11 @@ export function TechnicalAreaCard({
       </span>
       <span>
         <span className="block font-medium">{area.name}</span>
-        <span className="block text-xs text-gray-500">{area.description}</span>
+        {area.description && (
+          <span className="block text-xs text-gray-500">
+            {area.description}
+          </span>
+        )}
       </span>
     </button>
   );
