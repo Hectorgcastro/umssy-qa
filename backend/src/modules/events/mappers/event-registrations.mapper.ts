@@ -11,6 +11,8 @@ export class EventRegistrationsMapper {
       id: entity.id,
       eventName: entity.event.title,
       date: entity.event.eventDate,
+      startTime: entity.event.startTime,
+      endTime: entity.event.endTime,
       location: entity.event.location ?? 'Virtual',
       status: entity.status.title,
     };

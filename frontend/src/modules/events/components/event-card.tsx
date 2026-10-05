@@ -3,14 +3,12 @@
 import { Calendar, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { EventCardProps, EventItem } from '../types/event.types';
-
-const CATEGORY_BADGE_STYLES: Record<string, string> = {
-  tecnologia: 'bg-slate-200/80 text-ink',
-  'ia & datos': 'bg-amber-100/80 text-amber-800',
-  diseno: 'bg-slate-200/80 text-ink',
-  seguridad: 'bg-interaction text-danger',
-};
+import { CATEGORY_BADGE_STYLES } from '../constants/event-card.constants';
+import type {
+  EventCapacityStatus,
+  EventCardProps,
+  EventItem,
+} from '../types/event.types';
 
 function getCategoryBadgeClasses(categoryName: string): string {
   const normalizedKey = categoryName
@@ -19,13 +17,6 @@ function getCategoryBadgeClasses(categoryName: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 
   return CATEGORY_BADGE_STYLES[normalizedKey] ?? 'bg-slate-200/80 text-ink';
-}
-
-export interface EventCapacityStatus {
-  enrolledCount: number;
-  capacity: number | null;
-  progressPercentage: number | null;
-  isFull: boolean;
 }
 
 export function calculateEventCapacityStatus(

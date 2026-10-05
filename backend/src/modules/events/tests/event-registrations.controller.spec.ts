@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { EventRegistrationsController } from '../controllers/event-registrations.controller.js';
+import type { AuthenticatedRequest } from '../../auth/guards/jwt-auth.guard.js';
 import type { EventRegistrationsService } from '../services/event-registrations.service.js';
 
 describe('EventRegistrationsController', () => {
@@ -10,7 +11,7 @@ describe('EventRegistrationsController', () => {
       findMine,
     } as unknown as EventRegistrationsService);
 
-    const result = await controller.findMine('user-1');
+    const result = await controller.findMine({ user: { sub: 'user-1' }, query: { userId: 'another-user' } } as unknown as AuthenticatedRequest);
 
     expect(findMine).toHaveBeenCalledWith('user-1');
     expect(result).toBe(expected);

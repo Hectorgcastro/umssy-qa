@@ -105,6 +105,31 @@ describe('EventsController (e2e)', () => {
       modalityId: 'modality-001',
       category: { id: 'cat-001', name: 'Tecnologia' },
     });
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: { title: 'Publicado' },
+        }),
+      }),
+    );
+  });
+
+  it('GET /api/events?statusId=123e4567-e89b-12d3-a456-426614174000 - filters by explicit statusId', async () => {
+    findManyMock.mockResolvedValueOnce([buildPrismaEventRecord()]);
+    countMock.mockResolvedValueOnce(1);
+
+    const res = await request(app.getHttpServer())
+      .get('/api/events?statusId=123e4567-e89b-12d3-a456-426614174000')
+      .expect(200);
+
+    expect(res.body.statusCode).toBe(200);
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          statusId: '123e4567-e89b-12d3-a456-426614174000',
+        }),
+      }),
+    );
   });
 
   it('GET /api/events?search=Node - filters by title search term', async () => {
@@ -155,10 +180,10 @@ describe('EventsController (e2e)', () => {
     expect(res.body.statusCode).toBe(200);
     expect(prismaMock.event.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
+        where: expect.objectContaining({
           categoryId: '123e4567-e89b-12d3-a456-426614174000',
           title: { contains: 'Node', mode: 'insensitive' },
-        },
+        }),
       }),
     );
   });
@@ -176,7 +201,25 @@ describe('EventsController (e2e)', () => {
     expect(prismaMock.event.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          title: { contains: '100%', mode: 'insensitive' },
+          title: { contains: '100\\%', mode: 'insensitive' },
+        }),
+      }),
+    );
+  });
+
+  it('GET /api/events?search=_ - escapes underscore wildcard in search', async () => {
+    findManyMock.mockResolvedValueOnce([]);
+    countMock.mockResolvedValueOnce(0);
+
+    const res = await request(app.getHttpServer())
+      .get('/api/events?search=_')
+      .expect(200);
+
+    expect(res.body.statusCode).toBe(200);
+    expect(prismaMock.event.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          title: { contains: '\\_', mode: 'insensitive' },
         }),
       }),
     );

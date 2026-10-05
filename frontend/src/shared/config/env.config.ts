@@ -1,5 +1,4 @@
-
-type AppEnv= "local" | "dev" | "prod";
+type AppEnv = "local" | "dev" | "prod";
 
 const currentEnv = (process.env.NEXT_PUBLIC_APP_ENV as AppEnv) || "local";
 

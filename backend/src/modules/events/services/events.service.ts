@@ -11,10 +11,12 @@ export class EventsService {
   async findAll(payload: GetEventsPayload): Promise<EventsListResponse> {
     const { page, limit, categoryId, statusId, search } = payload;
     const offset = (page - 1) * limit;
+    const isPublishedOnly = statusId === undefined;
 
     const { items, total } = await this.eventsRepository.findAndCount({
       categoryId,
       statusId,
+      isPublishedOnly,
       search,
       skip: offset,
       take: limit,
