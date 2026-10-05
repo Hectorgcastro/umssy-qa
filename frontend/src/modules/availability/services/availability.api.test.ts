@@ -96,4 +96,12 @@ describe("availabilityApi", () => {
 
     expect(deleteSpy).toHaveBeenCalledWith("/availability-blocks/1")
   })
+
+  it("deleteAvailabilityBlock codifica el ID con caracteres especiales", async () => {
+    const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValue({})
+
+    await availabilityApi.deleteAvailabilityBlock("a/b&c")
+
+    expect(deleteSpy).toHaveBeenCalledWith("/availability-blocks/a%2Fb%26c")
+  })
 })

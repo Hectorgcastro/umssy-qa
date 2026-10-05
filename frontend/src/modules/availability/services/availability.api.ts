@@ -49,6 +49,6 @@ export const availabilityApi = {
   },
 
   deleteAvailabilityBlock: async (id: string): Promise<void> => {
-    await apiClient.delete(`/availability-blocks/${id}`);
+    await apiClient.delete(`/availability-blocks/${encodeURIComponent(id)}`);
   },
 };
