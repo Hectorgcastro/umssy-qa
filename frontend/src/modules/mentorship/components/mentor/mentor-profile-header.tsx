@@ -46,8 +46,8 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
             </AvatarFallback>
 
             <AvatarBadge
-              className={`bottom-1 right-1 size-4 ring-2 ring-white ${
-                mentor.isAvailable ? "bg-emerald-600" : "bg-destructive"
+              className={`bottom-1 right-1 size-4 ring-2 ring-surface ${
+                mentor.isAvailable ? "bg-green-500" : "bg-destructive"
               }`}
               aria-hidden="true"
             />
@@ -63,13 +63,13 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
                 variant={mentor.isAvailable ? "outline" : "destructive"}
                 className={`h-auto gap-2 px-3 py-1 text-sm font-semibold ${
                   mentor.isAvailable
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    ? "border-green-300 bg-green-100 text-green-700"
                     : "border-destructive/20 bg-destructive/10 text-destructive"
                 }`}
               >
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    mentor.isAvailable ? "bg-emerald-600" : "bg-destructive"
+                    mentor.isAvailable ? "bg-green-500" : "bg-destructive"
                   }`}
                   aria-hidden="true"
                 />
@@ -119,7 +119,7 @@ export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
           disabled={!mentor.isAvailable}
           className={`h-auto w-full shrink-0 gap-2 rounded-lg border-0 px-6 py-3 text-base font-semibold transition active:translate-y-0 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-100 sm:w-auto ${
             mentor.isAvailable
-              ? "bg-accent text-white hover:bg-danger"
+              ? "bg-accent text-white hover:brightness-90"
               : "cursor-not-allowed bg-gray-200 text-gray-500"
           }`}
         >

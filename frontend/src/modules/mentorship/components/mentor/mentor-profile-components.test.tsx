@@ -105,9 +105,9 @@ describe("Mentor profile components", () => {
 
     const availabilityBadge = screen.getByText("Disponible para mentoría");
     expect(availabilityBadge).toHaveAttribute("data-slot", "badge");
-    expect(availabilityBadge).toHaveClass("text-emerald-700");
+    expect(availabilityBadge).toHaveClass("text-green-700");
     expect(container.querySelector('[data-slot="avatar-badge"]')).toHaveClass(
-      "bg-emerald-600",
+      "bg-green-500",
     );
 
     expect(
