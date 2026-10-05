@@ -1,11 +1,19 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useEvents } from '../hooks/use-events';
+import { useEventsFilters } from '../hooks/use-events-filters';
+import { useEventCategories } from '../hooks/use-event-categories';
 import type { EventItem } from '../types/event.types';
 import { EventsView } from './events-view';
 
 vi.mock('../hooks/use-events', () => ({
   useEvents: vi.fn(),
+}));
+vi.mock('../hooks/use-events-filters', () => ({
+  useEventsFilters: vi.fn(),
+}));
+vi.mock('../hooks/use-event-categories', () => ({
+  useEventCategories: vi.fn(),
 }));
 
 const MOCK_EVENTS: EventItem[] = [
@@ -28,12 +36,26 @@ const MOCK_EVENTS: EventItem[] = [
 ];
 
 const mockUseEvents = vi.mocked(useEvents);
+const mockUseEventsFilters = vi.mocked(useEventsFilters);
+const mockUseEventCategories = vi.mocked(useEventCategories);
 
 afterEach(() => {
   cleanup();
 });
 
 beforeEach(() => {
+  mockUseEventsFilters.mockReturnValue({
+    searchInput: '',
+    setSearchInput: vi.fn(),
+    categoryId: null,
+    setCategoryId: vi.fn(),
+    filters: { search: '', categoryId: null },
+  });
+  mockUseEventCategories.mockReturnValue({
+    categories: [{ id: 'cat-1', name: 'Tecnología' }],
+    isLoading: false,
+    error: null,
+  });
   mockUseEvents.mockReturnValue({
     events: MOCK_EVENTS,
     error: null,
@@ -138,5 +160,19 @@ describe('EventsView', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cargar más talleres' }));
     expect(loadMore).toHaveBeenCalledOnce();
+  });
+
+  it('conecta la búsqueda y las categorías con los filtros de eventos', () => {
+    render(<EventsView />);
+
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar taller' }), {
+      target: { value: 'Prisma' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Tecnología' }));
+
+    const filterState = mockUseEventsFilters.mock.results[0].value;
+    expect(filterState.setSearchInput).toHaveBeenCalledWith('Prisma');
+    expect(filterState.setCategoryId).toHaveBeenCalledWith('cat-1');
+    expect(mockUseEvents).toHaveBeenCalledWith(filterState.filters);
   });
 });

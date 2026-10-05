@@ -1,15 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Info, Search } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { EventCard } from '../components/event-card';
 import { EventDetailPanel } from '../components/event-detail-panel';
 import { useEvents } from '../hooks/use-events';
+import { useEventsFilters } from '../hooks/use-events-filters';
+import { useEventCategories } from '../hooks/use-event-categories';
+import { EventsSearchInput } from '../components/events-search-input';
+import { CategoryFilterChips } from '../components/category-filter-chips';
 import type { EventItem } from '../types/event.types';
 
 const MOCKUP_CATEGORIES = ['Todos', 'Tecnología', 'IA & Datos', 'Diseño', 'Seguridad'];
 
 export function EventsView() {
+  const { searchInput, setSearchInput, categoryId, setCategoryId, filters } =
+    useEventsFilters();
+  const { categories } = useEventCategories();
   const {
     events,
     error,

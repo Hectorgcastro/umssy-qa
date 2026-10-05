@@ -1,6 +1,8 @@
 import { apiClient } from '@/shared/services/api-client';
 import type { EventItem, EventsListResponse, GetEventsParams } from '../types/event.types';
 
+const REQUEST_TIMEOUT_MS = 10_000;
+
 export const eventsService = {
   async getEvents(
     params: GetEventsParams,
@@ -13,6 +15,7 @@ export const eventsService = {
     const response = await apiClient.get<{ data: { items: EventItem[] }; page: number; offset: number }>('/events', {
       params,
       signal,
+      timeout: REQUEST_TIMEOUT_MS,
     });
 
     return {
