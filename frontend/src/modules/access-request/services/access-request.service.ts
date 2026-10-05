@@ -84,9 +84,9 @@ function parseError(status: number, body: unknown): ApiResult<never> {
 }
 
 async function send<T>(
-  method: "post" | "patch",
+  method: "post" | "patch" | "delete",
   url: string,
-  payload: AccessRequestPayload,
+  payload?: AccessRequestPayload,
 ): Promise<ApiResult<T>> {
   try {
     // Endpoints públicos: sin token. validateStatus evita que axios lance en errores HTTP
@@ -120,4 +120,7 @@ export const accessRequestService = {
   // La respuesta del PATCH no se usa para el id: el borrador ya lo tiene
   updateAccessRequest: (id: string, payload: AccessRequestPayload) =>
     send<Partial<CreateAccessRequestResponse>>("patch", `/access-requests/${id}`, payload),
+  // El backend responde 200 con { id }; el 404 llega con el mensaje fijo de "ya no existe"
+  deleteAccessRequest: (id: string) =>
+    send<Partial<CreateAccessRequestResponse>>("delete", `/access-requests/${id}`),
 };
