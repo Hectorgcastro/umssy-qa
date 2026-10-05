@@ -1,7 +1,6 @@
 import { GraduationCap, UserPlus } from "lucide-react";
 import {
   Avatar,
-  AvatarBadge,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
@@ -25,104 +24,74 @@ function getInitials(name: string) {
 }
 
 export function MentorProfileHeader({ mentor }: MentorProfileHeaderProps) {
-  const availabilityLabel = mentor.isAvailable
-    ? "Disponible para mentoría"
-    : "No disponible";
+  const primaryEducation = mentor.educations[0];
 
   return (
     <Card className="gap-0 overflow-visible rounded-xl border border-umssy-border bg-white py-0 text-base ring-0">
       <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
           <Avatar className="size-24 shrink-0 text-2xl">
-            {mentor.profileImage ? (
+            {mentor.photoUrl ? (
               <AvatarImage
-                src={mentor.profileImage}
-                alt={`Foto de ${mentor.name}`}
+                src={mentor.photoUrl}
+                alt={`Foto de ${mentor.fullName}`}
                 className="border-2 border-umssy-border object-cover"
               />
             ) : null}
             <AvatarFallback className="border-2 border-umssy-border bg-white text-2xl font-bold text-umssy-ink shadow-sm">
-              {getInitials(mentor.name)}
+              {getInitials(mentor.fullName)}
             </AvatarFallback>
-
-            <AvatarBadge
-              className={`bottom-1 right-1 size-4 ring-2 ring-surface ${
-                mentor.isAvailable ? "bg-green-500" : "bg-destructive"
-              }`}
-              aria-hidden="true"
-            />
           </Avatar>
 
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="break-words text-3xl font-extrabold text-umssy-ink">
-                {mentor.name}
-              </h1>
+            <h1 className="break-words text-3xl font-extrabold text-umssy-ink">
+              {mentor.fullName}
+            </h1>
 
-              <Badge
-                variant={mentor.isAvailable ? "outline" : "destructive"}
-                className={`h-auto gap-2 px-3 py-1 text-sm font-semibold ${
-                  mentor.isAvailable
-                    ? "border-green-300 bg-green-100 text-green-700"
-                    : "border-destructive/20 bg-destructive/10 text-destructive"
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    mentor.isAvailable ? "bg-green-500" : "bg-destructive"
-                  }`}
-                  aria-hidden="true"
-                />
+            {mentor.headline && (
+              <p className="mt-1 break-words text-lg font-semibold text-umssy-secondary">
+                {mentor.headline}
+              </p>
+            )}
 
-                {availabilityLabel}
-              </Badge>
-            </div>
-
-            <p className="mt-1 break-words text-lg font-semibold text-umssy-secondary">
-              {mentor.specialty}
-            </p>
-
-            {mentor.professionalInterests.length > 0 && (
+            {mentor.skills.length > 0 && (
               <div className="mt-3">
                 <p className="text-xs font-semibold uppercase text-umssy-secondary">
-                  Intereses profesionales
+                  Habilidades
                 </p>
 
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {mentor.professionalInterests.map((interest) => (
+                  {mentor.skills.map((skill) => (
                     <Badge
-                      key={interest}
+                      key={skill.id}
                       variant="outline"
                       className="h-auto rounded-lg border-umssy-border bg-umssy-background px-3 py-1 text-sm font-normal text-umssy-secondary"
                     >
-                      {interest}
+                      {skill.name}
                     </Badge>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="mt-3 flex items-start gap-2 text-sm text-umssy-secondary">
-              <GraduationCap
-                size={18}
-                className="mt-0.5 shrink-0 text-umssy-gold"
-              />
+            {primaryEducation && (
+              <div className="mt-3 flex items-start gap-2 text-sm text-umssy-secondary">
+                <GraduationCap
+                  size={18}
+                  className="mt-0.5 shrink-0 text-umssy-gold"
+                />
 
-              <p className="break-words">
-                Egresado UMSS · {mentor.program} ({mentor.faculty})
-              </p>
-            </div>
+                <p className="break-words">
+                  {primaryEducation.degree} · {primaryEducation.institution}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         <Button
           type="button"
-          disabled={!mentor.isAvailable}
-          className={`h-auto w-full shrink-0 gap-2 rounded-lg border-0 px-6 py-3 text-base font-semibold transition active:translate-y-0 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-100 sm:w-auto ${
-            mentor.isAvailable
-              ? "bg-accent text-white hover:brightness-90"
-              : "cursor-not-allowed bg-gray-200 text-gray-500"
-          }`}
+          className="h-auto w-full shrink-0 gap-2 rounded-lg border-0 bg-accent px-6 py-3 text-base font-semibold text-white transition hover:brightness-90 active:translate-y-0 sm:w-auto"
         >
           <UserPlus className="size-5" />
           Solicitar mentoría

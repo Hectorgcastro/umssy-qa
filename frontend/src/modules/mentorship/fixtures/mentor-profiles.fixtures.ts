@@ -1,6 +1,4 @@
-import type { MentorProfile } from "../types/mentor-profile.types";
-
-export const MENTOR_PROFILES: MentorProfile[] = [
+export const MENTOR_PROFILES = [
   {
     id: 1,
     name: "Ana Rojas",

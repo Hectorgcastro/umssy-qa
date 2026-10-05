@@ -5,9 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { MentorProfile } from "../../types/mentor-profile.types";
 
 type MentorTechnicalAreasProps = {
-  areas: string[];
+  areas: MentorProfile["technicalAreas"];
 };
 
 export function MentorTechnicalAreas({ areas }: MentorTechnicalAreasProps) {
@@ -34,10 +35,10 @@ export function MentorTechnicalAreas({ areas }: MentorTechnicalAreasProps) {
           <div className="flex flex-wrap gap-2">
             {areas.map((area) => (
               <span
-                key={area}
+                key={area.id}
                 className="max-w-full break-words rounded-lg border border-border bg-surface-soft px-4 py-2 text-sm font-medium text-ink"
               >
-                {area}
+                {area.name}
               </span>
             ))}
           </div>
