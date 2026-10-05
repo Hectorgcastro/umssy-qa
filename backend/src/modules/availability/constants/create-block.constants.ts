@@ -1,3 +1,4 @@
+// TODO: confirmar con el PO los pasos de 30 minutos y la duración de los bloques.
 export const BLOCK_MIN_HOUR = 7;
 export const BLOCK_MAX_HOUR = 22;
 export const BLOCK_STEP_MINUTES = 30;
