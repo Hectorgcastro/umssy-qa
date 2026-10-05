@@ -13,7 +13,7 @@ import type { FileStorage } from '../types/file-storage.type.js';
 import type { MulterFile } from '../types/multer-file.type.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
-const pdfContent = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37]);
+const pdfContent = Buffer.from('%PDF-1.7\n%%EOF');
 const pngContent = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 const buildRecord = (
