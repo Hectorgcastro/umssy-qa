@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { InformationStep } from './information-step';
+import { VacancyConditions } from '../hooks/use-job-offer-form';
 
 describe('InformationStep', () => {
-  // 1. Preparamos datos simulados vacíos para que el componente no se rompa al leerlos
+  // Aplicamos el tipado correcto en lugar de usar "any"
   const mockConditions = {
     title: "",
     modality: "",
@@ -13,12 +14,12 @@ describe('InformationStep', () => {
     vacancyCount: "",
     salary: "",
     languages: "",
-  };
+  } as unknown as VacancyConditions;
 
   it('renderiza el formulario y sus elementos principales', () => {
     const { container } = render(
       <InformationStep 
-        conditions={mockConditions as any} 
+        conditions={mockConditions} 
         updateField={vi.fn()} 
         selectModality={vi.fn()} 
       />
@@ -28,24 +29,21 @@ describe('InformationStep', () => {
   });
 
   it('permite interactuar con los inputs y botones de modalidad', () => {
-    // 2. Creamos "espías" (funciones falsas) para ver si el componente las llama
     const updateFieldMock = vi.fn();
     const selectModalityMock = vi.fn();
 
     render(
       <InformationStep 
-        conditions={mockConditions as any} 
+        conditions={mockConditions} 
         updateField={updateFieldMock} 
         selectModality={selectModalityMock} 
       />
     );
 
-    // 3. Simulamos que el usuario hace clic en el botón "Remoto"
     const remotoBtn = screen.getByRole('button', { name: 'Remoto' });
     fireEvent.click(remotoBtn);
     expect(selectModalityMock).toHaveBeenCalledWith('Remoto');
 
-    // 4. Simulamos que el usuario escribe en el input del título
     const tituloInput = screen.getByLabelText(/Titulo del puesto/i);
     fireEvent.change(tituloInput, { target: { value: 'Backend' } });
     expect(updateFieldMock).toHaveBeenCalledWith('title', 'Backend');
