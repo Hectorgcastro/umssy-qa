@@ -202,9 +202,9 @@ describe("DocumentsCvView", () => {
     [415, "El CV debe estar en formato PDF."],
     [413, "El archivo supera el límite de 5 MB."],
     [400, "El archivo está vacío. Selecciona otro archivo."],
-    [500, "No se pudo subir tu CV. Intenta de nuevo."],
+    [422, "El archivo está dañado o incompleto. Selecciona otro PDF."],
   ])(
-    "shows a spanish message when the server rejects the upload with %i",
+    "shows a spanish message and clears the selection when the server rejects the file with %i",
     async (status, message) => {
       const user = userEvent.setup();
       vi.mocked(documentsService.getCv).mockResolvedValue(UPLOADED_CV);
@@ -219,6 +219,31 @@ describe("DocumentsCvView", () => {
       expect(screen.getByRole("button", { name: "Confirmar carga" })).toBeDisabled();
     },
   );
+
+  it.each([
+    ["a server error", { response: { status: 500 } }],
+    ["a network error", new Error("Network Error")],
+  ])("keeps the selected file to retry after %s", async (_reason, error) => {
+    const user = userEvent.setup();
+    vi.mocked(documentsService.uploadCv).mockRejectedValueOnce(error);
+    await renderView();
+    const file = createFile("CV_Nuevo.pdf");
+
+    await chooseAndConfirm(user, file);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudo subir tu CV. Intenta de nuevo.",
+    );
+    expect(screen.getByText("CV_Nuevo.pdf · 1.2 MB")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirmar carga" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Confirmar carga" }));
+
+    expect(documentsService.uploadCv).toHaveBeenCalledTimes(2);
+    expect(documentsService.uploadCv).toHaveBeenLastCalledWith(file);
+    expect(await screen.findByRole("status")).toHaveTextContent("Tu CV se cargó correctamente.");
+    expect(screen.queryByText("CV_Nuevo.pdf · 1.2 MB")).not.toBeInTheDocument();
+  });
 
   it("shows an error and returns to the initial state for a file that is not a pdf", async () => {
     const user = userEvent.setup({ applyAccept: false });
