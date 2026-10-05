@@ -14,7 +14,7 @@ export function toFileNameSegment(text: string): string {
 }
 
 // Une el prefijo del reporte, los filtros usados y un sufijo final (gestión o fecha):
-// "usuarios-registrados-estudiante-1-2026.csv".
+// "usuarios-registrados-estudiante-I-2026.csv".
 export function buildExportFileName(
   prefix: string,
   filters: readonly (string | undefined)[],

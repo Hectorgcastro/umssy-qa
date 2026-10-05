@@ -1,11 +1,12 @@
+import type { AcademicPeriod } from "../types/registered-user.types";
 import { ExportCsvButton } from "./export-csv-button";
 import { ManagementMenu } from "./management-menu";
 
 interface ReportActionsProps {
   onExport?: () => void;
   isExporting?: boolean;
-  period?: string;
-  onPeriodChange?: (period?: string) => void;
+  period?: AcademicPeriod;
+  onPeriodChange?: (period?: AcademicPeriod) => void;
 }
 
 export function ReportActions({ onExport, isExporting, period, onPeriodChange }: ReportActionsProps) {

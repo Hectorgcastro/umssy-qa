@@ -14,31 +14,40 @@ const MAX_SEARCH_LENGTH = 100;
 
 const searchSchema = z.string().trim().max(MAX_SEARCH_LENGTH).optional();
 
-const academicPeriodSchema = z
-  .string()
-  .trim()
-  .regex(
-    ACADEMIC_PERIOD_PATTERN,
-    'La gestión debe tener el formato 1-2025 o 2-2025',
-  )
-  .refine(
-    (period) => getAcademicPeriodYear(period) >= FIRST_REPORT_YEAR,
-    `La gestión no puede ser anterior a ${FIRST_REPORT_YEAR}`,
-  );
+// Valor de la opción "Todos"/"Todas" de los filtros: equivale a no enviar el filtro.
+export const ALL_FILTER_VALUE = 'ALL';
 
-// Valor de la opción "Todos" del filtro: equivale a no enviar userType.
-export const ALL_USER_TYPES = 'ALL';
+// Acepta el valor del filtro o "ALL"; con "ALL" el filtro queda sin aplicar.
+function withAllOption<TSchema extends z.ZodType<string>>(schema: TSchema) {
+  return z
+    .union([z.literal(ALL_FILTER_VALUE), schema])
+    .transform((value) =>
+      value === ALL_FILTER_VALUE ? undefined : (value as z.output<TSchema>),
+    )
+    .optional();
+}
 
-// Sin userType (o con "ALL") se devuelven todos los tipos de usuario.
-const userTypeSchema = z
-  .enum([...REPORT_USER_TYPES, ALL_USER_TYPES])
-  .transform((userType) => (userType === ALL_USER_TYPES ? undefined : userType))
-  .optional();
+const userTypeSchema = withAllOption(z.enum(REPORT_USER_TYPES));
 
+// Gestión semestral "I-2025" o "II-2025", desde la primera gestión con reportes.
+const academicPeriodSchema = withAllOption(
+  z
+    .string()
+    .trim()
+    .regex(
+      ACADEMIC_PERIOD_PATTERN,
+      'La gestión debe tener el formato I-2025 o II-2025',
+    )
+    .refine(
+      (period) => getAcademicPeriodYear(period) >= FIRST_REPORT_YEAR,
+      `La gestión no puede ser anterior a ${FIRST_REPORT_YEAR}`,
+    ),
+);
+
+// Sin userType ni period (o con "ALL") no se restringe por ese criterio.
 export const registeredUsersFiltersSchema = z.object({
   userType: userTypeSchema,
-  year: z.coerce.number().int().min(FIRST_REPORT_YEAR).optional(),
-  period: academicPeriodSchema.optional(),
+  period: academicPeriodSchema,
   search: searchSchema,
 });
 

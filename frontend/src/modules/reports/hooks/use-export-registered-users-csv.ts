@@ -2,10 +2,10 @@
 
 import { useCallback } from "react";
 import { reportsService } from "../services/reports.service";
-import type { UserType } from "../types/registered-user.types";
+import type { AcademicPeriod, UserType } from "../types/registered-user.types";
 import { useExportReportCsv } from "./use-export-report-csv";
 
-export function useExportRegisteredUsersCsv(userType?: UserType, period?: string) {
+export function useExportRegisteredUsersCsv(userType?: UserType, period?: AcademicPeriod) {
   const exportReport = useCallback(
     () => reportsService.exportRegisteredUsersCsv({ userType, period }),
     [userType, period],

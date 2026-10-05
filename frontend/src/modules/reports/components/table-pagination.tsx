@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from "@/components/ui/pagination";
+import { getPaginationItems } from "../utils/pagination-items";
 
 interface TablePaginationProps {
   currentPage: number;
@@ -16,7 +17,7 @@ const NAV_BUTTON_CLASSES = `${PAGE_BUTTON_CLASSES} disabled:cursor-not-allowed d
 
 // Usa la estructura de Pagination de shadcn con botones: el cambio de página ocurre en la misma vista.
 export function TablePagination({ currentPage, totalPages, onPageChange }: TablePaginationProps) {
-  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+  const items = getPaginationItems(currentPage, totalPages);
 
   return (
     <Pagination aria-label="Paginación" className="mx-0 w-auto">
@@ -36,7 +37,15 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
           </Button>
         </PaginationItem>
 
-        {pages.map((page) => {
+        {items.map((page) => {
+          if (typeof page !== "number") {
+            return (
+              <PaginationItem key={page}>
+                <PaginationEllipsis data-testid="pagination-ellipsis" className="size-9 text-ink-soft" />
+              </PaginationItem>
+            );
+          }
+
           const isCurrent = page === currentPage;
 
           return (

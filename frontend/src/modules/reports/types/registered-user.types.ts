@@ -18,12 +18,14 @@ export interface RegisteredUser {
   registeredAt: string;
 }
 
+// Gestión semestral: "I-2025" (enero a junio) o "II-2025" (julio a diciembre).
+export type AcademicPeriod = `${"I" | "II"}-${number}`;
+
 export interface RegisteredUsersParams {
   page: number;
   limit: number;
   userType?: UserType;
-  // Gestión académica: "1-2025" (enero a junio) o "2-2025" (julio a diciembre).
-  period?: string;
+  period?: AcademicPeriod;
 }
 
 export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType" | "period">;

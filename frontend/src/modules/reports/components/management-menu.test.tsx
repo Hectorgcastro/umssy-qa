@@ -25,8 +25,8 @@ describe("ManagementMenu", () => {
 
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     const options = screen.getAllByRole("menuitemradio").map((option) => option.textContent);
-    expect(options.slice(0, 5)).toEqual(["Todas", "2-2026", "1-2026", "2-2025", "1-2025"]);
-    expect(options.at(-1)).toBe("1-2020");
+    expect(options.slice(0, 5)).toEqual(["Todas", "II-2026", "I-2026", "II-2025", "I-2025"]);
+    expect(options.at(-1)).toBe("I-2020");
   });
 
   it("marca Todas cuando no hay gestión seleccionada", () => {
@@ -37,11 +37,11 @@ describe("ManagementMenu", () => {
   });
 
   it("muestra la gestión seleccionada en el botón y la marca en el menú", () => {
-    render(<ManagementMenu value="1-2025" />);
+    render(<ManagementMenu value="I-2025" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Gestión 1-2025" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gestión I-2025" }));
 
-    expect(screen.getByRole("menuitemradio", { name: "1-2025" }).getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByRole("menuitemradio", { name: "I-2025" }).getAttribute("aria-checked")).toBe("true");
   });
 
   it("avisa la gestión elegida y undefined al elegir Todas", async () => {
@@ -50,11 +50,11 @@ describe("ManagementMenu", () => {
     const { rerender } = render(<ManagementMenu onChange={onChange} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Gestión" }));
-    await user.click(screen.getByRole("menuitemradio", { name: "2-2025" }));
-    expect(onChange).toHaveBeenLastCalledWith("2-2025");
+    await user.click(screen.getByRole("menuitemradio", { name: "II-2025" }));
+    expect(onChange).toHaveBeenLastCalledWith("II-2025");
 
-    rerender(<ManagementMenu value="2-2025" onChange={onChange} />);
-    fireEvent.click(screen.getByRole("button", { name: "Gestión 2-2025" }));
+    rerender(<ManagementMenu value="II-2025" onChange={onChange} />);
+    fireEvent.click(screen.getByRole("button", { name: "Gestión II-2025" }));
     await user.click(screen.getByRole("menuitemradio", { name: "Todas" }));
     expect(onChange).toHaveBeenLastCalledWith(undefined);
   });

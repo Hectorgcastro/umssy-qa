@@ -81,7 +81,6 @@ export class ReportsService {
     // El nombre indica los filtros usados y termina en la gestión ("todos" si no se eligió una).
     const fileNameFilters = [
       filters.userType && USER_TYPE_LABELS[filters.userType],
-      filters.year?.toString(),
       filters.search,
     ];
 
@@ -126,11 +125,6 @@ export class ReportsService {
       .filter(
         (user) =>
           filters.userType === undefined || user.userType === filters.userType,
-      )
-      .filter(
-        (user) =>
-          filters.year === undefined ||
-          new Date(user.registeredAt).getUTCFullYear() === filters.year,
       )
       .filter(
         (user) =>

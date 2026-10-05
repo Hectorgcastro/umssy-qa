@@ -9,7 +9,7 @@ import { ReportTableFooter } from "../components/report-table-footer";
 import { UserTypeFilter } from "../components/user-type-filter";
 import { useExportRegisteredUsersCsv } from "../hooks/use-export-registered-users-csv";
 import { useRegisteredUsers } from "../hooks/use-registered-users";
-import type { UserType } from "../types/registered-user.types";
+import type { AcademicPeriod, UserType } from "../types/registered-user.types";
 
 const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
   { label: "Inicio", href: "/dashboard" },
@@ -20,7 +20,7 @@ const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
 export function RegisteredUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [userType, setUserType] = useState<UserType | undefined>(undefined);
-  const [period, setPeriod] = useState<string | undefined>(undefined);
+  const [period, setPeriod] = useState<AcademicPeriod | undefined>(undefined);
   const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRegisteredUsers(
     currentPage,
     userType,
@@ -28,12 +28,15 @@ export function RegisteredUsersReportView() {
   );
   const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRegisteredUsersCsv(userType, period);
 
+  // Cada filtro conserva el otro y vuelve a la página 1; elegir la opción ya activa no hace nada.
   const handleUserTypeChange = (selectedUserType?: UserType) => {
+    if (selectedUserType === userType) return;
     setUserType(selectedUserType);
     setCurrentPage(1);
   };
 
-  const handlePeriodChange = (selectedPeriod?: string) => {
+  const handlePeriodChange = (selectedPeriod?: AcademicPeriod) => {
+    if (selectedPeriod === period) return;
     setPeriod(selectedPeriod);
     setCurrentPage(1);
   };

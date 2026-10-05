@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiResponse, PaginatedData } from "@/shared/types/api-response.types";
 import * as downloadFileModule from "@/shared/utils/download-file";
 import { reportsService } from "../services/reports.service";
-import type { RegisteredUser, UserType } from "../types/registered-user.types";
+import type { AcademicPeriod, RegisteredUser, UserType } from "../types/registered-user.types";
 import { RegisteredUsersReportView } from "./registered-users-report-view";
 
 const REGISTERED_USERS: RegisteredUser[] = [
@@ -34,17 +34,17 @@ const REGISTERED_USERS: RegisteredUser[] = [
   { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "STUDENT", identifier: "202003376", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-03-20T10:00:00" },
 ];
 
-// "1-2025" agrupa enero a junio y "2-2025" julio a diciembre.
-function getPeriod(registeredAt: string): string {
+// "I-2025" agrupa enero a junio y "II-2025" julio a diciembre.
+function getPeriod(registeredAt: string): AcademicPeriod {
   const [year, month] = registeredAt.split("-");
-  return `${Number(month) <= 6 ? 1 : 2}-${year}`;
+  return `${Number(month) <= 6 ? "I" : "II"}-${Number(year)}`;
 }
 
 function buildResponse(
   page: number,
   limit: number,
   userType?: UserType,
-  period?: string,
+  period?: AcademicPeriod,
   users: RegisteredUser[] = REGISTERED_USERS,
 ): ApiResponse<PaginatedData<RegisteredUser>> {
   const filteredUsers = users.filter(
@@ -288,22 +288,22 @@ describe("RegisteredUsersReportView", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Gestión" }));
-    await user.click(screen.getByRole("menuitemradio", { name: "2-2025" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "II-2025" }));
 
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-9 de 9 usuarios")).toBeDefined();
     });
-    expect(screen.getByRole("button", { name: "Gestión 2-2025" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Gestión II-2025" })).toBeDefined();
     expect(screen.getByText("Ana Lucia Rojas Vera")).toBeDefined();
     expect(screen.queryByText("Juan Carlos Peres Rojas")).toBeNull();
     expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
       page: 1,
       limit: 10,
       userType: undefined,
-      period: "2-2025",
+      period: "II-2025",
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Gestión 2-2025" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gestión II-2025" }));
     await user.click(screen.getByRole("menuitemradio", { name: "Todas" }));
 
     await waitFor(() => {
@@ -322,7 +322,7 @@ describe("RegisteredUsersReportView", () => {
 
     await selectUserType(user, "Empresa");
     fireEvent.click(screen.getByRole("button", { name: "Gestión" }));
-    await user.click(screen.getByRole("menuitemradio", { name: "1-2025" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "I-2025" }));
 
     await waitFor(() => {
       expect(screen.getByText("Mostrando 1-2 de 2 usuarios")).toBeDefined();
@@ -332,7 +332,7 @@ describe("RegisteredUsersReportView", () => {
 
     await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
 
-    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY", period: "1-2025" });
+    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY", period: "I-2025" });
   });
 
   describe("HU02: filtro por tipo de usuario", () => {
@@ -510,6 +510,295 @@ describe("RegisteredUsersReportView", () => {
 
       expect(seenNames).toHaveLength(REGISTERED_USERS.length);
       expect(new Set(seenNames).size).toBe(REGISTERED_USERS.length);
+    });
+  });
+
+  describe("HU07: filtro por gestión semestral", () => {
+    const userTypeCells = () =>
+      screen
+        .getAllByRole("row")
+        .slice(1)
+        .map((row) => row.querySelectorAll("td")[2].textContent);
+
+    const countUsers = (users: RegisteredUser[], period?: AcademicPeriod, userType?: UserType) =>
+      users.filter(
+        (user) => (!period || getPeriod(user.registeredAt) === period) && (!userType || user.userType === userType),
+      ).length;
+
+    const buildUsers = (count: number, registeredAt: string, prefix: string, userType: UserType = "DEGREE_HOLDER") =>
+      Array.from({ length: count }, (_, index) => ({
+        ...REGISTERED_USERS[0],
+        id: `${prefix}-${index}`,
+        fullName: `${prefix} ${index}`,
+        userType,
+        registeredAt,
+      }));
+
+    // 16 titulados más en II-2025 (25 en total) y 10 usuarios en I-2024.
+    const EXTENDED_USERS = [
+      ...REGISTERED_USERS,
+      ...buildUsers(16, "2025-09-01T10:00:00", "Titulado II-2025"),
+      ...buildUsers(10, "2024-04-10T10:00:00", "Estudiante I-2024", "STUDENT"),
+    ];
+
+    const mockUsers = (users: RegisteredUser[]) =>
+      vi
+        .spyOn(reportsService, "getRegisteredUsers")
+        .mockImplementation(async ({ page, limit, userType, period }) =>
+          buildResponse(page, limit, userType, period, users),
+        );
+
+    async function selectPeriod(user: UserEvent, label: string) {
+      fireEvent.click(screen.getByRole("button", { name: /^Gestión/ }));
+      await user.click(await screen.findByRole("menuitemradio", { name: label }));
+    }
+
+    const visibleNames = () =>
+      screen
+        .getAllByRole("row")
+        .slice(1)
+        .map((row) => row.querySelector("td")?.textContent);
+
+    it("muestra el selector al cargar con las gestiones en formato semestre y año", async () => {
+      await renderLoadedView();
+
+      fireEvent.click(screen.getByRole("button", { name: "Gestión" }));
+
+      const options = screen.getAllByRole("menuitemradio").map((option) => option.textContent ?? "");
+      expect(options[0]).toBe("Todas");
+      expect(options.slice(1).every((option) => /^(I|II)-\d{4}$/.test(option))).toBe(true);
+      expect(options).toEqual(expect.arrayContaining(["I-2026", "II-2025", "I-2025"]));
+      expect(options).not.toContain("1-2025");
+    });
+
+    it("filtra solo por la gestión, sin restringir el tipo de usuario", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = mockUsers(REGISTERED_USERS);
+      await renderLoadedView();
+
+      await selectPeriod(user, "II-2025");
+
+      const total = countUsers(REGISTERED_USERS, "II-2025");
+      await waitFor(() => {
+        expect(screen.getByText(`Mostrando 1-${total} de ${total} usuarios`)).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({
+        page: 1,
+        limit: 10,
+        userType: undefined,
+        period: "II-2025",
+      });
+      expect(visibleNames()).toEqual(
+        REGISTERED_USERS.filter((registeredUser) => getPeriod(registeredUser.registeredAt) === "II-2025").map(
+          (registeredUser) => registeredUser.fullName,
+        ),
+      );
+      expect(new Set(userTypeCells()).size).toBeGreaterThan(1);
+    });
+
+    it("combina gestión y tipo de usuario y cada filtro conserva el otro", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = mockUsers(REGISTERED_USERS);
+      await renderLoadedView();
+
+      await selectPeriod(user, "II-2025");
+      await selectUserType(user, "Titulado");
+      const titulados = countUsers(REGISTERED_USERS, "II-2025", "DEGREE_HOLDER");
+      await waitFor(() => {
+        expect(screen.getByText(`Mostrando 1-${titulados} de ${titulados} usuarios`)).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ userType: "DEGREE_HOLDER", period: "II-2025" }),
+      );
+      expect(new Set(userTypeCells())).toEqual(new Set(["Titulado"]));
+
+      await selectUserType(user, "Empresa");
+      await waitFor(() => {
+        expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith(
+          expect.objectContaining({ userType: "COMPANY", period: "II-2025" }),
+        );
+      });
+      expect(screen.getByRole("button", { name: "Gestión II-2025" })).toBeDefined();
+
+      await selectPeriod(user, "I-2025");
+      const empresas = countUsers(REGISTERED_USERS, "I-2025", "COMPANY");
+      await waitFor(() => {
+        expect(screen.getByText(`Mostrando 1-${empresas} de ${empresas} usuarios`)).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ userType: "COMPANY", period: "I-2025" }),
+      );
+      expect(screen.getByRole("combobox", { name: "Tipo de usuario" }).textContent).toContain("Empresa");
+    });
+
+    it("vuelve a la página 1 al cambiar de gestión estando en otra página", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+      fireEvent.click(screen.getByRole("button", { name: "Página 2" }));
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Página 2" }).getAttribute("aria-current")).toBe("page");
+      });
+
+      await selectPeriod(user, "II-2025");
+
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-10 de 25 usuarios")).toBeDefined();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, period: "II-2025" }));
+      expect(screen.getByRole("button", { name: "Página 1" }).getAttribute("aria-current")).toBe("page");
+    });
+
+    it("volver a elegir la misma gestión no consulta de nuevo ni cambia la página", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+      await selectPeriod(user, "II-2025");
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-10 de 25 usuarios")).toBeDefined();
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Página 2" }));
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 11-20 de 25 usuarios")).toBeDefined();
+      });
+      const callsBefore = getRegisteredUsersSpy.mock.calls.length;
+      const namesBefore = visibleNames();
+
+      await selectPeriod(user, "II-2025");
+
+      await waitFor(() => {
+        expect(screen.queryByRole("menu")).toBeNull();
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenCalledTimes(callsBefore);
+      expect(screen.getByText("Mostrando 11-20 de 25 usuarios")).toBeDefined();
+      expect(visibleNames()).toEqual(namesBefore);
+    });
+
+    it("al cambiar de gestión varias veces muestra solo los datos de la última", async () => {
+      const user = userEvent.setup();
+      mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+
+      await selectPeriod(user, "II-2025");
+      await selectPeriod(user, "I-2026");
+      await selectPeriod(user, "I-2025");
+
+      const total = countUsers(EXTENDED_USERS, "I-2025");
+      await waitFor(() => {
+        expect(screen.getByText(`Mostrando 1-${total} de ${total} usuarios`)).toBeDefined();
+      });
+      expect(screen.getByRole("button", { name: "Gestión I-2025" })).toBeDefined();
+      expect(visibleNames()).toEqual(
+        EXTENDED_USERS.filter((registeredUser) => getPeriod(registeredUser.registeredAt) === "I-2025").map(
+          (registeredUser) => registeredUser.fullName,
+        ),
+      );
+    });
+
+    it("con exactamente 10 usuarios en la gestión muestra una sola página", async () => {
+      const user = userEvent.setup();
+      mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+
+      await selectPeriod(user, "I-2024");
+
+      await waitFor(() => {
+        expect(screen.getByText("Mostrando 1-10 de 10 usuarios")).toBeDefined();
+      });
+      expect(screen.queryByRole("button", { name: "Página 2" })).toBeNull();
+      expect(screen.getByRole<HTMLButtonElement>("button", { name: "Página anterior" }).disabled).toBe(true);
+      expect(screen.getByRole<HTMLButtonElement>("button", { name: "Página siguiente" }).disabled).toBe(true);
+    });
+
+    it("una gestión sin usuarios muestra el estado vacío y oculta el paginador", async () => {
+      const user = userEvent.setup();
+      mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+
+      await selectPeriod(user, "I-2020");
+
+      await waitFor(() => {
+        expect(screen.getByText("No hay usuarios registrados para este filtro.")).toBeDefined();
+      });
+      expect(screen.getByText("Mostrando 0-0 de 0 usuarios")).toBeDefined();
+      expect(screen.queryByRole("navigation", { name: "Paginación" })).toBeNull();
+    });
+
+    it("al paginar mantiene gestión y tipo de usuario y recorre todo sin duplicados", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+      await selectPeriod(user, "II-2025");
+      await selectUserType(user, "Titulado");
+      const total = countUsers(EXTENDED_USERS, "II-2025", "DEGREE_HOLDER");
+      await waitFor(() => {
+        expect(screen.getByText(`Mostrando 1-10 de ${total} usuarios`)).toBeDefined();
+      });
+      const seenNames = [...visibleNames()];
+      const totalPages = Math.ceil(total / 10);
+      expect(totalPages).toBeGreaterThan(1);
+
+      for (let page = 2; page <= totalPages; page++) {
+        fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+        await waitFor(() => {
+          expect(screen.getByRole("button", { name: `Página ${page}` }).getAttribute("aria-current")).toBe("page");
+          expect(screen.queryAllByTestId("skeleton-row")).toHaveLength(0);
+        });
+        expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({
+          page,
+          limit: 10,
+          userType: "DEGREE_HOLDER",
+          period: "II-2025",
+        });
+        seenNames.push(...visibleNames());
+      }
+
+      expect(seenNames).toHaveLength(total);
+      expect(new Set(seenNames).size).toBe(total);
+      expect(screen.getByRole<HTMLButtonElement>("button", { name: "Página siguiente" }).disabled).toBe(true);
+    });
+
+    it("Actualizar vuelve a consultar con la gestión y el tipo de usuario activos", async () => {
+      const user = userEvent.setup();
+      const getRegisteredUsersSpy = mockUsers(EXTENDED_USERS);
+      await renderLoadedView();
+      await selectPeriod(user, "II-2025");
+      await selectUserType(user, "Titulado");
+      await waitFor(() => {
+        expect(screen.queryAllByTestId("skeleton-row")).toHaveLength(0);
+      });
+      const callsBefore = getRegisteredUsersSpy.mock.calls.length;
+
+      fireEvent.click(screen.getByRole("button", { name: "actualizar" }));
+
+      await waitFor(() => {
+        expect(getRegisteredUsersSpy).toHaveBeenCalledTimes(callsBefore + 1);
+      });
+      expect(getRegisteredUsersSpy).toHaveBeenLastCalledWith({
+        page: 1,
+        limit: 10,
+        userType: "DEGREE_HOLDER",
+        period: "II-2025",
+      });
+      expect(screen.getByRole("button", { name: "Gestión II-2025" })).toBeDefined();
+    });
+
+    it("exporta el CSV con la gestión y el tipo de usuario activos, no solo la página visible", async () => {
+      const user = userEvent.setup();
+      mockUsers(EXTENDED_USERS);
+      const exportSpy = vi
+        .spyOn(reportsService, "exportRegisteredUsersCsv")
+        .mockResolvedValueOnce({ file: new Blob([]), fileName: "usuarios-registrados-titulado-II-2025.csv" });
+      vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
+      await renderLoadedView();
+      await selectPeriod(user, "II-2025");
+      await selectUserType(user, "Titulado");
+      fireEvent.click(screen.getByRole("button", { name: "Página 2" }));
+
+      await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+      // La exportación no envía página ni límite: el backend devuelve todo el subconjunto filtrado.
+      expect(exportSpy).toHaveBeenCalledWith({ userType: "DEGREE_HOLDER", period: "II-2025" });
     });
   });
 });

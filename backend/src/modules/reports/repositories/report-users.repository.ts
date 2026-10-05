@@ -1,4 +1,9 @@
-import { Injectable, type OnModuleInit, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  type OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import type {
   ReportDocumentType,
@@ -17,6 +22,7 @@ const ROLE_NAME_TO_USER_TYPE: Record<string, ReportUserType> = {
 
 @Injectable()
 export class ReportUsersRepository implements OnModuleInit {
+  private readonly logger = new Logger(ReportUsersRepository.name);
   private cache: ReportUser[] = [];
 
   constructor(@Optional() private readonly prisma?: PrismaService) {}
@@ -50,7 +56,8 @@ export class ReportUsersRepository implements OnModuleInit {
       this.cache = users.map((user) => {
         const primaryRoleName = user.roles[0]?.role?.name;
         const userType: ReportUserType =
-          (primaryRoleName && ROLE_NAME_TO_USER_TYPE[primaryRoleName]) || 'STUDENT';
+          (primaryRoleName && ROLE_NAME_TO_USER_TYPE[primaryRoleName]) ||
+          'STUDENT';
 
         return {
           id: user.id,
@@ -68,13 +75,14 @@ export class ReportUsersRepository implements OnModuleInit {
         };
       });
     } catch (error) {
-      console.error('Error al sincronizar usuarios desde Prisma/Supabase:', error);
+      this.logger.error('Error al sincronizar usuarios desde Prisma', error);
     }
   }
 
+  // TODO: consultar la BD en cada petición (findAll asíncrono) en vez de devolver la caché
+  // y refrescarla en segundo plano: hoy cada consulta muestra los datos de la anterior.
   findAll(): readonly ReportUser[] {
     void this.refresh();
     return this.cache;
   }
 }
-

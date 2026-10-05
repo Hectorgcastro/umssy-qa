@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { USER_TYPE_FILTER_OPTIONS, USER_TYPE_LABELS } from "../constants/registered-users.constants";
+import { ALL_FILTER_VALUE, USER_TYPE_FILTER_OPTIONS, USER_TYPE_LABELS } from "../constants/registered-users.constants";
 import type { UserType } from "../types/registered-user.types";
 
 interface UserTypeFilterProps {
@@ -10,10 +10,8 @@ interface UserTypeFilterProps {
   onChange: (userType?: UserType) => void;
 }
 
-const ALL_USER_TYPES_VALUE = "ALL";
-
 const FILTER_OPTIONS = [
-  { value: ALL_USER_TYPES_VALUE, label: "Todos" },
+  { value: ALL_FILTER_VALUE, label: "Todos" },
   ...USER_TYPE_FILTER_OPTIONS.map((userType) => ({ value: userType, label: USER_TYPE_LABELS[userType] })),
 ];
 
@@ -21,12 +19,12 @@ export function UserTypeFilter({ value, onChange }: UserTypeFilterProps) {
   const labelId = useId();
 
   const handleValueChange = (selectedValue: string | null) => {
-    onChange(!selectedValue || selectedValue === ALL_USER_TYPES_VALUE ? undefined : (selectedValue as UserType));
+    onChange(!selectedValue || selectedValue === ALL_FILTER_VALUE ? undefined : (selectedValue as UserType));
   };
 
   return (
     <div className="w-full sm:w-72">
-      <Select items={FILTER_OPTIONS} value={value ?? ALL_USER_TYPES_VALUE} onValueChange={handleValueChange}>
+      <Select items={FILTER_OPTIONS} value={value ?? ALL_FILTER_VALUE} onValueChange={handleValueChange}>
         <SelectTrigger
           aria-labelledby={labelId}
           className="w-full cursor-pointer rounded-md border-border bg-surface px-3 pb-2 pt-1.5 hover:border-ink-soft hover:bg-surface-soft focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-interaction data-[size=default]:h-auto data-popup-open:border-accent data-popup-open:ring-3 data-popup-open:ring-interaction"

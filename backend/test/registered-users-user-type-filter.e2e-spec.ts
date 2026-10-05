@@ -132,6 +132,29 @@ describe('GET /reports/registered-users con filtro por tipo de usuario (e2e)', (
     expect(new Set(ids).size).toBe(11);
   });
 
+  it('combina la gestión con el tipo de usuario (HU07)', async () => {
+    const response = await getRegisteredUsers({
+      period: 'I-2026',
+      userType: 'ADMIN',
+      page: 2,
+    }).expect(200);
+
+    expect(response.body.data).toMatchObject({ totalItems: 11, totalPages: 2 });
+    expect(response.body.data.items).toHaveLength(1);
+  });
+
+  it('una gestión sin registros responde lista vacía (HU07)', async () => {
+    const response = await getRegisteredUsers({ period: 'II-2026' }).expect(
+      200,
+    );
+
+    expect(response.body.data).toMatchObject({
+      items: [],
+      totalItems: 0,
+      totalPages: 0,
+    });
+  });
+
   it('un tipo sin registros responde lista vacía y totales en 0', async () => {
     const response = await getRegisteredUsers({ userType: 'COMPANY' }).expect(
       200,
@@ -160,6 +183,26 @@ describe('GET /reports/registered-users con filtro por tipo de usuario (e2e)', (
 
   describe('responde 400 con el formato estándar ante entradas inválidas', () => {
     it.each([
+      {
+        case: 'gestión numérica antigua',
+        query: { period: '1-2026' },
+        field: 'period',
+      },
+      {
+        case: 'gestión inexistente',
+        query: { period: 'III-2026' },
+        field: 'period',
+      },
+      {
+        case: 'gestión anterior a 2020',
+        query: { period: 'I-2019' },
+        field: 'period',
+      },
+      {
+        case: 'gestión con inyección SQL',
+        query: { period: "I-2026' OR '1'='1" },
+        field: 'period',
+      },
       {
         case: 'tipo inexistente',
         query: { userType: 'ALUMNI' },

@@ -1,5 +1,8 @@
 import type { UserDocumentType, UserType } from "../types/registered-user.types";
 
+// Valor de las opciones "Todos"/"Todas" de los filtros: el backend lo trata como filtro sin aplicar.
+export const ALL_FILTER_VALUE = "ALL";
+
 export const USER_TYPE_LABELS: Record<UserType, string> = {
   STUDENT: "Estudiante",
   DEGREE_HOLDER: "Titulado",

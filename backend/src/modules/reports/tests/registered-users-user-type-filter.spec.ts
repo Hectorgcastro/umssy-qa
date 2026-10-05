@@ -1,6 +1,6 @@
 import { ReportUsersRepository } from '../repositories/report-users.repository.js';
 import {
-  ALL_USER_TYPES,
+  ALL_FILTER_VALUE,
   registeredUsersFiltersSchema,
   registeredUsersQuerySchema,
 } from '../requests/report-users.schema.js';
@@ -118,7 +118,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   describe('CA 3 y CA 11: sin filtro o con "Todos"', () => {
     it.each([
       { case: 'sin userType', input: {} },
-      { case: 'con userType=ALL', input: { userType: ALL_USER_TYPES } },
+      { case: 'con userType=ALL', input: { userType: ALL_FILTER_VALUE } },
     ])('devuelve los aprobados de todos los tipos $case', ({ input }) => {
       const result = service.getRegisteredUsers(query(input));
 
@@ -128,7 +128,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     });
 
     it('"Todos" y omitir el parámetro devuelven exactamente lo mismo', () => {
-      expect(collectAllPages(service, ALL_USER_TYPES)).toEqual(
+      expect(collectAllPages(service, ALL_FILTER_VALUE)).toEqual(
         collectAllPages(service),
       );
     });
@@ -414,7 +414,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   describe('Exportación CSV con el filtro de tipo de usuario', () => {
     it('"Todos" exporta lo mismo que omitir el filtro', () => {
       const all = service.exportRegisteredUsersCsv(
-        registeredUsersFiltersSchema.parse({ userType: ALL_USER_TYPES }),
+        registeredUsersFiltersSchema.parse({ userType: ALL_FILTER_VALUE }),
       );
       const omitted = service.exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({}),

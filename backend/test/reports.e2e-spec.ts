@@ -23,7 +23,7 @@ describe('ReportsController (e2e)', () => {
   it('GET /reports/registered-users devuelve la página con el formato estándar', async () => {
     const response = await request(app.getHttpServer())
       .get('/reports/registered-users')
-      .query({ year: 2025, userType: 'DEGREE_HOLDER', limit: 5 })
+      .query({ period: 'I-2025', userType: 'DEGREE_HOLDER', limit: 5 })
       .expect(200);
 
     expect(response.body).toMatchObject({
@@ -33,10 +33,17 @@ describe('ReportsController (e2e)', () => {
       detail: 'Usuarios registrados obtenidos correctamente',
       data: { page: 1, limit: 5 },
     });
-    expect(response.body.data.items).toHaveLength(0);
+    expect(response.body.data.items.length).toBeLessThanOrEqual(5);
+    for (const user of response.body.data.items) {
+      expect(user.userType).toBe('DEGREE_HOLDER');
+    }
   });
 
   it('GET /reports/registered-users/export descarga el CSV con los filtros aplicados', async () => {
+    const { body: page } = await request(app.getHttpServer())
+      .get('/reports/registered-users')
+      .query({ userType: 'COMPANY' })
+      .expect(200);
     const response = await request(app.getHttpServer())
       .get('/reports/registered-users/export')
       .query({ userType: 'COMPANY' })
@@ -46,7 +53,7 @@ describe('ReportsController (e2e)', () => {
 
     expect(response.headers['content-type']).toContain('text/csv');
     expect(response.headers['content-disposition']).toMatch(
-      /^attachment; filename="usuarios-registrados-\d{4}-\d{2}-\d{2}\.csv"$/,
+      /^attachment; filename="usuarios-registrados-empresa-todos\.csv"$/,
     );
 
     // trim() también quitaría el BOM, por eso solo se descarta la última línea vacía.
@@ -54,8 +61,8 @@ describe('ReportsController (e2e)', () => {
     expect(header).toBe(
       '\uFEFFUsuario,Correo,Tipo de Usuario,Identificador,Documento,Fecha de Registro',
     );
-    // Sin datos hasta conectar la BD: solo se descarga la cabecera.
-    expect(rows).toHaveLength(0);
+    // El CSV trae todos los usuarios del filtro, no solo los de la primera página.
+    expect(rows).toHaveLength(page.data.totalItems);
   });
 
   it('GET /reports/rejected-users devuelve solo rechazados con su motivo', async () => {
@@ -63,7 +70,7 @@ describe('ReportsController (e2e)', () => {
       .get('/reports/rejected-users')
       .expect(200);
 
-    expect(response.body.data.totalItems).toBe(0);
+    expect(response.body.data.items.length).toBeLessThanOrEqual(10);
     for (const user of response.body.data.items) {
       expect(user).toHaveProperty('rejectionReason');
       expect(user).not.toHaveProperty('registrationStatus');
@@ -71,6 +78,9 @@ describe('ReportsController (e2e)', () => {
   });
 
   it('GET /reports/rejected-users/export descarga el CSV de rechazados', async () => {
+    const { body: page } = await request(app.getHttpServer())
+      .get('/reports/rejected-users')
+      .expect(200);
     const response = await request(app.getHttpServer())
       .get('/reports/rejected-users/export')
       .responseType('blob')
@@ -86,7 +96,7 @@ describe('ReportsController (e2e)', () => {
     expect(header).toBe(
       '\uFEFFUsuario,Correo,Identificador,Documento,Fecha de Registro',
     );
-    expect(rows).toHaveLength(0);
+    expect(rows).toHaveLength(page.data.totalItems);
   });
 
   it('responde 400 con el formato estándar si los filtros no son válidos', async () => {

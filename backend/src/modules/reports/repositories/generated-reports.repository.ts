@@ -1,4 +1,9 @@
-import { Injectable, type OnModuleInit, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  type OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import type {
   GeneratedReport,
@@ -7,6 +12,7 @@ import type {
 
 @Injectable()
 export class GeneratedReportsRepository implements OnModuleInit {
+  private readonly logger = new Logger(GeneratedReportsRepository.name);
   private reports: GeneratedReport[] = [];
 
   constructor(@Optional() private readonly prisma?: PrismaService) {}
@@ -34,19 +40,21 @@ export class GeneratedReportsRepository implements OnModuleInit {
         generatedAt: record.createdAt.toISOString(),
       }));
 
-      // Preservar reportes recientes en memoria mientras se confirma la persistencia en Supabase
+      // Conserva los reportes recién creados que todavía no aparecen en la BD.
       const now = Date.now();
       const recentMemory = this.reports.filter(
         (r) => now - new Date(r.generatedAt).getTime() < 10000,
       );
-      const dbKeys = new Set(dbReports.map((r) => `${r.fileName}_${r.generatedAt}`));
+      const dbKeys = new Set(
+        dbReports.map((r) => `${r.fileName}_${r.generatedAt}`),
+      );
       const pendingRecent = recentMemory.filter(
         (r) => !dbKeys.has(`${r.fileName}_${r.generatedAt}`),
       );
 
       this.reports = [...pendingRecent, ...dbReports];
     } catch (error) {
-      console.error('Error al sincronizar historial de reportes desde Prisma/Supabase:', error);
+      this.logger.error('Error al sincronizar el historial de reportes', error);
     }
   }
 
@@ -58,12 +66,15 @@ export class GeneratedReportsRepository implements OnModuleInit {
   create(report: GeneratedReport): GeneratedReport {
     this.reports.unshift(report);
 
-    if (this.prisma) {
+    const prisma = this.prisma;
+
+    if (prisma) {
       void (async () => {
         try {
-          const user = await this.prisma!.user.findFirst();
+          // TODO: registrar al administrador autenticado en vez del primer usuario de la BD.
+          const user = await prisma.user.findFirst();
           if (user) {
-            await this.prisma!.adminExportHistory.create({
+            await prisma.adminExportHistory.create({
               data: {
                 userId: user.id,
                 reportName: report.fileName,
@@ -73,7 +84,7 @@ export class GeneratedReportsRepository implements OnModuleInit {
             });
           }
         } catch (error) {
-          console.error('Error al persistir reporte generado en admin_export_histories:', error);
+          this.logger.error('Error al guardar el reporte generado', error);
         }
       })();
     }
@@ -81,4 +92,3 @@ export class GeneratedReportsRepository implements OnModuleInit {
     return report;
   }
 }
-

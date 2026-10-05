@@ -1,5 +1,5 @@
-// Gestión académica: "1-2025" va de enero a junio y "2-2025" de julio a diciembre.
-export const ACADEMIC_PERIOD_PATTERN = /^[12]-\d{4}$/;
+// Gestión académica semestral: "I-2025" va de enero a junio y "II-2025" de julio a diciembre.
+export const ACADEMIC_PERIOD_PATTERN = /^(I|II)-\d{4}$/;
 
 const FIRST_SEMESTER_LAST_MONTH = 6;
 
@@ -25,7 +25,7 @@ export function getAcademicPeriod(isoDate: string): string | undefined {
   const parts = YEAR_MONTH_FORMATTER.formatToParts(date);
   const year = parts.find((part) => part.type === 'year')?.value;
   const month = Number(parts.find((part) => part.type === 'month')?.value);
-  const semester = month <= FIRST_SEMESTER_LAST_MONTH ? 1 : 2;
+  const semester = month <= FIRST_SEMESTER_LAST_MONTH ? 'I' : 'II';
 
   return `${semester}-${year}`;
 }

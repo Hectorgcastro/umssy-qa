@@ -30,6 +30,8 @@ export function ReportTableFooter({
   refreshLabel,
 }: ReportTableFooterProps) {
   const { first, last } = getVisibleRange(currentPage, totalItems);
+  // Sin resultados no hay páginas que recorrer: se oculta el paginador.
+  const hasResults = isLoading || totalItems > 0;
 
   return (
     <div className="mt-auto grid grid-cols-1 items-center gap-4 md:grid-cols-3">
@@ -40,7 +42,9 @@ export function ReportTableFooter({
         <RefreshButton label={refreshLabel} onClick={onRefresh} isRefreshing={isLoading} />
       </div>
       <div className="flex justify-center md:justify-end">
-        <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+        {hasResults && (
+          <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+        )}
       </div>
     </div>
   );

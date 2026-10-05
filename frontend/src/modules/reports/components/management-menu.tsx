@@ -10,21 +10,23 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ALL_FILTER_VALUE } from "../constants/registered-users.constants";
+import type { AcademicPeriod } from "../types/registered-user.types";
 import { getAcademicPeriods } from "../utils/academic-periods";
 
 interface ManagementMenuProps {
-  value?: string;
-  onChange?: (period?: string) => void;
+  value?: AcademicPeriod;
+  onChange?: (period?: AcademicPeriod) => void;
 }
 
-const ALL_PERIODS_VALUE = "ALL";
+const OPTION_CLASSES = "rounded-none px-4 py-2 text-sm text-ink-soft focus:bg-surface-soft focus:text-ink";
 
-// Filtro por gestión académica: "1-2025" (enero a junio) o "2-2025" (julio a diciembre).
+// Filtro por gestión semestral: "I-2025" (enero a junio) o "II-2025" (julio a diciembre).
 export function ManagementMenu({ value, onChange }: ManagementMenuProps) {
   const periods = useMemo(() => getAcademicPeriods(), []);
 
   const handleValueChange = (selectedValue: string) => {
-    onChange?.(selectedValue === ALL_PERIODS_VALUE ? undefined : selectedValue);
+    onChange?.(selectedValue === ALL_FILTER_VALUE ? undefined : (selectedValue as AcademicPeriod));
   };
 
   return (
@@ -44,23 +46,14 @@ export function ManagementMenu({ value, onChange }: ManagementMenuProps) {
 
       <DropdownMenuContent
         align="end"
-        className="max-h-72 w-40 overflow-y-auto rounded-md bg-surface py-1 text-ink-soft ring-border"
+        className="max-h-[min(18rem,var(--available-height))] w-40 overflow-y-auto rounded-md bg-surface py-1 text-ink-soft ring-border"
       >
-        <DropdownMenuRadioGroup value={value ?? ALL_PERIODS_VALUE} onValueChange={handleValueChange}>
-          <DropdownMenuRadioItem
-              closeOnClick
-            value={ALL_PERIODS_VALUE}
-            className="rounded-none px-4 py-2 text-sm text-ink-soft focus:bg-surface-soft focus:text-ink"
-          >
+        <DropdownMenuRadioGroup value={value ?? ALL_FILTER_VALUE} onValueChange={handleValueChange}>
+          <DropdownMenuRadioItem closeOnClick value={ALL_FILTER_VALUE} className={OPTION_CLASSES}>
             Todas
           </DropdownMenuRadioItem>
           {periods.map((period) => (
-            <DropdownMenuRadioItem
-              closeOnClick
-              key={period}
-              value={period}
-              className="rounded-none px-4 py-2 text-sm text-ink-soft focus:bg-surface-soft focus:text-ink"
-            >
+            <DropdownMenuRadioItem closeOnClick key={period} value={period} className={OPTION_CLASSES}>
               {period}
             </DropdownMenuRadioItem>
           ))}

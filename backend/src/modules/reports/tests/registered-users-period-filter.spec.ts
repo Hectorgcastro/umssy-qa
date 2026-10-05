@@ -1,0 +1,410 @@
+import { CSV_BOM } from '../../../common/utils/csv.js';
+import { ReportUsersRepository } from '../repositories/report-users.repository.js';
+import {
+  ALL_FILTER_VALUE,
+  registeredUsersFiltersSchema,
+  registeredUsersQuerySchema,
+} from '../requests/report-users.schema.js';
+import { ReportsService } from '../services/reports.service.js';
+import type {
+  RegisteredUserResponse,
+  ReportUser,
+  ReportUserType,
+} from '../types/report-user.types.js';
+import { getAcademicPeriod } from '../utils/academic-period.js';
+
+// HU07 (Épica 10): filtro del reporte de usuarios registrados por gestión semestral.
+
+const PAGE_SIZE = 10;
+
+// Fecha representativa de cada gestión (mediodía UTC, sin ambigüedad de zona horaria).
+const PERIOD_DATES = {
+  'I-2025': '2025-03-15T12:00:00.000Z',
+  'II-2025': '2025-09-15T12:00:00.000Z',
+  'I-2026': '2026-03-15T12:00:00.000Z',
+} as const;
+
+type SeededPeriod = keyof typeof PERIOD_DATES;
+
+// Usuarios aprobados por gestión y tipo. I-2025 tiene exactamente 10 registros,
+// II-2025 tiene 25 con la misma fecha y II-2026 no tiene ninguno.
+const SEED: Record<SeededPeriod, Partial<Record<ReportUserType, number>>> = {
+  'I-2025': { STUDENT: 6, MENTOR: 4 },
+  'II-2025': { STUDENT: 12, DEGREE_HOLDER: 11, COMPANY: 2 },
+  'I-2026': { ADMIN: 3, STUDENT: 1 },
+};
+
+function countFor(period: SeededPeriod, userType?: ReportUserType): number {
+  const counts = SEED[period];
+  return userType
+    ? (counts[userType] ?? 0)
+    : Object.values(counts).reduce((total, count) => total + count, 0);
+}
+
+function buildUser(
+  period: SeededPeriod,
+  userType: ReportUserType,
+  index: number,
+  overrides: Partial<ReportUser> = {},
+): ReportUser {
+  const id = `${period}-${userType}-${String(index).padStart(2, '0')}`;
+
+  return {
+    id,
+    fullName: `Usuario ${id}`,
+    email: `${id.toLowerCase()}@example.com`,
+    userType,
+    identifier: `ID-${id}`,
+    documentType: 'ACADEMIC_DEGREE',
+    registeredAt: PERIOD_DATES[period],
+    registrationStatus: 'APPROVED',
+    rejectionReason: null,
+    ...overrides,
+  };
+}
+
+function buildDataset(): ReportUser[] {
+  const approved = (Object.keys(SEED) as SeededPeriod[]).flatMap((period) =>
+    Object.entries(SEED[period]).flatMap(([userType, count]) =>
+      Array.from({ length: count }, (_, index) =>
+        buildUser(period, userType as ReportUserType, index),
+      ),
+    ),
+  );
+  // Pendientes y rechazados dentro de las mismas gestiones: nunca deben contarse.
+  const notApproved = (Object.keys(SEED) as SeededPeriod[]).flatMap(
+    (period) => [
+      buildUser(period, 'STUDENT', 90, { registrationStatus: 'PENDING' }),
+      buildUser(period, 'STUDENT', 91, { registrationStatus: 'REJECTED' }),
+    ],
+  );
+
+  return [...approved, ...notApproved].reverse();
+}
+
+function buildService(users: readonly ReportUser[]): ReportsService {
+  const repository = new ReportUsersRepository();
+  vi.spyOn(repository, 'findAll').mockReturnValue(users);
+  return new ReportsService(repository);
+}
+
+const query = (input: Record<string, unknown> = {}) =>
+  registeredUsersQuerySchema.parse(input);
+
+function collectAllPages(
+  service: ReportsService,
+  filters: Record<string, unknown>,
+): RegisteredUserResponse[][] {
+  const { totalPages } = service.getRegisteredUsers(query(filters));
+
+  return Array.from(
+    { length: totalPages },
+    (_, index) =>
+      service.getRegisteredUsers(query({ ...filters, page: index + 1 })).items,
+  );
+}
+
+describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)', () => {
+  const dataset = buildDataset();
+  const service = buildService(dataset);
+  const totalApproved = (Object.keys(SEED) as SeededPeriod[]).reduce(
+    (total, period) => total + countFor(period),
+    0,
+  );
+
+  describe('gestión I/II según la fecha de registro en hora de Bolivia', () => {
+    it.each([
+      { isoDate: '2025-01-01T04:00:00.000Z', expected: 'I-2025' },
+      { isoDate: '2025-06-30T12:00:00.000Z', expected: 'I-2025' },
+      // 03:59 UTC del 1 de julio todavía es 30 de junio en Bolivia (UTC-4).
+      { isoDate: '2025-07-01T03:59:00.000Z', expected: 'I-2025' },
+      { isoDate: '2025-07-01T04:00:00.000Z', expected: 'II-2025' },
+      { isoDate: '2025-12-31T12:00:00.000Z', expected: 'II-2025' },
+      // 02:00 UTC del 1 de enero todavía es 31 de diciembre en Bolivia.
+      { isoDate: '2026-01-01T02:00:00.000Z', expected: 'II-2025' },
+    ])('$isoDate pertenece a $expected', ({ isoDate, expected }) => {
+      expect(getAcademicPeriod(isoDate)).toBe(expected);
+    });
+  });
+
+  describe('filtrado exacto por gestión', () => {
+    it.each(Object.keys(SEED) as SeededPeriod[])(
+      '%s devuelve solo usuarios de esa gestión, de todos los tipos',
+      (period) => {
+        const users = collectAllPages(service, { period }).flat();
+
+        expect(users).toHaveLength(countFor(period));
+        expect(
+          users.every(
+            (user) => getAcademicPeriod(user.registeredAt) === period,
+          ),
+        ).toBe(true);
+        expect(new Set(users.map((user) => user.userType))).toEqual(
+          new Set(Object.keys(SEED[period])),
+        );
+      },
+    );
+
+    it('excluye los registros de gestiones vecinas en el cambio de semestre', () => {
+      const boundaryService = buildService([
+        buildUser('I-2025', 'STUDENT', 1, {
+          registeredAt: '2025-07-01T03:59:00.000Z',
+        }),
+        buildUser('II-2025', 'STUDENT', 2, {
+          registeredAt: '2025-07-01T04:00:00.000Z',
+        }),
+      ]);
+
+      expect(
+        boundaryService
+          .getRegisteredUsers(query({ period: 'I-2025' }))
+          .items.map((user) => user.id),
+      ).toEqual(['I-2025-STUDENT-01']);
+      expect(
+        boundaryService
+          .getRegisteredUsers(query({ period: 'II-2025' }))
+          .items.map((user) => user.id),
+      ).toEqual(['II-2025-STUDENT-02']);
+    });
+
+    it.each([{}, { period: ALL_FILTER_VALUE }])(
+      'sin gestión o con "ALL" no restringe por gestión (%o)',
+      (filters) => {
+        expect(service.getRegisteredUsers(query(filters)).totalItems).toBe(
+          totalApproved,
+        );
+      },
+    );
+
+    it('nunca incluye usuarios pendientes ni rechazados de la gestión', () => {
+      const ids = collectAllPages(service, { period: 'II-2025' })
+        .flat()
+        .map((user) => user.id);
+
+      expect(ids.some((id) => id.endsWith('-90') || id.endsWith('-91'))).toBe(
+        false,
+      );
+    });
+  });
+
+  describe('filtros combinados de gestión y tipo de usuario', () => {
+    it.each([
+      { period: 'II-2025', userType: 'DEGREE_HOLDER' },
+      { period: 'II-2025', userType: 'STUDENT' },
+      { period: 'I-2025', userType: 'MENTOR' },
+      { period: 'I-2026', userType: 'ADMIN' },
+    ] as const)(
+      '$period + $userType devuelve la intersección de ambos criterios',
+      ({ period, userType }) => {
+        const users = collectAllPages(service, { period, userType }).flat();
+
+        expect(users).toHaveLength(countFor(period, userType));
+        users.forEach((user) => {
+          expect(user.userType).toBe(userType);
+          expect(getAcademicPeriod(user.registeredAt)).toBe(period);
+        });
+      },
+    );
+
+    it('el orden en que se envían los filtros no cambia el resultado', () => {
+      const periodFirst = collectAllPages(service, {
+        period: 'II-2025',
+        userType: 'STUDENT',
+      });
+      const userTypeFirst = collectAllPages(service, {
+        userType: 'STUDENT',
+        period: 'II-2025',
+      });
+
+      expect(userTypeFirst).toEqual(periodFirst);
+    });
+
+    it('una combinación sin registros devuelve vacío sin mezclar otros tipos', () => {
+      const result = service.getRegisteredUsers(
+        query({ period: 'I-2026', userType: 'COMPANY' }),
+      );
+
+      expect(result).toMatchObject({
+        items: [],
+        totalItems: 0,
+        totalPages: 0,
+      });
+    });
+  });
+
+  describe('paginación sobre el subconjunto filtrado', () => {
+    it('con exactamente 10 registros en la gestión calcula una sola página', () => {
+      const result = service.getRegisteredUsers(query({ period: 'I-2025' }));
+
+      expect(result).toMatchObject({ totalItems: 10, totalPages: 1 });
+      expect(result.items).toHaveLength(10);
+      expect(
+        service.getRegisteredUsers(query({ period: 'I-2025', page: 2 })).items,
+      ).toEqual([]);
+    });
+
+    it('con más de 10 registros calcula las páginas solo sobre la gestión', () => {
+      const result = service.getRegisteredUsers(query({ period: 'II-2025' }));
+
+      expect(result).toMatchObject({ totalItems: 25, totalPages: 3 });
+      expect(
+        collectAllPages(service, { period: 'II-2025' }).map(
+          (page) => page.length,
+        ),
+      ).toEqual([10, 10, 5]);
+    });
+
+    it('una gestión sin registros devuelve lista vacía y 0 páginas', () => {
+      expect(service.getRegisteredUsers(query({ period: 'II-2026' }))).toEqual({
+        items: [],
+        totalItems: 0,
+        totalPages: 0,
+        page: 1,
+        limit: PAGE_SIZE,
+      });
+    });
+
+    it.each([
+      { period: 'II-2025' },
+      { period: 'II-2025', userType: 'STUDENT' },
+      { period: 'II-2025', userType: 'DEGREE_HOLDER' },
+    ])(
+      'recorrer todas las páginas de %o no repite ni omite usuarios con la misma fecha',
+      (filters) => {
+        const { totalItems } = service.getRegisteredUsers(query(filters));
+        const ids = collectAllPages(service, filters)
+          .flat()
+          .map((user) => user.id);
+
+        expect(ids).toHaveLength(totalItems);
+        expect(new Set(ids).size).toBe(totalItems);
+        expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
+      },
+    );
+
+    it('el orden no depende del orden en que llegan los datos', () => {
+      const shuffled = buildService([...dataset].reverse());
+
+      expect(collectAllPages(shuffled, { period: 'II-2025' })).toEqual(
+        collectAllPages(service, { period: 'II-2025' }),
+      );
+    });
+
+    it('consultar la misma gestión varias veces devuelve lo mismo', () => {
+      const pageTwo = () =>
+        service.getRegisteredUsers(query({ period: 'II-2025', page: 2 }));
+
+      expect(pageTwo()).toEqual(pageTwo());
+    });
+
+    it('cambiar entre gestiones devuelve solo los datos de la última', () => {
+      service.getRegisteredUsers(query({ period: 'II-2025' }));
+      const last = service.getRegisteredUsers(query({ period: 'I-2026' }));
+
+      expect(
+        last.items.every(
+          (user) => getAcademicPeriod(user.registeredAt) === 'I-2026',
+        ),
+      ).toBe(true);
+      expect(last.totalItems).toBe(countFor('I-2026'));
+    });
+  });
+
+  describe('integridad de los 6 campos por usuario', () => {
+    const sourceById = new Map(dataset.map((user) => [user.id, user]));
+
+    it('cada fila filtrada por gestión trae los 6 campos del mismo usuario', () => {
+      for (const user of collectAllPages(service, {
+        period: 'II-2025',
+      }).flat()) {
+        const source = sourceById.get(user.id);
+
+        expect(user).toEqual({
+          id: source?.id,
+          fullName: source?.fullName,
+          email: source?.email,
+          userType: source?.userType,
+          identifier: source?.identifier,
+          documentType: source?.documentType,
+          registeredAt: source?.registeredAt,
+        });
+      }
+    });
+  });
+
+  describe('exportación CSV con la gestión activa', () => {
+    const csvRows = (filters: Record<string, unknown>) =>
+      service
+        .exportRegisteredUsersCsv(registeredUsersFiltersSchema.parse(filters))
+        .content.replace(CSV_BOM, '')
+        .trim()
+        .split('\r\n')
+        .slice(1);
+
+    it('exporta todos los usuarios de la gestión, no solo los 10 de una página', () => {
+      expect(csvRows({ period: 'II-2025' })).toHaveLength(25);
+    });
+
+    it('exporta la intersección de gestión y tipo de usuario completa', () => {
+      const rows = csvRows({ period: 'II-2025', userType: 'STUDENT' });
+
+      expect(rows).toHaveLength(12);
+      expect(rows.every((row) => row.split(',')[2] === 'Estudiante')).toBe(
+        true,
+      );
+    });
+
+    it('exporta solo la cabecera si la gestión no tiene registros', () => {
+      expect(csvRows({ period: 'II-2026' })).toEqual([]);
+    });
+
+    it('nombra el archivo con el tipo de usuario y la gestión', () => {
+      const { fileName } = service.exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({
+          period: 'II-2025',
+          userType: 'STUDENT',
+        }),
+      );
+
+      expect(fileName).toBe('usuarios-registrados-estudiante-II-2025.csv');
+    });
+
+    it('"ALL" exporta igual que no enviar la gestión', () => {
+      expect(csvRows({ period: ALL_FILTER_VALUE })).toEqual(csvRows({}));
+    });
+  });
+
+  describe('validación de la gestión', () => {
+    it.each(['I-2025', 'II-2025', 'I-2020', ' II-2026 '])(
+      'acepta la gestión %s',
+      (period) => {
+        expect(registeredUsersQuerySchema.safeParse({ period }).success).toBe(
+          true,
+        );
+      },
+    );
+
+    it.each([
+      '1-2025',
+      '2-2025',
+      'III-2025',
+      'i-2025',
+      'I_2025',
+      '2025',
+      'I-2019',
+      '',
+      "I-2025' OR '1'='1",
+    ])('rechaza la gestión %s', (period) => {
+      const result = registeredUsersQuerySchema.safeParse({ period });
+
+      expect(result.success).toBe(false);
+      expect(result.error?.issues[0].path).toEqual(['period']);
+    });
+
+    it('ya no acepta el filtro por año, reemplazado por la gestión', () => {
+      expect(
+        registeredUsersQuerySchema.parse({ year: '2025' }),
+      ).not.toHaveProperty('year');
+    });
+  });
+});
