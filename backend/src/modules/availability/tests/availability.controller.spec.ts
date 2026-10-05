@@ -5,7 +5,7 @@ import { AvailabilityController } from '../controllers/availability.controller.j
 
 const USER = { id: 'mentor-1', email: 'mentor.a@umssy.test', roles: ['mentor'] };
 const QUERY = { from: '2026-10-05T04:00:00.000Z', to: '2026-10-12T03:59:59.999Z' };
-const UPDATE_PAYLOAD = { startAt: '2026-10-10T14:00:00.000Z', endAt: '2026-10-10T14:30:00.000Z' };
+const UPDATE_PAYLOAD = { startAt: new Date('2026-10-10T14:00:00.000Z'), endAt: new Date('2026-10-10T14:30:00.000Z') };
 
 describe('AvailabilityController', () => {
   describe('findMyBlocks', () => {

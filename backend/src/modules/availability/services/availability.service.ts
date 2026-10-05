@@ -66,11 +66,18 @@ export class AvailabilityService {
       throw new BlockHasAppointmentException();
     }
 
-    const updated = await this.availabilityRepository.update(blockId, {
-      startAt: new Date(payload.startAt),
-      endAt: new Date(payload.endAt),
-    });
-    return this.availabilityMapper.toResponse(updated);
+    try {
+      const updated = await this.availabilityRepository.update(blockId, {
+        startAt: payload.startAt,
+        endAt: payload.endAt,
+      });
+      return this.availabilityMapper.toResponse(updated);
+    } catch (error) {
+      if (hasOverlapErrorCode(error)) {
+        throw new BlockOverlapException();
+      }
+      throw error;
+    }
   }
   
   async create(mentorId: string, payload: CreateBlockPayload): Promise<AvailabilityBlockResponse> {

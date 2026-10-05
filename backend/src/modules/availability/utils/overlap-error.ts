@@ -5,15 +5,21 @@ export const hasOverlapErrorCode = (error: unknown): boolean => {
     return false;
   }
 
-  const candidate = error as { code?: unknown; meta?: unknown; message?: unknown };
+  const candidate = error as {
+    code?: unknown;
+    meta?: { code?: unknown; driverAdapterError?: { cause?: { code?: unknown } } };
+    message?: unknown;
+  };
 
   if (candidate.code === OVERLAP_ERROR_CODE) {
     return true;
   }
 
   if (typeof candidate.meta === 'object' && candidate.meta !== null) {
-    const meta = candidate.meta as { code?: unknown };
-    if (meta.code === OVERLAP_ERROR_CODE) {
+    if (candidate.meta.code === OVERLAP_ERROR_CODE) {
+      return true;
+    }
+    if (candidate.meta.driverAdapterError?.cause?.code === OVERLAP_ERROR_CODE) {
       return true;
     }
   }
