@@ -46,9 +46,14 @@ describe("availabilityApi", () => {
   it("getMentorFreeBlocks llama a la ruta de bloques libres del mentor", async () => {
     const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ data: [mockBlock] })
 
-    const result = await availabilityApi.getMentorFreeBlocks("m1")
+    const result = await availabilityApi.getMentorFreeBlocks("m1", {
+      startAt: "2026-10-05T04:00:00.000Z",
+      endAt: "2026-10-12T03:59:59.999Z",
+    })
 
-    expect(getSpy).toHaveBeenCalledWith("/mentors/m1/free-blocks")
+    expect(getSpy).toHaveBeenCalledWith(
+      "/mentors/m1/free-blocks?from=2026-10-05T04%3A00%3A00.000Z&to=2026-10-12T03%3A59%3A59.999Z",
+    )
     expect(result).toEqual([mockBlock])
   })
 

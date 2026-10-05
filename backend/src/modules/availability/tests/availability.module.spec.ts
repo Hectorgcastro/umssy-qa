@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AvailabilityModule } from '../availability.module.js';
 import { AvailabilityController } from '../controllers/availability.controller.js';
+import { MentorAvailabilityController } from '../controllers/mentor-availability.controller.js';
 import { AvailabilityService } from '../services/availability.service.js';
 import { AvailabilityRepository } from '../repositories/availability.repository.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
@@ -22,6 +23,7 @@ describe('AvailabilityModule', () => {
 
   it.each([
     AvailabilityController,
+    MentorAvailabilityController,
     AvailabilityService,
     AvailabilityRepository,
     AvailabilityMapper,

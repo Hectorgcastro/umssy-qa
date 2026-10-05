@@ -58,7 +58,7 @@ describe("MentorPublicAvailabilityView", () => {
     render(<MentorPublicAvailabilityView mentorId="mentor-123" />)
 
     await waitFor(() => {
-      expect(spy).toHaveBeenCalledWith("mentor-123")
+      expect(spy).toHaveBeenCalledWith("mentor-123", expect.objectContaining({ startAt: expect.any(String) }))
     })
   })
 })
