@@ -4,9 +4,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { MentorAvailabilityView } from "./mentor-availability-view"
 import { availabilityApi } from "../services/availability.api"
 
+const push = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+}))
+
 describe("MentorAvailabilityView", () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    push.mockClear()
   })
 
   afterEach(() => {
@@ -115,5 +122,18 @@ describe("MentorAvailabilityView", () => {
     expect(deleteSpy).not.toHaveBeenCalled()
     expect(screen.getAllByText(/Inicio:/)).toHaveLength(1)
     expect(getSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it("navega al editor del bloque al pulsar Editar", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([
+      { id: "1", mentorId: "m1", startAt: "2026-10-13T14:00:00Z", endAt: "2026-10-13T16:00:00Z", state: "free" as const, createdAt: "", updatedAt: "" },
+    ])
+    const user = userEvent.setup()
+
+    render(<MentorAvailabilityView />)
+
+    await user.click(await screen.findByRole("button", { name: "Editar bloque" }))
+
+    expect(push).toHaveBeenCalledWith("/mentor/availability/1/edit")
   })
 })

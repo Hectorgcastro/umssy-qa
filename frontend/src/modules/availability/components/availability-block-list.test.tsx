@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, it, expect, vi } from "vitest"
+import { afterEach, describe, it, expect, vi } from "vitest"
 import { AvailabilityBlockList } from "./availability-block-list"
 import type { AvailabilityBlock } from "../types/availability-block.types"
 
@@ -15,6 +15,10 @@ const mockBlock: AvailabilityBlock = {
 }
 
 describe("AvailabilityBlockList", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it("muestra el mensaje vacío cuando no hay bloques", () => {
     render(<AvailabilityBlockList blocks={[]} emptyMessage="Sin bloques" />)
 
@@ -62,5 +66,22 @@ describe("AvailabilityBlockList", () => {
 
     expect(onDelete).toHaveBeenCalledTimes(1)
     expect(onDelete).toHaveBeenCalledWith(otherBlock)
+  })
+
+  it("muestra el botón de editar y devuelve el bloque al pulsarlo", async () => {
+    const onEdit = vi.fn()
+    const user = userEvent.setup()
+
+    render(<AvailabilityBlockList blocks={[mockBlock]} emptyMessage="Sin bloques" onEdit={onEdit} />)
+
+    await user.click(screen.getByRole("button", { name: "Editar bloque" }))
+
+    expect(onEdit).toHaveBeenCalledWith(mockBlock)
+  })
+
+  it("no muestra el botón de editar cuando no se pasa onEdit", () => {
+    render(<AvailabilityBlockList blocks={[mockBlock]} emptyMessage="Sin bloques" />)
+
+    expect(screen.queryByRole("button", { name: "Editar bloque" })).not.toBeInTheDocument()
   })
 })

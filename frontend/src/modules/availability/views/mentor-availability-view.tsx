@@ -1,15 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAvailability } from "../hooks/use-availability";
 import { AvailabilityBlockList } from "../components/availability-block-list";
 import { AvailabilityLoading } from "../components/availability-loading";
 import { DeleteBlockDialog } from "../components/delete-block-dialog";
+import { MY_AVAILABILITY_PATH } from "../constants/availability.constants";
 import type { AvailabilityBlock } from "../types/availability-block.types";
 
 export function MentorAvailabilityView() {
+  const router = useRouter();
   const { blocks, isLoading, error, refetch } = useAvailability();
   const [blockToDelete, setBlockToDelete] = useState<AvailabilityBlock | null>(null);
+
+  const handleEdit = (block: AvailabilityBlock) => {
+    router.push(`${MY_AVAILABILITY_PATH}/${block.id}/edit`);
+  };
 
   if (isLoading) {
     return <AvailabilityLoading />;
@@ -26,6 +33,7 @@ export function MentorAvailabilityView() {
         blocks={blocks}
         emptyMessage="No hay bloques de disponibilidad aún."
         onDelete={setBlockToDelete}
+        onEdit={handleEdit}
       />
       <DeleteBlockDialog
         block={blockToDelete}

@@ -4,4 +4,5 @@ export interface AvailabilityBlockListProps {
   blocks: AvailabilityBlock[];
   emptyMessage: string;
   onDelete?: (block: AvailabilityBlock) => void;
+  onEdit?: (block: AvailabilityBlock) => void;
 }

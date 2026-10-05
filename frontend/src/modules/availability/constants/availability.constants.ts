@@ -34,6 +34,8 @@ export const FORM_TEXT: Record<BlockFormMode, { title: string; description: stri
   },
 };
 
+export const EDIT_BLOCK_LABEL = FORM_TEXT.edit.title;
+
 export const REQUIRED_MESSAGES: Record<BlockFormField, string> = {
   date: "Selecciona una fecha",
   startAt: "Selecciona la hora de inicio",
