@@ -1,24 +1,25 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import Home from './page'
+
+const expectSkillChipToBeVisible = (label: RegExp) => {
+  const buttons = screen.getAllByRole('button', { name: label })
+  expect(buttons.length).toBeGreaterThan(0)
+}
 
 describe('Home Page', () => {
   it('renderiza el formulario de descripción de trabajo y selector de habilidades', () => {
     render(<Home />)
-    
-    // Test that the main heading is present
+
     expect(screen.getByText('Requisitos técnicos')).toBeDefined()
-    
-    // Test that the chip label is present
     expect(screen.getByText('CHIPS SELECCIONABLES')).toBeDefined()
   })
 
-it('renderiza las habilidades técnicas iniciales', () => {
-  render(<Home />)
-  
-  // Test that initial skills are rendered with more specificity
-  expect(screen.getByRole('button', { name: /Python/i })).toBeDefined()
-  expect(screen.getByRole('button', { name: /Docker/i })).toBeDefined()
-  expect(screen.getByRole('button', { name: /Kali/i })).toBeDefined()
-})
+  it('renderiza las habilidades técnicas iniciales', () => {
+    render(<Home />)
+
+    expectSkillChipToBeVisible(/Python/i)
+    expectSkillChipToBeVisible(/Docker/i)
+    expectSkillChipToBeVisible(/Kali/i)
+  })
 })
