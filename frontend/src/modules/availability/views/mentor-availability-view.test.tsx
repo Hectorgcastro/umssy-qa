@@ -98,17 +98,12 @@ describe("MentorAvailabilityView", () => {
     expect(within(grid).getByRole("button", { name: "libre, 10:00 a 11:00" })).toBeInTheDocument()
   })
 
-  it("muestra el estado vacío con el botón Nuevo bloque", async () => {
+  it("muestra el estado vacío sin bloques esta semana", async () => {
     vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
 
     render(<MentorAvailabilityView />)
 
-    const message = await screen.findByText("Aún no registraste bloques esta semana")
-    const emptyState = message.closest("section") as HTMLElement
-    expect(within(emptyState).getByRole("link", { name: "Nuevo bloque" })).toHaveAttribute(
-      "href",
-      "/mentor/availability/new",
-    )
+    expect(await screen.findByText("Aún no registraste bloques esta semana")).toBeInTheDocument()
   })
 
   it("muestra el error si falla la consulta", async () => {
@@ -163,5 +158,107 @@ describe("MentorAvailabilityView", () => {
     expect(deleteSpy).not.toHaveBeenCalled()
     expect(screen.getByRole("button", { name: "libre, 10:00 a 11:00" })).toBeInTheDocument()
     expect(getSpy).toHaveBeenCalledTimes(1)
+  })
+
+  describe("panel Agregar bloque", () => {
+    async function fillAndSave(user: ReturnType<typeof userEvent.setup>) {
+      // Espera a que asiente el fetch inicial de la grilla antes de interactuar
+      // con el formulario, para no competir con el montaje.
+      await screen.findByText("Aún no registraste bloques esta semana")
+      await user.click(screen.getByRole("button", { name: "jueves, 8 de octubre de 2026" }))
+      await user.selectOptions(screen.getByLabelText(/Hora de inicio/), "18:00")
+      await user.selectOptions(screen.getByLabelText(/Hora de fin/), "18:30")
+      await user.click(screen.getByRole("button", { name: "Guardar bloque" }))
+    }
+
+    it("muestra siempre el formulario, a la derecha de la grilla", async () => {
+      vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+
+      render(<MentorAvailabilityView />)
+
+      expect(screen.getByText("Nuevo bloque de disponibilidad")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Guardar bloque" })).toBeInTheDocument()
+    })
+
+    it("al guardar, refresca la grilla sin recargar y limpia el formulario", async () => {
+      const savedBlock: AvailabilityBlock = {
+        id: "nuevo-1",
+        mentorId: "m1",
+        startAt: "2026-10-08T22:00:00.000Z",
+        endAt: "2026-10-08T22:30:00.000Z",
+        state: "free",
+        createdAt: "",
+        updatedAt: "",
+      }
+      const getSpy = vi
+        .spyOn(availabilityApi, "getAvailabilityBlocks")
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([savedBlock])
+      vi.spyOn(availabilityApi, "createAvailabilityBlock").mockResolvedValue(savedBlock)
+      const user = userEvent.setup()
+
+      render(<MentorAvailabilityView />)
+      await waitFor(() => expect(getSpy).toHaveBeenCalledTimes(1))
+
+      await fillAndSave(user)
+
+      await waitFor(() => {
+        expect(screen.getByText("Bloque guardado correctamente.")).toBeInTheDocument()
+      })
+      expect(screen.getByLabelText(/Hora de inicio/)).toHaveValue("")
+      await waitFor(() => expect(getSpy).toHaveBeenCalledTimes(2))
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "libre, 18:00 a 18:30" })).toBeInTheDocument(),
+      )
+    })
+
+    it("el botón Guardar queda deshabilitado mientras se envía", async () => {
+      vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+      let resolveCreate!: (block: AvailabilityBlock) => void
+      vi.spyOn(availabilityApi, "createAvailabilityBlock").mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveCreate = resolve
+          }),
+      )
+      const user = userEvent.setup()
+
+      render(<MentorAvailabilityView />)
+      await screen.findByText("Aún no registraste bloques esta semana")
+      await user.click(screen.getByRole("button", { name: "jueves, 8 de octubre de 2026" }))
+      await user.selectOptions(screen.getByLabelText(/Hora de inicio/), "18:00")
+      await user.selectOptions(screen.getByLabelText(/Hora de fin/), "18:30")
+      await user.click(screen.getByRole("button", { name: "Guardar bloque" }))
+
+      expect(screen.getByRole("button", { name: "Guardando..." })).toBeDisabled()
+
+      resolveCreate({
+        id: "nuevo-1",
+        mentorId: "m1",
+        startAt: "2026-10-08T22:00:00.000Z",
+        endAt: "2026-10-08T22:30:00.000Z",
+        state: "free",
+        createdAt: "",
+        updatedAt: "",
+      })
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Guardar bloque" })).toBeEnabled(),
+      )
+    })
+
+    it("muestra el detalle del backend cuando el guardado falla por un error de negocio (409)", async () => {
+      vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+      vi.spyOn(availabilityApi, "createAvailabilityBlock").mockRejectedValue({
+        response: { data: { statusCode: 409, detail: "Ya tienes un bloque en ese horario", ok: false } },
+      })
+      const user = userEvent.setup()
+
+      render(<MentorAvailabilityView />)
+      await fillAndSave(user)
+
+      await waitFor(() => {
+        expect(screen.getByText("Ya tienes un bloque en ese horario")).toBeInTheDocument()
+      })
+    })
   })
 })
