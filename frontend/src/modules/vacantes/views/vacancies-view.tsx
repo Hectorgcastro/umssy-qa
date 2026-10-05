@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useVacancies } from "../hooks/use-vacancies";
 
 export function VacanciesView() {
@@ -100,24 +100,24 @@ export function VacanciesView() {
                       ),
                     )}
                   </ul>
-			<a
+			<Link
 			  href={`/vacantes/${vacancy.id}`}
 			  className="mt-6 inline-block rounded-md bg-black px-4 py-2 text-white"
 			>
 			  Ver detalles
-			</a>
+			</Link>
                 </div>
               </article>
             ))}
           </div>
         )}
 
-        <a
+        <Link
           href="/"
           className="mt-8 inline-block rounded-md bg-black px-4 py-2 text-white"
         >
           ← Volver al inicio
-        </a>
+        </Link>
       </div>
     </main>
   );
