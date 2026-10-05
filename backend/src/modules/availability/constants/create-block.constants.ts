@@ -1,4 +1,3 @@
-// TODO: confirmar con el PO el rango de atención (07:00-22:00, hora de Bolivia) y los pasos de 30 minutos.
 export const BLOCK_MIN_HOUR = 7;
 export const BLOCK_MAX_HOUR = 22;
 export const BLOCK_STEP_MINUTES = 30;
