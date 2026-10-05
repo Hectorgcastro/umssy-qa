@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useHome } from "../hooks/use-home";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,7 @@ export function HomeView() {
 
           <Button>Botón de ejemplo</Button>
           	<Button asChild>
-    			<a href="/vacantes">Vacantes</a>
+    			<a href="/vacantes">Vacantes</Link>
   		</Button>
         </CardContent>
       </Card>
