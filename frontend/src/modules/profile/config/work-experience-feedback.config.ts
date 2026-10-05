@@ -4,4 +4,6 @@ export const WORK_EXPERIENCE_FEEDBACK_MESSAGES = {
   createError: "No se pudo agregar la experiencia laboral. Inténtalo de nuevo.",
   updateSuccess: "Experiencia laboral actualizada correctamente.",
   updateError: "No se pudo actualizar la experiencia laboral. Inténtalo de nuevo.",
+  deleteSuccess: "Experiencia laboral eliminada correctamente.",
+  deleteError: "No se pudo eliminar la experiencia laboral. Inténtalo de nuevo.",
 };

@@ -34,4 +34,8 @@ export const workExperienceService = {
     );
     return response.data.data;
   },
+
+  deleteWorkExperience: async (id: string): Promise<void> => {
+    await apiClient.delete(`${WORK_EXPERIENCES_ENDPOINT}/${id}`, { headers: getAuthHeaders() });
+  },
 };
