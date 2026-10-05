@@ -1,18 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { AuthenticatedUser } from '../decorators/roles.decorator.js';
+import { BEARER_PREFIX } from '../constants/session.constants.js';
 import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
+import type { AuthenticatedUser } from '../types/authenticated-user.types.js';
+import type { LoginJwtPayload } from '../types/login-jwt-payload.types.js';
 
-// PROVISIONAL (B-07): reemplazar cuando Epic 1 entregue su guard.
-
-interface LoginJwtPayload {
-  sub: string;
-  roleTag: string;
-}
-
-const BEARER_PREFIX = 'Bearer ';
-
+// TODO: reemplazar por el guard de sesión de Epic 1 cuando lo entregue (B-07, #151)
 @Injectable()
 export class ProvisionalSessionGuard implements CanActivate {
   constructor(
@@ -44,7 +38,6 @@ export class ProvisionalSessionGuard implements CanActivate {
         id: true,
         email: true,
         roles: {
-          // Solo roles vigentes: sin borrado lógico y ya iniciados
           where: { deletedAt: null, startAt: { lte: new Date() } },
           select: { role: { select: { name: true } } },
         },

@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
-import { Roles, type AuthenticatedUser } from '../../../common/decorators/roles.decorator.js';
+import { Roles } from '../../../common/decorators/roles.decorator.js';
+import type { AuthenticatedUser } from '../../../common/types/authenticated-user.types.js';
 import { ProvisionalSessionGuard } from '../../../common/guards/provisional.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
