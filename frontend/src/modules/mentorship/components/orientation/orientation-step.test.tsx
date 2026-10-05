@@ -6,13 +6,38 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OrientationStep } from "./orientation-step";
+import type { OrientationType } from "../../types/orientation-type.types";
 
 afterEach(cleanup);
+
+const ORIENTATION_TYPES: OrientationType[] = [
+  {
+    id: "career-guidance",
+    name: "Orientación profesional",
+    description: null,
+  },
+  {
+    id: "technical-guidance",
+    name: "Orientación técnica",
+    description: null,
+  },
+  {
+    id: "job-search",
+    name: "Búsqueda de empleo",
+    description: null,
+  },
+  {
+    id: "interview-preparation",
+    name: "Preparación para entrevistas",
+    description: null,
+  },
+];
 
 describe("OrientationStep", () => {
   it("muestra las opciones de orientación", () => {
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={[]}
         onSelectionChange={vi.fn()}
       />,
@@ -29,6 +54,7 @@ describe("OrientationStep", () => {
   it("muestra el contador en cero inicialmente", () => {
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={[]}
         onSelectionChange={vi.fn()}
       />,
@@ -40,14 +66,13 @@ describe("OrientationStep", () => {
   it("muestra el mensaje de validación cuando no hay orientaciones seleccionadas", () => {
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={[]}
         onSelectionChange={vi.fn()}
       />,
     );
 
-    expect(
-      screen.getByRole("alert"),
-    ).toHaveTextContent(
+    expect(screen.getByRole("alert")).toHaveTextContent(
       "Debe seleccionarse al menos un tipo de orientación para continuar",
     );
   });
@@ -57,6 +82,7 @@ describe("OrientationStep", () => {
 
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={[]}
         onSelectionChange={onSelectionChange}
       />,
@@ -78,6 +104,7 @@ describe("OrientationStep", () => {
 
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={[
           "career-guidance",
           "technical-guidance",
@@ -100,6 +127,7 @@ describe("OrientationStep", () => {
   it("marca visualmente una orientación seleccionada", () => {
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={["career-guidance"]}
         onSelectionChange={vi.fn()}
       />,
@@ -109,14 +137,13 @@ describe("OrientationStep", () => {
       name: /Orientación profesional/i,
     });
 
-    expect(
-      selectedButton.getAttribute("aria-pressed"),
-    ).toBe("true");
+    expect(selectedButton.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("actualiza visualmente el contador según las selecciones recibidas", () => {
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={[
           "career-guidance",
           "technical-guidance",
@@ -131,13 +158,12 @@ describe("OrientationStep", () => {
   it("oculta el mensaje de validación cuando existe una selección", () => {
     render(
       <OrientationStep
+        orientationTypes={ORIENTATION_TYPES}
         selectedOrientationTypeIds={["career-guidance"]}
         onSelectionChange={vi.fn()}
       />,
     );
 
-    expect(
-      screen.queryByRole("alert"),
-    ).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });

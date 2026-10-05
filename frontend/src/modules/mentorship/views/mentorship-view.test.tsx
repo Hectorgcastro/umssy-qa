@@ -1,12 +1,50 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { renderWithQuery } from "@/shared/testing/render-with-query";
+import { clearMentorshipWizardDraft } from "../services/mentorship-wizard-draft.service";
 import { MentorshipView } from "./mentorship-view";
 
-afterEach(cleanup);
+vi.mock("../hooks/use-mentorship-catalogs", () => ({
+  useMentorshipCatalogs: () => ({
+    technicalAreas: [
+      {
+        id: "550e8400-e29b-41d4-a716-446655440001",
+        name: "Backend",
+        description: "Desarrollo backend",
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440002",
+        name: "Frontend",
+        description: "Desarrollo frontend",
+      },
+    ],
+    orientationTypes: [
+      {
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "Orientación profesional",
+        description: "Orientación profesional",
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440004",
+        name: "Orientación técnica",
+        description: "Orientación técnica",
+      },
+    ],
+    isLoading: false,
+    isError: false,
+    error: null,
+    retry: vi.fn(),
+  }),
+}));
+
+afterEach(() => {
+  cleanup();
+  clearMentorshipWizardDraft();
+});
 
 describe("MentorshipView", () => {
   it("renderiza inicialmente el paso 1 con participación desmarcada", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     expect(
       screen.getByRole("heading", { name: "Participación" }),
@@ -28,7 +66,7 @@ describe("MentorshipView", () => {
   });
 
   it("habilita Continuar al seleccionar participación", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     const checkbox = screen.getByRole("checkbox");
 
@@ -44,7 +82,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite seleccionar participación desde toda la fila sin duplicar el cambio", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByText("Quiero participar como mentor"));
 
@@ -56,7 +94,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite avanzar entre los pasos después de aceptar participación", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -72,7 +110,7 @@ describe("MentorshipView", () => {
   });
 
   it("no permite avanzar del paso 2 sin seleccionar un área", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -96,7 +134,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite avanzar del paso 2 al seleccionar al menos un área", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -124,7 +162,7 @@ describe("MentorshipView", () => {
   });
 
   it("deshabilita Volver en el primer paso", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     const backButton = screen.getByRole("button", {
       name: /Volver/i,
@@ -136,7 +174,7 @@ describe("MentorshipView", () => {
   });
 
   it("permite regresar al paso anterior", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -160,7 +198,7 @@ describe("MentorshipView", () => {
   });
 
   it("conserva la participación al avanzar y regresar", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     const checkbox = screen.getByRole("checkbox");
 
@@ -184,7 +222,7 @@ describe("MentorshipView", () => {
   });
 
   it("muestra el título principal del wizard", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     expect(
       screen.getByText("Participa como mentor"),
@@ -192,7 +230,7 @@ describe("MentorshipView", () => {
   });
 
   it("actualiza el contador al seleccionar áreas", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -218,7 +256,7 @@ describe("MentorshipView", () => {
   });
 
   it("deshabilita Continuar en el paso 3 sin orientación seleccionada", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -254,7 +292,7 @@ describe("MentorshipView", () => {
   });
 
   it("habilita Continuar en el paso 3 al seleccionar una orientación", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -284,7 +322,7 @@ describe("MentorshipView", () => {
   });
 
   it("muestra la confirmación en el último paso", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -324,7 +362,7 @@ describe("MentorshipView", () => {
   });
 
   it("muestra las orientaciones y permite seleccionar varias", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -367,7 +405,7 @@ describe("MentorshipView", () => {
   });
 
   it("conserva las orientaciones al avanzar y regresar", () => {
-    render(<MentorshipView />);
+    renderWithQuery(<MentorshipView />);
 
     fireEvent.click(screen.getByRole("checkbox"));
 

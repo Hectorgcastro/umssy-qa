@@ -5,14 +5,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ORIENTATION_TYPES } from "../../data/orientation-types";
-import { TECHNICAL_AREAS } from "../../data/technical-areas";
+import type { OrientationType } from "../../types/orientation-type.types";
+import type { TechnicalArea } from "../../types/technical-area.types";
 
 type ConfirmationStepProps = {
   wantsToParticipate: boolean;
-  selectedTechnicalAreaIds: string[];
-  selectedOrientationTypeIds: string[];
+  selectedTechnicalAreas: TechnicalArea[];
+  selectedOrientationTypes: OrientationType[];
   isActivating: boolean;
+  activationError: string | null;
   onEditTechnicalAreas: () => void;
   onEditOrientationTypes: () => void;
   onActivate: () => void;
@@ -20,21 +21,14 @@ type ConfirmationStepProps = {
 
 export function ConfirmationStep({
   wantsToParticipate,
-  selectedTechnicalAreaIds,
-  selectedOrientationTypeIds,
+  selectedTechnicalAreas,
+  selectedOrientationTypes,
   isActivating,
+  activationError,
   onEditTechnicalAreas,
   onEditOrientationTypes,
   onActivate,
 }: ConfirmationStepProps) {
-  const selectedTechnicalAreas = TECHNICAL_AREAS.filter((area) =>
-    selectedTechnicalAreaIds.includes(area.id),
-  );
-
-  const selectedOrientationTypes = ORIENTATION_TYPES.filter((orientation) =>
-    selectedOrientationTypeIds.includes(orientation.id),
-  );
-
   return (
     <div className="space-y-6">
       <div>
@@ -134,13 +128,21 @@ export function ConfirmationStep({
                 key={orientation.id}
                 className="rounded-full border border-border px-3 py-1 text-sm text-ink"
               >
-                {orientation.label}
+                {orientation.name}
               </span>
             ))}
           </div>
         </CardContent>
       </Card>
 
+      {activationError ? (
+        <div
+           role="alert"
+           className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+           {activationError}
+          </div>
+      ) : null}
       <Button
         type="button"
         onClick={onActivate}

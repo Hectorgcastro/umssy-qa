@@ -15,8 +15,7 @@ export function TechnicalAreaCard({
   isSelected,
   onToggle,
 }: TechnicalAreaCardProps) {
-  const Icon = TECHNICAL_AREA_ICON_MAP[area.icon] ?? Server;
-
+  const Icon = area.icon ? TECHNICAL_AREA_ICON_MAP[area.icon] ?? Server : Server;
   return (
     <button
       type="button"

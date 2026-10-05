@@ -1,4 +1,5 @@
 export interface OrientationType {
   id: string;
-  label: string;
+  name: string;
+  description: string | null;
 }

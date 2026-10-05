@@ -3,18 +3,22 @@ import type { OrientationType } from "../types/orientation-type.types";
 export const ORIENTATION_TYPES: OrientationType[] = [
   {
     id: "career-guidance",
-    label: "Orientación profesional",
+    name: "Orientación profesional",
+    description: null,
   },
   {
     id: "technical-guidance",
-    label: "Orientación técnica",
+    name: "Orientación técnica",
+    description: null,
   },
   {
     id: "job-search",
-    label: "Búsqueda de empleo",
+    name: "Búsqueda de empleo",
+    description: null,
   },
   {
     id: "interview-preparation",
-    label: "Preparación para entrevistas",
+    name: "Preparación para entrevistas",
+    description: null,
   },
 ];
