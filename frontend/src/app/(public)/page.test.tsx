@@ -13,12 +13,12 @@ describe('Home Page', () => {
     expect(screen.getByText('CHIPS SELECCIONABLES')).toBeDefined()
   })
 
-  it('renderiza las habilidades técnicas iniciales', () => {
-    render(<Home />)
-    
-    // Test that initial skills are rendered
-    expect(screen.getByText('Python')).toBeDefined()
-    expect(screen.getByText('Docker')).toBeDefined()
-    expect(screen.getByText('Kali')).toBeDefined()
-  })
+it('renderiza las habilidades técnicas iniciales', () => {
+  render(<Home />)
+  
+  // Test that initial skills are rendered with more specificity
+  expect(screen.getByRole('button', { name: /Python/i })).toBeDefined()
+  expect(screen.getByRole('button', { name: /Docker/i })).toBeDefined()
+  expect(screen.getByRole('button', { name: /Kali/i })).toBeDefined()
+})
 })
