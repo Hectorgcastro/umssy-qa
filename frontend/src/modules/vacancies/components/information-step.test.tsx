@@ -4,7 +4,6 @@ import { InformationStep } from './information-step';
 import { VacancyConditions } from '../hooks/use-job-offer-form';
 
 describe('InformationStep', () => {
-  // Aplicamos el tipado correcto en lugar de usar "any"
   const mockConditions = {
     title: "",
     modality: "",
@@ -40,8 +39,9 @@ describe('InformationStep', () => {
       />
     );
 
-    const remotoBtn = screen.getByRole('button', { name: 'Remoto' });
-    fireEvent.click(remotoBtn);
+    // Usamos getAllByRole y seleccionamos el primer botón del arreglo [0]
+    const remotoBtns = screen.getAllByRole('button', { name: 'Remoto' });
+    fireEvent.click(remotoBtns[0]);
     expect(selectModalityMock).toHaveBeenCalledWith('Remoto');
 
     const tituloInput = screen.getByLabelText(/Titulo del puesto/i);
