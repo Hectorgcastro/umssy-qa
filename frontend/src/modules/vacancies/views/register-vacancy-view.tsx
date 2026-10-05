@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { VacancyStepper } from "../components/vacancy-stepper";
 import { InformationStep } from "../components/information-step";
-import { useVacancyRegisterWizard } from "../hooks/use-job-offer-form";
+import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
     const { currentStep, conditions, updateField, selectModality } = useVacancyRegisterWizard();
