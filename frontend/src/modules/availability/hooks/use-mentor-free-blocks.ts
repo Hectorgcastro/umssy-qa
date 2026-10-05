@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getWeekRange } from "@/shared/utils/date-time";
 import { availabilityApi } from "../services/availability.api";
 import type { AvailabilityBlock } from "../types/availability-block.types";
 
@@ -19,7 +20,7 @@ export function useMentorFreeBlocks(mentorId: string) {
   useEffect(() => {
     let cancelled = false;
     availabilityApi
-      .getMentorFreeBlocks(mentorId)
+      .getMentorFreeBlocks(mentorId, getWeekRange(new Date()))
       .then((data) => {
         if (!cancelled) setBlocks(data);
       })

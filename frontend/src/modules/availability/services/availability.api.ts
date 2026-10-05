@@ -2,6 +2,7 @@ import { apiClient } from "@/shared/services/api-client";
 import type { AvailabilityBlock } from "../types/availability-block.types";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 import type { AvailabilityFilters } from "../types/availability-filters.types";
+import type { WeekRange } from "@/shared/types/week-range.types";
 
 function toISOString(value: string): string {
   return new Date(value).toISOString();
@@ -17,8 +18,11 @@ export const availabilityApi = {
     return response.data;
   },
 
-  getMentorFreeBlocks: async (mentorId: string): Promise<AvailabilityBlock[]> => {
-    const response = await apiClient.get<AvailabilityBlock[]>(`/mentors/${encodeURIComponent(mentorId)}/free-blocks`);
+  getMentorFreeBlocks: async (mentorId: string, range: WeekRange): Promise<AvailabilityBlock[]> => {
+    const params = new URLSearchParams({ from: range.startAt, to: range.endAt });
+    const response = await apiClient.get<AvailabilityBlock[]>(
+      `/mentors/${encodeURIComponent(mentorId)}/free-blocks?${params.toString()}`,
+    );
     return response.data;
   },
 
