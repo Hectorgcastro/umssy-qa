@@ -1,3 +1,4 @@
+import { AuthModule } from '../auth/auth.module.js';
 import { Module } from '@nestjs/common';
 import { EventsController } from './controllers/events.controller.js';
 import { EventsService } from './services/events.service.js';
@@ -10,6 +11,7 @@ import { EventRegistrationsService } from './services/event-registrations.servic
 import { EventRegistrationsRepository } from './repositories/event-registrations.repository.js';
 
 @Module({
+  imports: [AuthModule],
   controllers: [
     EventsController,
     EventCategoriesController,

@@ -1,6 +1,8 @@
-import { MapPin, WifiOff, QrCode, Check } from "lucide-react";
+import { MapPin, QrCode, Check } from "lucide-react";
 
-export function PassDetail() {
+import { formatRegistrationDate, formatRegistrationTime, type Registration } from '../types/registration.types';
+
+export function PassDetail({ registration }: { registration: Registration }) {
   return (
     <div className="flex flex-col gap-5 w-full">
       
@@ -12,42 +14,37 @@ export function PassDetail() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <h2 className="text-[22px] font-bold leading-tight">Desarrollo Web con React</h2>
-          <p className="text-surface-soft/70 text-sm">jueves, 15 de octubre · 09:00 - 13:00</p>
+          <h2 className="text-[22px] font-bold leading-tight">{registration.eventName}</h2>
+          <p className="text-surface-soft/70 text-sm">{formatRegistrationDate(registration.date)} · {formatRegistrationTime(registration.startTime)} - {formatRegistrationTime(registration.endTime)}</p>
         </div>
 
         <div className="flex items-center gap-2 text-surface-soft/70 text-sm">
           <MapPin className="w-4 h-4 shrink-0" />
-          <span>Lab Informática 3, Edificio Central</span>
+          <span>{registration.location}</span>
         </div>
 
         <div className="bg-surface rounded-3xl p-6 mt-2 flex items-center justify-center">
-          <QrCode className="w-full h-auto max-w-[220px] text-ink opacity-90" strokeWidth={1} />
+          <QrCode aria-label="Vista ilustrativa de QR" className="w-full h-auto max-w-[220px] text-ink opacity-90" strokeWidth={1} />
         </div>
 
+        <p className="text-xs text-surface-soft/70">El QR de esta vista es ilustrativo; aún no está habilitado para validar asistencia.</p>
+
+        {/* Footer Info */}
         <div className="flex justify-between items-center mt-2 border-t border-white/10 pt-5">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] text-surface-soft/50 uppercase tracking-widest">ID Inscripción</span>
-            <span className="font-bold text-sm">202-T1-REAC</span>
+            <span className="font-bold text-sm">{registration.id}</span>
           </div>
           <div className="flex flex-col gap-1 text-right">
             <span className="text-[10px] text-surface-soft/50 uppercase tracking-widest">Estado</span>
             <span className="font-bold text-gold text-sm flex items-center gap-1 justify-end">
-              <Check className="w-4 h-4" /> Confirmado
+              <Check className="w-4 h-4" /> {registration.status}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="bg-interaction rounded-[20px] p-5 flex gap-3.5 items-start border border-danger/10 text-danger">
-        <WifiOff className="w-5 h-5 shrink-0 mt-0.5 opacity-90" />
-        <div className="flex flex-col gap-1">
-          <span className="font-bold text-sm">Disponible sin conexión</span>
-          <span className="text-[13px] opacity-80 leading-relaxed">
-            QR generado en tu dispositivo con datos locales. No necesitas internet.
-          </span>
-        </div>
-      </div>
+
     </div>
   );
 }
