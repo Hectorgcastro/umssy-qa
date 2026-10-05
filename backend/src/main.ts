@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   const corsOrigins = (process.env.CORS_ORIGIN ?? '')
@@ -27,6 +27,19 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
 
-  await app.listen(process.env.PORT!);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+
+  console.log(
+    `[bootstrap] listening on port ${port}; cors origins=${
+      corsOrigins.length > 0 ? corsOrigins.join(', ') : '(default: all origins)'
+    }`,
+  );
 }
-await bootstrap();
+
+try {
+  await bootstrap();
+} catch (error: unknown) {
+  console.error('[bootstrap] FAILED', error);
+  process.exit(1);
+}
