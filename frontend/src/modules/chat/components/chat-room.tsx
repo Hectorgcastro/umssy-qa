@@ -15,6 +15,9 @@ interface ChatRoomProps {
   onSendMessage: (content: string) => void;
   isLoadingMessages?: boolean;
   isSending?: boolean;
+  hasMoreMessages?: boolean;
+  onLoadMoreMessages?: () => void;
+  isLoadingMoreMessages?: boolean;
 }
 
 export function ChatRoom({
@@ -25,6 +28,9 @@ export function ChatRoom({
   onSendMessage,
   isLoadingMessages = false,
   isSending = false,
+  hasMoreMessages = false,
+  onLoadMoreMessages,
+  isLoadingMoreMessages = false,
 }: ChatRoomProps) {
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -128,6 +134,21 @@ export function ChatRoom({
         data-testid="messages-container"
         className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-3 bg-[#F6F7F9]"
       >
+
+  {hasMoreMessages && (
+    <div className="flex justify-center py-2">
+      <button
+        type="button"
+        onClick={onLoadMoreMessages}
+        disabled={isLoadingMoreMessages}
+        className="px-4 py-2 text-xs font-medium text-[#0B1F2E] bg-white border border-[#E3E7EC] rounded-lg hover:bg-slate-50 disabled:opacity-50"
+      >
+        {isLoadingMoreMessages
+          ? 'Cargando mensajes anteriores...'
+          : 'Cargar mensajes anteriores'}
+      </button>
+    </div>
+  )}
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-6 text-[#5B6470]">
             <div className="w-12 h-12 rounded-full bg-blue-50 text-[#0B1F2E] flex items-center justify-center mx-auto mb-3">

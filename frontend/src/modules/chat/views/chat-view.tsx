@@ -1,20 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useConversations } from '../hooks/use-conversations';
+import { useMessages, messagesQueryKey } from '../hooks/use-messages';
+
 import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
 import { ChatRoom } from '../components/chat-room';
-import { Message } from '../types/conversation.types';
-import { getMessages, sendMessage } from '../services/chat-api';
+
+import { Conversation } from '../types/conversation.types';
+import { sendMessage } from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 
 export function ChatView() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const {
     conversations,
@@ -31,40 +36,28 @@ export function ChatView() {
     startConversationWithContact,
   } = useConversations();
 
-  const selectedConversation = conversations.find((item) => item.id === selectedId);
+  const {
+    data: messages = [],
+    isLoading: isLoadingMessages,
+    isError: isMessagesError,
+    hasMoreMessages,
+    loadMoreMessages,
+    isLoadingMoreMessages,
+  } = useMessages(selectedId);
 
-  // Carga de mensajes de la conversacion seleccionada
-  useEffect(() => {
-    if (!selectedId) return;
-
-    let isMounted = true;
-
-    getMessages(selectedId)
-      .then((data) => {
-        if (isMounted) {
-          setMessages(data);
-          setIsLoadingMessages(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setIsLoadingMessages(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedId]);
+  const selectedConversation = conversations.find(
+    (item) => item.id === selectedId
+  );
 
   const handleSelectChat = (conversation: Conversation) => {
-    setIsLoadingMessages(true);
     handleSelectConversation(conversation);
   };
 
-  const handleStartChatWithContact = async (contactUser: Parameters<typeof startConversationWithContact>[0]) => {
-    setIsLoadingMessages(true);
+  const handleStartChatWithContact = async (
+    contactUser: Parameters<typeof startConversationWithContact>[0]
+  ) => {
     await startConversationWithContact(contactUser);
+    setIsSearchModalOpen(false);
   };
 
   const handleBackToList = () => {
@@ -77,15 +70,20 @@ export function ChatView() {
 
   const handleSendMessage = async (content: string) => {
     if (!selectedId || isSending) return;
+
     setIsSending(true);
 
     try {
-      const response = await sendMessage({
+      await sendMessage({
         conversationId: selectedId,
         senderId: CURRENT_USER_ID,
         content,
       });
-      setMessages((prev) => [...prev, response.data]);
+
+      // Actualiza el historial mediante TanStack Query.
+      await queryClient.invalidateQueries({
+        queryKey: messagesQueryKey(selectedId),
+      });
     } catch {
       // Manejo de errores
     } finally {
@@ -129,6 +127,9 @@ export function ChatView() {
             onSendMessage={handleSendMessage}
             isLoadingMessages={isLoadingMessages}
             isSending={isSending}
+            hasMoreMessages={hasMoreMessages}
+            onLoadMoreMessages={loadMoreMessages}
+            isLoadingMoreMessages={isLoadingMoreMessages}
           />
         ) : (
           <EmptyChatState
