@@ -1,4 +1,4 @@
-import type { EventCategoryItem } from './event-category-item.types';
+import type { EventCategoryItem } from "./event-category-item.types";
 
 export interface EventItem {
   id: string;
@@ -15,4 +15,7 @@ export interface EventItem {
   registrationCount: number;
   statusId: string;
   modalityId: string;
+}
+export interface EventDetail extends EventItem {
+  modality: { id: string; title: string };
 }

@@ -1,19 +1,14 @@
-import {
-  CalendarDays,
-  Clock3,
-  MapPin,
-  UserRound,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { CalendarDays, Clock3, MapPin, UserRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   calculateEventCapacityStatus,
   formatEventDate,
   formatTimeRange,
-} from './event-card';
-import type { EventItem } from '../types/event.types';
+} from "./event-card";
+import type { EventDetail } from "../types/event-item.types";
 
 type EventDetailPanelProps = {
-  event: EventItem;
+  event: EventDetail;
 };
 
 function DetailRow({
@@ -35,7 +30,7 @@ function DetailRow({
 }
 
 export function EventDetailPanel({ event }: EventDetailPanelProps) {
-  const { enrolledCount, capacity, progressPercentage } =
+  const { enrolledCount, capacity, progressPercentage, isFull } =
     calculateEventCapacityStatus(event);
   const availableSpots = event.availableSpots;
 
@@ -54,6 +49,9 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
           </h2>
         </header>
 
+        <p className="text-sm text-text-secondary">
+          Modalidad: {event.modality.title}
+        </p>
         <dl className="space-y-2 border-b border-border pb-4">
           <DetailRow
             icon={CalendarDays}
@@ -67,17 +65,24 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
           />
           <DetailRow
             icon={MapPin}
-            label="Lugar"
-            value={event.location?.trim() || 'Por confirmar'}
+            label={
+              event.modality.title.toLowerCase() === "virtual"
+                ? "Enlace"
+                : "Lugar"
+            }
+            value={event.location?.trim() || "Por confirmar"}
           />
           <DetailRow
             icon={UserRound}
             label="Instructor"
-            value={event.instructorName?.trim() || 'Por confirmar'}
+            value={event.instructorName?.trim() || "Por confirmar"}
           />
         </dl>
 
-        <section aria-labelledby="event-description-title" className="space-y-2">
+        <section
+          aria-labelledby="event-description-title"
+          className="space-y-2"
+        >
           <h3
             className="text-xs font-semibold uppercase tracking-wide text-text-secondary"
             id="event-description-title"
@@ -85,7 +90,7 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
             Descripción
           </h3>
           <p className="whitespace-pre-line break-words text-sm leading-5 text-text-secondary">
-            {event.description?.trim() || 'Descripción por confirmar.'}
+            {event.description?.trim() || "Descripción por confirmar."}
           </p>
         </section>
 
@@ -112,19 +117,22 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
             role="progressbar"
           >
             <div
-              className="h-full rounded-full bg-gold transition-[width]"
+              className={`h-full rounded-full transition-[width] ${isFull ? "bg-accent" : "bg-gold"}`}
               style={{ width: `${progressPercentage ?? 0}%` }}
             />
           </div>
           <p className="text-xs text-text-secondary">
             {capacity === null
-              ? 'Sin límite de cupos'
-              : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
+              ? "Sin límite de cupos"
+              : isFull
+                ? "Lleno · Sin cupos disponibles"
+                : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
           </p>
         </section>
 
         <Button
           className="mt-2 min-h-11 w-full bg-accent text-white hover:bg-danger"
+          disabled={isFull}
           size="lg"
           type="button"
         >
