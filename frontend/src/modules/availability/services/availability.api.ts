@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/services/api-client";
+import type { WeekRange } from "@/shared/types/week-range.types";
 import type { AvailabilityBlock } from "../types/availability-block.types";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 import type { AvailabilityFilters } from "../types/availability-filters.types";
@@ -17,8 +18,16 @@ export const availabilityApi = {
     return response.data;
   },
 
-  getMentorFreeBlocks: async (mentorId: string): Promise<AvailabilityBlock[]> => {
-    const response = await apiClient.get<AvailabilityBlock[]>(`/mentors/${encodeURIComponent(mentorId)}/free-blocks`);
+  getMentorFreeBlocks: async (mentorId: string, weekRange?: WeekRange): Promise<AvailabilityBlock[]> => {
+    const params = new URLSearchParams();
+    if (weekRange) {
+      params.append("from", toISOString(weekRange.startAt));
+      params.append("to", toISOString(weekRange.endAt));
+    }
+    const query = params.toString();
+    const response = await apiClient.get<AvailabilityBlock[]>(
+      `/mentors/${encodeURIComponent(mentorId)}/free-blocks${query ? `?${query}` : ""}`
+    );
     return response.data;
   },
 
