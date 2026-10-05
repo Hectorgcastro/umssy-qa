@@ -46,6 +46,39 @@ export function CreateVacancyView() {
     }
   };
 
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let rawValue = e.target.value.replace(/[^\d-]/g, "");
+    if (!rawValue) {
+      setSalary("");
+      return;
+    }
+    const parts = rawValue.split("-");
+    const formatMiles = (numStr: string) => {
+      if (!numStr) return "";
+      const numero = parseInt(numStr, 10);
+      if (isNaN(numero)) return "";
+      return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+    let formatted = "Bs " + formatMiles(parts[0]);
+    if (parts.length > 1) {
+      formatted += " - " + formatMiles(parts[1]);
+    }
+    setSalary(formatted);
+  };
+
+  const handleSalaryBlur = () => {
+    const rawValue = salary.replace(/[^\d-]/g, "");
+    const parts = rawValue.split("-");
+    if (parts.length === 2 && parts[0] !== "" && parts[1] !== "") {
+      const min = parseInt(parts[0], 10);
+      const max = parseInt(parts[1], 10);
+      if (min > max) {
+        const formatMiles = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        setSalary(`Bs ${formatMiles(max)} - ${formatMiles(min)}`);
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-2 text-slate-900">Registrar nueva vacante</h1>
@@ -86,8 +119,7 @@ export function CreateVacancyView() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-slate-700">Salario <span className="text-red-500">*</span></label>
-                {/* Input de salario sin la máscara para este commit */}
-                <Input placeholder="Bs 6.500 - 8.000" value={salary} onChange={(e) => setSalary(e.target.value)} />
+                <Input placeholder="Bs 6.500 - 8.000" value={salary} onChange={handleSalaryChange} onBlur={handleSalaryBlur} />
               </div>
             </div>
 
