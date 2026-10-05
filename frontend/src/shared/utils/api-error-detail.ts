@@ -1,6 +1,4 @@
-type ApiErrorBody = {
-  detail?: unknown;
-};
+import type { ApiErrorBody } from "../types/api-error-body.types";
 
 export function getApiErrorDetail(error: unknown): string | undefined {
   if (typeof error !== "object" || error === null) return undefined;
