@@ -1,8 +1,4 @@
-import { APPOINTMENT_STATUS_CONFIRMED, APPOINTMENT_STATUS_PENDING } from './appointment-status.constants.js';
 import { BLOCK_STEP_MINUTES } from './create-block.constants.js';
-
-export const STATUS_PENDING = APPOINTMENT_STATUS_PENDING;
-export const STATUS_CONFIRMED = APPOINTMENT_STATUS_CONFIRMED;
 
 export const MS_PER_MINUTE = 60_000;
 export const MS_PER_DAY = 86_400_000;
