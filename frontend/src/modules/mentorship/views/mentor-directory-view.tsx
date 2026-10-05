@@ -18,7 +18,7 @@ export function MentorDirectoryView() {
           </h1>
 
           <p className="mt-2 max-w-3xl text-sm text-text-secondary sm:text-base">
-            Conoce a los mentores disponibles y sus principales áreas de
+            Conoce a los mentores activos y sus principales áreas de
             experiencia profesional.
           </p>
         </header>
@@ -35,8 +35,8 @@ export function MentorDirectoryView() {
           />
         ) : mentors.length === 0 ? (
           <MentorQueryFeedback
-            title="No hay perfiles disponibles"
-            description="Por el momento no hay perfiles aprobados para mostrar. Vuelve a consultar más adelante."
+            title="No hay mentores activos"
+            description="Por el momento no hay mentores activos para mostrar. Vuelve a consultar más adelante."
           />
         ) : (
           <MentorDirectoryGrid mentors={mentors} />

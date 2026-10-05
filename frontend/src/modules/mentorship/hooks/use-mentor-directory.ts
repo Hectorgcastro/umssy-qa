@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getMentorDirectory } from "../services/mentor-query.mock";
+import { getMentorDirectory } from "../services/mentor-directory.service";
 
 export function useMentorDirectory() {
   return useQuery({
