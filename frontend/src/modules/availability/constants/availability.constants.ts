@@ -5,6 +5,7 @@ import { pad } from "../utils/pad";
 export const DATE_LOCALE = "es-BO";
 
 export const MY_AVAILABILITY_PATH = "/mentor/availability";
+export const NEW_BLOCK_PATH = "/mentor/availability/new";
 
 export const UPDATE_BLOCK_ERROR = "Error al actualizar el bloque de disponibilidad";
 export const BLOCK_LOAD_ERROR = "No se pudo cargar el bloque de disponibilidad";

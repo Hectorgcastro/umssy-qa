@@ -10,10 +10,10 @@ import {
 } from '../exceptions/index.js';
 import { hasOverlapErrorCode } from '../utils/overlap-error.js';
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
-import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
-import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
+import type { CreateBlockDto } from '../requests/create-block.request.js';
+import type { WeekQueryDto } from '../requests/week-query.request.js';
 import type { DeletedBlockResponse } from '../types/deleted-block-response.types.js';
-import type { UpdateBlockPayload } from '../types/update-block-payload.types.js';
+import type { UpdateBlockDto } from '../requests/update-block.request.js';
 
 @Injectable()
 export class AvailabilityService {
@@ -40,7 +40,7 @@ export class AvailabilityService {
 
   async findMyBlocks(
     mentorId: string,
-    query: WeekQueryPayload,
+    query: WeekQueryDto,
   ): Promise<AvailabilityBlockResponse[]> {
     const blocks = await this.availabilityRepository.findMentorBlocksInRange(
       mentorId,
@@ -53,7 +53,7 @@ export class AvailabilityService {
   async updateBlock(
     mentorId: string,
     blockId: string,
-    payload: UpdateBlockPayload,
+    payload: UpdateBlockDto,
   ): Promise<AvailabilityBlockResponse> {
     const block = await this.availabilityRepository.findById(blockId);
 
@@ -81,7 +81,7 @@ export class AvailabilityService {
     }
   }
 
-  async create(mentorId: string, payload: CreateBlockPayload): Promise<AvailabilityBlockResponse> {
+  async create(mentorId: string, payload: CreateBlockDto): Promise<AvailabilityBlockResponse> {
     try {
       const block = await this.availabilityRepository.create(
         mentorId,
@@ -97,7 +97,7 @@ export class AvailabilityService {
     }
   }
 
-  async findMentorFreeBlocks(mentorId: string, query: WeekQueryPayload): Promise<AvailabilityBlockResponse[]> {
+  async findMentorFreeBlocks(mentorId: string, query: WeekQueryDto): Promise<AvailabilityBlockResponse[]> {
     const now = new Date();
     // TODO: validar con el servicio de mentores de Epic 6 (#695)
     if (!(await this.availabilityRepository.isActiveMentor(mentorId, now))) {

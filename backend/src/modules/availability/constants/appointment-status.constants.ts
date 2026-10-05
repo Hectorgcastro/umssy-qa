@@ -1,4 +1,3 @@
-export const APPOINTMENT_STATUS_PENDING = 'PENDIENTE';
-export const APPOINTMENT_STATUS_CONFIRMED = 'CONFIRMADA';
+import { AppointmentStatusTitle } from '../enums/appointment-status-title.enum.js';
 
-export const ACTIVE_APPOINTMENT_STATUSES = [APPOINTMENT_STATUS_PENDING, APPOINTMENT_STATUS_CONFIRMED];
+export const ACTIVE_APPOINTMENT_STATUSES = [AppointmentStatusTitle.PENDING, AppointmentStatusTitle.CONFIRMED];

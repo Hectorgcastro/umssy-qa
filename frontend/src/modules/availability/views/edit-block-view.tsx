@@ -1,17 +1,18 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { getWeekRange } from "@/shared/utils/date-time";
 import { AvailabilityLoading } from "../components/availability-loading";
 import { BlockForm } from "../components/block-form";
 import { BLOCK_LOAD_ERROR, MY_AVAILABILITY_PATH } from "../constants/availability.constants";
-import { useAvailability } from "../hooks/use-availability";
+import { useMyBlocks } from "../hooks/use-my-blocks";
 import { useUpdateAvailabilityBlock } from "../hooks/use-update-availability-block";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 
 export function EditBlockView() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const { blocks, isLoading, error } = useAvailability();
+  const { blocks, isLoading, error } = useMyBlocks(getWeekRange(new Date()).startAt);
   const { updateBlock, isSubmitting, error: submitError } = useUpdateAvailabilityBlock();
 
   const block = blocks.find((item) => item.id === id);
