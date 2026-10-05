@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { educationsService } from "../services/educations.service";
 import type { EducationItem } from "../types/education-item.types";
+import { EDUCATION_FEEDBACK_MESSAGES } from "../constants/education-feedback.constants";
 import { EducationView } from "./education-view";
 
 vi.mock("../services/educations.service", () => ({
@@ -106,6 +107,57 @@ describe("EducationView", () => {
     const list = await screen.findByRole("list", { name: "Formación registrada" });
     expect(list).toHaveTextContent("Feb 2021 – Fecha de fin no registrada");
     expect(list.querySelectorAll("p")).toHaveLength(1);
+  });
+
+  it("edits a legacy description without sending or inventing an end date", async () => {
+    const legacy = { ...EDUCATIONS[0], endDate: null };
+    const updated = { ...legacy, description: "Updated description" };
+    vi.mocked(educationsService.getEducations).mockResolvedValueOnce([legacy]).mockResolvedValueOnce([updated]);
+    vi.mocked(educationsService.updateEducation).mockResolvedValue(updated);
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await user.click(await screen.findByRole("button", { name: "Editar Computer Science" }));
+    expect(screen.getByLabelText(/Hasta/)).not.toBeRequired();
+    fireEvent.change(screen.getByLabelText(/Descripción/), { target: { value: "Updated description" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    await screen.findByText("Formación académica actualizada correctamente.");
+    expect(educationsService.updateEducation).toHaveBeenCalledExactlyOnceWith(legacy.id, {
+      institution: legacy.institution,
+      degree: legacy.degree,
+      startDate: legacy.startDate,
+      description: "Updated description",
+    });
+    expect(await screen.findByText("Updated description")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Formación registrada" })).toHaveTextContent("Fecha de fin no registrada");
+    expect(screen.getByLabelText(/Hasta/)).toBeRequired();
+  });
+
+  it("allows adding a valid end date to a legacy record", async () => {
+    const legacy = { ...EDUCATIONS[0], endDate: null };
+    vi.mocked(educationsService.getEducations).mockResolvedValue([legacy]);
+    vi.mocked(educationsService.updateEducation).mockResolvedValue(EDUCATIONS[0]);
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await user.click(await screen.findByRole("button", { name: "Editar Computer Science" }));
+    fireEvent.change(screen.getByLabelText(/Hasta/), { target: { value: "2025-11-30" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    await screen.findByText("Formación académica actualizada correctamente.");
+    expect(educationsService.updateEducation).toHaveBeenCalledWith(legacy.id, expect.objectContaining({ endDate: "2025-11-30" }));
+  });
+
+  it("retains the form after a conflict without reloading, clearing or retrying", async () => {
+    vi.mocked(educationsService.updateEducation).mockRejectedValue({ response: { status: 409 } });
+    const user = userEvent.setup();
+    render(<EducationView />);
+    await user.click(await screen.findByRole("button", { name: "Editar Computer Science" }));
+    fireEvent.change(screen.getByLabelText(/Título o carrera/), { target: { value: "Unsaved title" } });
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(EDUCATION_FEEDBACK_MESSAGES.updateConflict);
+    expect(screen.getByLabelText(/Título o carrera/)).toHaveValue("Unsaved title");
+    expect(screen.getByRole("button", { name: "Guardar formación" })).toBeEnabled();
+    expect(educationsService.getEducations).toHaveBeenCalledTimes(1);
+    expect(educationsService.updateEducation).toHaveBeenCalledTimes(1);
+    expect(educationsService.createEducation).not.toHaveBeenCalled();
   });
 
   it("renders the four numbered trajectory sub-tabs with education as active", async () => {

@@ -17,6 +17,7 @@ import { SectionCard } from "./section-card";
 
 export function EducationForm({
   initialValues,
+  allowMissingEndDate = false,
   isPending = false,
   feedback = null,
   onSubmit,
@@ -27,7 +28,7 @@ export function EducationForm({
   );
   const title = initialValues ? EDUCATION_UI_TEXTS.editTitle : EDUCATION_UI_TEXTS.createTitle;
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const errors = hasSubmitted ? validateEducationForm(values) : {};
+  const errors = hasSubmitted ? validateEducationForm(values, allowMissingEndDate) : {};
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
@@ -38,7 +39,7 @@ export function EducationForm({
     event.preventDefault();
     if (isPending) return;
     setHasSubmitted(true);
-    if (Object.keys(validateEducationForm(values)).length > 0) return;
+    if (Object.keys(validateEducationForm(values, allowMissingEndDate)).length > 0) return;
     await onSubmit(values);
   };
 
@@ -88,13 +89,13 @@ export function EducationForm({
               className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 h-12 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
             />
           </FormField>
-          <FormField id="education-endDate" label={EDUCATION_UI_TEXTS.endDateLabel} isRequired error={errors.endDate}>
+          <FormField id="education-endDate" label={EDUCATION_UI_TEXTS.endDateLabel} isRequired={!allowMissingEndDate} error={errors.endDate}>
             <Input
               id="education-endDate"
               {...getFieldErrorProps("education-endDate", errors.endDate)}
               name="endDate"
               type="date"
-              required
+              required={!allowMissingEndDate}
               value={values.endDate}
               disabled={isPending}
               onChange={handleChange}

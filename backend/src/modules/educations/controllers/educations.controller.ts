@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiParam,
@@ -27,6 +28,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { ResponseInterceptor } from '../../../common/interceptors/response.interceptor.js';
 import { buildRequestValidationException } from '../../../common/utils/build-request-validation-exception.js';
 import { toApiBody } from '../../../common/utils/to-api-body.js';
+import { EDUCATION_CONFLICT_MESSAGE } from '../constants/education-conflict.constants.js';
 import {
   createEducationSchema,
   type CreateEducationRequest,
@@ -74,6 +76,7 @@ export class EducationsController {
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   @ApiBody(toApiBody(updateEducationSchema))
   @ApiOkResponse({ description: 'Updated education record' })
+  @ApiConflictResponse({ description: EDUCATION_CONFLICT_MESSAGE })
   @ApiNotFoundResponse({
     description: 'Education record not found for this user',
   })

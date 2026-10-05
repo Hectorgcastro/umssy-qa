@@ -3,6 +3,7 @@ import type { Feedback } from "./feedback.types";
 
 export interface EducationFormProps {
   initialValues?: EducationFormValues;
+  allowMissingEndDate?: boolean;
   isPending?: boolean;
   feedback?: Feedback | null;
   onSubmit: (values: EducationFormValues) => void | Promise<void>;

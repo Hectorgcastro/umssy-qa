@@ -54,4 +54,15 @@ describe("validateEducationForm", () => {
       },
     );
   });
+
+  it("allows preserving a missing end date only when explicitly enabled", () => {
+    const legacy = { ...VALUES, endDate: "" };
+    expect(validateEducationForm(legacy, true)).toEqual({});
+    expect(validateEducationForm(legacy).endDate).toBeTruthy();
+    expect(validateEducationForm({ ...legacy, startDate: "" }, true).startDate).toBeTruthy();
+  });
+
+  it.each(["2020-02-28", "2024-13-01", " "])("still rejects invalid supplied end date %s for legacy records", (endDate) => {
+    expect(validateEducationForm({ ...VALUES, endDate }, true).endDate).toBeTruthy();
+  });
 });

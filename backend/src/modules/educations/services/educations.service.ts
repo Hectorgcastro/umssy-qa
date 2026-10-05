@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EducationNotFoundException } from '../exceptions/education-not-found.exception.js';
+import { EducationUpdateConflictException } from '../exceptions/education-update-conflict.exception.js';
 import { InvalidEducationDateRangeException } from '../exceptions/invalid-education-date-range.exception.js';
 import { EducationMapper } from '../mappers/education.mapper.js';
 import { EducationsRepository } from '../repositories/educations.repository.js';
@@ -44,9 +45,15 @@ export class EducationsService {
       request.startDate ?? record.startDate,
       request.endDate === undefined ? record.endDate : request.endDate,
     );
-    const updated = await this.repository.update(id, userId, request);
+    const updated = await this.repository.update(id, userId, request, {
+      startDate: record.startDate,
+      endDate: record.endDate,
+    });
     if (!updated) {
-      throw new EducationNotFoundException();
+      if (!(await this.repository.findByIdAndUserId(id, userId))) {
+        throw new EducationNotFoundException();
+      }
+      throw new EducationUpdateConflictException();
     }
     return this.mapper.toResponse(updated);
   }
