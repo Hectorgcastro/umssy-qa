@@ -1,19 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { getWeekRange } from "@/shared/utils/date-time";
 import { AvailabilityLoading } from "../components/availability-loading";
 import { BlockForm } from "../components/block-form";
+import { DeleteBlockDialog } from "../components/delete-block-dialog";
 import { BLOCK_LOAD_ERROR, MY_AVAILABILITY_PATH } from "../constants/availability.constants";
+import { DELETE_BLOCK_TEXT } from "../constants/delete-block.constants";
 import { useMyBlocks } from "../hooks/use-my-blocks";
 import { useUpdateAvailabilityBlock } from "../hooks/use-update-availability-block";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
+import type { WeekStartProps } from "../types/week-start-props.types";
 
-export function EditBlockView() {
+export function EditBlockView({ initialWeekStart }: WeekStartProps) {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const { blocks, isLoading, error } = useMyBlocks(getWeekRange(new Date()).startAt);
+  const weekStart = initialWeekStart ?? getWeekRange(new Date()).startAt;
+  const { blocks, isLoading, error } = useMyBlocks(weekStart);
   const { updateBlock, isSubmitting, error: submitError } = useUpdateAvailabilityBlock();
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const block = blocks.find((item) => item.id === id);
 
@@ -29,15 +36,17 @@ export function EditBlockView() {
     return <p className="p-6 text-center text-destructive">{BLOCK_LOAD_ERROR}</p>;
   }
 
+  const backPath = `${MY_AVAILABILITY_PATH}?week=${encodeURIComponent(weekStart)}`;
+
   const handleSubmit = async (values: CreateAvailabilityBlockInput) => {
     const updated = await updateBlock(block.id, values);
     if (updated) {
-      router.push(MY_AVAILABILITY_PATH);
+      router.push(backPath);
     }
   };
 
   const handleCancel = () => {
-    router.push(MY_AVAILABILITY_PATH);
+    router.push(backPath);
   };
 
   return (
@@ -56,7 +65,25 @@ export function EditBlockView() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
+
+        <div className="mt-4 flex justify-end">
+          <Button
+            type="button"
+            variant="destructive"
+            size="lg"
+            onClick={() => setIsDeleteOpen(true)}
+          >
+            {DELETE_BLOCK_TEXT.action}
+          </Button>
+        </div>
       </div>
+
+      <DeleteBlockDialog
+        block={block}
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onDeleted={() => router.push(backPath)}
+      />
     </div>
   );
 }

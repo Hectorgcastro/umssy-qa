@@ -1,4 +1,4 @@
-import { render, screen, waitFor, cleanup } from "@testing-library/react"
+import { render, screen, waitFor, cleanup, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { EditBlockView } from "./edit-block-view"
@@ -6,6 +6,8 @@ import { availabilityApi } from "../services/availability.api"
 
 const push = vi.fn()
 const routeParams = { id: "1" }
+const WEEK_START = "2030-05-11T04:00:00.000Z"
+const BACK_PATH = "/mentor/availability?week=2030-05-11T04%3A00%3A00.000Z"
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
@@ -62,7 +64,7 @@ describe("EditBlockView", () => {
       .mockResolvedValue({ ...mockBlock, endAt: "2030-05-13T18:00:00.000Z" })
     const user = userEvent.setup()
 
-    render(<EditBlockView />)
+    render(<EditBlockView initialWeekStart={WEEK_START} />)
     await screen.findByText("Editar bloque")
 
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
@@ -74,7 +76,7 @@ describe("EditBlockView", () => {
       })
     })
     await waitFor(() => {
-      expect(push).toHaveBeenCalledWith("/mentor/availability")
+      expect(push).toHaveBeenCalledWith(BACK_PATH)
     })
   })
 
@@ -122,12 +124,52 @@ describe("EditBlockView", () => {
     const updateSpy = vi.spyOn(availabilityApi, "updateAvailabilityBlock")
     const user = userEvent.setup()
 
-    render(<EditBlockView />)
+    render(<EditBlockView initialWeekStart={WEEK_START} />)
     await screen.findByText("Editar bloque")
 
     await user.click(screen.getByRole("button", { name: "Cancelar" }))
 
-    expect(push).toHaveBeenCalledWith("/mentor/availability")
+    expect(push).toHaveBeenCalledWith(BACK_PATH)
     expect(updateSpy).not.toHaveBeenCalled()
+  })
+
+  it("elimina el bloque y vuelve a la lista", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([mockBlock])
+    const deleteSpy = vi
+      .spyOn(availabilityApi, "deleteAvailabilityBlock")
+      .mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<EditBlockView initialWeekStart={WEEK_START} />)
+    await screen.findByText("Editar bloque")
+
+    await user.click(screen.getByRole("button", { name: "Eliminar este bloque" }))
+    const dialog = await screen.findByRole("alertdialog")
+    expect(within(dialog).getByText("¿Eliminar este bloque?")).toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole("button", { name: "Eliminar bloque" }))
+
+    await waitFor(() => expect(deleteSpy).toHaveBeenCalledWith("1"))
+    await waitFor(() => expect(push).toHaveBeenCalledWith(BACK_PATH))
+  })
+
+  it("cancelar el diálogo de eliminar conserva el bloque", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([mockBlock])
+    const deleteSpy = vi
+      .spyOn(availabilityApi, "deleteAvailabilityBlock")
+      .mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<EditBlockView initialWeekStart={WEEK_START} />)
+    await screen.findByText("Editar bloque")
+
+    await user.click(screen.getByRole("button", { name: "Eliminar este bloque" }))
+    const dialog = await screen.findByRole("alertdialog")
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument())
+    expect(deleteSpy).not.toHaveBeenCalled()
+    expect(push).not.toHaveBeenCalled()
+    expect(screen.getByText("Editar bloque")).toBeInTheDocument()
   })
 })
