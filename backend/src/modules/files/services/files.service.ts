@@ -11,9 +11,20 @@ import {
 import type { CreateFileInput, FileContent, FileMetadata } from '../types/file.types.js';
 
 const KNOWN_EXTENSION_REGEX = /\.(pdf|png|jpe?g)$/i;
-const CONTROL_CHARS_REGEX = /[\u0000-\u001f\u007f]/g;
 const FORBIDDEN_CHARS_REGEX = /[\\/:*?"<>|]/g;
 const EDGE_DOTS_AND_SPACES_REGEX = /^[.\s]+|[.\s]+$/g;
+
+const LAST_CONTROL_CODE = 0x1f;
+const DELETE_CODE = 0x7f;
+
+function removeControlChars(value: string): string {
+  return Array.from(value)
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > LAST_CONTROL_CODE && code !== DELETE_CODE;
+    })
+    .join('');
+}
 
 @Injectable()
 export class FilesService {
@@ -69,8 +80,7 @@ export class FilesService {
   // Quita rutas, caracteres de control o prohibidos y la extensión conocida; la extensión guardada sale del tipo detectado
   private sanitizeName(rawName: string | undefined): string {
     const baseName = (rawName ?? '').split(/[\\/]/).pop() ?? '';
-    const name = baseName
-      .replace(CONTROL_CHARS_REGEX, '')
+    const name = removeControlChars(baseName)
       .replace(KNOWN_EXTENSION_REGEX, '')
       .replace(FORBIDDEN_CHARS_REGEX, '')
       .replace(EDGE_DOTS_AND_SPACES_REGEX, '')
