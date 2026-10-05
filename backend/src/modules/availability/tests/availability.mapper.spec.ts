@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  APPOINTMENT_STATUS_CONFIRMED,
-  APPOINTMENT_STATUS_PENDING,
-} from '../constants/appointment-status.constants.js';
+import { AppointmentStatusTitle } from '../enums/appointment-status-title.enum.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import type { AvailabilityBlockWithAppointments } from '../types/availability-block-with-appointments.types.js';
 
@@ -39,20 +36,20 @@ describe('AvailabilityMapper', () => {
   });
 
   it('marca como pending un bloque con cita pendiente', () => {
-    expect(mapper.toResponse(buildBlock([APPOINTMENT_STATUS_PENDING])).state).toBe('pending');
+    expect(mapper.toResponse(buildBlock([AppointmentStatusTitle.PENDING])).state).toBe('pending');
   });
 
   it('marca como confirmed un bloque con cita confirmada', () => {
-    expect(mapper.toResponse(buildBlock([APPOINTMENT_STATUS_CONFIRMED])).state).toBe('confirmed');
+    expect(mapper.toResponse(buildBlock([AppointmentStatusTitle.CONFIRMED])).state).toBe('confirmed');
   });
 
   it('prioriza confirmed si el bloque tiene citas pendiente y confirmada', () => {
-    const block = buildBlock([APPOINTMENT_STATUS_PENDING, APPOINTMENT_STATUS_CONFIRMED]);
+    const block = buildBlock([AppointmentStatusTitle.PENDING, AppointmentStatusTitle.CONFIRMED]);
     expect(mapper.toResponse(block).state).toBe('confirmed');
   });
 
   it('mapea una lista manteniendo el orden', () => {
-    const second = { ...buildBlock([APPOINTMENT_STATUS_PENDING]), id: 'block-2' };
+    const second = { ...buildBlock([AppointmentStatusTitle.PENDING]), id: 'block-2' };
     const result = mapper.toResponseList([buildBlock(), second]);
     expect(result.map((block) => [block.id, block.state])).toEqual([
       ['block-1', 'free'],
