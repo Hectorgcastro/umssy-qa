@@ -6,7 +6,8 @@ import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
 import { ChatRoom } from '../components/chat-room';
-import { Message } from '../types/conversation.types';
+import { Message, Conversation } from '../types/conversation.types';
+import { User } from '../types/user.types';
 import { getMessages, sendMessage } from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 
@@ -18,6 +19,7 @@ export function ChatView() {
 
   const {
     conversations,
+    selectedConversation,
     hasMore,
     loadMore,
     selectedId,
@@ -31,9 +33,6 @@ export function ChatView() {
     startConversationWithContact,
   } = useConversations();
 
-  const selectedConversation = conversations.find((item) => item.id === selectedId);
-
-  // Carga de mensajes de la conversacion seleccionada
   useEffect(() => {
     if (!selectedId) return;
 
@@ -57,46 +56,46 @@ export function ChatView() {
     };
   }, [selectedId]);
 
+  const handleBackToList = () => {
+    clearSelectedConversation();
+  };
+
   const handleSelectChat = (conversation: Conversation) => {
     setIsLoadingMessages(true);
     handleSelectConversation(conversation);
   };
 
-  const handleStartChatWithContact = async (contactUser: Parameters<typeof startConversationWithContact>[0]) => {
+  const handleStartNewChat = () => {
+    if (activeFilter !== 'all') {
+      setActiveFilter('all');
+    }
+    setIsSearchModalOpen(true);
+  };
+
+  const handleStartChatWithContact = async (contactUser: User) => {
+    if (activeFilter !== 'all') {
+      setActiveFilter('all');
+    }
     setIsLoadingMessages(true);
     await startConversationWithContact(contactUser);
   };
 
-  const handleBackToList = () => {
-    clearSelectedConversation();
-  };
-
-  const handleStartNewChat = () => {
-    setIsSearchModalOpen(true);
-  };
-
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!selectedId || isSending) return;
     setIsSending(true);
-
     try {
-      const response = await sendMessage({
-        conversationId: selectedId,
-        senderId: CURRENT_USER_ID,
-        content,
-      });
-      setMessages((prev) => [...prev, response.data]);
+      const newMsg = await sendMessage(selectedId, text, CURRENT_USER_ID);
+      setMessages((prev) => [...prev, newMsg]);
     } catch {
-      // Manejo de errores
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <div className="flex h-screen h-[100dvh] w-full max-w-full bg-slate-50 overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-slate-50 overflow-hidden font-sans">
       <aside
-        className={`w-full md:w-80 lg:w-96 h-full shrink-0 overflow-hidden ${
+        className={`w-full md:w-80 lg:w-96 h-full shrink-0 ${
           selectedId ? 'hidden md:block' : 'block'
         }`}
       >
@@ -116,7 +115,7 @@ export function ChatView() {
       </aside>
 
       <main
-        className={`flex-1 h-full min-w-0 min-h-0 bg-white flex flex-col overflow-hidden ${
+        className={`flex-1 h-full bg-white flex flex-col ${
           !selectedId ? 'hidden md:flex' : 'flex'
         }`}
       >

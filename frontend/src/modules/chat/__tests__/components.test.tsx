@@ -190,4 +190,51 @@ describe('Chat Components', () => {
     fireEvent.click(loadMoreBtn);
     expect(handleLoadMore).toHaveBeenCalled();
   });
+
+  it('ConversationList debe mostrar los diferentes mensajes de estado vacio segun filtros', () => {
+    const { rerender } = render(
+      <ConversationList
+        conversations={[]}
+        selectedId={null}
+        isLoading={false}
+        hasMore={false}
+        activeFilter="unread"
+        searchQuery=""
+        onSelectConversation={vi.fn()}
+        onFilterChange={vi.fn()}
+        onSearchChange={vi.fn()}
+      />
+    );
+    expect(screen.getByText('No tienes mensajes sin leer.')).toBeDefined();
+
+    rerender(
+      <ConversationList
+        conversations={[]}
+        selectedId={null}
+        isLoading={false}
+        hasMore={false}
+        activeFilter="all"
+        searchQuery="TextoNoExistente"
+        onSelectConversation={vi.fn()}
+        onFilterChange={vi.fn()}
+        onSearchChange={vi.fn()}
+      />
+    );
+    expect(screen.getByText('No se encontraron conversaciones que coincidan con tu busqueda.')).toBeDefined();
+
+    rerender(
+      <ConversationList
+        conversations={[]}
+        selectedId={null}
+        isLoading={false}
+        hasMore={false}
+        activeFilter="all"
+        searchQuery=""
+        onSelectConversation={vi.fn()}
+        onFilterChange={vi.fn()}
+        onSearchChange={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Aun no tienes ninguna conversacion registrada.')).toBeDefined();
+  });
 });
