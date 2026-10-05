@@ -79,7 +79,12 @@ export const ModelName = {
   EventCategory: 'EventCategory',
   Event: 'Event',
   EventRegistration: 'EventRegistration',
-  EventAttendance: 'EventAttendance'
+  EventAttendance: 'EventAttendance',
+  AccessRequestStatus: 'AccessRequestStatus',
+  AccessRequestDocumentType: 'AccessRequestDocumentType',
+  File: 'File',
+  AccessRequest: 'AccessRequest',
+  ActivationOtp: 'ActivationOtp'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -482,6 +487,82 @@ export const EventAttendanceScalarFieldEnum = {
 } as const
 
 export type EventAttendanceScalarFieldEnum = (typeof EventAttendanceScalarFieldEnum)[keyof typeof EventAttendanceScalarFieldEnum]
+
+
+export const AccessRequestStatusScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccessRequestStatusScalarFieldEnum = (typeof AccessRequestStatusScalarFieldEnum)[keyof typeof AccessRequestStatusScalarFieldEnum]
+
+
+export const AccessRequestDocumentTypeScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccessRequestDocumentTypeScalarFieldEnum = (typeof AccessRequestDocumentTypeScalarFieldEnum)[keyof typeof AccessRequestDocumentTypeScalarFieldEnum]
+
+
+export const FileScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  extension: 'extension',
+  mimeType: 'mimeType',
+  size: 'size',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
+
+
+export const AccessRequestScalarFieldEnum = {
+  id: 'id',
+  requestCode: 'requestCode',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  idCardNumber: 'idCardNumber',
+  idCardIssuedIn: 'idCardIssuedIn',
+  sisCode: 'sisCode',
+  email: 'email',
+  phone: 'phone',
+  birthDate: 'birthDate',
+  entryYear: 'entryYear',
+  statusId: 'statusId',
+  documentTypeId: 'documentTypeId',
+  documentFileId: 'documentFileId',
+  submittedAt: 'submittedAt',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  rejectionReason: 'rejectionReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccessRequestScalarFieldEnum = (typeof AccessRequestScalarFieldEnum)[keyof typeof AccessRequestScalarFieldEnum]
+
+
+export const ActivationOtpScalarFieldEnum = {
+  id: 'id',
+  accessRequestId: 'accessRequestId',
+  codeHash: 'codeHash',
+  expiresAt: 'expiresAt',
+  attempts: 'attempts',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ActivationOtpScalarFieldEnum = (typeof ActivationOtpScalarFieldEnum)[keyof typeof ActivationOtpScalarFieldEnum]
 
 
 export const SortOrder = {
