@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Prisma } from '../../../prisma/client.js';
 import { AccessRequestsRepository } from '../repositories/access-requests.repository.js';
-import { AccessRequestNotFoundException } from '../exceptions/index.js';
+import { AccessRequestCatalogMissingException, AccessRequestNotFoundException } from '../exceptions/index.js';
 
 const dto = {
   firstName: 'Ana',
@@ -33,6 +33,21 @@ describe('AccessRequestsRepository', () => {
     expect(args.data.graduationYear).toBe(2019);
     expect(args.select).not.toHaveProperty('documentFile');
     expect(args.select.career).toEqual({ select: { title: true } });
+  });
+
+  it('createDraft con P2025 lanza catálogo faltante (carrera o estado sin sembrar)', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.create.mockRejectedValue(new Prisma.PrismaClientKnownRequestError('no record', { code: 'P2025', clientVersion: 'test' }));
+
+    await expect(repository.createDraft(dto)).rejects.toBeInstanceOf(AccessRequestCatalogMissingException);
+  });
+
+  it('createDraft relanza cualquier otro error igual', async () => {
+    const { accessRequest, repository } = build();
+    const boom = new Error('db caída');
+    accessRequest.create.mockRejectedValue(boom);
+
+    await expect(repository.createDraft(dto)).rejects.toBe(boom);
   });
 
   it('busca por id', async () => {
@@ -100,6 +115,26 @@ describe('AccessRequestsRepository', () => {
 
     expect(accessRequest.update.mock.calls[0][0].data).toEqual({ phone: '71234567' });
     expect(accessRequest.update.mock.calls[0][0].data).not.toHaveProperty('career');
+  });
+
+  it('updateDraft con P2025 y meta.model lanza catálogo faltante', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('no record', { code: 'P2025', clientVersion: 'test', meta: { model: 'Career' } }),
+    );
+
+    await expect(repository.updateDraft('id-1', { career: 'Licenciatura en Ingeniería de Sistemas' })).rejects.toBeInstanceOf(
+      AccessRequestCatalogMissingException,
+    );
+  });
+
+  it('updateDraft con P2025 y meta sin model sigue siendo 404 de dominio', async () => {
+    const { accessRequest, repository } = build();
+    accessRequest.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('no record', { code: 'P2025', clientVersion: 'test', meta: { operation: 'update' } }),
+    );
+
+    await expect(repository.updateDraft('id-1', { phone: '71234567' })).rejects.toBeInstanceOf(AccessRequestNotFoundException);
   });
 
   it('convierte P2025 en 404 de dominio', async () => {
