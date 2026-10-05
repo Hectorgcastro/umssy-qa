@@ -5,15 +5,15 @@ import type { VacancyConditions } from '../hooks/use-job-offer-form';
 import React from 'react';
 
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ children, onValueChange }: any) => (
-    <div data-testid="mock-select" onClick={() => onValueChange('Tiempo completo')}>
+  Select: ({ children, onValueChange }: { children: React.ReactNode, onValueChange?: (val: string) => void }) => (
+    <div data-testid="mock-select" onClick={() => onValueChange?.('Tiempo completo')}>
       {children}
     </div>
   ),
-  SelectTrigger: ({ children }: any) => <div>{children}</div>,
-  SelectValue: ({ placeholder }: any) => <div>{placeholder}</div>,
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children }: any) => <div>{children}</div>,
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <div>{placeholder}</div>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 describe('InformationStep', () => {
@@ -70,7 +70,6 @@ describe('InformationStep', () => {
     const titleInput = container.querySelector('input[type="text"]');
     if (titleInput) {
       fireEvent.change(titleInput, { target: { value: 'Nuevo Título' } });
-
       expect(mockUpdateField).toHaveBeenCalled(); 
     }
   });
