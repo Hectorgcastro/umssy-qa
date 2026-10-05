@@ -50,7 +50,8 @@ export class FilesRepository {
 
   async delete(id: string) {
     try {
-      await this.prisma.file.delete({ where: { id } });
+      // select evita leer content (hasta 10 MB) solo para descartarlo
+      await this.prisma.file.delete({ where: { id }, select: { id: true } });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new FileNotFoundException();

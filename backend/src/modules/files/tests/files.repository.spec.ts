@@ -47,7 +47,7 @@ describe('FilesRepository', () => {
     file.delete.mockResolvedValue({});
 
     await expect(repository.delete('f-1')).resolves.toBeUndefined();
-    expect(file.delete).toHaveBeenCalledWith({ where: { id: 'f-1' } });
+    expect(file.delete).toHaveBeenCalledWith({ where: { id: 'f-1' }, select: { id: true } });
   });
 
   it('convierte P2025 en 404 de dominio', async () => {
