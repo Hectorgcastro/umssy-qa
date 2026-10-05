@@ -56,7 +56,32 @@ describe("RequestStepsSidebar", () => {
     expect(items[2]).toHaveAttribute("aria-current", "step");
     expect(items[0]).not.toHaveAttribute("aria-current");
     expect(screen.getByText("3")).toHaveClass("bg-accent");
-    expect(screen.getByText("1")).not.toHaveClass("bg-accent");
+    // Los pasos anteriores ya no muestran su número: aparecen como completados
+    expect(screen.queryByText("1")).toBeNull();
+    expect(items[0].querySelector("svg")).not.toBeNull();
+    expect(screen.getByText("4")).not.toHaveClass("bg-accent");
+  });
+
+  it("marca el paso 1 como completado con un check accesible cuando el paso actual es el 2", () => {
+    render(<RequestStepsSidebar currentStep={2} />);
+
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).not.toHaveAttribute("aria-current");
+    expect(items[0].querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    expect(items[0]).toHaveTextContent("Paso completado");
+    expect(screen.queryByText("1")).toBeNull();
+    expect(items[1]).toHaveAttribute("aria-current", "step");
+    expect(screen.getByText("2")).toHaveClass("bg-accent");
+    expect(screen.getByText("3")).toHaveClass("border-surface/35");
+    expect(screen.getByText("4")).toHaveClass("border-surface/35");
+    expect(items[2]).not.toHaveTextContent("Paso completado");
+    expect(items[3]).not.toHaveTextContent("Paso completado");
+  });
+
+  it("en el paso 1 ningún paso aparece completado", () => {
+    render(<RequestStepsSidebar />);
+
+    expect(screen.queryByText("Paso completado")).toBeNull();
   });
 
   it("muestra en el pie el escudo dorado y el aviso de privacidad", () => {
@@ -79,7 +104,7 @@ describe("RequestStepsSidebar", () => {
   });
 
   it("no usa el término egresado", () => {
-    const { container } = render(<RequestStepsSidebar />);
+    const { container } = render(<RequestStepsSidebar currentStep={2} />);
 
     expect(container.textContent).not.toMatch(/egres/i);
   });
