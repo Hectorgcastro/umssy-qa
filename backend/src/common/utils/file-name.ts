@@ -13,16 +13,17 @@ export function toFileNameSegment(text: string): string {
     .replace(/^[-.]+|[-.]+$/g, '');
 }
 
-// Une el prefijo del reporte, los filtros usados y la fecha: "usuarios-registrados-estudiante-2026-10-04.csv".
+// Une el prefijo del reporte, los filtros usados y un sufijo final (gestión o fecha):
+// "usuarios-registrados-estudiante-1-2026.csv".
 export function buildExportFileName(
   prefix: string,
   filters: readonly (string | undefined)[],
-  date: string,
+  suffix: string,
   extension: string,
 ): string {
   const filterSegments = filters
     .map((filter) => (filter ? toFileNameSegment(filter) : ''))
     .filter((segment) => segment.length > 0);
 
-  return `${[prefix, ...filterSegments, date].join(FILE_NAME_SEPARATOR)}.${extension}`;
+  return `${[prefix, ...filterSegments, suffix].join(FILE_NAME_SEPARATOR)}.${extension}`;
 }

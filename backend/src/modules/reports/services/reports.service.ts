@@ -27,10 +27,13 @@ import type {
   ReportCsvFile,
   ReportUser,
 } from '../types/report-user.types.js';
+import { getAcademicPeriod } from '../utils/academic-period.js';
 
 const REGISTERED_USERS_CSV_PREFIX = 'usuarios-registrados';
 const REJECTED_USERS_CSV_PREFIX = 'usuarios-rechazados';
 const CSV_EXTENSION = 'csv';
+// Sufijo del nombre del CSV de registrados cuando no se filtró por gestión.
+const ALL_PERIODS_FILE_NAME_SUFFIX = 'todos';
 
 // Ignora mayúsculas y tildes para que "perez" encuentre "Pérez".
 function normalizeText(text: string): string {
@@ -72,7 +75,7 @@ export class ReportsService {
   exportRegisteredUsersCsv(filters: RegisteredUsersFilters): ReportCsvFile {
     const rows = this.findRegisteredUsers(filters).map(toRegisteredUserCsvRow);
 
-    // El nombre del archivo indica los filtros usados: tipo de usuario, gestión y búsqueda.
+    // El nombre indica los filtros usados y termina en la gestión ("todos" si no se eligió una).
     const fileNameFilters = [
       filters.userType && USER_TYPE_LABELS[filters.userType],
       filters.year?.toString(),
@@ -83,7 +86,7 @@ export class ReportsService {
       fileName: buildExportFileName(
         REGISTERED_USERS_CSV_PREFIX,
         fileNameFilters,
-        todayIsoDate(),
+        filters.period ?? ALL_PERIODS_FILE_NAME_SUFFIX,
         CSV_EXTENSION,
       ),
       content: buildCsv(REGISTERED_USERS_CSV_HEADERS, rows),
@@ -125,6 +128,11 @@ export class ReportsService {
         (user) =>
           filters.year === undefined ||
           new Date(user.registeredAt).getUTCFullYear() === filters.year,
+      )
+      .filter(
+        (user) =>
+          filters.period === undefined ||
+          getAcademicPeriod(user.registeredAt) === filters.period,
       )
       .filter((user) =>
         containsSearch(

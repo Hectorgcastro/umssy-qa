@@ -104,10 +104,10 @@ describe('ReportsService', () => {
       );
     });
 
-    it('nombra el archivo con la fecha de exportación', () => {
+    it('termina el nombre del archivo en "todos" si no se filtró por gestión', () => {
       const { fileName } = buildService().exportRegisteredUsersCsv({});
 
-      expect(fileName).toBe('usuarios-registrados-2026-10-03.csv');
+      expect(fileName).toBe('usuarios-registrados-todos.csv');
     });
 
     it('agrega al nombre del archivo los filtros usados', () => {
@@ -120,8 +120,27 @@ describe('ReportsService', () => {
       );
 
       expect(fileName).toBe(
-        'usuarios-registrados-estudiante-2026-ana-perez-2026-10-03.csv',
+        'usuarios-registrados-estudiante-2026-ana-perez-todos.csv',
       );
+    });
+
+    it('termina el nombre del archivo en la gestión en vez de la fecha', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({ period: '2-2025' }),
+      );
+
+      expect(fileName).toBe('usuarios-registrados-2-2025.csv');
+    });
+
+    it('combina el tipo de usuario con la gestión', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({
+          userType: 'STUDENT',
+          period: '1-2026',
+        }),
+      );
+
+      expect(fileName).toBe('usuarios-registrados-estudiante-1-2026.csv');
     });
   });
 
@@ -217,7 +236,32 @@ describe('ReportsService', () => {
       expect(result.items.map((user) => user.id)).toEqual([expectedId]);
     });
 
-    it('filtra por gestión', () => {
+    it.each([
+      { period: '1-2026', expectedIds: ['b', 'a'] },
+      { period: '1-2025', expectedIds: ['c'] },
+      { period: '2-2025', expectedIds: ['h'] },
+      { period: '2-2026', expectedIds: [] },
+    ])('filtra por la gestión $period', ({ period, expectedIds }) => {
+      const service = buildService([
+        ...USERS,
+        buildUser({ id: 'h', registeredAt: '2025-08-10T00:00:00.000Z' }),
+      ]);
+
+      const result = service.getRegisteredUsers(registeredQuery({ period }));
+
+      expect(result.items.map((user) => user.id)).toEqual(expectedIds);
+    });
+
+    it.each(['3-2025', '2025', '1-25', '1-2019'])(
+      'rechaza la gestión inválida %s',
+      (period) => {
+        expect(registeredUsersQuerySchema.safeParse({ period }).success).toBe(
+          false,
+        );
+      },
+    );
+
+    it('filtra por año', () => {
       const result = buildService().getRegisteredUsers(
         registeredQuery({ year: '2025' }),
       );

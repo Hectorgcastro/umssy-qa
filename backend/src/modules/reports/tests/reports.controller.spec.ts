@@ -40,7 +40,7 @@ describe('ReportsController', () => {
   it('devuelve el CSV de registrados como archivo descargable', () => {
     const filters = { userType: 'COMPANY' as const };
     const spy = vi.spyOn(service, 'exportRegisteredUsersCsv').mockReturnValue({
-      fileName: 'usuarios-registrados-2026-10-03.csv',
+      fileName: 'usuarios-registrados-1-2026.csv',
       content: 'Usuario\r\n',
     });
 
@@ -50,7 +50,7 @@ describe('ReportsController', () => {
     expect(file).toBeInstanceOf(StreamableFile);
     expect(file.getHeaders()).toMatchObject({
       type: 'text/csv; charset=utf-8',
-      disposition: 'attachment; filename="usuarios-registrados-2026-10-03.csv"',
+      disposition: 'attachment; filename="usuarios-registrados-1-2026.csv"',
     });
   });
 
