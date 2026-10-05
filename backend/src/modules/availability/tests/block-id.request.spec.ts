@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DELETE_BLOCK_MESSAGES as MSG } from '../constants/delete-block.constants.js';
-import { blockIdSchema } from '../requests/delete-block.request.js';
+import { BLOCK_ID_MESSAGES as MSG } from '../constants/block-id.constants.js';
+import { blockIdSchema } from '../requests/block-id.request.js';
 
 const messagesOf = (input: unknown): string[] => {
   const result = blockIdSchema.safeParse(input);

@@ -8,7 +8,7 @@ import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { DELETE_BLOCK_DOCS, FIND_MY_BLOCKS_DOCS } from '../constants/availability-docs.constants.js';
 import { weekQuerySchema } from '../requests/week-query.request.js';
-import { blockIdSchema } from '../requests/delete-block.request.js';
+import { blockIdSchema } from '../requests/block-id.request.js';
 import { AvailabilityService } from '../services/availability.service.js';
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
 import type { WeekQueryPayload } from '../types/week-query-payload.types.js';
