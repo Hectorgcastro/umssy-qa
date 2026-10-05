@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { Prisma } from '../../../prisma/client.js';
-import { AccessRequestNotFoundException } from '../exceptions/index.js';
+import { AccessRequestCatalogMissingException, AccessRequestNotFoundException } from '../exceptions/index.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
 import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
@@ -35,16 +35,24 @@ const ACTIVE_STATUSES: string[] = [
 export class AccessRequestsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  createDraft(data: CreateAccessRequestDto) {
+  // En el create, P2025 solo puede venir de un connect: la carrera o el estado no existen (seed sin correr)
+  async createDraft(data: CreateAccessRequestDto) {
     const { career, ...rest } = data;
-    return this.prisma.accessRequest.create({
-      data: {
-        ...rest,
-        status: { connect: { title: ACCESS_REQUEST_STATUS.DRAFT } },
-        career: { connect: { title: career } },
-      },
-      select: ACCESS_REQUEST_SELECT,
-    });
+    try {
+      return await this.prisma.accessRequest.create({
+        data: {
+          ...rest,
+          status: { connect: { title: ACCESS_REQUEST_STATUS.DRAFT } },
+          career: { connect: { title: career } },
+        },
+        select: ACCESS_REQUEST_SELECT,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new AccessRequestCatalogMissingException();
+      }
+      throw error;
+    }
   }
 
   findById(id: string) {
@@ -79,6 +87,13 @@ export class AccessRequestsRepository {
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        // P2025 puede venir de la solicitud (no existe o ya no es borrador) o de un connect anidado (carrera o estado sin sembrar).
+        // En el segundo caso el runtime de Prisma agrega meta.model con el modelo relacionado que falló; en el primero no.
+        // Es un detalle interno del runtime, no una API documentada.
+        // TODO: confirmar el comportamiento de meta al actualizar Prisma
+        if (typeof error.meta?.model === 'string') {
+          throw new AccessRequestCatalogMissingException();
+        }
         throw new AccessRequestNotFoundException();
       }
       throw error;

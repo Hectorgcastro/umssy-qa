@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DomainException } from '../../../common/exceptions/domain.exception.js';
 import {
+  AccessRequestCatalogMissingException,
   AccessRequestNotEditableException,
   AccessRequestNotFoundException,
   DuplicateAccessRequestDataException,
@@ -10,6 +11,11 @@ import {
 describe('excepciones de access-requests', () => {
   it.each([
     [AccessRequestNotFoundException, 404, 'La solicitud de acceso no existe'],
+    [
+      AccessRequestCatalogMissingException,
+      500,
+      'No se pudo completar la solicitud porque faltan datos base (carreras o estados). Avisa al administrador.',
+    ],
     [AccessRequestNotEditableException, 409, 'La solicitud ya fue enviada y no se puede modificar'],
     [DuplicateAccessRequestDataException, 409, 'Ya existe una cuenta o solicitud con estos datos'],
     [InvalidGraduationYearException, 400, 'El año de titulación no puede ser anterior a los 18 años de edad'],
