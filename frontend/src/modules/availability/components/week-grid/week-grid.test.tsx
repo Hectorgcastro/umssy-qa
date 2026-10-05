@@ -40,6 +40,15 @@ describe("WeekGrid", () => {
     expect(screen.getByText("Cita confirmada")).toBeInTheDocument();
   });
 
+  it("muestra Tu selección en la leyenda solo en variant selectable", () => {
+    render(<WeekGrid blocks={[]} weekRange={WEEK_RANGE} variant="selectable" />);
+    expect(screen.getByText("Tu selección")).toBeInTheDocument();
+    cleanup();
+
+    render(<WeekGrid blocks={[]} weekRange={WEEK_RANGE} variant="owner" />);
+    expect(screen.queryByText("Tu selección")).not.toBeInTheDocument();
+  });
+
   it("en variant selectable, dispara onSelectBlock solo al hacer click en un bloque libre", () => {
     const onSelectBlock = vi.fn();
     render(
@@ -54,6 +63,28 @@ describe("WeekGrid", () => {
     fireEvent.click(screen.getByRole("button", { name: /^libre,/ }));
     expect(onSelectBlock).toHaveBeenCalledTimes(1);
     expect(onSelectBlock).toHaveBeenCalledWith(blocks[0]);
+  });
+
+  it("en variant selectable, resalta el bloque indicado en selectedBlockId", () => {
+    const freeBlocks = [
+      makeBlock({ id: "1" }),
+      makeBlock({ id: "4", startAt: "2026-10-08T14:00:00.000Z", endAt: "2026-10-08T15:00:00.000Z" }),
+    ];
+    render(
+      <WeekGrid
+        blocks={freeBlocks}
+        weekRange={WEEK_RANGE}
+        variant="selectable"
+        selectedBlockId="1"
+      />
+    );
+
+    const selected = screen.getByRole("button", { name: "libre, 18:00 a 19:00" });
+    const other = screen.getByRole("button", { name: "libre, 10:00 a 11:00" });
+    expect(selected).toHaveAttribute("aria-pressed", "true");
+    expect(selected).toHaveClass("ring-primary");
+    expect(other).not.toHaveAttribute("aria-pressed");
+    expect(other).not.toHaveClass("ring-primary");
   });
 
   it("en variant selectable, un bloque pendiente o confirmado está deshabilitado y no dispara el callback", () => {
@@ -140,4 +171,25 @@ describe("WeekGrid", () => {
       screen.getByRole("button", { name: /confirmada, 20:00 a 21:00/ })
     ).toBeInTheDocument();
   });
+
+  it("muestra la grilla desde md y la lista por día en pantallas chicas", () => {
+    render(<WeekGrid blocks={blocks} weekRange={WEEK_RANGE} variant="owner" />);
+
+    const grid = screen.getByRole("heading", { name: "LUN" }).closest("section")?.parentElement;
+    expect(grid).toHaveClass("hidden", "md:grid");
+    expect(screen.getByRole("heading", { name: "Lunes 5 de octubre" }).closest("ol")).toHaveClass(
+      "md:hidden"
+    );
+  });
+
+  it("en la lista por día, dispara onEditBlock en variant owner al tocar un bloque libre", () => {
+    const onEditBlock = vi.fn();
+    render(
+      <WeekGrid blocks={blocks} weekRange={WEEK_RANGE} variant="owner" onEditBlock={onEditBlock} />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Martes 6 de octubre, 18:00 a 19:00, libre" }));
+    expect(onEditBlock).toHaveBeenCalledWith(blocks[0]);
+  });
 });
+

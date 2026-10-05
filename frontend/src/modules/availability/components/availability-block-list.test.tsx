@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { describe, it, expect, vi } from "vitest"
 import { AvailabilityBlockList } from "./availability-block-list"
 import type { AvailabilityBlock } from "../types/availability-block.types"
 
@@ -31,5 +32,35 @@ describe("AvailabilityBlockList", () => {
     expect(
       screen.getByText(`Fin: ${new Date(mockBlock.endAt).toLocaleString("es-BO")}`)
     ).toBeInTheDocument()
+  })
+
+  it("no muestra el botón de eliminar sin la propiedad onDelete", () => {
+    render(<AvailabilityBlockList blocks={[mockBlock]} emptyMessage="Sin bloques" />)
+
+    expect(
+      screen.queryByRole("button", { name: "Eliminar bloque" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("muestra un botón de eliminar por bloque y notifica el bloque correcto", async () => {
+    const user = userEvent.setup()
+    const otherBlock: AvailabilityBlock = { ...mockBlock, id: "2" }
+    const onDelete = vi.fn()
+
+    render(
+      <AvailabilityBlockList
+        blocks={[mockBlock, otherBlock]}
+        emptyMessage="Sin bloques"
+        onDelete={onDelete}
+      />
+    )
+
+    const buttons = screen.getAllByRole("button", { name: "Eliminar bloque" })
+    expect(buttons).toHaveLength(2)
+
+    await user.click(buttons[1])
+
+    expect(onDelete).toHaveBeenCalledTimes(1)
+    expect(onDelete).toHaveBeenCalledWith(otherBlock)
   })
 })

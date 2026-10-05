@@ -4,9 +4,10 @@ import { useMentorFreeBlocks } from "../hooks/use-mentor-free-blocks";
 import { AvailabilityBlockList } from "../components/availability-block-list";
 import { AvailabilityLoading } from "../components/availability-loading";
 import type { MentorPublicAvailabilityViewProps } from "../types/mentor-public-availability-view-props.types";
+import { getWeekRange } from "@/shared/utils/date-time";
 
 export function MentorPublicAvailabilityView({ mentorId }: MentorPublicAvailabilityViewProps) {
-  const { blocks, isLoading, error } = useMentorFreeBlocks(mentorId);
+  const { blocks, isLoading, error } = useMentorFreeBlocks(mentorId, getWeekRange(new Date()));
 
   if (isLoading) {
     return <AvailabilityLoading />;

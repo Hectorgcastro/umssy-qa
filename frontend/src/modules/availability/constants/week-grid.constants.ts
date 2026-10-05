@@ -22,3 +22,9 @@ export const STATE_LABELS_ES: Record<AvailabilityBlockState, string> = {
   pending: "pendiente",
   confirmed: "confirmada",
 };
+
+export const SELECTED_BLOCK_CLASSES = "border-primary bg-primary/10 ring-2 ring-primary";
+
+export const SELECTED_LEGEND_LABEL = "Tu selección";
+
+export const EMPTY_DAY_LABEL = "Sin bloques";

@@ -1,8 +1,8 @@
 import { apiClient } from "@/shared/services/api-client";
-import type { WeekRange } from "@/shared/types/week-range.types";
 import type { AvailabilityBlock } from "../types/availability-block.types";
 import type { CreateAvailabilityBlockInput } from "../types/create-availability-block-input.types";
 import type { AvailabilityFilters } from "../types/availability-filters.types";
+import type { WeekRange } from "@/shared/types/week-range.types";
 
 function toISOString(value: string): string {
   return new Date(value).toISOString();
@@ -18,15 +18,10 @@ export const availabilityApi = {
     return response.data;
   },
 
-  getMentorFreeBlocks: async (mentorId: string, weekRange?: WeekRange): Promise<AvailabilityBlock[]> => {
-    const params = new URLSearchParams();
-    if (weekRange) {
-      params.append("from", toISOString(weekRange.startAt));
-      params.append("to", toISOString(weekRange.endAt));
-    }
-    const query = params.toString();
+  getMentorFreeBlocks: async (mentorId: string, range: WeekRange): Promise<AvailabilityBlock[]> => {
+    const params = new URLSearchParams({ from: range.startAt, to: range.endAt });
     const response = await apiClient.get<AvailabilityBlock[]>(
-      `/mentors/${encodeURIComponent(mentorId)}/free-blocks${query ? `?${query}` : ""}`
+      `/mentors/${encodeURIComponent(mentorId)}/free-blocks?${params.toString()}`,
     );
     return response.data;
   },
@@ -54,6 +49,6 @@ export const availabilityApi = {
   },
 
   deleteAvailabilityBlock: async (id: string): Promise<void> => {
-    await apiClient.delete(`/availability-blocks/${id}`);
+    await apiClient.delete(`/availability-blocks/${encodeURIComponent(id)}`);
   },
 };

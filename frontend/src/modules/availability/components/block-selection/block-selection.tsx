@@ -1,97 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useBlockSelection } from "../../hooks/use-block-selection";
+import type { BlockSelectionProps } from "../../types/block-selection-props.types";
 import { WeekGrid } from "../week-grid/week-grid";
-import type { AvailabilityBlock } from "../../types/availability-block.types";
-import type { WeekRange } from "@/shared/types/week-range.types";
+import { BlockSelectionPanel } from "./block-selection-panel";
 
-interface BlockSelectionProps {
-  blocks: AvailabilityBlock[];
-  weekRange: WeekRange;
-  fetchFreeBlocks: () => Promise<AvailabilityBlock[]>;
-}
+export function BlockSelection({ blocks, weekRange, fetchFreeBlocks }: BlockSelectionProps) {
+  const { selectedBlock, unavailableBlock, unavailableBlockIds, isChecking, error, selectBlock } =
+    useBlockSelection(fetchFreeBlocks);
 
-export function BlockSelection({
-  blocks,
-  weekRange,
-  fetchFreeBlocks,
-}: BlockSelectionProps) {
-  const [currentBlocks, setCurrentBlocks] =
-    useState<AvailabilityBlock[]>(blocks);
-
-  const [selectedBlock, setSelectedBlock] =
-    useState<AvailabilityBlock | null>(null);
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  useEffect(() => {
-    setCurrentBlocks(blocks);
-    setSelectedBlock(null);
-  }, [blocks, weekRange]);
-
-  const freeBlocks = useMemo(
-    () => currentBlocks.filter((block) => block.state === "free"),
-    [currentBlocks],
-  );
-
-  const refreshBlocks = useCallback(async () => {
-    setIsRefreshing(true);
-
-    try {
-      const refreshedBlocks = await fetchFreeBlocks();
-
-      const refreshedFreeBlocks = refreshedBlocks.filter(
-        (block) => block.state === "free",
-      );
-
-      setCurrentBlocks(refreshedFreeBlocks);
-
-      setSelectedBlock((current) => {
-        if (!current) return null;
-
-        const stillAvailable = refreshedFreeBlocks.some(
-          (block) => block.id === current.id,
-        );
-
-        return stillAvailable ? current : null;
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [fetchFreeBlocks]);
+  const selectableBlocks = blocks.filter((block) => !unavailableBlockIds.includes(block.id));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Selecciona un horario disponible
-        </p>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => void refreshBlocks()}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? "Actualizando..." : "Actualizar"}
-        </Button>
-      </div>
-
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <WeekGrid
-        blocks={freeBlocks}
+        blocks={selectableBlocks}
         weekRange={weekRange}
         variant="selectable"
-        onSelectBlock={setSelectedBlock}
+        selectedBlockId={selectedBlock?.id}
+        onSelectBlock={selectBlock}
       />
-
-      {selectedBlock && (
-        <div className="rounded-md border p-3 text-sm">
-          Horario seleccionado:{" "}
-          {new Date(selectedBlock.startAt).toLocaleString("es-BO")}
-        </div>
-      )}
+      <BlockSelectionPanel
+        selectedBlock={selectedBlock}
+        unavailableBlock={unavailableBlock}
+        isChecking={isChecking}
+        error={error}
+      />
     </div>
   );
 }

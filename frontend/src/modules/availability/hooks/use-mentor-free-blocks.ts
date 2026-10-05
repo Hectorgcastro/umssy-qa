@@ -1,20 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { availabilityApi } from "../services/availability.api";
 import type { AvailabilityBlock } from "../types/availability-block.types";
+import type { CacheEntry } from "../types/availability-cache.types";
 import type { WeekRange } from "@/shared/types/week-range.types";
 
 const STALE_TIME_MS = 30_000;
 
-type CacheEntry = {
-  blocks: AvailabilityBlock[];
-  fetchedAt: number;
-};
-
-export function useMentorFreeBlocks(mentorId: string, weekRange?: WeekRange) {
-  const rangeKey = weekRange ? `${weekRange.startAt}|${weekRange.endAt}` : "";
-  const requestKey = `${mentorId}|${rangeKey}`;
+export function useMentorFreeBlocks(mentorId: string, weekRange: WeekRange) {
+  const { startAt, endAt } = weekRange;
+  const range = useMemo(() => ({ startAt, endAt }), [startAt, endAt]);
+  const requestKey = `${mentorId}|${startAt}|${endAt}`;
 
   const cacheRef = useRef(new Map<string, CacheEntry>());
   const forceRefreshRef = useRef(false);
@@ -27,6 +24,7 @@ export function useMentorFreeBlocks(mentorId: string, weekRange?: WeekRange) {
 
   if (currentRequestKey !== requestKey) {
     setCurrentRequestKey(requestKey);
+    setBlocks([]);
     setIsLoading(true);
     setError(null);
   }
@@ -37,8 +35,7 @@ export function useMentorFreeBlocks(mentorId: string, weekRange?: WeekRange) {
     forceRefreshRef.current = false;
 
     const cached = cacheRef.current.get(requestKey);
-    const isFresh =
-      cached && Date.now() - cached.fetchedAt < STALE_TIME_MS;
+    const isFresh = cached && Date.now() - cached.fetchedAt < STALE_TIME_MS;
 
     if (!forceRefresh && isFresh) {
       setBlocks(cached.blocks);
@@ -49,25 +46,17 @@ export function useMentorFreeBlocks(mentorId: string, weekRange?: WeekRange) {
 
     setIsLoading(true);
 
-    const request = weekRange
-      ? availabilityApi.getMentorFreeBlocks(mentorId, weekRange)
-      : availabilityApi.getMentorFreeBlocks(mentorId);
-
-    request
+    availabilityApi
+      .getMentorFreeBlocks(mentorId, range)
       .then((data) => {
         if (!cancelled) {
-          cacheRef.current.set(requestKey, {
-            blocks: data,
-            fetchedAt: Date.now(),
-          });
+          cacheRef.current.set(requestKey, { blocks: data, fetchedAt: Date.now() });
           setBlocks(data);
           setError(null);
         }
       })
       .catch(() => {
-        if (!cancelled) {
-          setError("Error al obtener los bloques de disponibilidad");
-        }
+        if (!cancelled) setError("Error al obtener los bloques de disponibilidad");
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -76,8 +65,7 @@ export function useMentorFreeBlocks(mentorId: string, weekRange?: WeekRange) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mentorId, rangeKey, reloadCount]);
+  }, [mentorId, range, requestKey, reloadCount]);
 
   useEffect(() => {
     function handleFocusRegain() {
