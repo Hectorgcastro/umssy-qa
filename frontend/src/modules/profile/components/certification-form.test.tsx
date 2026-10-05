@@ -154,7 +154,7 @@ describe("CertificationForm", () => {
     fireEvent.change(getIssueDateInput(), { target: { value: "2025-04-20" } });
     await user.click(saveButton());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" });
+    expect(onSubmit).toHaveBeenCalledWith({ name, issuingOrganization, issueDate: "2025-04-20" }, null);
   });
 
   it("shows an inline error for a future issue date", async () => {
@@ -190,7 +190,7 @@ describe("CertificationForm", () => {
       name: "Scrum Master",
       issuingOrganization: "Scrum Alliance",
       issueDate: "2025-04-20",
-    });
+    }, null);
   });
 
   it("disables the inputs and buttons while the submit is in progress", async () => {

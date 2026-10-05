@@ -84,13 +84,32 @@ export function CertificationsView() {
     setFocusRequest((request) => request + 1);
   };
 
-  const handleSubmit = async (values: CreateCertificationDto) => {
-    const savedCertification = editing
-      ? await updateMutation.mutate({ id: editing.id, data: values })
-      : await createMutation.mutate(values);
+  const handleSubmit = async (values: CreateCertificationDto, file: File | null) => {
+    if (editing) {
+      const savedCertification = await updateMutation.mutate({ id: editing.id, data: values });
+      if (savedCertification) {
+        closeForm();
+        void reload();
+      }
+      return;
+    }
 
+    const savedCertification = await createMutation.mutate(values);
     if (!savedCertification) {
       return;
+    }
+
+    if (file) {
+      const wasSaved = await certificationDocument.applyDocumentChange(savedCertification.id, {
+        type: "replace",
+        file,
+      });
+
+      if (!wasSaved) {
+        await deleteMutation.deleteCertification(savedCertification);
+        return;
+      }
+      certificationDocument.clearFeedback();
     }
 
     closeForm();

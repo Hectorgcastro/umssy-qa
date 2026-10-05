@@ -1,4 +1,5 @@
 export interface CertificationDocumentFieldProps {
+  id?: string;
   selectedFile: File | null;
   error?: string;
   disabled?: boolean;

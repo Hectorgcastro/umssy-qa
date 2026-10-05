@@ -61,12 +61,14 @@ async function fillCertificationForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/Nombre de la certificación/), "CCNA");
   await user.type(screen.getByLabelText(/Entidad emisora/), "Cisco");
   fireEvent.change(screen.getByLabelText(/Fecha de obtención/), { target: { value: "2024-01-15" } });
+  const fileInputs = screen.getAllByLabelText(/Archivo de respaldo/);
+  await user.upload(fileInputs[0], CERTIFICATE_PDF);
 }
 
 async function linkDocument(user: ReturnType<typeof userEvent.setup>, certificationName: string) {
   await user.click(screen.getByRole("combobox", { name: /Certificación asociada/ }));
   await user.click(await screen.findByRole("option", { name: certificationName }));
-  await user.upload(screen.getByLabelText(/Archivo de respaldo/), CERTIFICATE_PDF);
+  await user.upload(screen.getAllByLabelText(/Archivo de respaldo/)[1], CERTIFICATE_PDF);
   await user.click(screen.getByRole("button", { name: "Guardar documento" }));
 }
 
