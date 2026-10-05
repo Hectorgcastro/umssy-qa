@@ -7,7 +7,7 @@ import { EventDetailPanel } from '../components/event-detail-panel';
 import { useEvents } from '../hooks/use-events';
 import type { EventItem } from '../types/event.types';
 
-const MOCKUP_CATEGORIES = ['Todos', 'Tecnologia', 'IA & Datos', 'Diseno', 'Seguridad'];
+const MOCKUP_CATEGORIES = ['Todos', 'Tecnología', 'IA & Datos', 'Diseño', 'Seguridad'];
 
 export function EventsView() {
   const {
@@ -19,20 +19,21 @@ export function EventsView() {
     loadMore,
     retry,
   } = useEvents();
+  
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const handleSelectEvent = (selectedEvent: EventItem) => {
     setSelectedEventId(selectedEvent.id);
   };
 
-  const selectedEvent = events.find((event) => event.id === selectedEventId);
+  // Busca directamente el evento seleccionado dentro de la lista de 'events'
+  const selectedEvent = events.find((e) => e.id === selectedEventId);
 
   return (
     <div className="flex min-h-svh w-full flex-1 flex-col bg-surface-soft text-foreground lg:flex-row">
-
       <div className="flex min-w-0 flex-1 flex-col gap-6 px-6 pb-8 pt-20 sm:px-10">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
             Talleres disponibles
           </h1>
           <p className="text-sm text-text-secondary">
@@ -40,15 +41,14 @@ export function EventsView() {
           </p>
         </header>
 
-
         <div
           role="search"
           aria-label="Filtros de talleres"
           className="flex flex-wrap items-center gap-2.5"
         >
-          <div className="w-full sm:w-64 h-10 rounded-full bg-surface border border-border px-4 flex items-center gap-2.5 shadow-2xs">
-            <Search className="w-4 h-4 text-text-secondary shrink-0" aria-hidden="true" />
-            <span className="text-sm text-text-secondary truncate">
+          <div className="flex h-10 w-full items-center gap-2.5 rounded-full border border-border bg-surface px-4 shadow-2xs sm:w-64">
+            <Search className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden="true" />
+            <span className="truncate text-sm text-text-secondary">
               Buscar taller...
             </span>
           </div>
@@ -59,10 +59,10 @@ export function EventsView() {
               return (
                 <span
                   key={categoryName}
-                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
+                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                     isSelected
                       ? 'bg-ink text-white'
-                      : 'bg-surface text-ink border border-border'
+                      : 'border border-border bg-surface text-ink'
                   }`}
                 >
                   {categoryName}
@@ -72,9 +72,8 @@ export function EventsView() {
           </div>
         </div>
 
-
         <section aria-label="Listado de talleres">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {events.map((eventItem) => (
               <EventCard
                 key={eventItem.id}
@@ -84,16 +83,19 @@ export function EventsView() {
               />
             ))}
           </div>
+
           {isLoading && events.length === 0 && (
             <p role="status" className="py-10 text-center text-text-secondary">
               Cargando talleres...
             </p>
           )}
+
           {!isLoading && !error && events.length === 0 && (
             <p className="py-10 text-center text-text-secondary">
               No hay talleres disponibles.
             </p>
           )}
+
           {error && (
             <div role="alert" className="py-6 text-center">
               <p className="text-sm text-danger">{error}</p>
@@ -106,6 +108,7 @@ export function EventsView() {
               </button>
             </div>
           )}
+
           {hasMore && !error && (
             <div className="flex justify-center pt-6">
               <button
@@ -120,7 +123,6 @@ export function EventsView() {
           )}
         </section>
       </div>
-
 
       {selectedEvent ? (
         <EventDetailPanel event={selectedEvent} />

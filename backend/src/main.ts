@@ -6,12 +6,13 @@ import { AppModule } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const corsOrigins = (process.env.CORS_ORIGIN ?? '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter((origin) => origin.length > 0);
+  // Permitir cualquier origen en entorno local para evitar bloqueos
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
 
-  app.enableCors(corsOrigins.length > 0 ? { origin: corsOrigins } : {});
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
@@ -23,6 +24,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
 
-  await app.listen(process.env.PORT!);
+  await app.listen(process.env.PORT || 8080);
 }
 await bootstrap();
