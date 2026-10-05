@@ -212,6 +212,26 @@ describe("MentorAvailabilityView", () => {
       )
     })
 
+    it("si el bloque nuevo es de otra semana, la grilla pasa a esa semana", async () => {
+      const nextWeekBlock = blockAt("nuevo-2", "2026-10-15T22:00:00.000Z", "2026-10-15T22:30:00.000Z")
+      vi.spyOn(availabilityApi, "getAvailabilityBlocks")
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([nextWeekBlock])
+      vi.spyOn(availabilityApi, "createAvailabilityBlock").mockResolvedValue(nextWeekBlock)
+      const user = userEvent.setup()
+
+      render(<MentorAvailabilityView />)
+      await fillAndSave(user)
+
+      await waitFor(() =>
+        expect(lastRequestedRange()).toEqual({
+          from: "2026-10-12T04:00:00.000Z",
+          to: "2026-10-19T03:59:59.999Z",
+        }),
+      )
+      expect(await screen.findByRole("button", { name: "libre, 18:00 a 18:30" })).toBeInTheDocument()
+    })
+
     it("el botón Guardar queda deshabilitado mientras se envía", async () => {
       vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
       let resolveCreate!: (block: AvailabilityBlock) => void

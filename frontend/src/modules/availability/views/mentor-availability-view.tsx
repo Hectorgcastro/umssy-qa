@@ -33,7 +33,12 @@ export function MentorAvailabilityView() {
     if (block) {
       setIsSaved(true);
       setFormKey((key) => key + 1);
-      refetch();
+      const blockWeekStart = getWeekRange(block.startAt).startAt;
+      if (blockWeekStart === weekStart) {
+        refetch();
+      } else {
+        setWeekStart(blockWeekStart);
+      }
     }
   };
 
@@ -110,7 +115,7 @@ export function MentorAvailabilityView() {
           {isSaved && (
             <Alert role="status" className="rounded-xl px-4 py-3">
               <CircleCheckIcon aria-hidden="true" />
-              <AlertTitle className="font-semibold">Bloque guardado correctamente.</AlertTitle>
+              <AlertTitle className="font-semibold">{MY_AVAILABILITY_TEXT.blockSaved}</AlertTitle>
             </Alert>
           )}
           <BlockForm
