@@ -13,8 +13,8 @@ import { FileValidationService } from '../services/file-validation.service.js';
 import { ProfilePhotoService } from '../services/profile-photo.service.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
-const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-const pdfBytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31]);
+const pngBytes = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(50), Buffer.from([0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82])]);
+const pdfBytes = Buffer.from("%PDF-1.4\n" + " ".repeat(50) + "\n%%EOF\n");
 
 describe('ProfilePhotoController', () => {
   let app: INestApplication;
