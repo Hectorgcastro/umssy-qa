@@ -35,6 +35,17 @@ CREATE TABLE "files" (
 );
 
 -- CreateTable
+CREATE TABLE "careers" (
+    "id" UUID NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
+    "description" TEXT,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "careers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "access_requests" (
     "id" UUID NOT NULL,
     "request_code" VARCHAR(20),
@@ -46,7 +57,8 @@ CREATE TABLE "access_requests" (
     "email" VARCHAR(150) NOT NULL,
     "phone" VARCHAR(8),
     "birth_date" DATE NOT NULL,
-    "entry_year" SMALLINT NOT NULL,
+    "graduation_year" SMALLINT NOT NULL,
+    "career_id" UUID NOT NULL,
     "status_id" UUID NOT NULL,
     "document_type_id" UUID,
     "document_file_id" UUID,
@@ -81,6 +93,9 @@ CREATE UNIQUE INDEX "access_request_statuses_title_key" ON "access_request_statu
 CREATE UNIQUE INDEX "access_request_document_types_title_key" ON "access_request_document_types"("title");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "careers_title_key" ON "careers"("title");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "access_requests_request_code_key" ON "access_requests"("request_code");
 
 -- CreateIndex
@@ -88,6 +103,9 @@ CREATE UNIQUE INDEX "access_requests_document_file_id_key" ON "access_requests"(
 
 -- CreateIndex
 CREATE INDEX "access_requests_status_id_idx" ON "access_requests"("status_id");
+
+-- CreateIndex
+CREATE INDEX "access_requests_career_id_idx" ON "access_requests"("career_id");
 
 -- CreateIndex
 CREATE INDEX "access_requests_sis_code_idx" ON "access_requests"("sis_code");
@@ -112,6 +130,9 @@ ALTER TABLE "access_requests" ADD CONSTRAINT "access_requests_document_file_id_f
 
 -- AddForeignKey
 ALTER TABLE "access_requests" ADD CONSTRAINT "access_requests_reviewed_by_id_fkey" FOREIGN KEY ("reviewed_by_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "access_requests" ADD CONSTRAINT "access_requests_career_id_fkey" FOREIGN KEY ("career_id") REFERENCES "careers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "activation_otps" ADD CONSTRAINT "activation_otps_access_request_id_fkey" FOREIGN KEY ("access_request_id") REFERENCES "access_requests"("id") ON DELETE CASCADE ON UPDATE CASCADE;

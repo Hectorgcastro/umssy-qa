@@ -429,6 +429,7 @@ export const ModelName = {
   AccessRequestStatus: 'AccessRequestStatus',
   AccessRequestDocumentType: 'AccessRequestDocumentType',
   File: 'File',
+  Career: 'Career',
   AccessRequest: 'AccessRequest',
   ActivationOtp: 'ActivationOtp'
 } as const
@@ -446,7 +447,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "appointmentStatus" | "proposalStatus" | "eventModality" | "eventOrigin" | "eventStatus" | "registrationStatus" | "city" | "company" | "user" | "role" | "userRole" | "education" | "workExperience" | "skill" | "userSkill" | "certification" | "technicalArea" | "orientationType" | "mentorTechnicalArea" | "mentorOrientationType" | "availabilityBlock" | "blockedDate" | "appointment" | "timeProposal" | "appointmentHistory" | "eventCategory" | "event" | "eventRegistration" | "eventAttendance" | "accessRequestStatus" | "accessRequestDocumentType" | "file" | "accessRequest" | "activationOtp"
+    modelProps: "appointmentStatus" | "proposalStatus" | "eventModality" | "eventOrigin" | "eventStatus" | "registrationStatus" | "city" | "company" | "user" | "role" | "userRole" | "education" | "workExperience" | "skill" | "userSkill" | "certification" | "technicalArea" | "orientationType" | "mentorTechnicalArea" | "mentorOrientationType" | "availabilityBlock" | "blockedDate" | "appointment" | "timeProposal" | "appointmentHistory" | "eventCategory" | "event" | "eventRegistration" | "eventAttendance" | "accessRequestStatus" | "accessRequestDocumentType" | "file" | "career" | "accessRequest" | "activationOtp"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2818,6 +2819,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Career: {
+      payload: Prisma.$CareerPayload<ExtArgs>
+      fields: Prisma.CareerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CareerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CareerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>
+        }
+        findFirst: {
+          args: Prisma.CareerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CareerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>
+        }
+        findMany: {
+          args: Prisma.CareerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>[]
+        }
+        create: {
+          args: Prisma.CareerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>
+        }
+        createMany: {
+          args: Prisma.CareerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CareerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>[]
+        }
+        delete: {
+          args: Prisma.CareerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>
+        }
+        update: {
+          args: Prisma.CareerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>
+        }
+        deleteMany: {
+          args: Prisma.CareerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CareerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CareerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>[]
+        }
+        upsert: {
+          args: Prisma.CareerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPayload>
+        }
+        aggregate: {
+          args: Prisma.CareerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCareer>
+        }
+        groupBy: {
+          args: Prisma.CareerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CareerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CareerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CareerCountAggregateOutputType> | number
+        }
+      }
+    }
     AccessRequest: {
       payload: Prisma.$AccessRequestPayload<ExtArgs>
       fields: Prisma.AccessRequestFieldRefs
@@ -3427,6 +3502,17 @@ export const FileScalarFieldEnum = {
 export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
 
 
+export const CareerScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CareerScalarFieldEnum = (typeof CareerScalarFieldEnum)[keyof typeof CareerScalarFieldEnum]
+
+
 export const AccessRequestScalarFieldEnum = {
   id: 'id',
   requestCode: 'requestCode',
@@ -3438,7 +3524,8 @@ export const AccessRequestScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   birthDate: 'birthDate',
-  entryYear: 'entryYear',
+  graduationYear: 'graduationYear',
+  careerId: 'careerId',
   statusId: 'statusId',
   documentTypeId: 'documentTypeId',
   documentFileId: 'documentFileId',
@@ -3756,6 +3843,7 @@ export type GlobalOmitConfig = {
   accessRequestStatus?: Prisma.AccessRequestStatusOmit
   accessRequestDocumentType?: Prisma.AccessRequestDocumentTypeOmit
   file?: Prisma.FileOmit
+  career?: Prisma.CareerOmit
   accessRequest?: Prisma.AccessRequestOmit
   activationOtp?: Prisma.ActivationOtpOmit
 }
