@@ -1,16 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Info } from "lucide-react";
-import { EventCard } from "../components/event-card";
-import { EventDetailPanel } from "../components/event-detail-panel";
-import { useEvent } from "../hooks/use-event";
-import { useEvents } from "../hooks/use-events";
-import { useEventsFilters } from "../hooks/use-events-filters";
-import { useEventCategories } from "../hooks/use-event-categories";
-import { EventsSearchInput } from "../components/events-search-input";
-import { CategoryFilterChips } from "../components/category-filter-chips";
-import type { EventItem } from "../types/event.types";
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { RequestFeedback } from '../components/request-feedback';
+import { EventDetailState } from '../components/event-detail-state';
+import { EventCard } from '../components/event-card';
+import { EventDetailPanel } from '../components/event-detail-panel';
+import { useEvent } from '../hooks/use-event';
+import { useEvents } from '../hooks/use-events';
+import { useEventsFilters } from '../hooks/use-events-filters';
+import { useEventCategories } from '../hooks/use-event-categories';
+import { EventsSearchInput } from '../components/events-search-input';
+import { CategoryFilterChips } from '../components/category-filter-chips';
+import type { EventItem } from '../types/event.types';
 
 export function EventsView() {
   const { searchInput, setSearchInput, categoryId, setCategoryId, filters } =
@@ -57,21 +59,15 @@ export function EventsView() {
         </div>
 
         {categoriesLoading && (
-          <p role="status" className="text-sm text-text-secondary">
-            Cargando categorías...
-          </p>
+          <RequestFeedback message="Cargando categorías..." />
         )}
         {categoriesError && (
-          <div role="alert" className="text-sm text-danger">
-            <p>{categoriesError}</p>
-            <button
-              type="button"
-              onClick={retryCategories}
-              className="mt-2 font-semibold text-ink underline underline-offset-4"
-            >
-              Reintentar categorías
-            </button>
-          </div>
+          <RequestFeedback
+            message={categoriesError}
+            isError
+            onRetry={retryCategories}
+            retryLabel="Reintentar categorías"
+          />
         )}
 
         <section aria-label="Listado de talleres">
@@ -93,32 +89,21 @@ export function EventsView() {
           {!isLoading && !error && events.length === 0 && (
             <p className="py-10 text-center text-text-secondary">
               {filters.search.trim() || filters.categoryId
-                ? "No se encontraron talleres con esos filtros. Prueba otra búsqueda o categoría."
-                : "No hay talleres disponibles."}
+                ? 'No se encontraron talleres con esos filtros. Prueba otra búsqueda o categoría.'
+                : 'No hay talleres disponibles.'}
             </p>
           )}
-          {error && (
-            <div role="alert" className="py-6 text-center">
-              <p className="text-sm text-danger">{error}</p>
-              <button
-                type="button"
-                onClick={retry}
-                className="mt-3 text-sm font-semibold text-ink underline underline-offset-4"
-              >
-                Reintentar
-              </button>
-            </div>
-          )}
+          {error && <RequestFeedback message={error} isError onRetry={retry} />}
           {hasMore && !error && (
             <div className="flex justify-center pt-6">
-              <button
+              <Button
                 type="button"
                 onClick={loadMore}
                 disabled={isLoadingMore}
                 className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:cursor-wait disabled:opacity-60"
               >
-                {isLoadingMore ? "Cargando..." : "Cargar más talleres"}
-              </button>
+                {isLoadingMore ? 'Cargando...' : 'Cargar más talleres'}
+              </Button>
             </div>
           )}
         </section>
@@ -127,42 +112,13 @@ export function EventsView() {
       {detail.event ? (
         <EventDetailPanel event={detail.event} />
       ) : (
-        <aside
-          aria-label="Detalle del taller seleccionado"
-          className="w-full shrink-0 border-t border-border bg-surface p-8 text-center lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
-        >
-          <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
-            {detail.isLoading ? (
-              <p role="status">Cargando detalle del taller...</p>
-            ) : detail.error ? (
-              <div role="alert">
-                <p>{detail.error}</p>
-                {!detail.notFound && (
-                  <button
-                    type="button"
-                    onClick={detail.retry}
-                    className="mt-3 underline"
-                  >
-                    Reintentar detalle
-                  </button>
-                )}
-              </div>
-            ) : (
-              <h2 className="text-lg font-bold text-ink">
-                Selecciona un taller
-              </h2>
-            )}
-            {!selectedEventId && (
-              <p className="text-xs leading-relaxed text-text-secondary">
-                Elige un taller de la lista para ver su información y opciones
-                de inscripción.
-              </p>
-            )}
-            <div className="mt-2 flex size-12 items-center justify-center rounded-2xl border border-border bg-surface-soft text-text-secondary">
-              <Info aria-hidden="true" className="size-5" />
-            </div>
-          </div>
-        </aside>
+        <EventDetailState
+          selectedId={selectedEventId}
+          isLoading={detail.isLoading}
+          error={detail.error}
+          notFound={detail.notFound}
+          retry={detail.retry}
+        />
       )}
     </div>
   );

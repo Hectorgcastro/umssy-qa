@@ -1,2 +1,5 @@
 get-docker.sh
 node_modules
+
+.pnpm-store/
+/especificacion GENERAL proyecto IS.pdf

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { eventsService } from '../services/events.service';
-import { EVENTS_PAGE_SIZE, NO_EVENT_FILTERS } from '../constants/events.constants';
+import {
+  EVENTS_PAGE_SIZE,
+  NO_EVENT_FILTERS,
+} from '../constants/events.constants';
 import type { EventItem } from '../types/event.types';
 import type { EventFiltersPayload } from '../types/event-filters.types';
 

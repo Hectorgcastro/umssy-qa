@@ -27,7 +27,8 @@
     "test:e2e": "dotenv run -f .env.test -- vitest run --config ./vitest.config.e2e.ts",
     "migrate:test:apply": "dotenv run -f .env.test -- pnpm migrate:apply",
     "test:all": "concurrently \"pnpm test\" \"pnpm test:e2e\"",
-    "lint:standards": "eslint \"src/**/*.ts\" \"test/**/*.ts\""
+    "lint:standards": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "seed:run": "tsx src/common/database/seeds.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.0",

@@ -3,9 +3,17 @@
 import { Button } from '@/components/ui/button';
 import type { CategoryFilterChipsProps } from '../types/category-filter-chips-props.types';
 
-export function CategoryFilterChips({ categories, selectedId, onSelect }: CategoryFilterChipsProps) {
+export function CategoryFilterChips({
+  categories,
+  selectedId,
+  onSelect,
+}: CategoryFilterChipsProps) {
   return (
-    <div role="group" aria-label="Filtrar por categoría" className="flex flex-wrap items-center gap-2">
+    <div
+      role="group"
+      aria-label="Filtrar por categoría"
+      className="flex flex-wrap items-center gap-2"
+    >
       <Button
         size="lg"
         variant={selectedId === null ? 'default' : 'outline'}

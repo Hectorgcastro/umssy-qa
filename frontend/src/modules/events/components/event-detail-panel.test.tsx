@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { EventDetailPanel } from "./event-detail-panel";
-import type { EventDetail } from "../types/event-item.types";
+import type { EventDetail } from "../types/event-detail.types";
 afterEach(cleanup);
 const event: EventDetail = {
   id: "event-1",

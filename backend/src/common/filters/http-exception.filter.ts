@@ -1,3 +1,4 @@
+// TODO: Migrar las excepciones HTTP restantes a DomainException antes de retirar este filtro.
 import {
   ArgumentsHost,
   Catch,

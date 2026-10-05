@@ -8,7 +8,11 @@ import type {
   EventWithRelations,
 } from '../types/events.types.js';
 
-export const PUBLISHED_STATUS_TITLE = 'Publicado';
+import {
+  PUBLISHED_STATUS_TITLE,
+  CONFIRMED_REGISTRATION_TITLE,
+} from '../constants/events.constants.js';
+export { PUBLISHED_STATUS_TITLE } from '../constants/events.constants.js';
 
 @Injectable()
 export class EventsRepository {
@@ -54,7 +58,10 @@ export class EventsRepository {
       _count: {
         select: {
           registrations: {
-            where: { cancelledAt: null, status: { title: 'Confirmada' } },
+            where: {
+              cancelledAt: null,
+              status: { title: CONFIRMED_REGISTRATION_TITLE },
+            },
           },
         },
       },
@@ -106,7 +113,10 @@ export class EventsRepository {
         _count: {
           select: {
             registrations: {
-              where: { cancelledAt: null, status: { title: 'Confirmada' } },
+              where: {
+                cancelledAt: null,
+                status: { title: CONFIRMED_REGISTRATION_TITLE },
+              },
             },
           },
         },

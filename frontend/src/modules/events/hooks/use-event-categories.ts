@@ -2,18 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { eventCategoriesService } from '../services/event-categories.service';
-import type { EventCategoryItem } from '../types/event.types';
 
-const ERROR_MESSAGE = 'No se pudieron cargar las categorías.';
-
-interface CategoriesResult {
-  categories: EventCategoryItem[];
-  error: string | null;
-}
+import type { CategoriesResult } from '../types/categories-result.types';
 
 export function useEventCategories() {
-  const [result, setResult] =
-    useState<CategoriesResult | null>(null);
+  const [result, setResult] = useState<CategoriesResult | null>(null);
   const [reloadVersion, setReloadVersion] = useState(0);
 
   useEffect(() => {
@@ -33,7 +26,7 @@ export function useEventCategories() {
         if (!isCancelled) {
           setResult({
             categories: [],
-            error: ERROR_MESSAGE,
+            error: 'No se pudieron cargar las categorías.',
           });
         }
       });

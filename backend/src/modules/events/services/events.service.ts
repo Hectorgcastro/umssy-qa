@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { EventNotFoundException } from '../exceptions/event-not-found.exception.js';
 import { EventsRepository } from '../repositories/events.repository.js';
 import {
   mapEventToResponse,
@@ -35,9 +36,7 @@ export class EventsService {
     const event = await this.eventsRepository.findById(id);
 
     if (!event) {
-      throw new NotFoundException(
-        `El evento con el id ${id} no fue encontrado`,
-      );
+      throw new EventNotFoundException(id);
     }
 
     const availableSpots =
