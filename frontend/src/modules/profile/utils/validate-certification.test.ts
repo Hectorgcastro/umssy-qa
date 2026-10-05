@@ -85,10 +85,23 @@ describe("validateCertification", () => {
     });
   });
 
-  it("accepts special characters because they are rendered as plain text", () => {
+  it("rejects html and script tags", () => {
     expect(
       validateCertification({
         name: "<script>alert(1)</script>",
+        issuingOrganization: "<b>Media</b>",
+        issueDate: "2025-03-10",
+      }),
+    ).toEqual({
+      name: "No se permiten etiquetas HTML ni scripts",
+      issuingOrganization: "No se permiten etiquetas HTML ni scripts",
+    });
+  });
+
+  it("accepts SQL injection characters because they are rendered as plain text", () => {
+    expect(
+      validateCertification({
+        name: "O'Reilly \"Media\"; DROP TABLE",
         issuingOrganization: "O'Reilly \"Media\"; DROP TABLE",
         issueDate: "2025-03-10",
       }),

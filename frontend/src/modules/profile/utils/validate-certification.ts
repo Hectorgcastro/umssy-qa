@@ -34,12 +34,16 @@ export function validateCertification(values: CreateCertificationDto): Certifica
     errors.name = CERTIFICATION_VALIDATION_MESSAGES.required;
   } else if (name.length > CERTIFICATION_NAME_MAX_LENGTH) {
     errors.name = CERTIFICATION_VALIDATION_MESSAGES.nameTooLong;
+  } else if (/<[^>]*>/i.test(name)) {
+    errors.name = "No se permiten etiquetas HTML ni scripts";
   }
 
   if (!issuingOrganization) {
     errors.issuingOrganization = CERTIFICATION_VALIDATION_MESSAGES.required;
   } else if (issuingOrganization.length > ISSUING_ORGANIZATION_MAX_LENGTH) {
     errors.issuingOrganization = CERTIFICATION_VALIDATION_MESSAGES.organizationTooLong;
+  } else if (/<[^>]*>/i.test(issuingOrganization)) {
+    errors.issuingOrganization = "No se permiten etiquetas HTML ni scripts";
   }
 
   if (!issueDate) {

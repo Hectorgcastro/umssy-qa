@@ -13,7 +13,10 @@ const requiredText = () =>
   z
     .string({ error: CERTIFICATION_VALIDATION_MESSAGES.required })
     .trim()
-    .min(1, CERTIFICATION_VALIDATION_MESSAGES.required);
+    .min(1, CERTIFICATION_VALIDATION_MESSAGES.required)
+    .refine((val) => !/<[^>]*>/i.test(val), {
+      message: 'No se permiten etiquetas HTML ni scripts',
+    });
 
 function isCalendarDate(value: string): boolean {
   if (!ISO_DATE_PATTERN.test(value)) {
