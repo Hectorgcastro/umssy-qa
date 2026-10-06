@@ -21,14 +21,14 @@ export const SkillsDetectedList: React.FC<SkillsDetectedProps> = ({
       </h3>
       
       <div className="flex items-center gap-2 flex-wrap">
-        {skills.map((skill, index) => {
+        {[...new Set(skills)].map((skill) => {
           const isMethodology = skill.toLowerCase() === "scrum";
           const badgeClass = isMethodology 
             ? "bg-[#C9A227] hover:bg-[#C9A227]/90 text-white" 
             : "bg-[#E30613] hover:bg-[#E30613]/90 text-white";
 
           return (
-            <Badge key={index} className={badgeClass}>
+            <Badge key={skill} className={badgeClass}>
               {skill}
             </Badge>
           );

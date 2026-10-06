@@ -9,7 +9,6 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { SkillsDetectedList } from "../components/skills-detected-list";
 
 export function HomeView() {
   const { backendMessage } = useHome();
@@ -25,10 +24,6 @@ export function HomeView() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           
-          <SkillsDetectedList
-          skills={["Python", "Django", "Scrum"]}
-          processingTime={1.5}
-          />
 
 
 

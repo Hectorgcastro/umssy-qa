@@ -9,16 +9,17 @@ import type { WorkExperiencePayload } from "../types/work-experience-payload.typ
 export function useSaveWorkExperience(onSaved: () => void) {
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [analysis, setAnalysis] = useState<{ skills: string[]; processingTimeMs: number } | null>(null);
 
   async function save(payload: WorkExperiencePayload, id?: string): Promise<void> {
     setIsSaving(true);
     setFeedback(null);
+    setAnalysis(null);
     try {
-      if (id) {
-        await workExperienceService.updateWorkExperience(id, payload);
-      } else {
-        await workExperienceService.createWorkExperience(payload);
-      }
+      const result = id
+        ? await workExperienceService.updateWorkExperience(id, payload)
+        : await workExperienceService.createWorkExperience(payload);
+      setAnalysis({ skills: result?.detectedSkills ?? [], processingTimeMs: result?.processingTimeMs ?? 0 });
       setFeedback({
         type: "success",
         message: id
@@ -42,5 +43,5 @@ export function useSaveWorkExperience(onSaved: () => void) {
     setFeedback(null);
   }
 
-  return { save, isSaving, feedback, clearFeedback };
+  return { save, isSaving, feedback, clearFeedback, analysis };
 }

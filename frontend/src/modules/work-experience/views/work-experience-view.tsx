@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SkillsDetectedList } from "@/modules/home/components/skills-detected-list";
 import { ConfirmDeleteDialog } from "@/modules/profile/components/confirm-delete-dialog";
 import { FeedbackMessage } from "@/modules/profile/components/feedback-message";
 import { ProfilePageLayout } from "@/modules/profile/components/profile-page-layout";
@@ -85,6 +86,7 @@ export function WorkExperienceView() {
     >
       <TrajectorySteps activeStep="experience" />
       <FeedbackMessage feedback={listFeedback} />
+      {saveMutation.analysis ? <SkillsDetectedList skills={saveMutation.analysis.skills} processingTime={saveMutation.analysis.processingTimeMs / 1000} /> : null}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <WorkExperienceListCard
           experiences={experiences}
