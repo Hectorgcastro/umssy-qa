@@ -4,6 +4,7 @@ import { MatchingModule } from '../matching.module.js';
 import { MatchingController } from '../controllers/matching.controller.js';
 import { MatchingService } from '../services/matching.service.js';
 import { NlpService } from '../services/nlp.service.js';
+import { PrismaService } from '../../../common/prisma/prisma.service.js';
 
 describe('MatchingModule', () => {
   let moduleRef: TestingModule;
@@ -11,7 +12,7 @@ describe('MatchingModule', () => {
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [MatchingModule],
-    }).compile();
+    }).overrideProvider(PrismaService).useValue({}).compile();
   });
 
   it.each([MatchingController, MatchingService, NlpService])('resuelve %o', (provider) => {

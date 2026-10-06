@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { MatchingService } from '../../matching/services/matching.service.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { isRecordNotFoundError } from '../../../common/utils/map-record-not-found.js';
 import type { WorkExperiencePeriodSnapshot } from '../types/work-experience-period-snapshot.type.js';
@@ -13,6 +14,7 @@ const workExperienceSelect = {
   endDate: true,
   isCurrent: true,
   description: true,
+  detectedSkills: true,
   createdAt: true,
   updatedAt: true,
   company: { select: { id: true, title: true } },
@@ -20,7 +22,7 @@ const workExperienceSelect = {
 
 @Injectable()
 export class WorkExperienceRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly matching: MatchingService = new MatchingService()) {}
 
   findManyByUserId(userId: string): Promise<WorkExperienceRecord[]> {
     return this.prisma.workExperience.findMany({
@@ -48,6 +50,7 @@ export class WorkExperienceRepository {
     return this.prisma.workExperience.create({
       data: {
         ...fields,
+        detectedSkills: this.matching.analyzeExperience({ experienceId: '', text: fields.description }).skills.map(({ name }) => name),
         user: { connect: { id: userId } },
         company: this.connectOrCreateCompany(companyName),
       },
@@ -73,6 +76,7 @@ export class WorkExperienceRepository {
         },
         data: {
           ...fields,
+          ...(fields.description === undefined ? {} : { detectedSkills: this.matching.analyzeExperience({ experienceId: id, text: fields.description }).skills.map(({ name }) => name) }),
           ...(companyName === undefined
             ? {}
             : { company: this.connectOrCreateCompany(companyName) }),

@@ -1,6 +1,7 @@
 import type { WorkExperienceCompany } from './work-experience-company.type.js';
 
 export interface WorkExperienceRecord {
+  detectedSkills?: string[];
   id: string;
   userId: string;
   position: string;

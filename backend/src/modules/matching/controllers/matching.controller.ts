@@ -1,5 +1,8 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { MatchingService } from '../services/matching.service.js';
+import { Body, Controller, HttpCode, HttpStatus, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ExperienceAnalysisService } from '../services/experience-analysis.service.js';
+import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { ResponseInterceptor } from '../../../common/interceptors/response.interceptor.js';
 import {
   analyzeExperienceBodySchema,
   analyzeExperienceParamsSchema,
@@ -12,19 +15,19 @@ import type { AnalyzeExperienceResponse } from '../types/matching.types.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 
 @Controller('work-experiences')
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(ResponseInterceptor)
 export class MatchingController {
-  constructor(private readonly matchingService: MatchingService) {}
+  constructor(private readonly matchingService: ExperienceAnalysisService) {}
 
-  // Recibe el texto de la experiencia y delega el analisis al servicio.
-  // Pendiente: tomar el usuario del token y verificar que la experiencia le pertenece
-  // cuando existan el guard de autenticacion y el servicio de perfil de la Epica 2.
   @Post(':id/skills/analysis')
   @HttpCode(HttpStatus.OK)
   analyzeExperience(
+    @CurrentUserId() userId: string,
     @Param(new ZodValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
     @Body(new ZodValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
-  ): AnalyzeExperienceResponse {
-    return this.matchingService.analyzeExperience({
+  ): Promise<AnalyzeExperienceResponse> {
+    return this.matchingService.analyze(userId, {
       experienceId: params.id,
       text: body.text,
     });

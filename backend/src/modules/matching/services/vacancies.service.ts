@@ -29,7 +29,7 @@ export class VacanciesService {
     const record = await this.repository.findProfile(userId);
     if (!record) throw new MissingUserException();
     return {
-      skills: record.userSkills.map(({ skill }) => skill.name),
+      skills: [...record.userSkills.map(({ skill }) => skill.name), ...record.workExperiences.flatMap(({ detectedSkills }) => detectedSkills)],
       academicQualifications: record.educations.map(({ degree }) => degree),
       submittedRequirements: [],
       experienceYears: experienceYears(record.workExperiences),

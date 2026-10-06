@@ -27,7 +27,7 @@ export class VacanciesRepository {
       select: {
         userSkills: { select: { skill: { select: { name: true } } } },
         educations: { select: { degree: true } },
-        workExperiences: { select: { startDate: true, endDate: true, isCurrent: true } },
+        workExperiences: { select: { startDate: true, endDate: true, isCurrent: true, detectedSkills: true } },
       },
     });
   }

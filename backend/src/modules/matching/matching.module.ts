@@ -11,11 +11,12 @@ import { VacanciesService } from './services/vacancies.service.js';
 import { VacancyMatchingService } from './services/vacancy-matching.service.js';
 import { GapAnalysisService } from './services/gap-analysis.service.js';
 import { MatchScoreService } from './services/match-score.service.js';
+import { ExperienceAnalysisService } from './services/experience-analysis.service.js';
 
 @Module({
   imports: [PrismaModule, JwtAuthModule],
   controllers: [MatchingController, VacanciesController],
-  providers: [MatchingService, NlpService, SkillDictionaryService, VacanciesRepository, VacanciesService, VacancyMatchingService, GapAnalysisService, MatchScoreService],
+  providers: [MatchingService, NlpService, SkillDictionaryService, VacanciesRepository, VacanciesService, VacancyMatchingService, GapAnalysisService, MatchScoreService, ExperienceAnalysisService],
   exports: [MatchingService, NlpService, SkillDictionaryService],
 })
 export class MatchingModule {}

@@ -5,9 +5,10 @@ import { WorkExperienceController } from './controllers/work-experience.controll
 import { WorkExperienceMapper } from './mappers/work-experience.mapper.js';
 import { WorkExperienceRepository } from './repositories/work-experience.repository.js';
 import { WorkExperienceService } from './services/work-experience.service.js';
+import { MatchingModule } from '../matching/matching.module.js';
 
 @Module({
-  imports: [PrismaModule, JwtAuthModule],
+  imports: [PrismaModule, JwtAuthModule, MatchingModule],
   controllers: [WorkExperienceController],
   providers: [
     WorkExperienceService,

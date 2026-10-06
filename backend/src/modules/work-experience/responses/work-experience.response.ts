@@ -1,4 +1,6 @@
 export interface WorkExperienceResponse {
+  detectedSkills?: string[];
+  processingTimeMs?: number;
   id: string;
   companyName: string;
   position: string;
