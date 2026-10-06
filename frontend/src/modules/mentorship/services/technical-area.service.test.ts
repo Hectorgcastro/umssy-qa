@@ -16,7 +16,12 @@ describe("getTechnicalAreas", () => {
       },
     ];
     const request = vi.spyOn(apiClient, "get").mockResolvedValue({
-      data: technicalAreas,
+      data: {
+        statusCode: 200,
+        ok: true,
+        detail: "Operación exitosa",
+        data: technicalAreas,
+      },
     });
 
     const result = await getTechnicalAreas();
@@ -27,7 +32,14 @@ describe("getTechnicalAreas", () => {
 
   it("forwards the AbortSignal to the API", async () => {
     const signal = new AbortController().signal;
-    const request = vi.spyOn(apiClient, "get").mockResolvedValue({ data: [] });
+    const request = vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        statusCode: 200,
+        ok: true,
+        detail: "Operación exitosa",
+        data: [],
+      },
+    });
     await expect(getTechnicalAreas(signal)).resolves.toEqual([]);
     expect(request).toHaveBeenCalledWith("/technical-areas", { signal });
   });

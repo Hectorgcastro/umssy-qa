@@ -12,7 +12,14 @@ describe("mentor profile service", () => {
     const controller = new AbortController();
     const request = vi
       .spyOn(apiClient, "get")
-      .mockResolvedValue({ data: MENTOR_PROFILE_FIXTURE });
+      .mockResolvedValue({
+        data: {
+          statusCode: 200,
+          ok: true,
+          detail: "Operación exitosa",
+          data: MENTOR_PROFILE_FIXTURE,
+        },
+      });
 
     const result = await getMentorProfile(
       MENTOR_PROFILE_FIXTURE.id,

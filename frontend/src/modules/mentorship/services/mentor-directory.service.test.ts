@@ -24,7 +24,12 @@ describe("getMentorDirectory", () => {
     ];
     const signal = new AbortController().signal;
     const request = vi.spyOn(apiClient, "get").mockResolvedValue({
-      data: mentors,
+      data: {
+        statusCode: 200,
+        ok: true,
+        detail: "Operación exitosa",
+        data: mentors,
+      },
     });
 
     const result = await getMentorDirectory(signal);

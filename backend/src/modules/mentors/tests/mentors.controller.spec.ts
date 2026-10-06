@@ -1,8 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
+import { INTERCEPTORS_METADATA } from '@nestjs/common/constants.js';
+import { ResponseInterceptor } from '../../../common/interceptors/index.js';
 import { MentorsController } from '../controllers/mentors.controller.js';
 import type { MentorsService } from '../services/mentors.service.js';
 
 describe('MentorsController', () => {
+  it('aplica Standard Response a todos sus endpoints', () => {
+    expect(Reflect.getMetadata(INTERCEPTORS_METADATA, MentorsController)).toEqual([
+      ResponseInterceptor,
+    ]);
+  });
+
   it('delega la consulta del directorio al service', async () => {
     const directoryResult = [
       {

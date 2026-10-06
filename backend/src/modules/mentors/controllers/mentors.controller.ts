@@ -7,9 +7,11 @@ import {
   ParseUUIDPipe,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { ResponseInterceptor } from '../../../common/interceptors/index.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import type { AuthenticatedUser } from '../../../common/types/authenticated-user.types.js';
 import {
@@ -27,6 +29,7 @@ import {
 import { MentorsService } from '../services/mentors.service.js';
 
 @Controller('mentors')
+@UseInterceptors(ResponseInterceptor)
 export class MentorsController {
   constructor(private readonly mentorsService: MentorsService) {}
 

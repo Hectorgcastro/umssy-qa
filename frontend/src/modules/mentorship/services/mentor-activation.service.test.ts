@@ -16,7 +16,12 @@ describe("activateMentor", () => {
       id: "550e8400-e29b-41d4-a716-446655440003",
     };
     const request = vi.spyOn(apiClient, "post").mockResolvedValue({
-      data: activation,
+      data: {
+        statusCode: 201,
+        ok: true,
+        detail: "Operación exitosa",
+        data: activation,
+      },
     });
 
     const result = await activateMentor(payload);

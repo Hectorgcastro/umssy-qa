@@ -20,7 +20,12 @@ describe("getOrientationTypes", () => {
       },
     ];
     const request = vi.spyOn(apiClient, "get").mockResolvedValue({
-      data: orientationTypes,
+      data: {
+        statusCode: 200,
+        ok: true,
+        detail: "Operación exitosa",
+        data: orientationTypes,
+      },
     });
 
     const signal = new AbortController().signal;
@@ -40,7 +45,12 @@ describe("getOrientationTypes", () => {
     ];
     const signal = new AbortController().signal;
     const request = vi.spyOn(apiClient, "get").mockResolvedValue({
-      data: orientationTypes,
+      data: {
+        statusCode: 200,
+        ok: true,
+        detail: "Operación exitosa",
+        data: orientationTypes,
+      },
     });
 
     const result = await getMentorOrientationTypes(signal);
@@ -58,9 +68,18 @@ describe("getOrientationTypes", () => {
     ];
     const request = vi
       .spyOn(apiClient, "patch")
-      .mockResolvedValue({ data: {} });
+      .mockResolvedValue({
+        data: {
+          statusCode: 200,
+          ok: true,
+          detail: "Operación exitosa",
+          data: { orientationTypeIds },
+        },
+      });
 
-    await updateMentorOrientationTypes(orientationTypeIds);
+    await expect(
+      updateMentorOrientationTypes(orientationTypeIds),
+    ).resolves.toBeUndefined();
 
     expect(request).toHaveBeenCalledWith("/mentors/me/orientation-types", {
       orientationTypeIds,
