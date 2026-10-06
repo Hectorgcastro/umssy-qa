@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, X } from "lucide-react";
+import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -83,23 +84,38 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
     }
   }
 
+  const REJECT_BUTTON_CLASS =
+    "h-[42px] rounded-lg bg-accent px-5 text-[14.5px] font-semibold text-surface hover:bg-accent/90 disabled:bg-border disabled:text-text-secondary disabled:opacity-100";
+
   return (
-    <section className="flex flex-col gap-3 rounded-md border border-border bg-surface p-4" aria-label="Dictamen">
-      <h2 className="text-lg font-semibold text-ink">Dictamen</h2>
+    <section className="flex flex-col gap-4 rounded-[10px] border border-border bg-surface p-5" aria-label="Dictamen">
+      <h2 className="font-tight text-[17px] font-bold text-ink">Dictamen</h2>
 
       {status === "in_review" ? (
         <>
-          <p className="text-sm text-text-secondary">Revisa el documento y el contraste de datos antes de emitir el dictamen.</p>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setConfirmOpen(true)} disabled={isApproving}>
-              <Check aria-hidden="true" />
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => setConfirmOpen(true)}
+              disabled={isApproving}
+              className="h-[42px] flex-1 rounded-lg bg-ink px-5 text-[14.5px] font-semibold text-surface hover:bg-ink/90"
+            >
+              <Check strokeWidth={1.75} aria-hidden="true" />
               Aprobar solicitud
             </Button>
-            <Button variant="outline" onClick={() => setRejectOpen(true)} disabled={isApproving}>
-              <X aria-hidden="true" />
+            <Button
+              variant="outline"
+              onClick={() => setRejectOpen(true)}
+              disabled={isApproving}
+              className="h-[42px] flex-1 rounded-lg border-accent bg-surface px-5 text-[14.5px] font-semibold text-accent hover:bg-interaction hover:text-accent"
+            >
+              <X strokeWidth={1.75} aria-hidden="true" />
               Rechazar
             </Button>
           </div>
+          <p className="text-sm text-text-secondary">
+            Revisa el documento y el contraste de datos antes de emitir el dictamen. Al aprobar se genera el código de
+            activación de la persona titulada.
+          </p>
         </>
       ) : (
         <p className="text-sm text-text-secondary">Esta solicitud ya no admite un dictamen.</p>
@@ -143,32 +159,56 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
       </AlertDialog>
 
       <AlertDialog open={rejectOpen} onOpenChange={handleRejectOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Rechazar solicitud</AlertDialogTitle>
-            <AlertDialogDescription>
-              {detail.firstName} {detail.lastName} ({detail.email}) recibirá este motivo por correo para saber qué corregir.
+        <AlertDialogContent className="gap-5 rounded-[10px] p-8 data-[size=default]:sm:max-w-[36rem]">
+          <AlertDialogHeader className="relative text-left">
+            <AlertDialogTitle className="font-tight text-[26px] font-extrabold text-ink">Rechazar solicitud</AlertDialogTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Cerrar"
+              onClick={() => handleRejectOpenChange(false)}
+              className="absolute top-0 right-0 text-ink-soft"
+            >
+              <X strokeWidth={1.75} aria-hidden="true" />
+            </Button>
+            <AlertDialogDescription className="text-[15px] text-text-secondary">
+              {detail.firstName} {detail.lastName} recibirá este motivo por correo ({detail.email}).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-4">
             <fieldset className="flex flex-col gap-2">
-              <legend className="pb-1 text-sm font-medium text-ink">Motivo</legend>
+              <legend className="pb-1 text-sm font-semibold text-ink">Motivo</legend>
               <RadioGroup value={choice ?? ""} onValueChange={(value) => setChoice(value)} aria-label="Motivo">
                 {REJECTION_REASONS.map((option, index) => (
-                  <div key={option} className="flex items-center gap-2">
-                    <RadioGroupItem id={`reject-reason-${index}`} value={option} />
-                    <Label htmlFor={`reject-reason-${index}`}>{option}</Label>
-                  </div>
+                  <Label
+                    key={option}
+                    htmlFor={`reject-reason-${index}`}
+                    className={cn(
+                      "flex h-[52px] cursor-pointer items-center gap-3 rounded-lg border px-4 text-[15px] font-normal text-ink",
+                      choice === option ? "border-accent bg-interaction" : "border-border bg-surface",
+                    )}
+                  >
+                    <RadioGroupItem
+                      id={`reject-reason-${index}`}
+                      value={option}
+                      className="size-5 border-border-strong data-checked:border-accent data-checked:bg-surface [&_[data-slot=radio-group-indicator]>span]:bg-accent"
+                    />
+                    {option}
+                  </Label>
                 ))}
               </RadioGroup>
             </fieldset>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="reject-hint">Indicación para el solicitante</Label>
+              <Label htmlFor="reject-hint" className="font-semibold text-ink">
+                Indicación para el solicitante
+              </Label>
               <Textarea
                 id="reject-hint"
                 value={hint}
                 onChange={(event) => setHint(event.target.value)}
                 placeholder="Explica qué debe corregir la persona"
+                className="min-h-24 rounded-lg"
               />
               <p className="text-xs text-text-secondary" aria-live="polite">
                 {rejection.length}/{REJECTION_MAX_LENGTH}
@@ -185,13 +225,14 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
               )}
             </div>
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel type="button" disabled={isRejecting}>
+          <AlertDialogFooter className="flex-row justify-end gap-3 bg-transparent p-0">
+            <AlertDialogCancel type="button" disabled={isRejecting} className="h-[42px] rounded-lg px-5 text-[14.5px] font-semibold">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               type="button"
               disabled={!rejection.isValid || isRejecting}
+              className={REJECT_BUTTON_CLASS}
               onClick={(event) => {
                 event.preventDefault();
                 void handleReject();
