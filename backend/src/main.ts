@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module.js';
+import { buildSwaggerConfig } from './config/swagger.config.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -14,15 +16,12 @@ async function bootstrap(): Promise<void> {
   app.enableCors(corsOrigins.length > 0 ? { origin: corsOrigins } : {});
   app.setGlobalPrefix('api');
 
-  const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('None')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  const config = buildSwaggerConfig();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
+  const documentFactory = () => cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup('docs', app, documentFactory, {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
