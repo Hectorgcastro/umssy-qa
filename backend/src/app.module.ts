@@ -8,6 +8,9 @@ import { DomainExceptionFilter } from './common/filters/domain-exception.filter.
 import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { TechnicalAreasModule } from './modules/technical-areas/technical-areas.module.js';
+import { OrientationTypesModule } from './modules/orientation-types/orientation-types.module.js';
+import { MentorsModule } from './modules/mentors/mentors.module.js';
 import { AccessRequestsModule } from './modules/access-requests/access-requests.module.js';
 
 @Module({
@@ -18,6 +21,9 @@ import { AccessRequestsModule } from './modules/access-requests/access-requests.
     PrismaModule,
     AvailabilityModule,
     AuthModule,
+    TechnicalAreasModule,
+    OrientationTypesModule,
+    MentorsModule,
     AccessRequestsModule,
   ],
   controllers: [AppController],
