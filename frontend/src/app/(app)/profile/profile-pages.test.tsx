@@ -8,14 +8,32 @@ import CertificationsPage from "./trajectory/certifications/page";
 import EducationPage from "./trajectory/education/page";
 import SkillsPage from "./trajectory/skills/page";
 
+import WorkExperiencePage from "./trajectory/experience/page";
+
 vi.mock("@/modules/profile", () => ({
-  CertificationsView: () => <p>certifications-view</p>,
-  SkillsView: () => <p>skills-view</p>,
-  DocumentsCvView: () => <p>documents-cv-view</p>,
   PersonalInfoView: () => <p>personal-info-view</p>,
   PresentationView: () => <p>presentation-view</p>,
-  EducationView: () => <p>education-view</p>,
   ProfileOverviewView: () => <p>profile-overview-view</p>,
+}));
+
+vi.mock("@/modules/skills", () => ({
+  SkillsView: () => <p>skills-view</p>,
+}));
+
+vi.mock("@/modules/education", () => ({
+  EducationView: () => <p>education-view</p>,
+}));
+
+vi.mock("@/modules/certifications", () => ({
+  CertificationsView: () => <p>certifications-view</p>,
+}));
+
+vi.mock("@/modules/documents", () => ({
+  DocumentsCvView: () => <p>documents-cv-view</p>,
+}));
+
+vi.mock("@/modules/work-experience", () => ({
+  WorkExperienceView: () => <p>work-experience-view</p>,
 }));
 
 describe("profile pages", () => {
@@ -63,5 +81,11 @@ describe("profile pages", () => {
     render(<CertificationsPage />);
 
     expect(screen.getByText("certifications-view")).toBeInTheDocument();
+  });
+
+  it("mounts the work experience view", () => {
+    render(<WorkExperiencePage />);
+
+    expect(screen.getByText("work-experience-view")).toBeInTheDocument();
   });
 });
