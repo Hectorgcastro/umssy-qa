@@ -45,11 +45,16 @@ describe("AppSidebar", () => {
     expect(within(navigation).getByText("Mentorías")).toBeDefined();
   });
 
+  it("links Mi perfil to the profile page in the default navigation", () => {
+    renderSidebar();
+
+    expect(screen.getByRole("link", { name: "Mi perfil" }).getAttribute("href")).toBe("/profile");
+  });
+
   it("does not render routes that are not implemented", () => {
     renderSidebar();
 
     const navigation = screen.getByRole("navigation", { name: "Menú principal" });
-    expect(within(navigation).queryByText("Mi perfil")).toBeNull();
     expect(within(navigation).queryByText("Empleos")).toBeNull();
   });
 
