@@ -221,7 +221,7 @@ describe('AccessRequestsService.approve', () => {
     const service = { approve: vi.fn().mockResolvedValue({ id: 'id-1' }) };
     const controller = new AccessRequestsController(service as any);
 
-    await controller.approve('id-1', { headers: {}, user: { id: 'admin-1', email: 'a@b.co', roles: ['administrativo'] } });
+    await controller.approve('id-1', { id: 'admin-1', email: 'a@b.co', roles: ['administrativo'] });
 
     expect(service.approve).toHaveBeenCalledWith('id-1', 'admin-1');
   });

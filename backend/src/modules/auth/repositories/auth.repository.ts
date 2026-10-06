@@ -13,10 +13,6 @@ export class AuthRepository {
     return user !== null;
   }
 
-  findSessionUser(id: string) {
-    return this.prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
-  }
-
   findUserByEmailWithRoles(email: string) {
     return this.prisma.user.findUnique({
       where: { email },

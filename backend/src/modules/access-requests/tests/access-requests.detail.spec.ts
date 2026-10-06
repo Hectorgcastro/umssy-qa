@@ -174,7 +174,7 @@ describe('AccessRequestsController: detalle y documento', () => {
     const service = { getDetail: vi.fn().mockResolvedValue({ id: 'id-1' }) };
     const controller = new AccessRequestsController(service as any);
 
-    await expect(controller.getDetail('id-1', { headers: {}, user: { id: 'admin-1', email: 'a@b.co', roles: ['administrativo'] } })).resolves.toEqual({ id: 'id-1' });
+    await expect(controller.getDetail('id-1', { id: 'admin-1', email: 'a@b.co', roles: ['administrativo'] })).resolves.toEqual({ id: 'id-1' });
     expect(service.getDetail).toHaveBeenCalledWith('id-1', 'admin-1');
   });
 

@@ -1,15 +1,19 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
-import { BackofficeGuard } from '../guards/backoffice.guard.js';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { Roles } from '../../../common/decorators/roles.decorator.js';
+import type { RoleName } from '../../../common/enums/roles.enum.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../../common/guards/roles.guard.js';
+import type { AuthenticatedUser } from '../../../common/types/authenticated-user.types.js';
 import { rejectAccessRequestSchema, type RejectAccessRequestDto } from '../requests/reject-access-request.schema.js';
 import { listAccessRequestsQuerySchema, type ListAccessRequestsQuery } from '../requests/list-access-requests.schema.js';
 import { DocumentUploadInterceptor } from '../interceptors/document-upload.interceptor.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import { createAccessRequestSchema, type CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import { attachDocumentSchema, type AttachDocumentDto } from '../requests/attach-document.schema.js';
-import type { BackofficeRequest } from '../types/authenticated-request.types.js';
 import type { UploadedDocumentFile } from '../types/uploaded-file.types.js';
 import {
   requestStatusParamsSchema,
@@ -24,6 +28,9 @@ interface DocumentResponse {
   end: (body: Buffer) => unknown;
 }
 
+// Rol que atiende el backoffice (uno de ROLE_NAMES); las rutas públicas de la solicitud no llevan guard
+const BACKOFFICE_ROLE: RoleName = 'administrativo';
+
 const uuidPipe = new ParseUUIDPipe({
   exceptionFactory: () => new BadRequestException('El identificador de la solicitud no es válido'),
 });
@@ -33,7 +40,8 @@ export class AccessRequestsController {
   constructor(private readonly accessRequestsService: AccessRequestsService) {}
 
   @Get()
-  @UseGuards(BackofficeGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(BACKOFFICE_ROLE)
   list(@Query(new ZodValidationPipe(listAccessRequestsQuerySchema)) query: ListAccessRequestsQuery) {
     return this.accessRequestsService.list(query);
   }
@@ -50,7 +58,8 @@ export class AccessRequestsController {
 
   // El documento se entrega como binario con su tipo de contenido; el cuerpo nunca pasa por el formato JSON
   @Get(':id/document')
-  @UseGuards(BackofficeGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(BACKOFFICE_ROLE)
   async getDocument(@Param('id', uuidPipe) id: string, @Res() response: DocumentResponse): Promise<void> {
     const file = await this.accessRequestsService.getDocument(id);
     response.set({
@@ -63,25 +72,28 @@ export class AccessRequestsController {
 
   // Abrir una solicitud pendiente la pasa a en revisión y registra a la persona que la abrió
   @Get(':id')
-  @UseGuards(BackofficeGuard)
-  getDetail(@Param('id', uuidPipe) id: string, @Req() request: BackofficeRequest) {
-    return this.accessRequestsService.getDetail(id, request.user!.id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(BACKOFFICE_ROLE)
+  getDetail(@Param('id', uuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.accessRequestsService.getDetail(id, user.id);
   }
 
   @Patch(':id/approve')
-  @UseGuards(BackofficeGuard)
-  approve(@Param('id', uuidPipe) id: string, @Req() request: BackofficeRequest) {
-    return this.accessRequestsService.approve(id, request.user!.id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(BACKOFFICE_ROLE)
+  approve(@Param('id', uuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.accessRequestsService.approve(id, user.id);
   }
 
   @Patch(':id/reject')
-  @UseGuards(BackofficeGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(BACKOFFICE_ROLE)
   reject(
     @Param('id', uuidPipe) id: string,
     @Body(new ZodValidationPipe(rejectAccessRequestSchema)) body: RejectAccessRequestDto,
-    @Req() request: BackofficeRequest,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.accessRequestsService.reject(id, request.user!.id, body.reason);
+    return this.accessRequestsService.reject(id, user.id, body.reason);
   }
 
   @Post()
