@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-// Tipo local para no depender del import del schema
 interface CreateJobOfferPayload {
   tituloPuesto: string;
   descripcion: string;
@@ -16,7 +15,6 @@ interface CreateJobOfferPayload {
   tecnologias: string[];
 }
 
-// Excepciones de negocio locales para no depender de imports relativos
 class CompanyNotFoundException extends Error {
   readonly statusCode = 404;
   readonly code = 'COMPANY_NOT_FOUND';
@@ -39,9 +37,7 @@ class TechnologyNotFoundException extends Error {
   readonly statusCode = 422;
   readonly code = 'TECHNOLOGY_NOT_FOUND';
   constructor(tecnologias: string[]) {
-    super(
-      `Las siguientes tecnologias no existen en el catalogo: ${tecnologias.join(', ')}.`
-    );
+    super(`Las siguientes tecnologias no existen en el catalogo: ${tecnologias.join(', ')}.`);
     this.name = 'TechnologyNotFoundException';
   }
 }
@@ -55,13 +51,8 @@ export class JobOffersService {
       where: { id: empresaId },
     });
 
-    if (!company) {
-      throw new CompanyNotFoundException();
-    }
-
-    if (payload.salarioMin > payload.salarioMax) {
-      throw new SalaryRangeInvalidException();
-    }
+    if (!company) throw new CompanyNotFoundException();
+    if (payload.salarioMin > payload.salarioMax) throw new SalaryRangeInvalidException();
 
     const tecnologiasValidas = await this.prisma.technology.findMany({
       where: { name: { in: payload.tecnologias } },

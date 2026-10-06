@@ -20,6 +20,7 @@ export class JobOffersExceptionFilter implements ExceptionFilter {
       const status = exception.getStatus();
       const exceptionResponse = exception.getResponse() as any;
 
+      // Mapea el error de validación del Pipe al código 422
       if (
         status === 400 &&
         exceptionResponse?.error === 'VALIDATION_ERROR' &&
@@ -57,10 +58,12 @@ export class JobOffersExceptionFilter implements ExceptionFilter {
       return;
     }
 
+    // Cualquier otro error truena como 500
+    console.error('Error interno del servidor:', exception);
     response.status(500).json({
       statusCode: 500,
       data: null,
-      detail: 'Ocurrio un error inesperado. Intentelo mas tarde.',
+      detail: 'Ocurrió un error inesperado en el servidor. Inténtelo más tarde.',
       ok: false,
     });
   }

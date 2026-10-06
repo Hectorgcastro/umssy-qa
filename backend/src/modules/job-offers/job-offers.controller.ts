@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common';
-import { JobOffersService } from './job-offers.service';
+import { JobOffersService } from './job-offers.service.js'
 
 @Controller('api/v1/empresas/:empresaId/ofertas')
 export class JobOffersController {
