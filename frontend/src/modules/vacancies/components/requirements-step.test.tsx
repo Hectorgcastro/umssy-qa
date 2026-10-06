@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { RequirementsStep } from "./requirements-step";
-import { VacancyConditions } from "../hooks/use-job-offer-form";
+import { VacancyConditions, UpdateVacancyField } from "../hooks/use-job-offer-form";
 
 const mockConditions: VacancyConditions = {
   title: "",
@@ -17,25 +17,33 @@ const mockConditions: VacancyConditions = {
 };
 
 describe("RequirementsStep", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const renderStep = (
+    conditions: VacancyConditions = mockConditions,
+    updateField: UpdateVacancyField = vi.fn(),
+    onPrevious: () => void = vi.fn(),
+    onContinue: () => void = vi.fn(),
+  ) => render(
+    <RequirementsStep
+      conditions={conditions}
+      updateField={updateField}
+      onPrevious={onPrevious}
+      onContinue={onContinue}
+    />
+  );
+
   it("debe renderizar el textarea correctamente", () => {
-    render(
-      <RequirementsStep
-        conditions={mockConditions}
-        updateField={vi.fn()}
-      />
-    );
+    renderStep();
 
     expect(screen.getByPlaceholderText(/Buscamos un desarrollador backend/i)).toBeDefined();
   });
 
   it("debe llamar a updateField al escribir en la descripción respetando el límite", () => {
     const updateFieldMock = vi.fn();
-    render(
-      <RequirementsStep
-        conditions={mockConditions}
-        updateField={updateFieldMock}
-      />
-    );
+    renderStep(mockConditions, updateFieldMock);
 
     const textarea = screen.getByPlaceholderText(/Buscamos un desarrollador backend/i);
     fireEvent.change(textarea, { target: { value: "Experiencia en React" } });
@@ -45,12 +53,7 @@ describe("RequirementsStep", () => {
 
   it("debe agregar una habilidad a la lista al hacer clic en un chip no seleccionado", () => {
     const updateFieldMock = vi.fn();
-    render(
-      <RequirementsStep
-        conditions={mockConditions}
-        updateField={updateFieldMock}
-      />
-    );
+    renderStep(mockConditions, updateFieldMock);
 
     const pythonChip = screen.getByText("Python");
     fireEvent.click(pythonChip);
@@ -62,16 +65,29 @@ describe("RequirementsStep", () => {
     const updateFieldMock = vi.fn();
     const conditionsWithSkill = { ...mockConditions, skills: ["Python"] };
 
-    render(
-      <RequirementsStep
-        conditions={conditionsWithSkill}
-        updateField={updateFieldMock}
-      />
-    );
+    renderStep(conditionsWithSkill, updateFieldMock);
 
     const pythonChip = screen.getByText("Python");
     fireEvent.click(pythonChip);
 
     expect(updateFieldMock).toHaveBeenCalledWith("skills", []);
+  });
+
+  it("ejecuta la acción para volver al paso anterior", () => {
+    const onPrevious = vi.fn();
+    renderStep(mockConditions, vi.fn(), onPrevious);
+
+    fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+
+    expect(onPrevious).toHaveBeenCalledOnce();
+  });
+
+  it("ejecuta la acción para continuar al siguiente paso", () => {
+    const onContinue = vi.fn();
+    renderStep(mockConditions, vi.fn(), vi.fn(), onContinue);
+
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+
+    expect(onContinue).toHaveBeenCalledOnce();
   });
 });

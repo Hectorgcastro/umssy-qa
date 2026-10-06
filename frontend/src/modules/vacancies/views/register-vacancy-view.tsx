@@ -9,7 +9,7 @@ import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
-    const { currentStep, conditions, updateField, selectModality, goBack } = useJobOfferForm();
+    const { currentStep, conditions, updateField, selectModality, goNext, goBack } = useJobOfferForm();
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-8">
@@ -39,6 +39,8 @@ export function RegisterVacancyView() {
                 <RequirementsStep 
                 conditions={conditions} 
                 updateField={updateField} 
+                onPrevious={goBack}
+                onContinue={goNext}
                 />
             )}
 

@@ -18,6 +18,11 @@ export interface VacancyConditions {
     skills: string[]; // Guardamos las habilidades como un array de strings
 }
 
+export type UpdateVacancyField = <Field extends keyof VacancyConditions>(
+    field: Field,
+    value: VacancyConditions[Field],
+) => void;
+
 const initialConditions: VacancyConditions = {
     title: "",
     modality: null,
@@ -37,12 +42,9 @@ export function useJobOfferForm() {
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
     // Como skills es un array, necesitamos actualizar el tipado de updateField
-    function updateField<Field extends keyof VacancyConditions>(
-        field: Field,
-        value: VacancyConditions[Field],
-    ) {
+    const updateField: UpdateVacancyField = (field, value) => {
         setConditions((prev) => ({ ...prev, [field]: value }));
-    }
+    };
 
     function selectModality(modality: Modality) {
         setConditions((prev) => ({ ...prev, modality }));

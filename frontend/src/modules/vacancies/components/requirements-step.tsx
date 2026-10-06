@@ -2,11 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
-import { VacancyConditions } from "../hooks/use-job-offer-form";
+import { UpdateVacancyField, VacancyConditions } from "../hooks/use-job-offer-form";
 
 interface RequirementsStepProps {
   conditions: VacancyConditions;
-  updateField: (field: keyof VacancyConditions, value: any) => void;
+  updateField: UpdateVacancyField;
+  onPrevious: () => void;
+  onContinue: () => void;
 }
 
 const AVAILABLE_SKILLS = [
@@ -17,7 +19,12 @@ const AVAILABLE_SKILLS = [
 
 const MAX_CHARS = 3000;
 
-export function RequirementsStep({ conditions, updateField }: RequirementsStepProps) {
+export function RequirementsStep({
+  conditions,
+  updateField,
+  onPrevious,
+  onContinue,
+}: RequirementsStepProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const hasUnsavedChanges = conditions.description !== "" || conditions.skills.length > 0;
@@ -34,7 +41,7 @@ export function RequirementsStep({ conditions, updateField }: RequirementsStepPr
   }, [hasUnsavedChanges]);
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    let text = e.target.value;
+    const text = e.target.value;
     if (text.length <= MAX_CHARS) {
        updateField("description", text);
     }
@@ -123,6 +130,23 @@ export function RequirementsStep({ conditions, updateField }: RequirementsStepPr
               </button>
            </div>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-border px-6 py-4">
+        <button
+          type="button"
+          onClick={onPrevious}
+          className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+        >
+          Anterior
+        </button>
+        <button
+          type="button"
+          onClick={onContinue}
+          className="rounded-lg bg-[#E50000] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+        >
+          Continuar
+        </button>
       </div>
     </div>
   );
