@@ -1,4 +1,4 @@
-import { CertificationsView } from "@/modules/profile";
+import { CertificationsView } from "@/modules/certifications";
 
 export default function CertificationsPage() {
   return <CertificationsView />;
