@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DomainExceptionFilter } from '../../../common/filters/domain-exception.filter.js';
+import { BackofficeGuard } from '../guards/backoffice.guard.js';
 import { AccessRequestsController } from '../controllers/access-requests.controller.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
@@ -18,7 +19,10 @@ describe('AccessRequestsController (documento de respaldo)', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [AccessRequestsController],
       providers: [{ provide: AccessRequestsService, useValue: service }],
-    }).compile();
+    })
+      .overrideGuard(BackofficeGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalFilters(new DomainExceptionFilter());
     await app.init();

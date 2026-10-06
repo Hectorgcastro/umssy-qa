@@ -16,6 +16,10 @@ export class AuthService {
     return this.authRepository.existsByEmail(email);
   }
 
+  getSessionUser(id: string) {
+    return this.authRepository.findSessionUser(id);
+  }
+
   async login(dto: LoginDto) {
     const user = await this.authRepository.findUserByEmailWithRoles(dto.email);
 
