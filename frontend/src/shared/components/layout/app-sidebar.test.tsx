@@ -28,20 +28,29 @@ describe("AppSidebar", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows the brand and the temporary user by default", () => {
+  it("shows the brand without an identity footer when no user is provided", () => {
     renderSidebar();
 
     expect(screen.getByText("UMSSY")).toBeDefined();
     expect(screen.getByText("Universidad para el futuro")).toBeDefined();
-    expect(screen.getByText("Alejandro Vargas")).toBeDefined();
-    expect(screen.getByText("Administrador")).toBeDefined();
+    expect(screen.queryByText("Alejandro Vargas")).toBeNull();
+    expect(screen.queryByText("Administrador")).toBeNull();
+    expect(document.querySelector('[data-slot="sidebar-footer"]')).toBeNull();
   });
 
-  it("renders an empty menu with the default navigation", () => {
+  it("renders the mentorship group with its two routes", () => {
     renderSidebar();
 
     const navigation = screen.getByRole("navigation", { name: "Menú principal" });
-    expect(within(navigation).queryAllByRole("listitem")).toHaveLength(0);
+    expect(within(navigation).getByText("Mentorías")).toBeDefined();
+  });
+
+  it("does not render routes that are not implemented", () => {
+    renderSidebar();
+
+    const navigation = screen.getByRole("navigation", { name: "Menú principal" });
+    expect(within(navigation).queryByText("Mi perfil")).toBeNull();
+    expect(within(navigation).queryByText("Empleos")).toBeNull();
   });
 
   it("renders the items and user received by props", () => {
