@@ -22,6 +22,8 @@ export function EditBlockPanel({ block, onClose }: EditBlockPanelProps) {
     );
   }
 
+  const isEditable = block.state === "free";
+
   const handleSubmit = async (values: CreateAvailabilityBlockInput) => {
     const updated = await updateBlock(block.id, values);
     if (updated) {
@@ -35,6 +37,7 @@ export function EditBlockPanel({ block, onClose }: EditBlockPanelProps) {
         mode="edit"
         initialValues={{ startAt: block.startAt, endAt: block.endAt }}
         isSubmitting={isSubmitting}
+        disabled={!isEditable}
         submitError={submitError}
         onSubmit={handleSubmit}
         onCancel={onClose}
@@ -46,11 +49,14 @@ export function EditBlockPanel({ block, onClose }: EditBlockPanelProps) {
           variant="outline"
           size="lg"
           className="w-full border-danger text-danger hover:bg-danger/10 hover:text-danger"
+          disabled={!isEditable}
           onClick={() => setIsDeleteOpen(true)}
         >
           {DELETE_BLOCK_TEXT.action}
         </Button>
-        <p className="text-center text-xs text-muted-foreground">{EDIT_BLOCK_HINT}</p>
+        {!isEditable && (
+          <p className="text-center text-xs text-muted-foreground">{EDIT_BLOCK_HINT}</p>
+        )}
       </div>
 
       <DeleteBlockDialog

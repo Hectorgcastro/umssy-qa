@@ -146,6 +146,24 @@ describe("MentorAvailabilityView", () => {
     expect(screen.getByRole("button", { name: "Eliminar bloque" })).toBeInTheDocument()
   })
 
+  it("al tocar un bloque con cita abre el panel con las acciones deshabilitadas y el aviso", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([
+      { ...blockAt("p", "2026-10-06T14:00:00.000Z", "2026-10-06T15:00:00.000Z"), state: "pending" },
+    ])
+    const user = userEvent.setup()
+
+    render(<MentorAvailabilityView />)
+
+    await user.click(await screen.findByRole("button", { name: "pendiente, 10:00 a 11:00" }))
+
+    expect(await screen.findByText("Editar bloque")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Eliminar bloque" })).toBeDisabled()
+    expect(
+      screen.getByText("Solo se puede editar si el bloque no tiene ninguna cita asociada."),
+    ).toBeInTheDocument()
+  })
+
   it("arranca en la semana de la URL si viene indicada", async () => {
     vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
 

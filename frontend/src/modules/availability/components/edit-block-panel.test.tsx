@@ -34,8 +34,33 @@ describe("EditBlockPanel", () => {
       screen.getByRole("button", { name: "Eliminar bloque" }),
     ).toHaveClass("border-danger", "text-danger")
     expect(
-      screen.getByText("Solo se puede editar si el bloque no tiene ninguna cita asociada."),
-    ).toBeInTheDocument()
+      screen.queryByText("Solo se puede editar si el bloque no tiene ninguna cita asociada."),
+    ).not.toBeInTheDocument()
+  })
+
+  it.each(["pending", "confirmed"] as const)(
+    "deshabilita Guardar y Eliminar cuando el bloque está %s",
+    (state) => {
+      render(<EditBlockPanel block={{ ...mockBlock, state }} onClose={vi.fn()} />)
+
+      expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled()
+      expect(screen.getByRole("button", { name: "Eliminar bloque" })).toBeDisabled()
+      expect(
+        screen.getByText("Solo se puede editar si el bloque no tiene ninguna cita asociada."),
+      ).toBeInTheDocument()
+    },
+  )
+
+  it("no elimina ni abre el diálogo si el bloque tiene una cita asociada", async () => {
+    const deleteSpy = vi.spyOn(availabilityApi, "deleteAvailabilityBlock")
+    const user = userEvent.setup()
+
+    render(<EditBlockPanel block={{ ...mockBlock, state: "pending" }} onClose={vi.fn()} />)
+
+    await user.click(screen.getByRole("button", { name: "Eliminar bloque" }))
+
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
+    expect(deleteSpy).not.toHaveBeenCalled()
   })
 
   it("guarda los cambios y notifica el cierre", async () => {

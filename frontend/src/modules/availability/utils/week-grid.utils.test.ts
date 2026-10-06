@@ -57,12 +57,13 @@ describe("capitalize", () => {
 });
 
 describe("isBlockClickable", () => {
-  it("solo permite clic en bloques libres de las variantes owner y selectable", () => {
+  it("el mentor puede tocar cualquier bloque y el titulado solo los libres", () => {
     expect(isBlockClickable("owner", "free")).toBe(true);
+    expect(isBlockClickable("owner", "pending")).toBe(true);
+    expect(isBlockClickable("owner", "confirmed")).toBe(true);
     expect(isBlockClickable("selectable", "free")).toBe(true);
-    expect(isBlockClickable("public", "free")).toBe(false);
-    expect(isBlockClickable("owner", "pending")).toBe(false);
     expect(isBlockClickable("selectable", "confirmed")).toBe(false);
+    expect(isBlockClickable("public", "free")).toBe(false);
   });
 });
 
