@@ -2,9 +2,10 @@ import type { VacancyConditions } from "../hooks/use-job-offer-form";
 
 interface PreviewStepProps {
   conditions: VacancyConditions;
+  onPrevious: () => void;
 }
 
-export function PreviewStep({ conditions }: PreviewStepProps) {
+export function PreviewStep({ conditions, onPrevious }: PreviewStepProps) {
   // Mocks basados en el diseño
   const FIXED_COMPANY = "TechBolivia S.R.L.";
   const MOCK_SKILLS = ["Python", "Docker", "Git"];
@@ -97,7 +98,9 @@ export function PreviewStep({ conditions }: PreviewStepProps) {
 
       {/* Botones de Acción Finales */}
       <div className="mt-8 flex items-center justify-between">
-        <button 
+        <button
+          type="button"
+          onClick={onPrevious}
           className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
         >
           Anterior

@@ -9,7 +9,7 @@ import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
-    const { currentStep, conditions, updateField, selectModality, goNext, goBack } = useJobOfferForm();
+    const { currentStep, conditions, updateField, selectModality, goBack } = useJobOfferForm();
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-8">
@@ -44,7 +44,7 @@ export function RegisterVacancyView() {
 
             {/* Inyecta tu vista 3 exclusivamente cuando el stepper llegue al 3 */}
             {currentStep === 3 && (
-                <PreviewStep conditions={conditions} />
+                <PreviewStep conditions={conditions} onPrevious={goBack} />
             )}
         </div>
     );
