@@ -10,30 +10,23 @@ import {
 import type { ActivateMentorDto } from '../requests/activate-mentor.schema.js';
 import type { UpdateMentorTechnicalAreasDto } from '../requests/update-mentor-technical-areas.schema.js';
 import type { UpdateMentorOrientationTypesDto } from '../requests/update-mentor-orientation-types.schema.js';
-import type { MentorDirectoryResponse } from '../types/mentor-directory-response.types.js';
-import type { MentorProfileResponse } from '../types/mentor-profile-response.types.js';
-import type { TechnicalAreaResponse } from '../../technical-areas/types/technical-area-response.types.js';
-import type { OrientationTypeResponse } from '../../orientation-types/types/orientation-type-response.types.js';
+import { MentorMapper } from '../mappers/mentor.mapper.js';
 
 @Injectable()
 export class MentorsService {
-  constructor(private readonly mentorsRepository: MentorsRepository) {}
+  constructor(
+    private readonly mentorsRepository: MentorsRepository,
+    private readonly mentorMapper: MentorMapper,
+  ) {}
 
-  async findAll(): Promise<MentorDirectoryResponse[]> {
+  async findAll() {
     const now = new Date();
     const mentors = await this.mentorsRepository.findActiveMentors(now);
 
-    return mentors.map((mentor) => ({
-      id: mentor.id,
-      fullName: `${mentor.firstName} ${mentor.lastName}`,
-      headline: mentor.headline,
-      technicalAreas: mentor.mentorTechnicalAreas.map(
-        (relation) => relation.technicalArea.name,
-      ),
-    }));
+    return this.mentorMapper.toDirectoryResponseList(mentors);
   }
 
-  async findOne(userId: string): Promise<MentorProfileResponse> {
+  async findOne(userId: string) {
     const now = new Date();
     const mentor = await this.mentorsRepository.findActiveMentorById(
       userId,
@@ -44,35 +37,15 @@ export class MentorsService {
       throw new MentorNotFoundException();
     }
 
-    return {
-      id: mentor.id,
-      fullName: `${mentor.firstName} ${mentor.lastName}`,
-      headline: mentor.headline,
-      aboutMe: mentor.aboutMe,
-      photoUrl: this.bytesToString(mentor.photoUrl),
-      city: mentor.city,
-      educations: mentor.educations,
-      workExperiences: mentor.workExperiences,
-      skills: mentor.userSkills.map((relation) => relation.skill),
-      certifications: mentor.certifications.map((certification) => ({
-        ...certification,
-        documentUrl: this.bytesToString(certification.documentUrl),
-      })),
-      technicalAreas: mentor.mentorTechnicalAreas.map(
-        (relation) => relation.technicalArea,
-      ),
-      orientationTypes: mentor.mentorOrientationTypes.map(
-        (relation) => relation.orientationType,
-      ),
-    };
+    return this.mentorMapper.toProfileResponse(mentor);
   }
 
-  async findMyTechnicalAreas(userId: string): Promise<TechnicalAreaResponse[]> {
+  async findMyTechnicalAreas(userId: string) {
     await this.assertActiveMentor(userId);
     const relations =
       await this.mentorsRepository.findMentorTechnicalAreas(userId);
 
-    return relations.map((relation) => relation.technicalArea);
+    return this.mentorMapper.toTechnicalAreasResponse(relations);
   }
 
   async updateMyTechnicalAreas(
@@ -96,14 +69,12 @@ export class MentorsService {
     return { technicalAreaIds: data.technicalAreaIds };
   }
 
-  async findMyOrientationTypes(
-    userId: string,
-  ): Promise<OrientationTypeResponse[]> {
+  async findMyOrientationTypes(userId: string) {
     await this.assertActiveMentor(userId);
     const relations =
       await this.mentorsRepository.findMentorOrientationTypes(userId);
 
-    return relations.map((relation) => relation.orientationType);
+    return this.mentorMapper.toOrientationTypesResponse(relations);
   }
 
   async updateMyOrientationTypes(
@@ -167,10 +138,6 @@ export class MentorsService {
       data.technicalAreaIds,
       data.orientationTypeIds,
     );
-  }
-
-  private bytesToString(value: Uint8Array | null): string | null {
-    return value ? Buffer.from(value).toString('utf8') : null;
   }
 
   private async assertActiveMentor(userId: string): Promise<void> {

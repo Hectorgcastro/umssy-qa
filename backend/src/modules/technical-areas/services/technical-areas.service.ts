@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { TechnicalAreasRepository } from '../repositories/technical-areas.repository.js';
-import type { TechnicalAreaResponse } from '../types/technical-area-response.types.js';
+import { TechnicalAreasMapper } from '../mappers/technical-areas.mapper.js';
 
 @Injectable()
 export class TechnicalAreasService {
-  constructor(private readonly technicalAreasRepository: TechnicalAreasRepository) {}
+  constructor(
+    private readonly technicalAreasRepository: TechnicalAreasRepository,
+    private readonly technicalAreasMapper: TechnicalAreasMapper,
+  ) {}
 
-  findAll(): Promise<TechnicalAreaResponse[]> {
-    return this.technicalAreasRepository.findAll();
+  async findAll() {
+    const records = await this.technicalAreasRepository.findAll();
+    return this.technicalAreasMapper.toResponseList(records);
   }
 }

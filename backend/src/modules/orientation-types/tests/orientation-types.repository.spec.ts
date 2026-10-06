@@ -1,10 +1,14 @@
 import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrientationTypesRepository } from '../repositories/orientation-types.repository.js';
-import type { OrientationTypeResponse } from '../types/orientation-type-response.types.js';
 
 describe('OrientationTypesRepository', () => {
-  const findMany = vi.fn<() => Promise<OrientationTypeResponse[]>>();
+  const findMany =
+    vi.fn<
+      () => Promise<
+        Awaited<ReturnType<OrientationTypesRepository['findActive']>>
+      >
+    >();
   const prisma = { orientationType: { findMany } } as unknown as PrismaService;
   let repository: OrientationTypesRepository;
 
@@ -14,7 +18,7 @@ describe('OrientationTypesRepository', () => {
   });
 
   it('consulta y devuelve únicamente los tipos de orientación activos', async () => {
-    const orientationTypes: OrientationTypeResponse[] = [
+    const orientationTypes = [
       {
         id: '11111111-1111-4111-8111-111111111111',
         name: 'Orientación profesional',

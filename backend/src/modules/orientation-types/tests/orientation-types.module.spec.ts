@@ -6,6 +6,7 @@ import { OrientationTypesController } from '../controllers/orientation-types.con
 import { OrientationTypesModule } from '../orientation-types.module.js';
 import { OrientationTypesRepository } from '../repositories/orientation-types.repository.js';
 import { OrientationTypesService } from '../services/orientation-types.service.js';
+import { OrientationTypesMapper } from '../mappers/orientation-types.mapper.js';
 
 describe('OrientationTypesModule', () => {
   let moduleRef: TestingModule;
@@ -23,6 +24,7 @@ describe('OrientationTypesModule', () => {
     OrientationTypesController,
     OrientationTypesService,
     OrientationTypesRepository,
+    OrientationTypesMapper,
   ])('resuelve %o', (provider) => {
     expect(moduleRef.get(provider)).toBeInstanceOf(provider);
   });
