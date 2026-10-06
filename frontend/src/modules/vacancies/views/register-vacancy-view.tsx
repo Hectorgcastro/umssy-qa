@@ -25,7 +25,6 @@ export function RegisterVacancyView() {
 
             <VacancyStepper currentStep={currentStep} />
             
-            {/* Oculta la vista 1 si no estamos en el paso 1 */}
             {currentStep === 1 && (
                 <InformationStep 
                    conditions={conditions} 
@@ -34,7 +33,6 @@ export function RegisterVacancyView() {
                 />
             )}
 
-            {/* Inyecta la vista 2 cuando el stepper llegue al 2 */}
             {currentStep === 2 && (
                 <RequirementsStep 
                 conditions={conditions} 
@@ -42,7 +40,6 @@ export function RegisterVacancyView() {
                 />
             )}
 
-            {/* Inyecta la vista 3 exclusivamente cuando el stepper llegue al 3 */}
             {currentStep === 3 && (
                 <PreviewStep conditions={conditions} />
             )}
