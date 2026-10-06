@@ -1,9 +1,3 @@
-//import { HomeView } from "@/modules/home";
-
-//export default function HomePage() {
-//  return <HomeView />;
-//}
-
 import { MatchingView } from "@/modules/matching";
 
 export default function MatchingPage() {

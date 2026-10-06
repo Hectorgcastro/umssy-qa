@@ -1,0 +1,276 @@
+.
+├── backend
+│   ├── compose.yml
+│   ├── dockerfile
+│   ├── eslint.config.mjs
+│   ├── lint-staged.config.mjs
+│   ├── nest-cli.json
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   ├── pnpm-workspace.yaml
+│   ├── prisma
+│   │   ├── migrations
+│   │   │   ├── 20260921042857_init
+│   │   │   │   └── migration.sql
+│   │   │   ├── 20260929070040_create_first_db
+│   │   │   │   └── migration.sql
+│   │   │   ├── 20260929072809_remove_enumerates_and_change_to_bytes
+│   │   │   │   └── migration.sql
+│   │   │   ├── 20261002214952_add_password_hash_to_users
+│   │   │   │   └── migration.sql
+│   │   │   ├── 20261003030332_rename_password_hash_to_password
+│   │   │   │   └── migration.sql
+│   │   │   └── migration_lock.toml
+│   │   ├── schema.prisma
+│   │   └── seed.ts
+│   ├── prisma7.config.ts
+│   ├── README.md
+│   ├── src
+│   │   ├── app.controller.spec.ts
+│   │   ├── app.controller.ts
+│   │   ├── app.module.ts
+│   │   ├── app.service.ts
+│   │   ├── common
+│   │   │   ├── decorators
+│   │   │   ├── enums
+│   │   │   │   └── roles.enum.ts
+│   │   │   ├── exceptions
+│   │   │   │   └── domain.exception.ts
+│   │   │   ├── filters
+│   │   │   │   └── domain-exception.filter.ts
+│   │   │   ├── guards
+│   │   │   ├── interceptors
+│   │   │   ├── pipes
+│   │   │   │   └── zod-validation.pipe.ts
+│   │   │   ├── prisma
+│   │   │   │   ├── build-connection-string.ts
+│   │   │   │   ├── prisma.module.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── tests
+│   │   │   │   ├── build-connection-string.spec.ts
+│   │   │   │   ├── domain-exception.filter.spec.ts
+│   │   │   │   ├── prisma.service.spec.ts
+│   │   │   │   └── zod-validation.pipe.spec.ts
+│   │   │   └── utils
+│   │   ├── config
+│   │   ├── main.ts
+│   │   ├── modules
+│   │   │   ├── auth
+│   │   │   │   ├── auth.module.ts
+│   │   │   │   ├── controllers
+│   │   │   │   │   └── auth.controller.ts
+│   │   │   │   ├── exceptions
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── invalid-credentials.exception.ts
+│   │   │   │   │   └── role-not-assigned.exception.ts
+│   │   │   │   ├── repositories
+│   │   │   │   │   └── auth.repository.ts
+│   │   │   │   ├── requests
+│   │   │   │   │   └── login.schema.ts
+│   │   │   │   ├── services
+│   │   │   │   │   └── auth.service.ts
+│   │   │   │   └── tests
+│   │   │   │       ├── auth.controller.spec.ts
+│   │   │   │       ├── auth.exceptions.spec.ts
+│   │   │   │       ├── auth.module.spec.ts
+│   │   │   │       ├── auth.service.spec.ts
+│   │   │   │       └── login.schema.spec.ts
+│   │   │   └── availability
+│   │   │       ├── availability.module.ts
+│   │   │       ├── controllers
+│   │   │       │   └── availability.controller.ts
+│   │   │       ├── exceptions
+│   │   │       │   ├── block-has-appointment.exception.ts
+│   │   │       │   ├── block-not-found.exception.ts
+│   │   │       │   ├── block-not-owned.exception.ts
+│   │   │       │   ├── block-overlap.exception.ts
+│   │   │       │   ├── index.ts
+│   │   │       │   └── invalid-block-time.exception.ts
+│   │   │       ├── mappers
+│   │   │       │   └── availability.mapper.ts
+│   │   │       ├── repositories
+│   │   │       │   └── availability.repository.ts
+│   │   │       ├── requests
+│   │   │       ├── services
+│   │   │       │   └── availability.service.ts
+│   │   │       ├── tests
+│   │   │       │   ├── availability.exceptions.spec.ts
+│   │   │       │   └── availability.module.spec.ts
+│   │   │       └── types
+│   │   └── prisma
+│   │       ├── browser.ts
+│   │       ├── client.ts
+│   │       ├── commonInputTypes.ts
+│   │       ├── enums.ts
+│   │       ├── internal
+│   │       │   ├── class.ts
+│   │       │   ├── prismaNamespaceBrowser.ts
+│   │       │   └── prismaNamespace.ts
+│   │       ├── models
+│   │       │   ├── AppointmentHistory.ts
+│   │       │   ├── AppointmentStatus.ts
+│   │       │   ├── Appointment.ts
+│   │       │   ├── AvailabilityBlock.ts
+│   │       │   ├── BlockedDate.ts
+│   │       │   ├── Certification.ts
+│   │       │   ├── City.ts
+│   │       │   ├── Company.ts
+│   │       │   ├── Education.ts
+│   │       │   ├── EventAttendance.ts
+│   │       │   ├── EventCategory.ts
+│   │       │   ├── EventModality.ts
+│   │       │   ├── EventOrigin.ts
+│   │       │   ├── EventRegistration.ts
+│   │       │   ├── EventStatus.ts
+│   │       │   ├── Event.ts
+│   │       │   ├── MentorOrientationType.ts
+│   │       │   ├── MentorTechnicalArea.ts
+│   │       │   ├── OrientationType.ts
+│   │       │   ├── ProposalStatus.ts
+│   │       │   ├── RegistrationStatus.ts
+│   │       │   ├── Role.ts
+│   │       │   ├── Skill.ts
+│   │       │   ├── TechnicalArea.ts
+│   │       │   ├── TimeProposal.ts
+│   │       │   ├── UserRole.ts
+│   │       │   ├── UserSkill.ts
+│   │       │   ├── User.ts
+│   │       │   └── WorkExperience.ts
+│   │       └── models.ts
+│   ├── test
+│   │   └── app.e2e-spec.ts
+│   ├── tsconfig.build.json
+│   ├── tsconfig.json
+│   ├── vitest.config.e2e.ts
+│   └── vitest.config.ts
+├── estructura_proyecto.txt
+├── frontend
+│   ├── components.json
+│   ├── eslint.config.mjs
+│   ├── lint-staged.config.mjs
+│   ├── next.config.ts
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   ├── pnpm-workspace.yaml
+│   ├── postcss.config.mjs
+│   ├── public
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── next.svg
+│   │   ├── vercel.svg
+│   │   └── window.svg
+│   ├── README.md
+│   ├── src
+│   │   ├── app
+│   │   │   ├── (app)
+│   │   │   ├── favicon.ico
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   └── (public)
+│   │   │       ├── login
+│   │   │       │   └── page.tsx
+│   │   │       ├── page.test.tsx
+│   │   │       ├── page.tsx
+│   │   │       └── sidebar-preview
+│   │   │           ├── page.test.tsx
+│   │   │           └── page.tsx
+│   │   ├── components
+│   │   │   └── ui
+│   │   │       ├── button.test.tsx
+│   │   │       ├── button.tsx
+│   │   │       ├── card
+│   │   │       │   ├── card-action.tsx
+│   │   │       │   ├── card-content.tsx
+│   │   │       │   ├── card-description.tsx
+│   │   │       │   ├── card-footer.tsx
+│   │   │       │   ├── card-header.tsx
+│   │   │       │   ├── card.test.tsx
+│   │   │       │   ├── card-title.tsx
+│   │   │       │   ├── card.tsx
+│   │   │       │   └── index.ts
+│   │   │       ├── input.tsx
+│   │   │       ├── primitives.test.tsx
+│   │   │       ├── separator.tsx
+│   │   │       ├── sheet.test.tsx
+│   │   │       ├── sheet.tsx
+│   │   │       ├── sidebar.test.tsx
+│   │   │       ├── sidebar.tsx
+│   │   │       ├── skeleton.tsx
+│   │   │       └── tooltip.tsx
+│   │   ├── hooks
+│   │   │   └── use-mobile.ts
+│   │   ├── lib
+│   │   │   └── utils.ts
+│   │   ├── modules
+│   │   │   ├── auth
+│   │   │   │   ├── hooks
+│   │   │   │   │   └── use-login.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── services
+│   │   │   │   │   └── auth.service.ts
+│   │   │   │   ├── types
+│   │   │   │   │   └── auth-types.ts
+│   │   │   │   └── views
+│   │   │   │       └── login-view.tsx
+│   │   │   └── home
+│   │   │       ├── hooks
+│   │   │       │   └── use-home.ts
+│   │   │       ├── index.ts
+│   │   │       ├── services
+│   │   │       │   └── home.service.ts
+│   │   │       └── views
+│   │   │           └── home-view.tsx
+│   │   └── shared
+│   │       ├── components
+│   │       │   ├── layout
+│   │       │   │   ├── app-shell.test.tsx
+│   │       │   │   ├── app-shell.tsx
+│   │       │   │   ├── app-sidebar.test.tsx
+│   │       │   │   ├── app-sidebar.tsx
+│   │       │   │   ├── index.ts
+│   │       │   │   ├── sidebar-brand.tsx
+│   │       │   │   ├── sidebar-nav-item.test.tsx
+│   │       │   │   ├── sidebar-nav-item.tsx
+│   │       │   │   ├── sidebar-toggle-button.tsx
+│   │       │   │   ├── sidebar-user-card.test.tsx
+│   │       │   │   └── sidebar-user-card.tsx
+│   │       │   └── ui
+│   │       ├── config
+│   │       │   ├── env.config.ts
+│   │       │   ├── navigation.config.ts
+│   │       │   └── sidebar-user.config.ts
+│   │       ├── constants
+│   │       │   ├── sidebar.constants.ts
+│   │       │   ├── sidebar-preview.constants.ts
+│   │       │   └── viewport.constants.ts
+│   │       ├── contexts
+│   │       ├── hooks
+│   │       ├── services
+│   │       │   ├── api-client.ts
+│   │       │   └── storage
+│   │       ├── testing
+│   │       │   └── stub-match-media.ts
+│   │       ├── types
+│   │       │   ├── app-shell-props.types.ts
+│   │       │   ├── app-sidebar-props.types.ts
+│   │       │   ├── navigation-child-item.types.ts
+│   │       │   ├── navigation-item.types.ts
+│   │       │   ├── sidebar-nav-item-props.types.ts
+│   │       │   ├── sidebar-user-card-props.types.ts
+│   │       │   └── sidebar-user.types.ts
+│   │       └── utils
+│   │           ├── get-initials.test.ts
+│   │           ├── get-initials.ts
+│   │           ├── is-route-active.test.ts
+│   │           └── is-route-active.ts
+│   ├── tsconfig.json
+│   ├── vitest.config.mts
+│   └── vitest.setup.ts
+├── LICENSE
+├── package.json
+├── pnpm-lock.yaml
+├── README.md
+└── scripts
+    └── check-branch-name.sh
+
+79 directories, 194 files
