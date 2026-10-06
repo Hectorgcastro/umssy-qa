@@ -1,41 +1,17 @@
-import {
-  CalendarDays,
-  Clock3,
-  MapPin,
-  UserRound,
-} from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { CalendarDays, Clock3, MapPin, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   calculateEventCapacityStatus,
   formatEventDate,
   formatTimeRange,
-} from './event-card';
-import type { EventItem } from '../types/event.types';
+} from '../utils/event-card';
+import { DetailRow } from './detail-row';
 
-type EventDetailPanelProps = {
-  event: EventItem;
-};
-
-function DetailRow({
-  icon: Icon,
-  value,
-  label,
-}: {
-  icon: typeof CalendarDays;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex min-w-0 items-start gap-2 text-sm text-text-secondary">
-      <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-      <span className="sr-only">{label}: </span>
-      <span className="min-w-0 break-words">{value}</span>
-    </div>
-  );
-}
+import type { EventDetailPanelProps } from '../types/event-detail-panel-props.types';
 
 export function EventDetailPanel({ event }: EventDetailPanelProps) {
-  const { enrolledCount, capacity, progressPercentage } =
+  const { enrolledCount, capacity, progressPercentage, isFull } =
     calculateEventCapacityStatus(event);
   const availableSpots = event.availableSpots;
 
@@ -44,7 +20,7 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
       aria-label={`Detalle de ${event.title}`}
       className="w-full shrink-0 border-t border-border bg-surface lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
     >
-      <div className="space-y-5 px-6 py-7 lg:px-7">
+      <Card className="gap-0 rounded-none border-0 shadow-none bg-transparent space-y-5 px-6 py-7 lg:px-7">
         <header className="space-y-3">
           <span className="inline-flex w-fit rounded-full bg-muted px-3 py-1 text-xs font-medium text-text-secondary">
             {event.category.name}
@@ -54,6 +30,9 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
           </h2>
         </header>
 
+        <p className="text-sm text-text-secondary">
+          Modalidad: {event.modality.title}
+        </p>
         <dl className="space-y-2 border-b border-border pb-4">
           <DetailRow
             icon={CalendarDays}
@@ -67,7 +46,11 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
           />
           <DetailRow
             icon={MapPin}
-            label="Lugar"
+            label={
+              event.modality.title.toLowerCase() === 'virtual'
+                ? 'Enlace'
+                : 'Lugar'
+            }
             value={event.location?.trim() || 'Por confirmar'}
           />
           <DetailRow
@@ -77,7 +60,10 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
           />
         </dl>
 
-        <section aria-labelledby="event-description-title" className="space-y-2">
+        <section
+          aria-labelledby="event-description-title"
+          className="space-y-2"
+        >
           <h3
             className="text-xs font-semibold uppercase tracking-wide text-text-secondary"
             id="event-description-title"
@@ -112,25 +98,28 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
             role="progressbar"
           >
             <div
-              className="h-full rounded-full bg-gold transition-[width]"
+              className={`h-full rounded-full transition-[width] ${isFull ? 'bg-accent' : 'bg-gold'}`}
               style={{ width: `${progressPercentage ?? 0}%` }}
             />
           </div>
           <p className="text-xs text-text-secondary">
             {capacity === null
               ? 'Sin límite de cupos'
-              : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
+              : isFull
+                ? 'Lleno · Sin cupos disponibles'
+                : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
           </p>
         </section>
 
         <Button
           className="mt-2 min-h-11 w-full bg-accent text-white hover:bg-danger"
+          disabled={isFull}
           size="lg"
           type="button"
         >
           Inscribirme
         </Button>
-      </div>
+      </Card>
     </aside>
   );
 }

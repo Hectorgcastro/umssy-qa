@@ -49,4 +49,13 @@ describe('GetEventsSchema', () => {
     const result = GetEventsSchema.safeParse({ categoryId: 'invalid-uuid' });
     expect(result.success).toBe(false);
   });
+  it('accepts identifiers stored by the original PostgreSQL seed', () => {
+    const parsed = GetEventsSchema.parse({
+      categoryId: '22222222-2222-2222-2222-222222222221',
+      statusId: '22222222-2222-2222-2222-222222222224',
+    });
+    expect(parsed.categoryId).toBe('22222222-2222-2222-2222-222222222221');
+    expect(parsed.statusId).toBe('22222222-2222-2222-2222-222222222224');
+  });
+
 });

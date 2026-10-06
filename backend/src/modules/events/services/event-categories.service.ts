@@ -6,9 +6,13 @@ import type { EventCategoriesListResponse } from '../types/event-categories.type
 
 @Injectable()
 export class EventCategoriesService {
-  constructor(private readonly eventCategoriesRepository: EventCategoriesRepository) {}
+  constructor(
+    private readonly eventCategoriesRepository: EventCategoriesRepository,
+  ) {}
 
-  async findAll(payload: GetEventCategoriesPayload): Promise<EventCategoriesListResponse> {
+  async findAll(
+    payload: GetEventCategoriesPayload,
+  ): Promise<EventCategoriesListResponse> {
     const { page, limit, search } = payload;
     const offset = (page - 1) * limit;
 

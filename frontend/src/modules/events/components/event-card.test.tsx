@@ -1,11 +1,11 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  EventCard,
   calculateEventCapacityStatus,
   formatEventDate,
   formatTimeRange,
-} from './event-card';
+} from '../utils/event-card';
+import { EventCard } from './event-card';
 import type { EventItem } from '../types/event.types';
 
 const MOCK_EVENT: EventItem = {
@@ -88,18 +88,26 @@ describe('EventCard y utilidades de formato', () => {
     expect(screen.getByText('Tecnologia')).toBeInTheDocument();
     expect(screen.getByText('09:00 - 13:00')).toBeInTheDocument();
     expect(screen.getByText('24/30')).toBeInTheDocument();
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '80');
+    expect(screen.getByRole('progressbar')).toHaveAttribute(
+      'aria-valuenow',
+      '80',
+    );
   });
 
   it('aplica estilo por defecto para categorias no mapeadas y estado seleccionado', () => {
     const customCategoryEvent: EventItem = {
       ...MOCK_EVENT,
-      category: { id: 'a1a1a1a1-0099-4000-8000-000000000099', name: 'Robotica' },
+      category: {
+        id: 'a1a1a1a1-0099-4000-8000-000000000099',
+        name: 'Robotica',
+      },
     };
 
     render(<EventCard event={customCategoryEvent} isSelected />);
 
-    const cardButton = screen.getByRole('button', { name: /desarrollo web con react/i });
+    const cardButton = screen.getByRole('button', {
+      name: /desarrollo web con react/i,
+    });
     expect(cardButton).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Robotica')).toBeInTheDocument();
   });
@@ -108,7 +116,9 @@ describe('EventCard y utilidades de formato', () => {
     const handleSelect = vi.fn();
     render(<EventCard event={MOCK_EVENT} onSelect={handleSelect} />);
 
-    const cardButton = screen.getByRole('button', { name: /desarrollo web con react/i });
+    const cardButton = screen.getByRole('button', {
+      name: /desarrollo web con react/i,
+    });
 
     fireEvent.click(cardButton);
     expect(handleSelect).toHaveBeenCalledTimes(1);
@@ -149,7 +159,12 @@ describe('EventCard y utilidades de formato', () => {
     render(<EventCard event={fullEvent} />);
 
     expect(screen.getByTestId('event-full-badge')).toHaveTextContent('Lleno');
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
-    expect(screen.getByTestId('event-capacity-bar')).toHaveStyle({ width: '100%' });
+    expect(screen.getByRole('progressbar')).toHaveAttribute(
+      'aria-valuenow',
+      '100',
+    );
+    expect(screen.getByTestId('event-capacity-bar')).toHaveStyle({
+      width: '100%',
+    });
   });
 });

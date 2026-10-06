@@ -9,6 +9,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor.
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { EventRegistrationsModule } from './modules/event-registrations/event-registrations.module.js';
 import { EventsModule } from './modules/events/events.module.js';
 
 @Module({
@@ -18,6 +19,7 @@ import { EventsModule } from './modules/events/events.module.js';
     AvailabilityModule,
     AuthModule,
     EventsModule,
+    EventRegistrationsModule,
   ],
   controllers: [AppController],
   providers: [

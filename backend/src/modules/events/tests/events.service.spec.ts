@@ -1,3 +1,4 @@
+import { EventNotFoundException } from '../exceptions/event-not-found.exception.js';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { EventsService } from '../services/events.service.js';
 import type { EventWithRelations } from '../types/events.types.js';
@@ -22,10 +23,13 @@ function buildRecord(): EventWithRelations {
 
 describe('EventsService', () => {
   let service: EventsService;
-  let repositoryMock: { findAndCount: ReturnType<typeof vi.fn> };
+  let repositoryMock: {
+    findAndCount: ReturnType<typeof vi.fn>;
+    findById: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
-    repositoryMock = { findAndCount: vi.fn() };
+    repositoryMock = { findAndCount: vi.fn(), findById: vi.fn() };
     service = new EventsService(repositoryMock as never);
   });
 
@@ -105,5 +109,31 @@ describe('EventsService', () => {
       skip: 10,
       take: 10,
     });
+  });
+  it.each([10, 3, 0, null])(
+    'normalizes detail and capacity %s',
+    async (capacity) => {
+      repositoryMock.findById.mockResolvedValue({
+        ...buildRecord(),
+        capacity,
+        modality: { id: 'modality-1', title: 'Presencial' },
+      });
+      const detail = await service.findOne('uuid-1');
+      expect(detail.eventDate).toBe('2026-06-15');
+      expect(detail.startTime).toBe('10:00');
+      expect(detail.registrationCount).toBe(3);
+      expect(detail.availableSpots).toBe(
+        capacity === null ? null : Math.max(0, capacity - 3),
+      );
+      expect(detail.modality.title).toBe('Presencial');
+      expect(detail).not.toHaveProperty('_count');
+    },
+  );
+
+  it('returns 404 for a missing workshop', async () => {
+    repositoryMock.findById.mockResolvedValue(null);
+    await expect(service.findOne('missing')).rejects.toBeInstanceOf(
+      EventNotFoundException,
+    );
   });
 });

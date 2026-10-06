@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
-export const MAX_PAGE_SIZE = 50;
-export const MAX_SEARCH_LENGTH = 150;
+import {
+  MAX_PAGE_SIZE,
+  MAX_SEARCH_LENGTH,
+} from '../constants/events.constants.js';
+export {
+  MAX_PAGE_SIZE,
+  MAX_SEARCH_LENGTH,
+} from '../constants/events.constants.js';
 
 export const GetEventCategoriesSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -16,4 +22,6 @@ export const GetEventCategoriesSchema = z.object({
     .optional(),
 });
 
-export type GetEventCategoriesPayload = z.infer<typeof GetEventCategoriesSchema>;
+export type GetEventCategoriesPayload = z.infer<
+  typeof GetEventCategoriesSchema
+>;

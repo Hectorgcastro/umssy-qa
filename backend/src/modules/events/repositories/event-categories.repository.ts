@@ -12,7 +12,9 @@ import type {
 export class EventCategoriesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAndCount(payload: FindEventCategoriesPayload): Promise<FindEventCategoriesResponse> {
+  async findAndCount(
+    payload: FindEventCategoriesPayload,
+  ): Promise<FindEventCategoriesResponse> {
     const { search, skip, take } = payload;
 
     const where: Prisma.EventCategoryWhereInput = {

@@ -1,77 +1,8 @@
-import type { Prisma } from '../../../prisma/client.js';
-
-export interface EventCategoryResponse {
-  id: string;
-  name: string;
-}
-
-export interface EventItemResponse {
-  id: string;
-  title: string;
-  description: string | null;
-  eventDate: string;
-  startTime: string;
-  endTime: string;
-  location: string | null;
-  capacity: number | null;
-  availableSpots: number | null;
-  registrationCount: number;
-  instructorName: string | null;
-  modalityId: string | null;
-  category: EventCategoryResponse;
-  statusId: string;
-}
-
-export interface EventsListDataResponse {
-  items: EventItemResponse[];
-  total: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface EventsListResponse {
-  data: EventsListDataResponse;
-  page: number;
-  offset: number;
-}
-
-export type EventWithRelations = Prisma.EventGetPayload<{
-  select: {
-    id: true;
-    title: true;
-    description: true;
-    eventDate: true;
-    startTime: true;
-    endTime: true;
-    location: true;
-    capacity: true;
-    statusId: true;
-    instructorName: true;
-    modalityId: true;
-    category: {
-      select: {
-        id: true;
-        name: true;
-      };
-    };
-    _count: {
-      select: {
-        registrations: true;
-      };
-    };
-  };
-}>;
-
-export interface FindEventsPayload {
-  categoryId?: string;
-  statusId?: string;
-  isPublishedOnly?: boolean;
-  search?: string;
-  skip: number;
-  take: number;
-}
-
-export interface FindEventsResponse {
-  items: EventWithRelations[];
-  total: number;
-}
+export type { EventCategoryResponse } from './event-category-response.types.js';
+export type { EventItemResponse } from './event-item-response.types.js';
+export type { EventDetailResponse } from './event-detail-response.types.js';
+export type { EventsListDataResponse } from './events-list-data-response.types.js';
+export type { EventsListResponse } from './events-list-response.types.js';
+export type { EventWithRelations } from './event-with-relations.types.js';
+export type { FindEventsPayload } from './find-events-payload.types.js';
+export type { FindEventsResponse } from './find-events-response.types.js';

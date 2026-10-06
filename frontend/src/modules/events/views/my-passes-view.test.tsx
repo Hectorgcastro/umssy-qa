@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { registrationsService } from '../services/registrations.service';
 import { MyPassesView } from './my-passes-view';
@@ -16,11 +16,15 @@ describe('Mis pases', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Cargando');
     expect(screen.queryByRole('region', { name: 'Aún no tienes inscripciones.' })).not.toBeInTheDocument();
     await screen.findByText('reg-1');
-    expect(screen.getByText('Aula 101')).toBeInTheDocument();
+    expect(screen.getAllByText('Aula 101')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /React/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('2 pases')).toBeInTheDocument();
     expect(screen.getByText(/09:00 - 12:00/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Prisma/ }));
     expect(screen.getByText('reg-2')).toBeInTheDocument();
-    expect(screen.getByText('Lab 2')).toBeInTheDocument();
+    expect(screen.getAllByText('Lab 2')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /Prisma/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /React/ })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.queryByText('reg-1')).not.toBeInTheDocument();
   });
   it('muestra el estado vacío y acceso al catálogo', async () => {
@@ -65,4 +69,16 @@ describe('Mis pases', () => {
     await act(async () => { if (success) resolve([pass]); else reject(new Error('cancelled')); });
     await waitFor(() => expect(screen.queryByText('React')).not.toBeInTheDocument());
   });
+  it('shows location and registration ID in every card, including long text', async () => {
+    const longPass = { ...pass, id: '123e4567-e89b-12d3-a456-426614174000', eventName: 'Taller'.repeat(80), location: 'Ubicación'.repeat(80) };
+    getMine.mockResolvedValue([longPass]);
+    render(<MyPassesView />);
+    const card = await screen.findByRole('button', { name: new RegExp(longPass.eventName) });
+    expect(within(card).getByText(longPass.location)).toBeInTheDocument();
+    expect(within(card).getByText(`ID Inscripción: ${longPass.id}`)).toBeInTheDocument();
+    expect(within(card).getByText('Confirmada')).toBeInTheDocument();
+    expect(screen.getByText('1 pase')).toBeInTheDocument();
+    expect(screen.getByLabelText('Vista ilustrativa de QR')).toBeInTheDocument();
+  });
+
 });

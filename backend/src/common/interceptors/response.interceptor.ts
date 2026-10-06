@@ -7,18 +7,9 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-interface PaginatedPayload {
-  data: unknown[];
-  page: number;
-  offset: number;
-}
+import type { PaginatedPayload } from '../types/paginated-payload.types.js';
 
-interface AlreadyFormatted {
-  statusCode: number;
-  ok: boolean;
-  detail: string;
-  data: unknown;
-}
+import type { AlreadyFormatted } from '../types/already-formatted.types.js';
 
 function isPaginatedPayload(value: unknown): value is PaginatedPayload {
   return (
@@ -43,8 +34,13 @@ function isAlreadyFormatted(value: unknown): value is AlreadyFormatted {
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  intercept(_context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const statusCode = _context.switchToHttp().getResponse<{ statusCode: number }>().statusCode;
+  intercept(
+    _context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
+    const statusCode = _context
+      .switchToHttp()
+      .getResponse<{ statusCode: number }>().statusCode;
 
     return next.handle().pipe(
       map((value: unknown) => {

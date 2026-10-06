@@ -8,14 +8,19 @@ import type {
   EventWithRelations,
 } from '../types/events.types.js';
 
-export const PUBLISHED_STATUS_TITLE = 'Publicado';
+import {
+  PUBLISHED_STATUS_TITLE,
+  CONFIRMED_REGISTRATION_TITLE,
+} from '../constants/events.constants.js';
+export { PUBLISHED_STATUS_TITLE } from '../constants/events.constants.js';
 
 @Injectable()
 export class EventsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAndCount(payload: FindEventsPayload): Promise<FindEventsResponse> {
-    const { categoryId, statusId, isPublishedOnly, search, skip, take } = payload;
+    const { categoryId, statusId, isPublishedOnly, search, skip, take } =
+      payload;
 
     const where: Prisma.EventWhereInput = {
       ...(categoryId !== undefined && { categoryId }),
@@ -53,7 +58,10 @@ export class EventsRepository {
       _count: {
         select: {
           registrations: {
-            where: { cancelledAt: null },
+            where: {
+              cancelledAt: null,
+              status: { title: CONFIRMED_REGISTRATION_TITLE },
+            },
           },
         },
       },
@@ -76,7 +84,11 @@ export class EventsRepository {
     };
   }
 
-  async findById(id: string): Promise<EventWithRelations | null> {
+  async findById(
+    id: string,
+  ): Promise<
+    (EventWithRelations & { modality: { id: string; title: string } }) | null
+  > {
     const event = await this.prisma.event.findUnique({
       where: { id },
       select: {
@@ -91,6 +103,7 @@ export class EventsRepository {
         statusId: true,
         instructorName: true,
         modalityId: true,
+        modality: { select: { id: true, title: true } },
         category: {
           select: {
             id: true,
@@ -100,13 +113,16 @@ export class EventsRepository {
         _count: {
           select: {
             registrations: {
-              where: { cancelledAt: null },
+              where: {
+                cancelledAt: null,
+                status: { title: CONFIRMED_REGISTRATION_TITLE },
+              },
             },
           },
         },
       },
     });
 
-    return event as unknown as EventWithRelations | null;
+    return event;
   }
 }

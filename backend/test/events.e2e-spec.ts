@@ -38,6 +38,7 @@ const prismaMock = {
   event: {
     findMany: findManyMock,
     count: countMock,
+    findUnique: vi.fn(),
   },
   $transaction: vi.fn().mockImplementation((promises) => Promise.all(promises)),
   $connect: vi.fn(),
@@ -174,7 +175,9 @@ describe('EventsController (e2e)', () => {
     countMock.mockResolvedValueOnce(1);
 
     const res = await request(app.getHttpServer())
-      .get('/api/events?search=Node&categoryId=123e4567-e89b-12d3-a456-426614174000')
+      .get(
+        '/api/events?search=Node&categoryId=123e4567-e89b-12d3-a456-426614174000',
+      )
       .expect(200);
 
     expect(res.body.statusCode).toBe(200);
@@ -273,4 +276,48 @@ describe('EventsController (e2e)', () => {
 
     expect(res.body.ok).toBe(false);
   });
+  it('GET /api/events/:id returns normalized detail from the repository', async () => {
+    const id = '33333333-3333-3333-3333-333333333332';
+    prismaMock.event.findUnique.mockResolvedValueOnce(
+      buildPrismaEventRecord({
+        id,
+        capacity: 10,
+        modality: { id: 'modality-001', title: 'Presencial' },
+      }),
+    );
+    const res = await request(app.getHttpServer())
+      .get(`/api/events/${id}`)
+      .expect(200);
+    expect(res.body.data).toMatchObject({
+      id,
+      eventDate: '2026-09-01',
+      startTime: '09:00',
+      endTime: '11:00',
+      registrationCount: 10,
+      availableSpots: 0,
+      modality: { title: 'Presencial' },
+    });
+    expect(res.body.data).not.toHaveProperty('_count');
+  });
+
+  it('GET /api/events/:id returns 404 when the workshop is missing', async () => {
+    prismaMock.event.findUnique.mockResolvedValueOnce(null);
+    await request(app.getHttpServer())
+      .get('/api/events/33333333-3333-3333-3333-333333333339')
+      .expect(404);
+  });
+
+  it('GET /api/events/:id rejects malformed identifiers', async () => {
+    await request(app.getHttpServer())
+      .get('/api/events/not-a-uuid')
+      .expect(400);
+    expect(prismaMock.event.findUnique).not.toHaveBeenCalled();
+  });
+  it('accepts the original Tecnología category when returning from another category', async () => {
+    for (const categoryId of ['22222222-2222-2222-2222-222222222221', '123e4567-e89b-12d3-a456-426614174000', '22222222-2222-2222-2222-222222222221']) {
+      await request(app.getHttpServer()).get(`/api/events?categoryId=${categoryId}`).expect(200);
+      expect(findManyMock).toHaveBeenLastCalledWith(expect.objectContaining({ where: expect.objectContaining({ categoryId }) }));
+    }
+  });
+
 });

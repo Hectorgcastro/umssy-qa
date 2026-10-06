@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { EventNotFoundException } from '../exceptions/event-not-found.exception.js';
 import { EventsRepository } from '../repositories/events.repository.js';
-import { mapEventsToListResponse } from '../mappers/events.mapper.js';
+import {
+  mapEventToResponse,
+  mapEventsToListResponse,
+} from '../mappers/events.mapper.js';
 import type { GetEventsPayload } from '../requests/get-events.request.js';
-import type { EventsListResponse } from '../types/events.types.js';
+import type {
+  EventDetailResponse,
+  EventsListResponse,
+} from '../types/events.types.js';
 
 @Injectable()
 export class EventsService {
@@ -25,13 +32,20 @@ export class EventsService {
     return mapEventsToListResponse(items, total, page, limit);
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<EventDetailResponse> {
     const event = await this.eventsRepository.findById(id);
 
     if (!event) {
-      throw new NotFoundException(`El evento con el id ${id} no fue encontrado`);
+      throw new EventNotFoundException(id);
     }
 
-    return event;
+    const availableSpots =
+      event.capacity === null
+        ? null
+        : Math.max(0, event.capacity - event._count.registrations);
+    return {
+      ...mapEventToResponse(event, availableSpots),
+      modality: event.modality,
+    };
   }
 }

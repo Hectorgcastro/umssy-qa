@@ -54,8 +54,45 @@ describe('eventsService', () => {
   it('falla claramente si falta configurar la URL del backend', async () => {
     apiClient.defaults.baseURL = undefined;
 
-    await expect(eventsService.getEvents({ page: 1, limit: 50 })).rejects.toThrow(
-      'La URL del backend no está configurada.',
+    await expect(
+      eventsService.getEvents({ page: 1, limit: 50 }),
+    ).rejects.toThrow('La URL del backend no está configurada.');
+  });
+  it('consults the detail endpoint with cancellation and returns the response data', async () => {
+    const detail = {
+      id: 'event-1',
+      title: 'React',
+      category: { id: 'cat-1', name: 'Tecnología' },
+      description: null,
+      instructorName: null,
+      eventDate: '2026-10-20',
+      startTime: '09:00',
+      endTime: '12:00',
+      location: null,
+      capacity: 30,
+      availableSpots: 20,
+      registrationCount: 10,
+      statusId: 'published',
+      modalityId: 'm1',
+      modality: { id: 'm1', title: 'Presencial' },
+    };
+    const spy = vi
+      .spyOn(apiClient, 'get')
+      .mockResolvedValue({ data: { data: detail } });
+    const signal = new AbortController().signal;
+    await expect(eventsService.getEvent('event-1', signal)).resolves.toEqual(
+      detail,
+    );
+    expect(spy).toHaveBeenCalledWith('/events/event-1', {
+      signal,
+      timeout: 10000,
+    });
+  });
+
+  it('rejects detail requests when the backend URL is absent', async () => {
+    apiClient.defaults.baseURL = undefined;
+    await expect(eventsService.getEvent('event-1')).rejects.toThrow(
+      'URL del backend',
     );
   });
 });

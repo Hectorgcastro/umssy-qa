@@ -1,7 +1,12 @@
+import {
+  readRecord,
+  readArray,
+  readString,
+} from '../utils/response-validation';
 import type { EventCategoryItem } from '../types/event.types';
 import { apiClient } from '@/shared/services/api-client';
 
-const REQUEST_TIMEOUT_MS = 10_000;
+import { REQUEST_TIMEOUT_MS } from '../constants/events.constants';
 
 export const eventCategoriesService = {
   async getAll(): Promise<EventCategoryItem[]> {
@@ -16,6 +21,11 @@ export const eventCategoriesService = {
       timeout: REQUEST_TIMEOUT_MS,
     });
 
-    return response.data.data.items;
+    return readArray(readRecord(readRecord(response.data).data).items).map(
+      (value) => {
+        const category = readRecord(value);
+        return { id: readString(category.id), name: readString(category.name) };
+      },
+    );
   },
 };
