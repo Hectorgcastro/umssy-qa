@@ -4,8 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { BACKOFFICE_ROLE, LOGIN_PATH } from "../constants/request-review.constants";
 import { clearSession, getRoleTag, getSessionToken } from "../utils/session";
-
-export type BackofficeSessionState = "checking" | "login" | "forbidden" | "allowed";
+import type { BackofficeSessionState } from "../types/backoffice-session.types";
 
 const subscribe = () => () => undefined;
 

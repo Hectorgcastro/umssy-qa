@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import { EMPTY_DOCUMENT, EMPTY_VALUES } from "../constants/access-request-defaults.constants";
 import type { DocumentType } from "../constants/document-types.constants";
 import { accessRequestService } from "../services/access-request.service";
 import type {
@@ -17,29 +17,7 @@ import type { FieldErrors, PersonalDataFieldName, PersonalDataValues } from "../
 import { buildAccessRequestPayload } from "../utils/build-access-request-payload";
 import { validateDocumentFile } from "../utils/validate-document-file";
 import { validatePersonalData } from "../utils/validate-personal-data";
-
-const EMPTY_VALUES: PersonalDataValues = {
-  firstName: "",
-  lastName: "",
-  idCardNumber: "",
-  idCardIssuedIn: "",
-  sisCode: "",
-  email: "",
-  phone: "",
-  birthDate: "",
-  graduationYear: "",
-  career: "",
-};
-
-const EMPTY_DOCUMENT: DocumentState = {
-  documentType: null,
-  fileName: null,
-  fileSize: null,
-  mimeType: null,
-  previewUrl: null,
-  progress: 0,
-  error: null,
-};
+import type { AccessRequestProviderProps } from "../types/access-request-provider-props.types";
 
 const MISSING_TYPE_MESSAGE = "Elige el tipo de documento antes de subir el archivo.";
 
@@ -49,7 +27,7 @@ const ALREADY_SENT_MESSAGE = "La solicitud ya fue enviada.";
 const AccessRequestContext = createContext<AccessRequestContextValue | null>(null);
 
 // Estado del flujo solo en memoria: recargar la página pierde el borrador (no se guarda nada en el navegador)
-export function AccessRequestProvider({ children }: { children: ReactNode }) {
+export function AccessRequestProvider({ children }: AccessRequestProviderProps) {
   const [values, setValues] = useState<PersonalDataValues>(EMPTY_VALUES);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [status, setStatus] = useState<SubmitStatus>("idle");

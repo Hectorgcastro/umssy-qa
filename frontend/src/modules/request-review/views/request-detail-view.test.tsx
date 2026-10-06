@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { detail } from "../components/data-contrast-panel.test";
+import { detail } from "../components/detail/data-contrast-panel.test";
 import { requestReviewService } from "../services/request-review.service";
 import { RequestDetailView } from "./request-detail-view";
 

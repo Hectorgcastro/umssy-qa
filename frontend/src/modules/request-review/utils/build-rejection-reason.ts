@@ -1,11 +1,5 @@
 import { OTHER_REJECTION_REASON, REJECTION_MAX_LENGTH } from "../constants/request-review.constants";
-
-export interface RejectionReasonResult {
-  reason: string;
-  length: number;
-  isValid: boolean;
-  error: string | null;
-}
+import type { RejectionReasonResult } from "../types/rejection-reason-result.types";
 
 // El servidor recibe UNA cadena: el motivo elegido y, si hay indicación, ". " y la indicación.
 // "Otro motivo" exige una indicación no vacía.

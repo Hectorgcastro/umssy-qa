@@ -1,9 +1,9 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InboxHeader } from "../components/backoffice-page-header";
-import { RequestPagination } from "../components/request-pagination";
-import { RequestTable } from "../components/request-table";
+import { InboxHeader } from "../components/layout/backoffice-page-header";
+import { RequestPagination } from "../components/inbox/request-pagination";
+import { RequestTable } from "../components/inbox/request-table";
 import { REVIEW_TABS } from "../constants/request-review.constants";
 import { useRequestList } from "../hooks/use-request-list";
 import { useStatusCounts } from "../hooks/use-status-counts";

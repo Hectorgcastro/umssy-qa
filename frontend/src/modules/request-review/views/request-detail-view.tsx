@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DetailHeader } from "../components/backoffice-page-header";
-import { DataContrastPanel } from "../components/data-contrast-panel";
-import { DocumentViewer } from "../components/document-viewer";
-import { HistoryCard } from "../components/history-card";
-import { StatusBadge } from "../components/status-badge";
-import { VerdictPanel } from "../components/verdict-panel";
+import { DetailHeader } from "../components/layout/backoffice-page-header";
+import { DataContrastPanel } from "../components/detail/data-contrast-panel";
+import { DocumentViewer } from "../components/detail/document-viewer";
+import { HistoryCard } from "../components/detail/history-card";
+import { StatusBadge } from "../components/common/status-badge";
+import { VerdictPanel } from "../components/detail/verdict-panel";
 import { DOCUMENT_TYPE_LABELS } from "../constants/request-review.constants";
 import { useDocumentUrl } from "../hooks/use-document-url";
 import { useRequestDetail } from "../hooks/use-request-detail";
 import type { ReviewStatus } from "../types/request-review.types";
 import { formatLongDate } from "../utils/format-long-date";
+import type { RequestDetailViewProps } from "../types/request-detail-view-props.types";
 
-export function RequestDetailView({ id }: { id: string }) {
+export function RequestDetailView({ id }: RequestDetailViewProps) {
   const { detail, error, isLoading } = useRequestDetail(id);
   const document = useDocumentUrl(id, Boolean(detail?.document));
   // Estado mostrado tras un dictamen en esta pantalla; se descarta si cambia la solicitud
