@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type EstadoPerfil = "Completado" | "Procesando" | "Pendiente";
 type Filtro = "Todos" | EstadoPerfil;
@@ -285,6 +286,7 @@ function AreaBreakdownPanel({
 
         <span className="text-xl font-bold text-accent">
           {media.toFixed(2)}
+
           <span className="ml-1 text-[10px] font-normal text-text-secondary">
             / 10
           </span>
@@ -300,13 +302,22 @@ export default function ColaRevisionPage() {
   const [perfilSeleccionado, setPerfilSeleccionado] =
     useState<Perfil | null>(null);
 
+  const [accionLocal, setAccionLocal] = useState<
+    "aprobado" | "rechazado" | null
+  >(null);
+
   const perfilesFiltrados =
     filtroActivo === "Todos"
       ? perfiles
       : perfiles.filter((perfil) => perfil.estado === filtroActivo);
 
+  const mostrarAcciones =
+    perfilSeleccionado !== null &&
+    perfilSeleccionado.estado !== "Completado";
+
   function cambiarFiltro(filtro: Filtro) {
     setFiltroActivo(filtro);
+    setAccionLocal(null);
 
     if (
       perfilSeleccionado &&
@@ -315,6 +326,11 @@ export default function ColaRevisionPage() {
     ) {
       setPerfilSeleccionado(null);
     }
+  }
+
+  function seleccionarPerfil(perfil: Perfil) {
+    setPerfilSeleccionado(perfil);
+    setAccionLocal(null);
   }
 
   return (
@@ -378,7 +394,7 @@ export default function ColaRevisionPage() {
                     <button
                       key={perfil.id}
                       type="button"
-                      onClick={() => setPerfilSeleccionado(perfil)}
+                      onClick={() => seleccionarPerfil(perfil)}
                       aria-pressed={estaSeleccionado}
                       className={`w-full rounded-lg border p-4 text-left transition-colors ${
                         estaSeleccionado
@@ -389,7 +405,7 @@ export default function ColaRevisionPage() {
                       <div className="flex items-start gap-3">
                         <div
                           className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-sm font-semibold text-ink"
-                          aria-hidden="true"
+                          aria-label={`Avatar de ${perfil.nombre}`}
                         >
                           {obtenerIniciales(perfil.nombre)}
                         </div>
@@ -448,6 +464,7 @@ export default function ColaRevisionPage() {
           <section className="bg-surface p-6 lg:p-8">
             {perfilSeleccionado ? (
               <div className="mx-auto w-full max-w-3xl">
+                {/* Cabecera del perfil */}
                 <div className="flex items-start gap-4 border-b border-border pb-5">
                   <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-soft text-sm font-semibold text-ink">
                     {obtenerIniciales(perfilSeleccionado.nombre)}
@@ -488,6 +505,7 @@ export default function ColaRevisionPage() {
                   </div>
                 </div>
 
+                {/* Radar y desglose */}
                 <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_280px]">
                   <AffinityRadarChart
                     areas={perfilSeleccionado.areas}
@@ -499,6 +517,45 @@ export default function ColaRevisionPage() {
                     media={perfilSeleccionado.afinidadGlobal}
                   />
                 </div>
+
+                {/* Acciones H2-05 */}
+                {mostrarAcciones && (
+                  <div className="mt-6 border-t border-border pt-5">
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <Button
+                        type="button"
+                        className="flex-1"
+                        onClick={() => setAccionLocal("aprobado")}
+                      >
+                        Aprobar y publicar radar
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => setAccionLocal("rechazado")}
+                      >
+                        Rechazar envío
+                      </Button>
+                    </div>
+
+                    {accionLocal && (
+                      <div
+                        role="status"
+                        className={`mt-4 rounded-lg border px-4 py-3 text-sm ${
+                          accionLocal === "aprobado"
+                            ? "border-border bg-surface-soft text-ink"
+                            : "border-destructive/20 bg-destructive/10 text-destructive"
+                        }`}
+                      >
+                        {accionLocal === "aprobado"
+                          ? "Radar aprobado localmente. No se enviaron datos al backend."
+                          : "Envío rechazado localmente. No se modificaron datos persistentes."}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex h-full min-h-[500px] items-center justify-center">
