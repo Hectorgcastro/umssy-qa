@@ -1,8 +1,9 @@
-import { Bell, House, User } from "lucide-react";
+import { Bell, House, MessageCircle, User } from "lucide-react";
 import type { NavigationItem } from "@/shared/types/navigation-item.types";
 
 export const SIDEBAR_PREVIEW_NAVIGATION: NavigationItem[] = [
   { label: "Inicio", icon: House, href: "/sidebar-preview" },
+  { label: "Mensajes", icon: MessageCircle, href: "/chat" },
   {
     label: "Mi perfil",
     icon: User,

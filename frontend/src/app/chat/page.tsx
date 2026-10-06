@@ -1,4 +1,4 @@
-import { ChatView } from '@/modules/chat';
+import { ChatWithSidebarView } from '@/modules/chat';
 
 export const metadata = {
   title: 'Mensajeria',
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function ChatPage() {
-  return <ChatView />;
+  return <ChatWithSidebarView />;
 }

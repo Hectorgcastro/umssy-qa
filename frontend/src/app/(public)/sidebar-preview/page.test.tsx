@@ -30,6 +30,8 @@ describe("SidebarPreviewPage", () => {
 
     expect(screen.getByRole("link", { name: "Inicio" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: "Notificaciones" }).getAttribute("aria-current")).toBeNull();
+    expect(screen.getByRole("link", { name: "Mensajes" }).getAttribute("href")).toBe("/chat");
+    expect(screen.getByRole("link", { name: "Mensajes" }).getAttribute("aria-current")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Mi perfil" }));
     expect(screen.getByRole("link", { name: "Datos personales" })).toBeDefined();
