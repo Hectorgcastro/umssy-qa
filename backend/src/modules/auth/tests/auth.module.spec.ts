@@ -7,6 +7,7 @@ import { AuthRepository } from '../repositories/auth.repository.js';
 import { PrismaModule } from '../../../common/prisma/prisma.module.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { ProvisionalSessionGuard } from '../../../common/guards/provisional.guard.js';
 
 describe('AuthModule', () => {
   let moduleRef: TestingModule;
@@ -14,16 +15,20 @@ describe('AuthModule', () => {
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [AuthModule, PrismaModule],
+      providers: [ProvisionalSessionGuard],
     })
       .overrideProvider(PrismaService)
       .useValue({})
       .compile();
   });
 
-  it.each([AuthController, AuthService, AuthRepository, JwtAuthGuard])(
-    'resuelve %o',
-    (provider) => {
-      expect(moduleRef.get(provider)).toBeInstanceOf(provider);
-    },
-  );
+  it.each([
+    AuthController,
+    AuthService,
+    AuthRepository,
+    JwtAuthGuard,
+    ProvisionalSessionGuard,
+  ])('resuelve %o', (provider) => {
+    expect(moduleRef.get(provider)).toBeInstanceOf(provider);
+  });
 });

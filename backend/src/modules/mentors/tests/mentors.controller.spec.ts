@@ -6,9 +6,9 @@ import type { MentorsService } from '../services/mentors.service.js';
 
 describe('MentorsController', () => {
   it('aplica Standard Response a todos sus endpoints', () => {
-    expect(Reflect.getMetadata(INTERCEPTORS_METADATA, MentorsController)).toEqual([
-      ResponseInterceptor,
-    ]);
+    expect(
+      Reflect.getMetadata(INTERCEPTORS_METADATA, MentorsController),
+    ).toEqual([ResponseInterceptor]);
   });
 
   it('delega la consulta del directorio al service', async () => {
@@ -50,7 +50,7 @@ describe('MentorsController', () => {
     const findMyTechnicalAreas = vi.fn().mockResolvedValue(areas);
     const service = { findMyTechnicalAreas } as unknown as MentorsService;
     const controller = new MentorsController(service);
-    const user = { id: 'user-1' };
+    const user = { id: 'user-1', email: 'mentor@test.com', roles: ['mentor'] };
 
     const result = await controller.findMyTechnicalAreas(user);
 
@@ -64,7 +64,7 @@ describe('MentorsController', () => {
     const updateMyTechnicalAreas = vi.fn().mockResolvedValue(updateResult);
     const service = { updateMyTechnicalAreas } as unknown as MentorsService;
     const controller = new MentorsController(service);
-    const user = { id: 'user-1' };
+    const user = { id: 'user-1', email: 'mentor@test.com', roles: ['mentor'] };
 
     const result = await controller.updateMyTechnicalAreas(user, body);
 
@@ -79,7 +79,7 @@ describe('MentorsController', () => {
     const findMyOrientationTypes = vi.fn().mockResolvedValue(orientationTypes);
     const service = { findMyOrientationTypes } as unknown as MentorsService;
     const controller = new MentorsController(service);
-    const user = { id: 'user-1' };
+    const user = { id: 'user-1', email: 'mentor@test.com', roles: ['mentor'] };
 
     const result = await controller.findMyOrientationTypes(user);
 
@@ -93,7 +93,7 @@ describe('MentorsController', () => {
     const updateMyOrientationTypes = vi.fn().mockResolvedValue(updateResult);
     const service = { updateMyOrientationTypes } as unknown as MentorsService;
     const controller = new MentorsController(service);
-    const user = { id: 'user-1' };
+    const user = { id: 'user-1', email: 'mentor@test.com', roles: ['mentor'] };
 
     const result = await controller.updateMyOrientationTypes(user, body);
 
@@ -106,7 +106,7 @@ describe('MentorsController', () => {
     const activate = vi.fn().mockResolvedValue(activationResult);
     const service = { activate } as unknown as MentorsService;
     const controller = new MentorsController(service);
-    const user = { id: 'user-1' };
+    const user = { id: 'user-1', email: 'mentor@test.com', roles: ['mentor'] };
     const body = {
       technicalAreaIds: ['0424f370-00f0-43cf-9b8a-997af81840b9'],
       orientationTypeIds: ['0fa5e6de-63a4-430e-87fb-22f5eb700ecd'],
