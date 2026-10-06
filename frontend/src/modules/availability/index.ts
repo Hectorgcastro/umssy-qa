@@ -3,11 +3,13 @@ export { MentorPublicAvailabilityView } from "./views/mentor-public-availability
 export { BlockForm } from "./components/block-form";
 export { AvailabilityBlockList } from "./components/availability-block-list";
 export { DeleteBlockDialog } from "./components/delete-block-dialog";
+export { EditBlockPanel } from "./components/edit-block-panel";
 export { BlockSelection } from "./components/block-selection/block-selection";
 export { useMentorFreeBlocks } from "./hooks/use-mentor-free-blocks";
 export { useMyBlocks } from "./hooks/use-my-blocks";
 export { useCreateAvailabilityBlock } from "./hooks/use-create-availability-block";
 export { useDeleteBlock } from "./hooks/use-delete-block";
+export { useUpdateAvailabilityBlock } from "./hooks/use-update-availability-block";
 export { availabilityApi } from "./services/availability.api";
 export type { AvailabilityBlock } from "./types/availability-block.types";
 export type { AvailabilityBlockState } from "./types/availability-block-state.types";
