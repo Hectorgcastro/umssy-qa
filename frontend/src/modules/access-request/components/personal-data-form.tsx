@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { ChevronRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,13 +21,43 @@ import { FieldError } from "./field-error";
 import { PersonalDataField } from "./personal-data-field";
 import { RequiredMark } from "./required-mark";
 
+// Orden visual del formulario: el primer campo con error es el que recibe el foco
+const FIELD_ORDER: readonly PersonalDataFieldName[] = [
+  "firstName",
+  "lastName",
+  "idCardNumber",
+  "idCardIssuedIn",
+  "sisCode",
+  "email",
+  "phone",
+  "birthDate",
+  "graduationYear",
+  "career",
+];
+
 export function PersonalDataForm() {
   const { values, status, fieldErrors, notice, setValue, submit } = useAccessRequestForm();
   const isSubmitting = status === "submitting";
+  // Cada envío terminado incrementa el contador; el efecto enfoca el primer error solo cuando cambia
+  const [submitCount, setSubmitCount] = useState(0);
+  const handledCount = useRef(0);
+
+  useEffect(() => {
+    if (submitCount === handledCount.current) return;
+    handledCount.current = submitCount;
+    const firstWithError = FIELD_ORDER.find((field) => fieldErrors[field]);
+    // Los ids de los controles (inputs y disparadores de los selects) son los nombres de los campos
+    if (firstWithError) document.getElementById(firstWithError)?.focus();
+  }, [submitCount, fieldErrors]);
+
+  async function submitAndFocus() {
+    await submit();
+    setSubmitCount((count) => count + 1);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void submit();
+    void submitAndFocus();
   }
 
   // Props comunes de los campos de texto: valor controlado, cambio y error propio

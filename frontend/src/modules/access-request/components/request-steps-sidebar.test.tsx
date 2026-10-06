@@ -78,6 +78,20 @@ describe("RequestStepsSidebar", () => {
     expect(items[3]).not.toHaveTextContent("Paso completado");
   });
 
+  it("en el paso 3 los pasos 1 y 2 aparecen completados, el 3 activo y el 4 sin cambios", () => {
+    render(<RequestStepsSidebar currentStep={3} />);
+
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Paso completado");
+    expect(items[1]).toHaveTextContent("Paso completado");
+    expect(items[2]).toHaveAttribute("aria-current", "step");
+    expect(items[2]).not.toHaveTextContent("Paso completado");
+    expect(screen.getByText("3")).toHaveClass("bg-accent");
+    expect(items[3]).not.toHaveAttribute("aria-current");
+    expect(items[3]).not.toHaveTextContent("Paso completado");
+    expect(screen.getByText("4")).toHaveClass("border-surface/35");
+  });
+
   it("en el paso 1 ningún paso aparece completado", () => {
     render(<RequestStepsSidebar />);
 

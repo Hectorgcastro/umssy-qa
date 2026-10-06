@@ -11,6 +11,7 @@ import type {
   FormNotice,
   RequestStep,
   SubmitStatus,
+  Submission,
 } from "../types/access-request-context.types";
 import type { FieldErrors, PersonalDataFieldName, PersonalDataValues } from "../types/access-request.types";
 import { buildAccessRequestPayload } from "../utils/build-access-request-payload";
@@ -43,6 +44,7 @@ const EMPTY_DOCUMENT: DocumentState = {
 const MISSING_TYPE_MESSAGE = "Elige el tipo de documento antes de subir el archivo.";
 
 const BUSY_MESSAGE = "Hay una operación en curso. Espera a que termine.";
+const ALREADY_SENT_MESSAGE = "La solicitud ya fue enviada.";
 
 const AccessRequestContext = createContext<AccessRequestContextValue | null>(null);
 
@@ -55,6 +57,8 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
   const [notice, setNotice] = useState<FormNotice | null>(null);
   const [currentStep, setCurrentStep] = useState<RequestStep>(1);
   const [document, setDocument] = useState<DocumentState>(EMPTY_DOCUMENT);
+  const [submission, setSubmission] = useState<Submission | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Las refs evitan envíos duplicados y datos viejos cuando dos eventos llegan antes del siguiente render
   const valuesRef = useRef(values);
@@ -62,11 +66,18 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
   const submittingRef = useRef(false);
   const clearingRef = useRef(false);
   const documentBusyRef = useRef(false);
+  const sendingRef = useRef(false);
+  // Con la solicitud enviada ya no se puede editar nada
+  const submissionRef = useRef<Submission | null>(null);
   const documentRef = useRef<DocumentState>(EMPTY_DOCUMENT);
   // URL de objeto vigente: nunca debe haber dos vivas a la vez
   const previewUrlRef = useRef<string | null>(null);
 
-  const isBusy = () => submittingRef.current || clearingRef.current || documentBusyRef.current;
+  const isBusy = useCallback(
+    () => submittingRef.current || clearingRef.current || documentBusyRef.current || sendingRef.current,
+    [],
+  );
+  const isLocked = useCallback(() => isBusy() || submissionRef.current !== null, [isBusy]);
 
   const updateDocument = useCallback((next: DocumentState) => {
     documentRef.current = next;
@@ -102,10 +113,14 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Cualquier campo con valor (sin contar espacios) cuenta como dato; el draftId no influye
-  const hasData = useMemo(() => Object.values(values).some((value) => value.trim() !== ""), [values]);
+  // Con la solicitud enviada no hay nada que descartar
+  const hasData = useMemo(
+    () => submission === null && Object.values(values).some((value) => value.trim() !== ""),
+    [values, submission],
+  );
 
   const submit = useCallback(async () => {
-    if (isBusy()) return;
+    if (isLocked()) return;
 
     const errors = validatePersonalData(valuesRef.current);
     setNotice(null);
@@ -138,10 +153,11 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
 
     submittingRef.current = false;
     setStatus("idle");
-  }, [updateDraftId]);
+  }, [isLocked, updateDraftId]);
 
   // Vacía el formulario y elimina el borrador del servidor si existe. Si el DELETE falla (salvo 404) no se limpia nada
   const clear = useCallback(async (): Promise<ClearResult> => {
+    if (submissionRef.current) return { ok: false, message: ALREADY_SENT_MESSAGE };
     if (isBusy()) return { ok: false, message: BUSY_MESSAGE };
 
     clearingRef.current = true;
@@ -171,27 +187,27 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
     clearingRef.current = false;
     setStatus("idle");
     return { ok: true };
-  }, [updateDraftId, revokePreview, updateDocument]);
+  }, [isBusy, updateDraftId, revokePreview, updateDocument]);
 
   // El paso 2 exige un borrador guardado; volver al paso 1 no borra nada
   const goToStep = useCallback((step: RequestStep) => {
-    if (isBusy()) return;
+    if (isLocked() || step === 3) return;
     if (step === 2 && !draftIdRef.current) return;
     setCurrentStep(step);
-  }, []);
+  }, [isLocked]);
 
   const selectDocumentType = useCallback(
     (type: DocumentType) => {
-      if (isBusy() || documentRef.current.previewUrl) return;
+      if (isLocked() || documentRef.current.previewUrl) return;
       patchDocument({ documentType: type, error: null });
     },
-    [patchDocument],
+    [isLocked, patchDocument],
   );
 
   const uploadDocument = useCallback(
     async (file: File) => {
       const currentDraftId = draftIdRef.current;
-      if (!currentDraftId || isBusy()) return;
+      if (!currentDraftId || isLocked()) return;
 
       const type = documentRef.current.documentType;
       if (!type) {
@@ -239,12 +255,12 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
       documentBusyRef.current = false;
       setStatus("idle");
     },
-    [patchDocument, revokePreview, updateDocument, updateDraftId],
+    [isLocked, patchDocument, revokePreview, updateDocument, updateDraftId],
   );
 
   const removeDocument = useCallback(async () => {
     const currentDraftId = draftIdRef.current;
-    if (!currentDraftId || !documentRef.current.previewUrl || isBusy()) return;
+    if (!currentDraftId || !documentRef.current.previewUrl || isLocked()) return;
 
     documentBusyRef.current = true;
     setStatus("removing");
@@ -261,7 +277,62 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
 
     documentBusyRef.current = false;
     setStatus("idle");
-  }, [patchDocument, revokePreview, updateDocument]);
+  }, [isLocked, patchDocument, revokePreview, updateDocument]);
+
+  // Envía el borrador con documento: pasa a pending y la persona ve la pantalla de revisión (paso 3)
+  const submitRequest = useCallback(async () => {
+    const currentDraftId = draftIdRef.current;
+    if (!currentDraftId || !documentRef.current.previewUrl || isLocked()) return;
+
+    sendingRef.current = true;
+    setStatus("sending");
+    setSubmitError(null);
+
+    const result = await accessRequestService.submitAccessRequest(currentDraftId);
+
+    if (result.ok) {
+      const sent: Submission = {
+        requestCode: result.data.requestCode,
+        submittedAt: result.data.submittedAt,
+        status: result.data.status,
+        reviewedAt: null,
+        rejectionReason: null,
+      };
+      submissionRef.current = sent;
+      setSubmission(sent);
+      setCurrentStep(3);
+    } else if (result.status === 404) {
+      // El borrador ya no existe: se vuelve al paso 1 y el siguiente guardado crea uno nuevo
+      updateDraftId(null);
+      revokePreview();
+      updateDocument(EMPTY_DOCUMENT);
+      setCurrentStep(1);
+      setNotice({ type: "error", text: result.message });
+    } else {
+      setSubmitError(result.message);
+    }
+
+    sendingRef.current = false;
+    setStatus("idle");
+  }, [isLocked, revokePreview, updateDocument, updateDraftId]);
+
+  // Actualiza el estado desde el servidor; si la consulta falla no se cambia nada ni se muestra error
+  const refreshSubmission = useCallback(async () => {
+    const current = submissionRef.current;
+    if (!current) return;
+
+    const result = await accessRequestService.getRequestStatus(current.requestCode, valuesRef.current.email.trim().toLowerCase());
+    if (!result.ok || !submissionRef.current) return;
+
+    const next: Submission = {
+      ...submissionRef.current,
+      status: result.data.status,
+      reviewedAt: result.data.reviewedAt ?? null,
+      rejectionReason: result.data.rejectionReason ?? null,
+    };
+    submissionRef.current = next;
+    setSubmission(next);
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -274,6 +345,8 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
       currentStep,
       document,
       hasDocument: document.previewUrl !== null,
+      submission,
+      submitError,
       setValue,
       submit,
       clear,
@@ -281,6 +354,8 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
       selectDocumentType,
       uploadDocument,
       removeDocument,
+      submitRequest,
+      refreshSubmission,
     }),
     [
       values,
@@ -291,6 +366,8 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
       hasData,
       currentStep,
       document,
+      submission,
+      submitError,
       setValue,
       submit,
       clear,
@@ -298,6 +375,8 @@ export function AccessRequestProvider({ children }: { children: ReactNode }) {
       selectDocumentType,
       uploadDocument,
       removeDocument,
+      submitRequest,
+      refreshSubmission,
     ],
   );
 

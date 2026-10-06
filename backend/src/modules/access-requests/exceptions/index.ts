@@ -5,3 +5,6 @@ export * from './duplicate-access-request-data.exception.js';
 export * from './access-request-catalog-missing.exception.js';
 export * from './invalid-document-type.exception.js';
 export * from './missing-document-file.exception.js';
+export * from './document-required-to-submit.exception.js';
+export * from './active-access-request-exists.exception.js';
+export * from './request-code-generation.exception.js';

@@ -1,9 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { Prisma } from '../../../prisma/client.js';
-import { AccessRequestCatalogMissingException, AccessRequestNotFoundException } from '../exceptions/index.js';
+import {
+  AccessRequestCatalogMissingException,
+  AccessRequestNotFoundException,
+  RequestCodeGenerationException,
+} from '../exceptions/index.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
+import {
+  MAX_REQUEST_CODE_ATTEMPTS,
+  nextRequestCode,
+  randomRetryDelayMs,
+  requestCodePrefix,
+  sleep,
+} from '../helpers/request-code.js';
 import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
 
 // Nunca se selecciona el archivo adjunto: solo la referencia documentFileId
@@ -23,6 +34,18 @@ const ACCESS_REQUEST_SELECT = {
   updatedAt: true,
   status: { select: { title: true } },
   career: { select: { title: true } },
+  documentType: { select: { title: true } },
+} satisfies Prisma.AccessRequestSelect;
+
+// Solo lo que muestra la consulta de estado: nunca content ni datos personales (C.I., SIS, teléfono)
+const REQUEST_STATUS_SELECT = {
+  requestCode: true,
+  submittedAt: true,
+  reviewedAt: true,
+  rejectionReason: true,
+  status: { select: { title: true } },
+  documentType: { select: { title: true } },
+  documentFile: { select: { size: true, mimeType: true } },
 } satisfies Prisma.AccessRequestSelect;
 
 const ACTIVE_STATUSES: string[] = [
@@ -33,6 +56,9 @@ const ACTIVE_STATUSES: string[] = [
 
 @Injectable()
 export class AccessRequestsRepository {
+  // Pausa entre intentos de asignar código; se reemplaza en las pruebas para no esperar
+  retryPause: (ms: number) => Promise<void> = sleep;
+
   constructor(private readonly prisma: PrismaService) {}
 
   // En el create, P2025 solo puede venir de un connect: la carrera o el estado no existen (seed sin correr)
@@ -137,6 +163,69 @@ export class AccessRequestsRepository {
       }
       throw error;
     }
+  }
+
+  // Último código del año por orden descendente de texto: válido mientras los números tengan 4 dígitos
+  // TODO: con más de 9999 solicitudes en un año el orden de texto deja de coincidir con el numérico
+  async generateRequestCode(now: Date = new Date()) {
+    const year = now.getUTCFullYear();
+    const last = await this.prisma.accessRequest.findFirst({
+      where: { requestCode: { startsWith: requestCodePrefix(year) } },
+      orderBy: { requestCode: 'desc' },
+      select: { requestCode: true },
+    });
+    return nextRequestCode(year, last?.requestCode);
+  }
+
+  // Pasa de draft a pending de forma atómica: si la solicitud cambió de estado o desapareció, lanza P2025.
+  // Sin unique en C.I., SIS y correo, dos envíos simultáneos con los mismos datos podrían pasar la validación
+  // TODO: unicidad definitiva en base (requiere schema)
+  async submit(id: string, requestCode: string) {
+    try {
+      return await this.prisma.accessRequest.update({
+        where: { id, status: { title: ACCESS_REQUEST_STATUS.DRAFT } },
+        data: {
+          requestCode,
+          submittedAt: new Date(),
+          status: { connect: { title: ACCESS_REQUEST_STATUS.PENDING } },
+        },
+        select: { id: true, requestCode: true, submittedAt: true, status: { select: { title: true } } },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        // Mismo criterio que updateDraft: meta.model indica un connect fallido (estado sin sembrar)
+        if (typeof error.meta?.model === 'string') {
+          throw new AccessRequestCatalogMissingException();
+        }
+        throw new AccessRequestNotFoundException();
+      }
+      throw error;
+    }
+  }
+
+  // Una ráfaga de envíos simultáneos calcula el mismo siguiente número; el unique de requestCode da P2002 a los perdedores.
+  // Se recalcula con una pausa aleatoria breve y se reintenta; cualquier otro error se relanza de inmediato.
+  // TODO: unicidad definitiva en base (requiere schema)
+  async submitWithGeneratedCode(id: string) {
+    for (let attempt = 1; attempt <= MAX_REQUEST_CODE_ATTEMPTS; attempt++) {
+      const requestCode = await this.generateRequestCode();
+      try {
+        return await this.submit(id, requestCode);
+      } catch (error) {
+        const isCollision = error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+        if (!isCollision) throw error;
+      }
+      if (attempt < MAX_REQUEST_CODE_ATTEMPTS) await this.retryPause(randomRetryDelayMs());
+    }
+    throw new RequestCodeGenerationException();
+  }
+
+  // El correo va en el where (sin distinguir mayúsculas) para no seleccionarlo ni distinguir "código inexistente" de "correo distinto"
+  findByRequestCode(requestCode: string, email: string) {
+    return this.prisma.accessRequest.findFirst({
+      where: { requestCode, email: { equals: email, mode: 'insensitive' } },
+      select: REQUEST_STATUS_SELECT,
+    });
   }
 
   // El filtro por estado hace que la eliminación sea atómica: si la solicitud cambió de estado o desapareció, lanza P2025

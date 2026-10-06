@@ -46,6 +46,24 @@ export interface UploadDocumentResponse {
   documentType: DocumentType;
 }
 
+// Respuesta del POST de envío: el borrador pasa a pending con su código de solicitud
+export interface SubmitRequestResponse {
+  id: string;
+  requestCode: string;
+  status: string;
+  submittedAt: string;
+}
+
+// Respuesta de la consulta de estado; no incluye datos personales
+export interface RequestStatusResponse {
+  requestCode: string;
+  status: string;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  document: { type: DocumentType; size: number; mimeType: string } | null;
+}
+
 export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; fieldErrors: FieldErrors; message: string };

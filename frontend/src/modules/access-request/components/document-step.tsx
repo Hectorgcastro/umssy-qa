@@ -8,6 +8,7 @@ import type { DocumentType } from "../constants/document-types.constants";
 import { useAccessRequestForm } from "../contexts/access-request-context";
 import { DocumentDropzone } from "./document-dropzone";
 import { DocumentPreviewCard } from "./document-preview-card";
+import { FieldError } from "./field-error";
 import { RequiredMark } from "./required-mark";
 
 const DOCUMENT_TYPE_OPTIONS: ReadonlyArray<{ value: DocumentType; label: string }> = [
@@ -23,7 +24,8 @@ const RECOMMENDATIONS = [
 ];
 
 export function DocumentStep() {
-  const { values, status, document: documentState, hasDocument, goToStep, selectDocumentType } = useAccessRequestForm();
+  const { values, status, document: documentState, hasDocument, submitError, goToStep, selectDocumentType, submitRequest } =
+    useAccessRequestForm();
   const fullName = [values.firstName.trim(), values.lastName.trim()].filter(Boolean).join(" ");
   const isIdle = status === "idle";
 
@@ -70,6 +72,12 @@ export function DocumentStep() {
 
         {hasDocument ? <DocumentPreviewCard /> : <DocumentDropzone />}
 
+        {submitError ? (
+          <div role="alert">
+            <FieldError id="submit-error" message={submitError} />
+          </div>
+        ) : null}
+
         <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
           <Button
             type="button"
@@ -81,13 +89,13 @@ export function DocumentStep() {
             <ArrowLeft aria-hidden="true" />
             Volver a mis datos
           </Button>
-          {/* TODO: enviar la solicitud (HU 1.1.4) */}
           <Button
             type="button"
             disabled={!hasDocument || !isIdle}
+            onClick={() => void submitRequest()}
             className="h-[42px] 2xl:h-12 rounded-md bg-ink px-5 text-[14.5px] font-semibold text-surface hover:bg-ink/90"
           >
-            Enviar solicitud
+            {status === "sending" ? "Enviando..." : "Enviar solicitud"}
           </Button>
         </div>
       </div>
