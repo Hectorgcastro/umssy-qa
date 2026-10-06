@@ -140,10 +140,27 @@ describe("ReviewStep", () => {
     await sendAndReview({ status: "rejected", reviewedAt: "2026-10-06T14:30:00.000Z", rejectionReason: "Documento ilegible" });
 
     expect(await screen.findByText("Estado: Rechazada")).toBeInTheDocument();
-    expect(screen.getByText("Documento ilegible")).toBeInTheDocument();
+    expect(screen.getByText("Tu solicitud fue rechazada.")).toBeInTheDocument();
+    expect(screen.queryByText(/Estamos revisando tu solicitud/)).toBeNull();
+    expect(screen.queryByText(/Te avisaremos a/)).toBeNull();
+    expect(screen.getByText("Motivo del rechazo: Documento ilegible")).toBeInTheDocument();
     const items = stages();
     expect(items[2]).toHaveTextContent("En revisión: Completada");
     expect(items[3]).toHaveTextContent("No disponible");
+  });
+
+  it.each(["pending", "in_review", "approved"] as const)("con el estado %s mantiene el mensaje de revisión", async (status) => {
+    await sendAndReview({ status });
+
+    expect(await screen.findByText(/Estamos revisando tu solicitud\. Te avisaremos a/)).toBeInTheDocument();
+    expect(screen.queryByText("Tu solicitud fue rechazada.")).toBeNull();
+  });
+
+  it.each(["pending", "in_review", "approved"] as const)("con el estado %s no muestra ningún motivo de rechazo", async (status) => {
+    await sendAndReview({ status, rejectionReason: "Motivo que no debe verse" });
+
+    expect(screen.queryByText(/Motivo del rechazo/)).toBeNull();
+    expect(screen.queryByText(/Motivo que no debe verse/)).toBeNull();
   });
 
   it("si la consulta falla la pantalla sigue mostrando el estado del envío", async () => {

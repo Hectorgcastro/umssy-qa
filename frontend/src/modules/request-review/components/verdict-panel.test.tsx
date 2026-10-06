@@ -5,6 +5,7 @@ import { detail } from "./data-contrast-panel.test";
 import { VerdictPanel } from "./verdict-panel";
 
 const approveRequest = vi.spyOn(requestReviewService, "approveRequest");
+const rejectRequest = vi.spyOn(requestReviewService, "rejectRequest");
 
 function setup(status: "pending" | "in_review" | "approved" | "rejected" = "in_review") {
   const onStatusChange = vi.fn();
@@ -13,7 +14,10 @@ function setup(status: "pending" | "in_review" | "approved" | "rejected" = "in_r
 }
 
 describe("VerdictPanel", () => {
-  beforeEach(() => approveRequest.mockReset());
+  beforeEach(() => {
+    approveRequest.mockReset();
+    rejectRequest.mockReset();
+  });
   afterEach(() => cleanup());
 
   it("en revisión muestra el botón Aprobar solicitud y pide confirmación antes de aprobar", async () => {
@@ -73,5 +77,68 @@ describe("VerdictPanel", () => {
     setup(status);
     expect(screen.queryByRole("button", { name: "Aprobar solicitud" })).toBeNull();
     expect(screen.getByText("Esta solicitud ya no admite un dictamen.")).toBeInTheDocument();
+  });
+
+  describe("rechazar", () => {
+    async function openRejectDialog() {
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
+      return screen.findByLabelText("Motivo del rechazo");
+    }
+
+    it("el botón Rechazar y notificar está deshabilitado con el motivo vacío o solo con espacios", async () => {
+      setup();
+      const field = await openRejectDialog();
+      const confirm = screen.getByRole("button", { name: "Rechazar y notificar" });
+
+      expect(confirm).toBeDisabled();
+      fireEvent.change(field, { target: { value: "     " } });
+      expect(confirm).toBeDisabled();
+      fireEvent.change(field, { target: { value: "Documento ilegible" } });
+      expect(confirm).toBeEnabled();
+    });
+
+    it("con motivo y confirmación rechaza con el motivo recortado y cambia el estado", async () => {
+      rejectRequest.mockResolvedValue({ ok: true, data: { id: "id-1", status: "rejected", notificationSent: true } });
+      const { onStatusChange } = setup();
+      fireEvent.change(await openRejectDialog(), { target: { value: "  Documento ilegible  " } });
+
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar y notificar" }));
+
+      expect(await screen.findByRole("status")).toHaveTextContent("Solicitud rechazada. Se notificó al titulado con el motivo.");
+      expect(rejectRequest).toHaveBeenCalledWith("id-1", "Documento ilegible");
+      expect(onStatusChange).toHaveBeenCalledWith("rejected");
+    });
+
+    it("si el correo no se pudo enviar lo dice, pero la solicitud queda rechazada", async () => {
+      rejectRequest.mockResolvedValue({ ok: true, data: { id: "id-1", status: "rejected", notificationSent: false } });
+      const { onStatusChange } = setup();
+      fireEvent.change(await openRejectDialog(), { target: { value: "Motivo" } });
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar y notificar" }));
+
+      expect(await screen.findByRole("status")).toHaveTextContent("no se pudo enviar el correo");
+      expect(onStatusChange).toHaveBeenCalledWith("rejected");
+    });
+
+    it("un error del servidor se muestra en español dentro del diálogo y no cambia el estado", async () => {
+      rejectRequest.mockResolvedValue({ ok: false, status: 409, message: "La solicitud no está en revisión" });
+      const { onStatusChange } = setup();
+      fireEvent.change(await openRejectDialog(), { target: { value: "Motivo" } });
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar y notificar" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("La solicitud no está en revisión");
+      expect(onStatusChange).not.toHaveBeenCalled();
+    });
+
+    it("cancelar limpia el motivo y no rechaza nada", async () => {
+      const { onStatusChange } = setup();
+      fireEvent.change(await openRejectDialog(), { target: { value: "Motivo a medias" } });
+
+      fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+      await waitFor(() => expect(screen.queryByLabelText("Motivo del rechazo")).toBeNull());
+      expect(await openRejectDialog()).toHaveValue("");
+
+      expect(rejectRequest).not.toHaveBeenCalled();
+      expect(onStatusChange).not.toHaveBeenCalled();
+    });
   });
 });

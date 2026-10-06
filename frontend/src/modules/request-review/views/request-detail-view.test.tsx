@@ -85,4 +85,21 @@ describe("RequestDetailView", () => {
     expect(await screen.findByText(/Estado: Aprobada/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Aprobar solicitud" })).toBeNull();
   });
+
+  it("al rechazar con motivo, el estado en pantalla pasa a Rechazada", async () => {
+    getRequestDetail.mockResolvedValue({ ok: true, data: detail });
+    getDocumentBlob.mockResolvedValue({ ok: true, data: new Blob(["%PDF"]) });
+    vi.spyOn(requestReviewService, "rejectRequest").mockResolvedValue({
+      ok: true,
+      data: { id: "id-1", status: "rejected", notificationSent: true },
+    });
+    render(<RequestDetailView id="id-1" />);
+    await screen.findByText(/Estado: En revisión/);
+
+    fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
+    fireEvent.change(await screen.findByLabelText("Motivo del rechazo"), { target: { value: "Documento ilegible" } });
+    fireEvent.click(screen.getByRole("button", { name: "Rechazar y notificar" }));
+
+    expect(await screen.findByText(/Estado: Rechazada/)).toBeInTheDocument();
+  });
 });
