@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { RequirementsStep } from "./requirements-step";
 import { VacancyConditions } from "../hooks/use-job-offer-form";
 
@@ -17,6 +17,10 @@ const mockConditions: VacancyConditions = {
 };
 
 describe("RequirementsStep", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("debe renderizar el textarea correctamente", () => {
     render(
       <RequirementsStep
@@ -73,5 +77,44 @@ describe("RequirementsStep", () => {
     fireEvent.click(pythonChip);
 
     expect(updateFieldMock).toHaveBeenCalledWith("skills", []);
+  });
+
+  it("deshabilita añadir habilidades al alcanzar el máximo de 10", () => {
+    const selectedSkills = [
+      "Python", "Java", "Docker", "Git", "Rust",
+      "Assembly", "JavaScript", "TypeScript", "React", "Node.js",
+    ];
+    const updateFieldMock = vi.fn();
+
+    render(
+      <RequirementsStep
+        conditions={{ ...mockConditions, skills: selectedSkills }}
+        updateField={updateFieldMock}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "+ Añadir habilidad" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "SQL" }));
+    expect(updateFieldMock).not.toHaveBeenCalled();
+  });
+
+  it("permite seleccionar hasta 10 habilidades", () => {
+    const selectedSkills = [
+      "Python", "Java", "Docker", "Git", "Rust",
+      "Assembly", "JavaScript", "TypeScript", "React",
+    ];
+    const updateFieldMock = vi.fn();
+
+    render(
+      <RequirementsStep
+        conditions={{ ...mockConditions, skills: selectedSkills }}
+        updateField={updateFieldMock}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Node.js" }));
+
+    expect(updateFieldMock).toHaveBeenCalledWith("skills", [...selectedSkills, "Node.js"]);
   });
 });

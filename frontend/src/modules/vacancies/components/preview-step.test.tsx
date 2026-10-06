@@ -12,7 +12,9 @@ describe('PreviewStep', () => {
     category: 'IT',
     vacancyCount: '5',
     salary: 'Bs 10.000',
-    languages: 'Inglés'
+    languages: 'Inglés',
+    description: '',
+    skills: [],
   };
 
   it('renderiza correctamente con los datos ingresados', () => {
@@ -28,7 +30,8 @@ describe('PreviewStep', () => {
   it('renderiza valores por defecto si los datos están vacíos', () => {
     const emptyConditions: VacancyConditions = {
       title: '', modality: null, mapsLink: '', contractType: '',
-      category: '', vacancyCount: '', salary: '', languages: ''
+      category: '', vacancyCount: '', salary: '', languages: '',
+      description: '', skills: [],
     };
     render(<PreviewStep conditions={emptyConditions} />);
     

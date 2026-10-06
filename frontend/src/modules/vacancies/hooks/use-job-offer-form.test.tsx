@@ -37,4 +37,19 @@ describe('useJobOfferForm', () => {
     act(() => { result.current.goNext(); });
     expect(result.current.currentStep).toBe(3);
   });
+
+  it('conserva las tecnologías elegidas al volver y avanzar entre pasos', () => {
+    const { result } = renderHook(() => useJobOfferForm());
+    const selectedSkills = ['Python', 'React', 'TypeScript'];
+
+    act(() => {
+      result.current.updateField('skills', selectedSkills);
+      result.current.goBack();
+      result.current.goBack();
+      result.current.goNext();
+    });
+
+    expect(result.current.currentStep).toBe(2);
+    expect(result.current.conditions.skills).toEqual(selectedSkills);
+  });
 });

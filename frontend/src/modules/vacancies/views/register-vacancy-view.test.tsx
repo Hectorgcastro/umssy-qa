@@ -33,6 +33,8 @@ describe('RegisterVacancyView', () => {
     vacancyCount: "",
     salary: "",
     languages: "",
+    description: "",
+    skills: [],
   };
 
   it('renderiza el paso 1 cuando currentStep es 1', () => {
@@ -41,7 +43,8 @@ describe('RegisterVacancyView', () => {
       conditions: mockConditions,
       updateField: vi.fn(),
       selectModality: vi.fn(),
-      goNext: vi.fn()
+      goNext: vi.fn(),
+      goBack: vi.fn(),
     });
 
     render(<RegisterVacancyView />);
@@ -55,7 +58,8 @@ describe('RegisterVacancyView', () => {
       conditions: mockConditions,
       updateField: vi.fn(),
       selectModality: vi.fn(),
-      goNext: vi.fn()
+      goNext: vi.fn(),
+      goBack: vi.fn(),
     });
 
     render(<RegisterVacancyView />);
