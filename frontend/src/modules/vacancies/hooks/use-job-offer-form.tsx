@@ -33,11 +33,14 @@ const initialConditions: VacancyConditions = {
 };
 
 export function useJobOfferForm() {
-    const [currentStep, setCurrentStep] = useState(3); // Cambia esto a 2 temporalmente para probar tu pantalla
+    const [currentStep, setCurrentStep] = useState(1);
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
     // Como skills es un array, necesitamos actualizar el tipado de updateField
-    function updateField(field: keyof VacancyConditions, value: any) {
+    function updateField<Field extends keyof VacancyConditions>(
+        field: Field,
+        value: VacancyConditions[Field],
+    ) {
         setConditions((prev) => ({ ...prev, [field]: value }));
     }
 
