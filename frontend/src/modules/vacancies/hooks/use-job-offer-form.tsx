@@ -29,7 +29,7 @@ const initialConditions: VacancyConditions = {
 };
 
 export function useJobOfferForm() {
-    const [currentStep, setCurrentStep] = useState(3);
+    const [currentStep, setCurrentStep] = useState(1);
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
     function updateField(field: keyof VacancyConditions, value: string) {
@@ -41,7 +41,7 @@ export function useJobOfferForm() {
     }
 
     function goNext() {
-        setCurrentStep((step) => Math.min(step + 1, 3));
+        setCurrentStep(prev => Math.min(prev + 1, 3));
     }
 
     return { currentStep, conditions, updateField, selectModality, goNext };
