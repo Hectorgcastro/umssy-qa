@@ -44,7 +44,7 @@ export const availabilityApi = {
     const payload: Partial<CreateAvailabilityBlockInput> = {};
     if (input.startAt) payload.startAt = toISOString(input.startAt);
     if (input.endAt) payload.endAt = toISOString(input.endAt);
-    const response = await apiClient.patch<AvailabilityBlock>(`/availability-blocks/${id}`, payload);
+    const response = await apiClient.patch<AvailabilityBlock>(`/availability-blocks/${encodeURIComponent(id)}`, payload);
     return response.data;
   },
 

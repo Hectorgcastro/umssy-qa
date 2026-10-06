@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 import { toBoliviaTime } from '../../../common/utils/date-time.js';
 import {
   BLOCK_MAX_HOUR,
@@ -71,7 +72,6 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
         });
       }
 
-      // 22:00 del mismo día es válido como fin; 00:00 del día siguiente no.
       if (start.day !== end.day) {
         ctx.addIssue({
           code: 'custom',
@@ -98,3 +98,5 @@ export const buildCreateBlockSchema = (getNow: () => Date = () => new Date()) =>
     });
 
 export const createBlockSchema = buildCreateBlockSchema();
+
+export class CreateBlockDto extends createZodDto(createBlockSchema) {}

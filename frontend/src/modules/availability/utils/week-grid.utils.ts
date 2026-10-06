@@ -40,7 +40,8 @@ export function capitalize(text: string): string {
 }
 
 export function isBlockClickable(variant: WeekGridVariant, state: AvailabilityBlockState): boolean {
-  return (variant === "selectable" || variant === "owner") && state === "free";
+  if (variant === "owner") return true;
+  return variant === "selectable" && state === "free";
 }
 
 export function getWeekDayDates(weekRange: WeekRange): string[] {

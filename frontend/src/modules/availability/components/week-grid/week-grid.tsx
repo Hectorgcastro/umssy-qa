@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toBoliviaTime } from "@/shared/utils/date-time";
 import { cn } from "cn";
 import {
+  BLOCK_STATE_TEXT,
   DAY_LABELS,
   HOUR_HEIGHT_PX,
   SELECTED_BLOCK_CLASSES,
@@ -12,6 +13,7 @@ import {
   STATE_BUTTON_VARIANT,
   STATE_LABELS_ES,
   WEEK_GRID_END_HOUR,
+  WEEK_GRID_LEGEND,
   WEEK_GRID_START_HOUR,
 } from "../../constants/week-grid.constants";
 import type { AvailabilityBlock } from "../../types/availability-block.types";
@@ -37,10 +39,18 @@ export function WeekGrid({
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
   const gridHeightPx = hours.length * HOUR_HEIGHT_PX;
 
+  const dayDates = getWeekDayDates(weekRange);
   const blocksByDay: AvailabilityBlock[][] = Array.from({ length: 7 }, () => []);
   for (const block of blocks) {
     const dayIndex = getWeekDayIndex(block.startAt, weekRange);
     if (dayIndex !== null) blocksByDay[dayIndex].push(block);
+  }
+
+  function getBlockText(block: AvailabilityBlock): string {
+    if (variant === "selectable" && block.state === "free") {
+      return toBoliviaTime(block.startAt).time;
+    }
+    return BLOCK_STATE_TEXT[block.state];
   }
 
   function handleBlockClick(block: AvailabilityBlock) {
@@ -51,15 +61,20 @@ export function WeekGrid({
 
   return (
     <section aria-label="Disponibilidad semanal">
-      <div className="hidden md:grid grid-cols-[2.5rem_repeat(7,1fr)] rounded-lg border border-border overflow-hidden">
+      <div
+        className={cn(
+          "hidden overflow-hidden rounded-lg border border-border",
+          "md:grid md:grid-cols-[3.5rem_repeat(7,1fr)]",
+        )}
+      >
         <div aria-hidden="true">
-          <div className="py-1 text-[10px]">&nbsp;</div>
+          <div className="h-10 border-b border-border" />
           <ol className="relative" style={{ height: gridHeightPx }}>
             {hours.map((h) => (
               <li
                 key={h}
-                className="absolute right-1 text-[9px] text-muted-foreground"
-                style={{ top: (h - startHour) * HOUR_HEIGHT_PX - 5 }}
+                className="absolute right-2 text-xs text-muted-foreground"
+                style={{ top: (h - startHour) * HOUR_HEIGHT_PX + 4 }}
               >
                 <time dateTime={`${String(h).padStart(2, "0")}:00`}>
                   {String(h).padStart(2, "0")}:00
@@ -71,8 +86,11 @@ export function WeekGrid({
 
         {blocksByDay.map((dayBlocks, dayIndex) => (
           <section key={dayIndex} className="border-l border-border">
-            <h3 className="text-center text-[10px] font-normal text-muted-foreground py-1">
-              {DAY_LABELS[dayIndex]}
+            <h3 className="flex h-10 items-center gap-1.5 border-b border-border px-2">
+              <span className="text-xs font-semibold text-muted-foreground">
+                {DAY_LABELS[dayIndex]}
+              </span>{" "}
+              <span className="text-base font-bold">{Number(dayDates[dayIndex].slice(8))}</span>
             </h3>
 
             <div className="relative" style={{ height: gridHeightPx }}>
@@ -97,12 +115,13 @@ export function WeekGrid({
 
                   const isSelected = block.id === selectedBlockId;
                   const stateLabel = STATE_LABELS_ES[block.state];
-                  const timeRange = `${toBoliviaTime(block.startAt).time} a ${toBoliviaTime(block.endAt).time}`;
+                  const startTime = toBoliviaTime(block.startAt).time;
+                  const timeRange = `${startTime} a ${toBoliviaTime(block.endAt).time}`;
 
                   return (
                     <li
                       key={block.id}
-                      className="absolute left-0.5 right-0.5"
+                      className="absolute left-1 right-1 py-0.5"
                       style={{ top: topPx, height: heightPx }}
                     >
                       <Button
@@ -111,14 +130,14 @@ export function WeekGrid({
                         disabled={!isBlockClickable(variant, block.state)}
                         onClick={() => handleBlockClick(block)}
                         className={cn(
-                          "h-full w-full rounded px-1 text-[9px]",
+                          "h-full w-full justify-start rounded-md px-2 text-xs font-semibold",
                           STATE_BUTTON_CLASSES[block.state],
                           isSelected && SELECTED_BLOCK_CLASSES
                         )}
                         aria-pressed={isSelected || undefined}
                         aria-label={`${stateLabel}, ${timeRange}`}
                       >
-                        {block.state === "free" ? "Libre" : toBoliviaTime(block.startAt).time}
+                        {getBlockText(block)}
                       </Button>
                     </li>
                   );
@@ -131,7 +150,7 @@ export function WeekGrid({
 
       <WeekDayList
         blocksByDay={blocksByDay}
-        dayDates={getWeekDayDates(weekRange)}
+        dayDates={dayDates}
         variant={variant}
         selectedBlockId={selectedBlockId}
         onBlockClick={handleBlockClick}
@@ -139,25 +158,38 @@ export function WeekGrid({
 
       <ul
         aria-label="Leyenda"
-        className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-muted-foreground"
+        className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground"
       >
-        <li className="flex items-center gap-1">
-          <span aria-hidden="true" className="inline-block w-3 h-3 rounded-sm border border-border" />
-          Libre
+        <li className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="inline-block h-3 w-4 rounded-sm border border-border"
+          />
+          {variant === "selectable" ? WEEK_GRID_LEGEND.freeSlot : WEEK_GRID_LEGEND.free}
         </li>
-        <li className="flex items-center gap-1">
-          <span aria-hidden="true" className="inline-block w-3 h-3 rounded-sm border border-dashed border-muted-foreground" />
-          Solicitud pendiente
-        </li>
-        <li className="flex items-center gap-1">
-          <span aria-hidden="true" className="inline-block w-3 h-3 rounded-sm bg-ink" />
-          Cita confirmada
-        </li>
+        {variant !== "selectable" && (
+          <>
+            <li className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "inline-block h-3 w-4 rounded-sm",
+                  "border border-dashed border-muted-foreground",
+                )}
+              />
+              {WEEK_GRID_LEGEND.pending}
+            </li>
+            <li className="flex items-center gap-2">
+              <span aria-hidden="true" className="inline-block h-3 w-4 rounded-sm bg-ink" />
+              {WEEK_GRID_LEGEND.confirmed}
+            </li>
+          </>
+        )}
         {variant === "selectable" && (
-          <li className="flex items-center gap-1">
+          <li className="flex items-center gap-2">
             <span
               aria-hidden="true"
-              className={cn("inline-block w-3 h-3 rounded-sm", SELECTED_BLOCK_CLASSES)}
+              className={cn("inline-block h-3 w-4 rounded-sm", SELECTED_BLOCK_CLASSES)}
             />
             {SELECTED_LEGEND_LABEL}
           </li>

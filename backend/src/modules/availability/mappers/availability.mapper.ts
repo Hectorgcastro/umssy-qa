@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  APPOINTMENT_STATUS_CONFIRMED,
-  APPOINTMENT_STATUS_PENDING,
-} from '../constants/appointment-status.constants.js';
+import { AppointmentStatusTitle } from '../enums/appointment-status-title.enum.js';
 import type { AvailabilityBlockResponse } from '../types/availability-block-response.types.js';
 import type { AvailabilityBlockState } from '../types/availability-block-state.types.js';
 import type { AvailabilityBlockWithAppointments } from '../types/availability-block-with-appointments.types.js';
@@ -32,10 +29,10 @@ export class AvailabilityMapper {
 
   private toState(block: AvailabilityBlockWithAppointments): AvailabilityBlockState {
     const statuses = block.appointments.map((appointment) => appointment.status.title);
-    if (statuses.includes(APPOINTMENT_STATUS_CONFIRMED)) {
+    if (statuses.includes(AppointmentStatusTitle.CONFIRMED)) {
       return 'confirmed';
     }
-    if (statuses.includes(APPOINTMENT_STATUS_PENDING)) {
+    if (statuses.includes(AppointmentStatusTitle.PENDING)) {
       return 'pending';
     }
     return 'free';

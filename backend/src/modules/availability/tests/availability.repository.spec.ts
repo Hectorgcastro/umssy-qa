@@ -6,10 +6,11 @@ import { AvailabilityRepository } from '../repositories/availability.repository.
 describe('AvailabilityRepository', () => {
   const findMany = vi.fn();
   const findUnique = vi.fn();
+  const update = vi.fn();
   const deleteBlock = vi.fn();
   const count = vi.fn();
   const prisma = {
-    availabilityBlock: { findMany, findUnique, delete: deleteBlock },
+    availabilityBlock: { findMany, findUnique, update, delete: deleteBlock },
     user: { count },
   };
   let repository: AvailabilityRepository;
@@ -19,87 +20,130 @@ describe('AvailabilityRepository', () => {
     repository = new AvailabilityRepository(prisma as any);
   });
 
-  it('busca los bloques del mentor dentro del rango, ordenados e incluyendo solo citas activas', async () => {
-    const from = new Date('2026-10-05T04:00:00.000Z');
-    const to = new Date('2026-10-12T04:00:00.000Z');
-    findMany.mockResolvedValue([]);
+  describe('findMentorBlocksInRange', () => {
+    it('busca los bloques del mentor dentro del rango, ordenados e incluyendo solo citas activas', async () => {
+      const from = new Date('2026-10-05T04:00:00.000Z');
+      const to = new Date('2026-10-12T04:00:00.000Z');
+      findMany.mockResolvedValue([]);
 
-    await repository.findMentorBlocksInRange('mentor-1', from, to);
+      await repository.findMentorBlocksInRange('mentor-1', from, to);
 
-    expect(findMany).toHaveBeenCalledWith({
-      where: { mentorId: 'mentor-1', startAt: { gte: from, lt: to } },
-      orderBy: { startAt: 'asc' },
-      include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      expect(findMany).toHaveBeenCalledWith({
+        where: { mentorId: 'mentor-1', startAt: { gte: from, lt: to } },
+        orderBy: { startAt: 'asc' },
+        include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      });
+    });
+
+    it('devuelve lo que entrega Prisma', async () => {
+      const rows = [{ id: 'block-1' }];
+      findMany.mockResolvedValue(rows);
+
+      await expect(repository.findMentorBlocksInRange('mentor-1', new Date(), new Date())).resolves.toBe(rows);
     });
   });
 
-  it('devuelve lo que entrega Prisma', async () => {
-    const rows = [{ id: 'block-1' }];
-    findMany.mockResolvedValue(rows);
+  describe('findMentorFreeBlocksInRange', () => {
+    it('busca solo los bloques sin cita pendiente ni confirmada dentro del rango', async () => {
+      const from = new Date('2026-10-05T04:00:00.000Z');
+      const to = new Date('2026-10-12T04:00:00.000Z');
+      findMany.mockResolvedValue([]);
 
-    await expect(repository.findMentorBlocksInRange('mentor-1', new Date(), new Date())).resolves.toBe(rows);
-  });
+      await repository.findMentorFreeBlocksInRange('mentor-1', from, to);
 
-  it('busca solo los bloques sin cita pendiente ni confirmada dentro del rango', async () => {
-    const from = new Date('2026-10-05T04:00:00.000Z');
-    const to = new Date('2026-10-12T04:00:00.000Z');
-    findMany.mockResolvedValue([]);
-
-    await repository.findMentorFreeBlocksInRange('mentor-1', from, to);
-
-    expect(findMany).toHaveBeenCalledWith({
-      where: {
-        mentorId: 'mentor-1',
-        startAt: { gte: from, lt: to },
-        appointments: { none: { status: { title: { in: ACTIVE_APPOINTMENT_STATUSES } } } },
-      },
-      orderBy: { startAt: 'asc' },
-      include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      expect(findMany).toHaveBeenCalledWith({
+        where: {
+          mentorId: 'mentor-1',
+          startAt: { gte: from, lt: to },
+          appointments: { none: { status: { title: { in: ACTIVE_APPOINTMENT_STATUSES } } } },
+        },
+        orderBy: { startAt: 'asc' },
+        include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      });
     });
   });
 
-  it('busca un bloque por id incluyendo solo sus citas activas', async () => {
-    findUnique.mockResolvedValue(null);
+  describe('findById', () => {
+    it('busca por id incluyendo solo citas activas', async () => {
+      findUnique.mockResolvedValue(null);
 
-    await repository.findById('block-1');
+      await repository.findById('block-1');
 
-    expect(findUnique).toHaveBeenCalledWith({
-      where: { id: 'block-1' },
-      include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      expect(findUnique).toHaveBeenCalledWith({
+        where: { id: 'block-1' },
+        include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      });
+    });
+
+    it('devuelve null si no existe', async () => {
+      findUnique.mockResolvedValue(null);
+
+      await expect(repository.findById('block-1')).resolves.toBeNull();
+    });
+
+    it('devuelve el bloque que entrega Prisma', async () => {
+      const row = { id: 'block-1' };
+      findUnique.mockResolvedValue(row);
+
+      await expect(repository.findById('block-1')).resolves.toBe(row);
     });
   });
 
-  it('devuelve null si el bloque no existe', async () => {
-    findUnique.mockResolvedValue(null);
+  describe('update', () => {
+    const data = { startAt: new Date('2026-10-10T14:00:00Z'), endAt: new Date('2026-10-10T14:30:00Z') };
 
-    await expect(repository.findById('missing')).resolves.toBeNull();
-  });
+    it('actualiza el bloque incluyendo solo citas activas', async () => {
+      const updated = { id: 'block-1', ...data };
+      update.mockResolvedValue(updated);
 
-  it('borra el bloque por id', async () => {
-    const row = { id: 'block-1' };
-    deleteBlock.mockResolvedValue(row);
+      await expect(repository.update('block-1', data)).resolves.toBe(updated);
+      expect(update).toHaveBeenCalledWith({
+        where: { id: 'block-1' },
+        data,
+        include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+      });
+    });
 
-    await expect(repository.delete('block-1')).resolves.toBe(row);
-    expect(deleteBlock).toHaveBeenCalledWith({ where: { id: 'block-1' } });
-  });
+    // La traduccion del error de solape (P2039 / 23P01) vive en el service,
+    // igual que en create: el repository solo persiste y deja que el error
+    // de Prisma suba tal cual.
+    it('relanza cualquier error de Prisma tal cual, sin traducirlo', async () => {
+      const dbError = new Error('conflicting key value violates exclusion constraint');
+      update.mockRejectedValue(dbError);
 
-  it('considera mentor activo solo a un usuario activo con rol mentor vigente', async () => {
-    const now = new Date('2026-10-04T12:00:00.000Z');
-    count.mockResolvedValue(1);
-
-    await expect(repository.isActiveMentor('mentor-1', now)).resolves.toBe(true);
-    expect(count).toHaveBeenCalledWith({
-      where: {
-        id: 'mentor-1',
-        isActive: true,
-        roles: { some: { deletedAt: null, startAt: { lte: now }, role: { name: 'mentor' } } },
-      },
+      await expect(repository.update('block-1', data)).rejects.toBe(dbError);
     });
   });
 
-  it('devuelve false si no encuentra un mentor activo', async () => {
-    count.mockResolvedValue(0);
+  describe('delete', () => {
+    it('borra el bloque por id', async () => {
+      const row = { id: 'block-1' };
+      deleteBlock.mockResolvedValue(row);
 
-    await expect(repository.isActiveMentor('mentor-1', new Date())).resolves.toBe(false);
+      await expect(repository.delete('block-1')).resolves.toBe(row);
+      expect(deleteBlock).toHaveBeenCalledWith({ where: { id: 'block-1' } });
+    });
+  });
+
+  describe('isActiveMentor', () => {
+    it('considera mentor activo solo a un usuario activo con rol mentor vigente', async () => {
+      const now = new Date('2026-10-04T12:00:00.000Z');
+      count.mockResolvedValue(1);
+
+      await expect(repository.isActiveMentor('mentor-1', now)).resolves.toBe(true);
+      expect(count).toHaveBeenCalledWith({
+        where: {
+          id: 'mentor-1',
+          isActive: true,
+          roles: { some: { deletedAt: null, startAt: { lte: now }, role: { name: 'mentor' } } },
+        },
+      });
+    });
+
+    it('devuelve false si no encuentra un mentor activo', async () => {
+      count.mockResolvedValue(0);
+
+      await expect(repository.isActiveMentor('mentor-1', new Date())).resolves.toBe(false);
+    });
   });
 });

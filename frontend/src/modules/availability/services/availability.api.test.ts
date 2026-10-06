@@ -89,6 +89,14 @@ describe("availabilityApi", () => {
     expect(payload.startAt).toMatch(ISO_UTC)
   })
 
+  it("updateAvailabilityBlock codifica el ID con caracteres especiales", async () => {
+    const patchSpy = vi.spyOn(apiClient, "patch").mockResolvedValue({ data: mockBlock })
+
+    await availabilityApi.updateAvailabilityBlock("a/b&c", { startAt: "2024-01-15T12:00" })
+
+    expect(patchSpy).toHaveBeenCalledWith("/availability-blocks/a%2Fb%26c", expect.any(Object))
+  })
+
   it("deleteAvailabilityBlock llama a la API con ID correcto", async () => {
     const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValue({})
 

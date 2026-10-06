@@ -6,6 +6,7 @@ import {
   WITHOUT_ACTIVE_APPOINTMENTS_WHERE,
 } from '../constants/block-query.constants.js';
 import type { AvailabilityBlockWithAppointments } from '../types/availability-block-with-appointments.types.js';
+import type { UpdateBlockData } from '../types/update-block-data.types.js';
 
 @Injectable()
 export class AvailabilityRepository {
@@ -40,6 +41,14 @@ export class AvailabilityRepository {
   findById(id: string): Promise<AvailabilityBlockWithAppointments | null> {
     return this.prisma.availabilityBlock.findUnique({
       where: { id },
+      include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
+    });
+  }
+
+  update(id: string, data: UpdateBlockData): Promise<AvailabilityBlockWithAppointments> {
+    return this.prisma.availabilityBlock.update({
+      where: { id },
+      data,
       include: BLOCK_WITH_ACTIVE_APPOINTMENTS_INCLUDE,
     });
   }

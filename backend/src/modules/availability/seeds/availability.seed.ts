@@ -9,11 +9,10 @@ import {
   MS_PER_DAY,
   MS_PER_MINUTE,
   PENDING_APPOINTMENT_MESSAGE,
-  STATUS_CONFIRMED,
-  STATUS_PENDING,
   STEP_MS,
   TRIO_NEXT_WEEK_WARNING,
 } from '../constants/seed-availability.constants.js';
+import { AppointmentStatusTitle } from '../enums/appointment-status-title.enum.js';
 import { BLOCK_MAX_HOUR, BLOCK_MIN_HOUR, BLOCK_STEP_MINUTES } from '../constants/create-block.constants.js';
 import type { AvailabilitySeedResult } from '../types/availability-seed-result.types.js';
 import type { AvailabilitySeedUsers } from '../types/availability-seed-users.types.js';
@@ -156,7 +155,10 @@ async function seedStatuses(
   const ensure = (title: string) =>
     tx.appointmentStatus.upsert({ where: { title }, create: { title }, update: {} });
 
-  return { pending: await ensure(STATUS_PENDING), confirmed: await ensure(STATUS_CONFIRMED) };
+  return {
+    pending: await ensure(AppointmentStatusTitle.PENDING),
+    confirmed: await ensure(AppointmentStatusTitle.CONFIRMED),
+  };
 }
 
 async function seedBlocks(tx: Prisma.TransactionClient, mentorId: string, plan: SeedBlockPlan): Promise<number> {

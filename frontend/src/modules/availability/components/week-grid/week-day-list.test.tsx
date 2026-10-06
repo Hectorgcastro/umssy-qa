@@ -119,7 +119,7 @@ describe("WeekDayList", () => {
 
     const selected = screen.getByRole("button", { name: /libre$/ });
     expect(selected).toHaveAttribute("aria-pressed", "true");
-    expect(selected).toHaveClass("ring-primary");
+    expect(selected).toHaveClass("ring-accent");
     expect(screen.getByRole("button", { name: /pendiente$/ })).not.toHaveAttribute("aria-pressed");
   });
 

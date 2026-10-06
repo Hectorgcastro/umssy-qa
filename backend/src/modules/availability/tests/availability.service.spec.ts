@@ -1,21 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { APPOINTMENT_STATUS_PENDING } from '../constants/appointment-status.constants.js';
+import { AppointmentStatusTitle } from '../enums/appointment-status-title.enum.js';
 import { AvailabilityMapper } from '../mappers/availability.mapper.js';
 import {
   BlockHasAppointmentException,
   BlockNotFoundException,
   BlockNotOwnedException,
+  BlockOverlapException,
   MentorNotFoundException,
 } from '../exceptions/index.js';
 import { AvailabilityService } from '../services/availability.service.js';
-import { BlockOverlapException } from '../exceptions/index.js';
-import type { CreateBlockPayload } from '../types/create-block-payload.types.js';
+import type { CreateBlockDto } from '../requests/create-block.request.js';
 
 const QUERY = { from: '2026-10-05T04:00:00.000Z', to: '2026-10-12T03:59:59.999Z' };
 
-const block = (id: string, statuses: string[] = []) => ({
+const UPDATE_PAYLOAD = {
+  startAt: new Date('2026-10-10T14:00:00.000Z'),
+  endAt: new Date('2026-10-10T14:30:00.000Z'),
+};
+
+const block = (id: string, statuses: string[] = [], mentorId = 'mentor-1') => ({
   id,
-  mentorId: 'mentor-1',
+  mentorId,
   startAt: new Date('2026-10-06T22:00:00.000Z'),
   endAt: new Date('2026-10-06T22:30:00.000Z'),
   seriesId: null,
@@ -28,12 +33,14 @@ const block = (id: string, statuses: string[] = []) => ({
 describe('AvailabilityService', () => {
   const availabilityRepository = {
     findMentorBlocksInRange: vi.fn(),
+    findById: vi.fn(),
+    update: vi.fn(),
     findMentorFreeBlocksInRange: vi.fn(),
     isActiveMentor: vi.fn(),
     create: vi.fn(),
   };
   const mentorId = 'ed9934b9-1a4e-4b8d-bbed-b8772154cba8';
-  const payload: CreateBlockPayload = {
+  const payload: CreateBlockDto = {
     startAt: new Date('2026-11-03T22:00:00.000Z'),
     endAt: new Date('2026-11-04T00:00:00.000Z'),
   };
@@ -70,7 +77,7 @@ describe('AvailabilityService', () => {
     it('devuelve los bloques mapeados con su estado', async () => {
       availabilityRepository.findMentorBlocksInRange.mockResolvedValue([
         block('block-1'),
-        block('block-2', [APPOINTMENT_STATUS_PENDING]),
+        block('block-2', [AppointmentStatusTitle.PENDING]),
       ]);
 
       const result = await service.findMyBlocks('mentor-1', QUERY);
@@ -83,6 +90,68 @@ describe('AvailabilityService', () => {
 
     it('devuelve una lista vacía si el mentor no tiene bloques en la semana', async () => {
       await expect(service.findMyBlocks('mentor-1', QUERY)).resolves.toEqual([]);
+    });
+  });
+
+  describe('updateBlock', () => {
+    it('responde 404 si el bloque no existe', async () => {
+      availabilityRepository.findById.mockResolvedValue(null);
+
+      await expect(service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD)).rejects.toThrow(
+        BlockNotFoundException,
+      );
+      expect(availabilityRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('responde 403 y no toca nada si el bloque es de otro mentor', async () => {
+      availabilityRepository.findById.mockResolvedValue(block('block-1', [], 'otro-mentor'));
+
+      await expect(service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD)).rejects.toThrow(
+        BlockNotOwnedException,
+      );
+      expect(availabilityRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('responde 409 si el bloque tiene una cita pendiente o confirmada', async () => {
+      availabilityRepository.findById.mockResolvedValue(block('block-1', [AppointmentStatusTitle.PENDING]));
+
+      await expect(service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD)).rejects.toThrow(
+        BlockHasAppointmentException,
+      );
+      expect(availabilityRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('actualiza un bloque propio sin citas y devuelve el bloque mapeado', async () => {
+      availabilityRepository.findById.mockResolvedValue(block('block-1'));
+      availabilityRepository.update.mockResolvedValue(
+        block('block-1', [], 'mentor-1'),
+      );
+
+      const result = await service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD);
+
+      expect(availabilityRepository.update).toHaveBeenCalledWith('block-1', {
+        startAt: UPDATE_PAYLOAD.startAt,
+        endAt: UPDATE_PAYLOAD.endAt,
+      });
+      expect(result.id).toBe('block-1');
+      expect(result.state).toBe('free');
+    });
+
+    it('responde 409 si el guardado choca con la constraint de no-solape', async () => {
+      availabilityRepository.findById.mockResolvedValue(block('block-1'));
+      availabilityRepository.update.mockRejectedValue({ code: '23P01' });
+
+      await expect(service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD)).rejects.toThrow(
+        BlockOverlapException,
+      );
+    });
+
+    it('relanza el error original cuando no es de solapamiento', async () => {
+      availabilityRepository.findById.mockResolvedValue(block('block-1'));
+      const databaseError = new Error('connection refused');
+      availabilityRepository.update.mockRejectedValue(databaseError);
+
+      await expect(service.updateBlock('mentor-1', 'block-1', UPDATE_PAYLOAD)).rejects.toBe(databaseError);
     });
   });
 
@@ -116,6 +185,8 @@ describe('AvailabilityService', () => {
       ['code', { code: '23P01' }],
       ['meta', { meta: { code: '23P01' } }],
       ['message', { message: 'Query failed: conflicting key 23P01' }],
+      // Shape real verificado contra Postgres: ver utils/overlap-error.ts.
+      ['driverAdapterError', { code: 'P2039', meta: { driverAdapterError: { cause: { code: '23P01' } } } }],
     ])('lanza BlockOverlapException cuando el 23P01 viene en %s', async (_source, errorShape) => {
       availabilityRepository.create.mockRejectedValue(Object.assign(new Error('db'), errorShape));
 
@@ -141,31 +212,31 @@ describe('AvailabilityService', () => {
 
   describe('remove', () => {
     const repository = { findById: vi.fn(), delete: vi.fn() };
-    let service: AvailabilityService;
+    let removeService: AvailabilityService;
 
     beforeEach(() => {
       vi.clearAllMocks();
-      service = new AvailabilityService(repository as never, new AvailabilityMapper());
+      removeService = new AvailabilityService(repository as never, new AvailabilityMapper());
     });
 
     it('lanza 404 si el bloque no existe', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.remove('mentor-1', 'block-x')).rejects.toThrow(BlockNotFoundException);
+      await expect(removeService.remove('mentor-1', 'block-x')).rejects.toThrow(BlockNotFoundException);
       expect(repository.delete).not.toHaveBeenCalled();
     });
 
     it('lanza 403 si el bloque pertenece a otro mentor', async () => {
       repository.findById.mockResolvedValue(block('block-x'));
 
-      await expect(service.remove('otro-mentor', 'block-x')).rejects.toThrow(BlockNotOwnedException);
+      await expect(removeService.remove('otro-mentor', 'block-x')).rejects.toThrow(BlockNotOwnedException);
       expect(repository.delete).not.toHaveBeenCalled();
     });
 
     it('lanza 409 si el bloque tiene citas activas', async () => {
-      repository.findById.mockResolvedValue(block('block-x', [APPOINTMENT_STATUS_PENDING]));
+      repository.findById.mockResolvedValue(block('block-x', [AppointmentStatusTitle.PENDING]));
 
-      await expect(service.remove('mentor-1', 'block-x')).rejects.toThrow(BlockHasAppointmentException);
+      await expect(removeService.remove('mentor-1', 'block-x')).rejects.toThrow(BlockHasAppointmentException);
       expect(repository.delete).not.toHaveBeenCalled();
     });
 
@@ -174,7 +245,7 @@ describe('AvailabilityService', () => {
       repository.findById.mockResolvedValue(target);
       repository.delete.mockResolvedValue(target);
 
-      await expect(service.remove('mentor-1', 'block-x')).resolves.toEqual({ id: 'block-x' });
+      await expect(removeService.remove('mentor-1', 'block-x')).resolves.toEqual({ id: 'block-x' });
       expect(repository.delete).toHaveBeenCalledWith('block-x');
     });
   });
