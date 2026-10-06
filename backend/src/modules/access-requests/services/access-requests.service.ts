@@ -3,6 +3,7 @@ import { FilesService } from '../../files/services/files.service.js';
 import { FileNotFoundException } from '../../files/exceptions/index.js';
 import { AuthService } from '../../auth/services/auth.service.js';
 import { AccessRequestsRepository } from '../repositories/access-requests.repository.js';
+import { ActivationOtpService } from './activation-otp.service.js';
 import {
   AccessRequestNotEditableException,
   ActiveAccessRequestExistsException,
@@ -13,6 +14,7 @@ import {
   InvalidGraduationYearException,
   MissingDocumentFileException,
   RequestDocumentNotFoundException,
+  RequestNotInReviewException,
 } from '../exceptions/index.js';
 import { toAccessRequestResponse } from '../mappers/access-request.mapper.js';
 import { toAccessRequestDetail } from '../mappers/access-request-detail.mapper.js';
@@ -39,6 +41,7 @@ export class AccessRequestsService {
     private readonly accessRequestsRepository: AccessRequestsRepository,
     private readonly authService: AuthService,
     private readonly filesService: FilesService,
+    private readonly activationOtpService: ActivationOtpService,
   ) {}
 
   async create(dto: CreateAccessRequestDto) {
@@ -183,6 +186,25 @@ export class AccessRequestsService {
       throw new AccessRequestNotFoundException();
     }
     return toAccessRequestDetail(updated);
+  }
+
+  // Solo se aprueba desde in_review; el código de activación se emite después y su fallo no revierte la aprobación
+  async approve(id: string, reviewerId: string) {
+    const current = await this.accessRequestsRepository.findDetailById(id);
+    if (!current || current.status.title === ACCESS_REQUEST_STATUS.DRAFT) {
+      throw new AccessRequestNotFoundException();
+    }
+    if (current.status.title !== ACCESS_REQUEST_STATUS.IN_REVIEW) {
+      throw new RequestNotInReviewException();
+    }
+
+    const updated = await this.accessRequestsRepository.setVerdict(id, reviewerId, { status: ACCESS_REQUEST_STATUS.APPROVED });
+    if (!updated) {
+      throw new RequestNotInReviewException();
+    }
+
+    const activationCodeSent = await this.activationOtpService.issueFor(id, current.email);
+    return { id, status: ACCESS_REQUEST_STATUS.APPROVED, activationCodeSent };
   }
 
   async getDocument(id: string) {

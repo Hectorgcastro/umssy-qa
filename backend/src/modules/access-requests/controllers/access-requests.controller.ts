@@ -67,6 +67,12 @@ export class AccessRequestsController {
     return this.accessRequestsService.getDetail(id, request.user!.id);
   }
 
+  @Patch(':id/approve')
+  @UseGuards(BackofficeGuard)
+  approve(@Param('id', uuidPipe) id: string, @Req() request: BackofficeRequest) {
+    return this.accessRequestsService.approve(id, request.user!.id);
+  }
+
   @Post()
   create(@Body(new ZodValidationPipe(createAccessRequestSchema)) body: CreateAccessRequestDto) {
     return this.accessRequestsService.create(body);
