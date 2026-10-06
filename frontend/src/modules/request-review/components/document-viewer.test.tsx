@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DocumentViewer } from "./document-viewer";
 
 describe("DocumentViewer", () => {
@@ -48,5 +48,18 @@ describe("DocumentViewer", () => {
     const link = screen.getByRole("link", { name: /Descargar/ });
     expect(link).toHaveAttribute("href", "blob:pdf");
     expect(link).toHaveAttribute("download", "titulo.pdf");
+  });
+
+  it("Descargar es un enlace real (no un botón) y no emite el aviso de Base UI", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    render(<DocumentViewer url="blob:img" mimeType="image/png" fileName="titulo.png" />);
+
+    const link = screen.getByRole("link", { name: /Descargar/ });
+    expect(link.tagName).toBe("A");
+    expect(link).toHaveAttribute("href", "blob:img");
+    expect(link).toHaveAttribute("download", "titulo.png");
+    expect(screen.queryByRole("button", { name: /Descargar/ })).toBeNull();
+    expect(consoleError.mock.calls.flat().join(" ")).not.toContain("nativeButton");
+    consoleError.mockRestore();
   });
 });

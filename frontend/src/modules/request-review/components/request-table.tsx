@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -55,9 +55,10 @@ export function RequestTable({ items = [], isLoading = false }: RequestTableProp
                 <TableCell>{formatRelativeTime(item.submittedAt)}</TableCell>
                 <TableCell>{REVIEW_STATUS_LABELS[item.status] ?? item.status}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm" render={<Link href={`${INBOX_PATH}/${item.id}`} />}>
+                  {/* Button con render={<Link />} no es un botón nativo; por eso se usa Link con las clases de buttonVariants */}
+                  <Link href={`${INBOX_PATH}/${item.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                     Revisar
-                  </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
