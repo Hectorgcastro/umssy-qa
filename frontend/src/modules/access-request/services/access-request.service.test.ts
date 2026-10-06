@@ -67,6 +67,58 @@ describe("accessRequestService", () => {
     expect(request.mock.calls[0][0]).toMatchObject({ method: "patch", url: "/access-requests/id-1" });
   });
 
+  describe("deleteAccessRequest", () => {
+    it("hace DELETE al id sin cuerpo ni cabecera de autorización y devuelve ok", async () => {
+      reply(200, { id: "id-1" });
+
+      const result = await accessRequestService.deleteAccessRequest("id-1");
+
+      expect(result).toEqual({ ok: true, data: { id: "id-1" } });
+      const config = request.mock.calls[0][0];
+      expect(config).toMatchObject({ method: "delete", url: "/access-requests/id-1" });
+      expect(config?.data).toBeUndefined();
+      expect(config?.headers).toBeUndefined();
+    });
+
+    it("devuelve el 404 con el mensaje fijo y sin campo", async () => {
+      reply(404, { statusCode: 404, data: null, detail: "La solicitud de acceso no existe", ok: false });
+
+      const result = await accessRequestService.deleteAccessRequest("id-1");
+
+      expect(result).toEqual({ ok: false, status: 404, fieldErrors: {}, message: "La solicitud ya no existe" });
+    });
+
+    it("devuelve el detail del 409 cuando la solicitud ya fue enviada", async () => {
+      const detail = "La solicitud ya fue enviada y no se puede eliminar";
+      reply(409, { statusCode: 409, data: null, detail, ok: false });
+
+      const result = await accessRequestService.deleteAccessRequest("id-1");
+
+      expect(result).toEqual({ ok: false, status: 409, fieldErrors: {}, message: detail });
+    });
+
+    it("devuelve status 0 ante un fallo de red", async () => {
+      request.mockRejectedValue(new Error("Network Error"));
+
+      const result = await accessRequestService.deleteAccessRequest("id-1");
+
+      expect(result).toEqual({
+        ok: false,
+        status: 0,
+        fieldErrors: {},
+        message: "No se pudo conectar con el servidor. Inténtalo de nuevo.",
+      });
+    });
+
+    it("devuelve status 0 si el cuerpo no es JSON válido", async () => {
+      reply(200, "<html>no es json</html>");
+      expect(await accessRequestService.deleteAccessRequest("id-1")).toMatchObject({ ok: false, status: 0 });
+
+      reply(502, "<html>Bad Gateway</html>");
+      expect(await accessRequestService.deleteAccessRequest("id-1")).toMatchObject({ ok: false, status: 0 });
+    });
+  });
+
   it("normaliza el 400 de Zod a fieldErrors por campo", async () => {
     reply(400, {
       message: [

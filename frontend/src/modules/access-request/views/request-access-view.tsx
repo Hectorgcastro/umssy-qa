@@ -1,5 +1,6 @@
 import { AccessRequestProvider } from "../contexts/access-request-context";
 import { PersonalDataForm } from "../components/personal-data-form";
+import { PublicHeader } from "../components/public-header";
 import { RequestStepsSidebar } from "../components/request-steps-sidebar";
 
 export function RequestAccessView() {
@@ -7,13 +8,16 @@ export function RequestAccessView() {
     <main className="min-h-screen bg-surface-soft">
       <div className="flex min-h-screen flex-col lg:flex-row">
         <RequestStepsSidebar currentStep={1} />
-        <section className="flex flex-1 flex-col justify-center px-6 py-10 lg:px-16">
-          <div className="mx-auto flex w-full max-w-190 justify-center 2xl:max-w-5xl">
-            <AccessRequestProvider>
-              <PersonalDataForm />
-            </AccessRequestProvider>
+        <AccessRequestProvider>
+          <div className="flex flex-1 flex-col">
+            <PublicHeader />
+            <section className="flex flex-1 flex-col justify-center px-6 py-10 lg:px-16">
+              <div className="mx-auto flex w-full max-w-190 justify-center 2xl:max-w-5xl">
+                <PersonalDataForm />
+              </div>
+            </section>
           </div>
-        </section>
+        </AccessRequestProvider>
       </div>
     </main>
   );

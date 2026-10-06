@@ -72,8 +72,12 @@ describe("PersonalDataForm", () => {
     const button = screen.getByRole("button", { name: "Continuar al siguiente paso" });
     expect(button).toHaveClass("bg-ink", "text-surface", "2xl:h-12");
     expect(button.querySelector("svg.lucide-chevron-right")).not.toBeNull();
-    expect(button.parentElement).toHaveClass("items-end");
-    expect(container.querySelector(".border-t")).toBe(button.parentElement);
+    // El botón principal es el último de la fila (a la derecha) y la fila va dentro del contenedor con el borde superior
+    const row = button.parentElement as HTMLElement;
+    expect(row).toHaveClass("justify-between");
+    expect(row.lastElementChild).toBe(button);
+    expect(row.parentElement).toHaveClass("items-end");
+    expect(container.querySelector(".border-t")).toBe(row.parentElement);
   });
 
   it("marca el teléfono como opcional", () => {

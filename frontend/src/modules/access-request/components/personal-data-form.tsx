@@ -15,6 +15,7 @@ import { CAREERS } from "../constants/careers.constants";
 import { ID_CARD_ISSUED_IN } from "../constants/id-card-issued-in.constants";
 import { useAccessRequestForm } from "../contexts/access-request-context";
 import type { PersonalDataFieldName } from "../types/access-request.types";
+import { ClearDataDialog } from "./clear-data-dialog";
 import { FieldError } from "./field-error";
 import { PersonalDataField } from "./personal-data-field";
 import { RequiredMark } from "./required-mark";
@@ -226,20 +227,23 @@ export function PersonalDataForm() {
               {notice.text}
             </p>
           ) : null}
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-[42px] 2xl:h-12 rounded-md bg-ink px-5 text-[14.5px] font-semibold text-surface hover:bg-ink/90"
-          >
-            {isSubmitting ? (
-              "Guardando..."
-            ) : (
-              <>
-                Continuar al siguiente paso
-                <ChevronRight aria-hidden="true" />
-              </>
-            )}
-          </Button>
+          <div className="flex w-full flex-wrap items-center justify-between gap-3">
+            <ClearDataDialog />
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-[42px] 2xl:h-12 rounded-md bg-ink px-5 text-[14.5px] font-semibold text-surface hover:bg-ink/90"
+            >
+              {isSubmitting ? (
+                "Guardando..."
+              ) : (
+                <>
+                  Continuar al siguiente paso
+                  <ChevronRight aria-hidden="true" />
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </form>
     </div>
