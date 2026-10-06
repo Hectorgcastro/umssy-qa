@@ -47,7 +47,6 @@ describe('report-user-csv.mapper', () => {
   });
 
   it('usa la hora de Bolivia para la fecha de registro', () => {
-    // 02:00 UTC del 1 de enero todavía es 31 de diciembre en Bolivia (UTC-4).
     expect(formatReportDate('2026-01-01T02:00:00.000Z')).toBe('31/12/2025');
   });
 

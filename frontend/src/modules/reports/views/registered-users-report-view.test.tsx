@@ -54,7 +54,6 @@ async function renderLoadedView() {
   });
 }
 
-// El Select de shadcn responde a eventos de puntero reales: se usa user-event.
 async function selectUserType(user: UserEvent, label: string) {
   await user.click(screen.getByRole("combobox", { name: "Tipo de usuario" }));
   await user.click(await screen.findByRole("option", { name: label }));

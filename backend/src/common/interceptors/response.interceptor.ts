@@ -42,7 +42,6 @@ export class ResponseInterceptor<T> implements NestInterceptor<
 
     return next.handle().pipe(
       map((data) => {
-        // Los archivos (CSV, PDF...) se envían tal cual, sin el sobre JSON.
         if (data instanceof StreamableFile) {
           return data;
         }

@@ -1,10 +1,6 @@
+import type { ReportActionsProps } from "../types/report-actions-props.types";
 import { ExportCsvButton } from "./export-csv-button";
 import { ManagementMenu } from "./management-menu";
-
-interface ReportActionsProps {
-  onExport?: () => void;
-  isExporting?: boolean;
-}
 
 export function ReportActions({ onExport, isExporting }: ReportActionsProps) {
   return (

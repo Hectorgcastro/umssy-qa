@@ -1,4 +1,3 @@
 export { AppShell } from "./app-shell";
 export { AppSidebar } from "./app-sidebar";
 export { PageBreadcrumb } from "./page-breadcrumb";
-export type { BreadcrumbEntry } from "./page-breadcrumb";

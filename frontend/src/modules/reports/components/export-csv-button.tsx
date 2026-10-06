@@ -1,10 +1,6 @@
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface ExportCsvButtonProps {
-  onClick?: () => void;
-  isExporting?: boolean;
-}
+import type { ExportCsvButtonProps } from "../types/export-csv-button-props.types";
 
 export function ExportCsvButton({ onClick, isExporting = false }: ExportCsvButtonProps) {
   return (

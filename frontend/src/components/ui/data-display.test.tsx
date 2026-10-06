@@ -51,7 +51,6 @@ describe("Data display primitives", () => {
     expect(screen.getByRole("cell", { name: "Total: 1" })).toBeInTheDocument()
   })
 
-  // PaginationLink renderiza un <a> con role="button" (Base UI, nativeButton={false}).
   it("renders pagination links with the active page and ellipsis", () => {
     render(
       <Pagination>

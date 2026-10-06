@@ -1,4 +1,3 @@
-// Mismos códigos que usa el frontend (modules/reports/types).
 export const REPORT_USER_TYPES = [
   'STUDENT',
   'GRADUATE',

@@ -9,7 +9,6 @@ export const USER_TYPE_LABELS: Record<UserType, string> = {
   ADMIN: "Administrador",
 };
 
-// Opciones del filtro "Tipo de usuario", en el orden en que se muestran.
 export const USER_TYPE_FILTER_OPTIONS: UserType[] = ["STUDENT", "DEGREE_HOLDER", "MENTOR", "COMPANY", "ADMIN"];
 
 export const USER_DOCUMENT_LABELS: Record<UserDocumentType, string> = {
@@ -20,3 +19,10 @@ export const USER_DOCUMENT_LABELS: Record<UserDocumentType, string> = {
   ENROLLMENT_CERTIFICATE: "Certificado de inscripción",
   NIT: "NIT",
 };
+
+export const ALL_USER_TYPES_VALUE = "ALL";
+
+export const USER_TYPE_SELECT_OPTIONS = [
+  { value: ALL_USER_TYPES_VALUE, label: "Todos" },
+  ...USER_TYPE_FILTER_OPTIONS.map((userType) => ({ value: userType, label: USER_TYPE_LABELS[userType] })),
+];

@@ -1,21 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
+import { PageBreadcrumb } from "@/shared/components/layout";
+import { REGISTERED_USERS_BREADCRUMB, REGISTERED_USERS_PAGE_SIZE } from "../constants/reports.constants";
 import { RefreshButton } from "../components/refresh-button";
 import { RegisteredUsersTable } from "../components/registered-users-table";
 import { ReportActions } from "../components/report-actions";
 import { TablePagination } from "../components/table-pagination";
 import { UserTypeFilter } from "../components/user-type-filter";
 import { useExportRegisteredUsersCsv } from "../hooks/use-export-registered-users-csv";
-import { REGISTERED_USERS_PAGE_SIZE, useRegisteredUsers } from "../hooks/use-registered-users";
+import { useRegisteredUsers } from "../hooks/use-registered-users";
 import type { UserType } from "../types/registered-user.types";
-
-const BREADCRUMB_ITEMS: BreadcrumbEntry[] = [
-  { label: "Inicio", href: "/dashboard" },
-  { label: "Reportes Analíticos" },
-  { label: "Reporte de usuarios registrados" },
-];
 
 export function RegisteredUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +29,7 @@ export function RegisteredUsersReportView() {
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <PageBreadcrumb items={BREADCRUMB_ITEMS} />
+        <PageBreadcrumb items={REGISTERED_USERS_BREADCRUMB} />
         <h1 className="font-tight text-3xl font-extrabold text-ink">Reporte de usuarios registrados</h1>
       </header>
 

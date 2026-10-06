@@ -4,7 +4,6 @@ import type { PaginatedResult } from '../types/api-response.types.js';
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 100;
 
-// Base de paginación para extender en los esquemas de cada módulo.
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce

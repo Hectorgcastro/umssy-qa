@@ -1,19 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { PaginatedData } from "@/shared/types/api-response.types";
+import { REJECTED_USERS_PAGE_SIZE } from "../constants/reports.constants";
 import { reportsService } from "../services/reports.service";
-import type { RejectedUser } from "../types/rejected-user.types";
+import type { RejectedUsersState } from "../types/rejected-user.types";
 
-export const REJECTED_USERS_PAGE_SIZE = 10;
-
-interface RejectedUsersState {
-  requestKey: string;
-  result?: PaginatedData<RejectedUser>;
-  errorMessage?: string;
-}
-
-// Se migrará a useQuery cuando TanStack Query esté instalado en el proyecto.
 export function useRejectedUsers(page: number, search = "") {
   const [state, setState] = useState<RejectedUsersState | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);

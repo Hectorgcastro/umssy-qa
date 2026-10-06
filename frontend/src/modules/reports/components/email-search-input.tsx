@@ -1,11 +1,7 @@
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-interface EmailSearchInputProps {
-  value: string;
-  onChange: (value: string) => void;
-}
+import type { EmailSearchInputProps } from "../types/email-search-input-props.types";
 
 export function EmailSearchInput({ value, onChange }: EmailSearchInputProps) {
   return (

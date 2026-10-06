@@ -2,19 +2,13 @@ import { FileText } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate } from "@/shared/utils/date.utils";
 import { USER_DOCUMENT_LABELS } from "../constants/registered-users.constants";
-import type { RejectedUser } from "../types/rejected-user.types";
+import {
+  REJECTED_USERS_COLUMN_COUNT as COLUMN_COUNT,
+  TABLE_CELL_CLASSES as CELL_CLASSES,
+  USERS_TABLE_HEAD_CLASSES as HEAD_CLASSES,
+} from "../constants/report-table.constants";
+import type { RejectedUsersTableProps } from "../types/rejected-users-table-props.types";
 import { TableMessageRow, TableNoResultsRow, TableSkeletonRows } from "./table-state-rows";
-
-interface RejectedUsersTableProps {
-  users: RejectedUser[];
-  isLoading: boolean;
-  errorMessage?: string;
-  searchTerm?: string;
-}
-
-const COLUMN_COUNT = 5;
-const HEAD_CLASSES = "h-auto px-6 py-3 font-semibold text-ink";
-const CELL_CLASSES = "px-6 py-4 text-ink-soft";
 
 export function RejectedUsersTable({ users, isLoading, errorMessage, searchTerm = "" }: RejectedUsersTableProps) {
   const renderBody = () => {

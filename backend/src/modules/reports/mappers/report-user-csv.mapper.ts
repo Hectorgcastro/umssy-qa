@@ -5,7 +5,6 @@ import type {
   ReportUserType,
 } from '../types/report-user.types.js';
 
-// Mismas etiquetas que muestra la tabla del frontend (modules/reports/constants).
 const USER_TYPE_LABELS: Record<ReportUserType, string> = {
   STUDENT: 'Estudiante',
   GRADUATE: 'Egresado',
@@ -24,7 +23,6 @@ const DOCUMENT_TYPE_LABELS: Record<ReportDocumentType, string> = {
   NIT: 'NIT',
 };
 
-// Las fechas se exportan en hora de Bolivia, sin depender de la zona del servidor.
 const REPORT_TIME_ZONE = 'America/La_Paz';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('es-BO', {
@@ -51,7 +49,6 @@ export const REJECTED_USERS_CSV_HEADERS = [
   'Fecha de Registro',
 ] as const;
 
-// Formato "DD/MM/AAAA", igual que la columna de la tabla.
 export function formatReportDate(isoDate: string): string {
   const date = new Date(isoDate);
 

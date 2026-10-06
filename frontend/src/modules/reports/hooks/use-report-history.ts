@@ -1,19 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PaginatedData } from "@/shared/types/api-response.types";
+import { REPORT_HISTORY_PAGE_SIZE } from "../constants/reports.constants";
 import { reportsService } from "../services/reports.service";
-import type { GeneratedReport } from "../types/generated-report.types";
+import type { ReportHistoryState } from "../types/generated-report.types";
 
-export const REPORT_HISTORY_PAGE_SIZE = 10;
-
-interface ReportHistoryState {
-  page: number;
-  result?: PaginatedData<GeneratedReport>;
-  errorMessage?: string;
-}
-
-// Se migrará a useQuery cuando TanStack Query esté instalado en el proyecto.
 export function useReportHistory(page: number) {
   const [state, setState] = useState<ReportHistoryState | null>(null);
 
