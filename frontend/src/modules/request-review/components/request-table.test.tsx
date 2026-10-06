@@ -80,4 +80,13 @@ describe("RequestTable", () => {
     expect(container.querySelectorAll("svg[aria-hidden='true']").length).toBeGreaterThanOrEqual(4);
     expect(container.innerHTML).not.toMatch(/(green|amber|red|yellow)-\d/);
   });
+
+  it("Revisar es un botón de contorno de 34 px, el avatar es claro con borde y los encabezados son grises", () => {
+    render(<RequestTable items={[item]} />);
+
+    expect(screen.getByRole("link", { name: "Revisar" })).toHaveClass("h-[34px]", "bg-surface", "font-semibold", "border-border");
+    expect(screen.getByText("AP")).toHaveClass("bg-surface-soft", "border", "font-bold", "text-ink");
+    expect(screen.getByRole("columnheader", { name: "Solicitante" })).toHaveClass("text-text-secondary", "font-semibold");
+    expect(screen.getByText("En revisión")).toHaveClass("bg-surface-soft", "border-ink");
+  });
 });
