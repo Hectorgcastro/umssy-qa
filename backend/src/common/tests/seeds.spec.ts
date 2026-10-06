@@ -24,7 +24,7 @@ function setupSeeds() {
   seedUsers.mockResolvedValue({
     users: { mentorA: user('m1'), mentorB: user('m2'), graduate: user('g1'), student: user('s1') },
     roles: 5,
-    userRoles: 4,
+    userRoles: 5,
     legacyRoles: 0,
   });
   seedAvailability.mockResolvedValue({ weeks: {}, plan: {}, statuses: 2, blocks: 56, appointments: 2, warnings: ['aviso'] });
@@ -82,8 +82,8 @@ describe('runSeed', () => {
     expect(summary).toMatchObject({
       roles: 5,
       statuses: 2,
-      users: 4,
-      userRoles: 4,
+      users: 5,
+      userRoles: 5,
       blocks: 56,
       appointments: 2,
       warnings: ['aviso'],

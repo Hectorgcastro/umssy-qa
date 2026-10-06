@@ -47,6 +47,22 @@ describe('seedUsers', () => {
     expect(Object.keys(result.users)).toHaveLength(SEED_USERS.length);
   });
 
+  it('siembra un usuario administrativo con la misma contraseña de siembra', async () => {
+    const tx = buildTx();
+
+    const result = await seedUsers(tx as any, 'hash-compartido');
+
+    expect(SEED_USERS).toHaveLength(5);
+    expect(result.users.admin.email).toBe('admin.1@umssy.test');
+    expect(tx.user.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'admin.1@umssy.test' },
+        create: { firstName: 'Admin', lastName: 'Uno', email: 'admin.1@umssy.test', password: 'hash-compartido' },
+      }),
+    );
+    expect(tx.userRole.create).toHaveBeenCalledWith({ data: { userId: 'user-admin.1@umssy.test', roleId: 'role-administrativo' } });
+  });
+
   it('no repite la asignación de rol si ya existe', async () => {
     const tx = buildTx({ assigned: true });
 
