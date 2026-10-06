@@ -40,12 +40,22 @@ describe("MentorAvailabilityView", () => {
     expect(screen.getByText("Cargando disponibilidad...")).toBeInTheDocument()
   })
 
+  it("muestra la sección y la zona horaria de Bolivia", async () => {
+    vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
+
+    render(<MentorAvailabilityView />)
+
+    expect(screen.getByText("Mentorías")).toBeInTheDocument()
+    expect(screen.getByText("Hora de Bolivia (GMT-4)")).toBeInTheDocument()
+    await waitFor(() => expect(availabilityApi.getAvailabilityBlocks).toHaveBeenCalled())
+  })
+
   it("empieza en la semana actual de Bolivia", async () => {
     vi.spyOn(availabilityApi, "getAvailabilityBlocks").mockResolvedValue([])
 
     render(<MentorAvailabilityView />)
 
-    expect(screen.getByText("5 oct - 11 oct 2026")).toBeInTheDocument()
+    expect(screen.getByText("5 – 11 de octubre de 2026")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Hoy" })).toBeDisabled()
     await waitFor(() =>
       expect(lastRequestedRange()).toEqual({
@@ -60,12 +70,12 @@ describe("MentorAvailabilityView", () => {
     render(<MentorAvailabilityView />)
 
     fireEvent.click(screen.getByRole("button", { name: "Semana siguiente" }))
-    expect(screen.getByText("12 oct - 18 oct 2026")).toBeInTheDocument()
+    expect(screen.getByText("12 – 18 de octubre de 2026")).toBeInTheDocument()
     await waitFor(() => expect(lastRequestedRange()?.from).toBe("2026-10-12T04:00:00.000Z"))
 
     fireEvent.click(screen.getByRole("button", { name: "Semana anterior" }))
     fireEvent.click(screen.getByRole("button", { name: "Semana anterior" }))
-    expect(screen.getByText("28 sep - 4 oct 2026")).toBeInTheDocument()
+    expect(screen.getByText("28 de septiembre – 4 de octubre de 2026")).toBeInTheDocument()
     await waitFor(() => expect(lastRequestedRange()?.from).toBe("2026-09-28T04:00:00.000Z"))
   })
 
@@ -80,7 +90,7 @@ describe("MentorAvailabilityView", () => {
 
     fireEvent.click(todayButton)
 
-    expect(screen.getByText("5 oct - 11 oct 2026")).toBeInTheDocument()
+    expect(screen.getByText("5 – 11 de octubre de 2026")).toBeInTheDocument()
     expect(todayButton).toBeDisabled()
     await waitFor(() => expect(lastRequestedRange()?.from).toBe("2026-10-05T04:00:00.000Z"))
   })
@@ -141,7 +151,7 @@ describe("MentorAvailabilityView", () => {
 
     render(<MentorAvailabilityView initialWeekStart="2026-10-12T04:00:00.000Z" />)
 
-    expect(screen.getByText("12 oct - 18 oct 2026")).toBeInTheDocument()
+    expect(screen.getByText("12 – 18 de octubre de 2026")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Hoy" })).toBeEnabled()
     await waitFor(() => expect(lastRequestedRange()?.from).toBe("2026-10-12T04:00:00.000Z"))
   })
