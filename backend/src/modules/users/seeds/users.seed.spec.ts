@@ -1,11 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Prisma } from '../../../prisma/client.js';
+import { ROLE_NAMES } from '../../../common/enums/roles.enum.js';
 import { seedUsers } from './users.seed.js';
 function buildTransaction(hasRoles: boolean) {
   return {
     role: {
-      upsert: vi.fn(),
-      findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'titulado-role' }),
+      createMany: vi.fn(),
+      findMany: vi
+        .fn()
+        .mockImplementation(({ where }) =>
+          Promise.resolve(
+            where.name.in.includes('titulado')
+              ? ROLE_NAMES.map((name) => ({ id: name, name }))
+              : [],
+          ),
+        ),
     },
     user: {
       upsert: vi
@@ -29,13 +38,14 @@ describe('seedUsers', () => {
       tx as unknown as Prisma.TransactionClient,
       'hashed-password',
     );
-    expect(users).toEqual({
-      tituladoId: 'prueba@umss.edu.bo',
-      emptyUserId: 'sinpases@umss.edu.bo',
-    });
-    expect(tx.userRole.create).toHaveBeenCalledTimes(2);
+    expect(users.users.eventGraduate.id).toBe('prueba@umss.edu.bo');
+    expect(users.users.emptyGraduate.id).toBe('sinpases@umss.edu.bo');
+    expect(users.users.mentorA.id).toBe('mentor.a@umssy.test');
+    expect(tx.userRole.create).toHaveBeenCalledTimes(6);
     expect(tx.user.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({ update: { password: 'hashed-password' } }),
+      expect.objectContaining({
+        update: expect.objectContaining({ password: 'hashed-password' }),
+      }),
     );
   });
   it('does not duplicate active roles when seeding existing users', async () => {
