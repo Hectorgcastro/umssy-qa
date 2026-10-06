@@ -9,100 +9,15 @@ import {
 } from '../exceptions/index.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
-import {
-  MAX_REQUEST_CODE_ATTEMPTS,
-  nextRequestCode,
-  randomRetryDelayMs,
-  requestCodePrefix,
-  sleep,
-} from '../helpers/request-code.js';
+import { nextRequestCode, randomRetryDelayMs, requestCodePrefix, sleep } from '../helpers/request-code.js';
+import { MAX_REQUEST_CODE_ATTEMPTS } from '../constants/request-code.constants.js';
 import { isSubmittedDuplicate } from '../helpers/unique-violation.js';
 import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
-
-// Nunca se selecciona el archivo adjunto: solo la referencia documentFileId
-const ACCESS_REQUEST_SELECT = {
-  id: true,
-  firstName: true,
-  lastName: true,
-  idCardNumber: true,
-  idCardIssuedIn: true,
-  sisCode: true,
-  email: true,
-  phone: true,
-  birthDate: true,
-  graduationYear: true,
-  documentFileId: true,
-  createdAt: true,
-  updatedAt: true,
-  status: { select: { title: true } },
-  career: { select: { title: true } },
-  documentType: { select: { title: true } },
-} satisfies Prisma.AccessRequestSelect;
-
-// Solo lo que muestra la consulta de estado: nunca content ni datos personales (C.I., SIS, teléfono)
-const REQUEST_STATUS_SELECT = {
-  requestCode: true,
-  submittedAt: true,
-  reviewedAt: true,
-  rejectionReason: true,
-  status: { select: { title: true } },
-  documentType: { select: { title: true } },
-  documentFile: { select: { size: true, mimeType: true } },
-} satisfies Prisma.AccessRequestSelect;
-
-const ACTIVE_STATUSES: string[] = [
-  ACCESS_REQUEST_STATUS.PENDING,
-  ACCESS_REQUEST_STATUS.IN_REVIEW,
-  ACCESS_REQUEST_STATUS.APPROVED,
-];
-
-// Solo lo que muestra la bandeja: nunca content ni C.I. ni teléfono
-const LIST_SELECT = {
-  id: true,
-  requestCode: true,
-  firstName: true,
-  lastName: true,
-  email: true,
-  sisCode: true,
-  submittedAt: true,
-  status: { select: { title: true } },
-  documentType: { select: { title: true } },
-} satisfies Prisma.AccessRequestSelect;
-
-const LISTED_STATUSES: string[] = [
-  ACCESS_REQUEST_STATUS.PENDING,
-  ACCESS_REQUEST_STATUS.IN_REVIEW,
-  ACCESS_REQUEST_STATUS.APPROVED,
-  ACCESS_REQUEST_STATUS.REJECTED,
-];
-
-// Detalle para el backoffice: datos declarados y solo metadatos del archivo (nunca content)
-const DETAIL_SELECT = {
-  id: true,
-  requestCode: true,
-  firstName: true,
-  lastName: true,
-  idCardNumber: true,
-  idCardIssuedIn: true,
-  sisCode: true,
-  email: true,
-  phone: true,
-  birthDate: true,
-  graduationYear: true,
-  documentFileId: true,
-  submittedAt: true,
-  reviewedAt: true,
-  rejectionReason: true,
-  status: { select: { title: true } },
-  career: { select: { title: true } },
-  documentType: { select: { title: true } },
-  documentFile: { select: { name: true, extension: true, mimeType: true, size: true } },
-  reviewedBy: { select: { firstName: true, lastName: true } },
-} satisfies Prisma.AccessRequestSelect;
+import { ACCESS_REQUEST_SELECT, REQUEST_STATUS_SELECT, LIST_SELECT, DETAIL_SELECT } from '../constants/access-request-selects.constants.js';
+import { ACTIVE_STATUSES, LISTED_STATUSES } from '../constants/access-request-status-groups.constants.js';
 
 @Injectable()
 export class AccessRequestsRepository {
-  // Pausa entre intentos de asignar código; se reemplaza en las pruebas para no esperar
   retryPause: (ms: number) => Promise<void> = sleep;
 
   constructor(private readonly prisma: PrismaService) {}
@@ -127,7 +42,6 @@ export class AccessRequestsRepository {
     }
   }
 
-  // Los borradores nunca se listan; orden de la más reciente a la más antigua por fecha de envío
   async findPage(params: { status?: string; page: number; limit: number }) {
     const where: Prisma.AccessRequestWhereInput = {
       status: { title: params.status ?? { in: LISTED_STATUSES } },
@@ -289,7 +203,6 @@ export class AccessRequestsRepository {
     return nextRequestCode(year, last?.requestCode);
   }
 
-  // Pasa de draft a pending de forma atómica: si la solicitud cambió de estado o desapareció, lanza P2025.
   // Los índices únicos parciales de la base (solo filas enviadas) son la defensa final contra envíos simultáneos con los mismos datos
   async submit(id: string, requestCode: string) {
     try {
@@ -304,7 +217,6 @@ export class AccessRequestsRepository {
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        // Mismo criterio que updateDraft: meta.model indica un connect fallido (estado sin sembrar)
         if (typeof error.meta?.model === 'string') {
           throw new AccessRequestCatalogMissingException();
         }
@@ -340,7 +252,6 @@ export class AccessRequestsRepository {
     });
   }
 
-  // El filtro por estado hace que la eliminación sea atómica: si la solicitud cambió de estado o desapareció, lanza P2025
   async deleteDraft(id: string) {
     try {
       await this.prisma.accessRequest.delete({ where: { id, status: { title: ACCESS_REQUEST_STATUS.DRAFT } } });

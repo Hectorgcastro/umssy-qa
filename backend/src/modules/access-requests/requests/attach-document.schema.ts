@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { ACCESS_REQUEST_DOCUMENT_TYPE } from '../types/access-request.enum.js';
 
-// Cuerpo de texto del multipart; el archivo llega aparte por FileInterceptor
 export const attachDocumentSchema = z.object({
   documentType: z.enum(ACCESS_REQUEST_DOCUMENT_TYPE, { error: 'El tipo de documento no es válido' }),
 });

@@ -4,8 +4,7 @@ import { randomInt } from 'node:crypto';
 import { OTP_BCRYPT_ROUNDS, OTP_DIGITS, OTP_TTL_HOURS } from '../constants/otp.constants.js';
 import { MAIL_SENDER, type MailSender } from '../mail/mail-sender.js';
 import { ActivationOtpRepository } from '../repositories/activation-otp.repository.js';
-
-const MS_PER_HOUR = 3_600_000;
+import { MS_PER_HOUR } from '../constants/otp.constants.js';
 
 export function generateOtpCode(): string {
   return String(randomInt(0, 10 ** OTP_DIGITS)).padStart(OTP_DIGITS, '0');
@@ -20,7 +19,6 @@ export class ActivationOtpService {
     @Inject(MAIL_SENDER) private readonly mailSender: MailSender,
   ) {}
 
-  // Genera, guarda hasheado y envía el código. Si algo falla se registra y devuelve false: la aprobación no se pierde
   async issueFor(accessRequestId: string, email: string, now: Date = new Date()): Promise<boolean> {
     try {
       const code = generateOtpCode();

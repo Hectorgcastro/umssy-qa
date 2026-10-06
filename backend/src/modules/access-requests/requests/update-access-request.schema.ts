@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { GRADUATION_YEAR_COHERENCE_MESSAGE, accessRequestFields, hasGraduationYearConflict } from './access-request-fields.js';
+import { accessRequestFields, hasGraduationYearConflict } from './access-request-fields.js';
+import { GRADUATION_YEAR_COHERENCE_MESSAGE } from '../constants/access-request-fields.constants.js';
 
-// phone acepta null para borrar el teléfono guardado
 // Si solo llega uno de los dos campos, la coherencia con el valor guardado la valida el service
 export const updateAccessRequestSchema = z
   .object({ ...accessRequestFields, phone: accessRequestFields.phone.nullable() })

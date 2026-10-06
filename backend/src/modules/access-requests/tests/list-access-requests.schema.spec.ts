@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { listAccessRequestsQuerySchema, MAX_PAGE_SIZE } from '../requests/list-access-requests.schema.js';
+import { listAccessRequestsQuerySchema } from '../requests/list-access-requests.schema.js';
+import { MAX_PAGE_SIZE } from '../constants/list-access-requests.constants.js';
 
 const messagesOf = (input: unknown) => {
   const result = listAccessRequestsQuerySchema.safeParse(input);

@@ -1,12 +1,7 @@
 import { z } from 'zod';
 import { CAREER } from '../types/career.enum.js';
 import { ID_CARD_ISSUED_IN } from '../types/id-card-issued-in.enum.js';
-
-export const MIN_AGE = 18;
-
-const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: +[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
-const DIGITS_REGEX = /^\d+$/;
-const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+import { MIN_AGE, NAME_REGEX, DIGITS_REGEX, ISO_DATE_REGEX } from '../constants/access-request-fields.constants.js';
 
 // V8 desplaza fechas como 2000-02-30 al 1 de marzo, por eso se compara el viaje de ida y vuelta
 function isRealIsoDate(value: string): boolean {
@@ -32,7 +27,6 @@ export function hasGraduationYearConflict(data: { graduationYear?: unknown; birt
   return !isGraduationYearCoherent(graduationYear, birthDate);
 }
 
-// Los dos campos de nombre van en plural ("Los nombres", "Los apellidos")
 const nameField = (label: string) =>
   z
     .string({ error: `${label} son obligatorios` })
@@ -78,5 +72,3 @@ export const accessRequestFields = {
     .int('El año de titulación debe ser un número entero')
     .refine((value) => value <= new Date().getUTCFullYear(), 'El año de titulación no puede ser futuro'),
 };
-
-export const GRADUATION_YEAR_COHERENCE_MESSAGE = `El año de titulación no puede ser anterior a los ${MIN_AGE} años de edad`;

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { nextRequestCode, randomRetryDelayMs, requestCodePrefix, REQUEST_CODE_REGEX, sleep } from '../helpers/request-code.js';
+import { nextRequestCode, randomRetryDelayMs, requestCodePrefix, sleep } from '../helpers/request-code.js';
+import { REQUEST_CODE_REGEX } from '../constants/request-code.constants.js';
 
 describe('nextRequestCode', () => {
   it('el primer código del año es el 0001', () => {

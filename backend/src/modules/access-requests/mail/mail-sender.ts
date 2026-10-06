@@ -1,4 +1,3 @@
-// Puerto de envío de correo: el proveedor real se define con DevOps
 export const MAIL_SENDER = Symbol('MAIL_SENDER');
 
 export interface MailSender {
