@@ -62,11 +62,11 @@ describe('FilesService', () => {
     expect(error.statusCode).toBe(413);
   });
 
-  it('rechaza un tipo no permitido con 415 aunque el nombre diga .pdf', async () => {
+  it('rechaza un tipo no permitido con 400 aunque el nombre diga .pdf', async () => {
     const error = await service.create({ name: 'virus.pdf', content: Buffer.from('MZ-ejecutable') }).catch((e) => e);
 
     expect(error).toBeInstanceOf(InvalidFileTypeException);
-    expect(error.statusCode).toBe(415);
+    expect(error.statusCode).toBe(400);
   });
 
   it('rechaza un archivo más corto que la firma completa', async () => {

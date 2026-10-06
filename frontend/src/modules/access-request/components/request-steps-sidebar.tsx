@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 
 const STEPS = [
   { number: 1, label: "Tus datos", description: "Quién eres y cómo contactarte" },
@@ -28,6 +28,7 @@ export function RequestStepsSidebar({ currentStep = 1 }: RequestStepsSidebarProp
           <ol>
             {STEPS.map((step, index) => {
               const isActive = step.number === currentStep;
+              const isCompleted = step.number < currentStep;
               const isLast = index === STEPS.length - 1;
 
               return (
@@ -37,10 +38,19 @@ export function RequestStepsSidebar({ currentStep = 1 }: RequestStepsSidebarProp
                       className={`flex size-7.5 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
                         isActive
                           ? "border-accent bg-accent text-surface"
-                          : "border-surface/35 text-surface/70"
+                          : isCompleted
+                            ? "border-surface bg-surface text-ink"
+                            : "border-surface/35 text-surface/70"
                       }`}
                     >
-                      {step.number}
+                      {isCompleted ? (
+                        <>
+                          <Check aria-hidden="true" className="size-4" />
+                          <span className="sr-only">Paso completado</span>
+                        </>
+                      ) : (
+                        step.number
+                      )}
                     </span>
                     <div>
                       <p

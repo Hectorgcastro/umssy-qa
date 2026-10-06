@@ -15,10 +15,17 @@ const update = vi.mocked(accessRequestService.updateAccessRequest);
 
 const SUBMIT_NAME = "Continuar al siguiente paso";
 
+// Sonda de prueba: el paso 1 ya no muestra aviso de éxito, así que se observa el paso actual del Context
+function StepProbe() {
+  const { currentStep } = useAccessRequestForm();
+  return <p>{`paso-actual:${currentStep}`}</p>;
+}
+
 function renderForm() {
   return render(
     <AccessRequestProvider>
       <PersonalDataForm />
+      <StepProbe />
     </AccessRequestProvider>,
   );
 }
@@ -84,7 +91,7 @@ describe("PersonalDataForm: guardado del borrador", () => {
     expect(screen.getByText("Los apellidos son obligatorios")).toBeInTheDocument();
   });
 
-  it("el primer envío válido llama a create una vez con el payload armado y muestra el éxito", async () => {
+  it("el primer envío válido llama a create una vez con el payload armado y avanza al paso 2", async () => {
     create.mockResolvedValue({ ok: true, data: { id: "draft-1" } });
     const user = userEvent.setup();
     renderForm();
@@ -92,7 +99,7 @@ describe("PersonalDataForm: guardado del borrador", () => {
 
     await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
 
-    await screen.findByText("Tus datos se guardaron correctamente.");
+    await screen.findByText("paso-actual:2");
     expect(create).toHaveBeenCalledTimes(1);
     expect(create).toHaveBeenCalledWith({
       firstName: "Ana María",
@@ -115,7 +122,7 @@ describe("PersonalDataForm: guardado del borrador", () => {
     renderForm();
     await fillValidForm();
     await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
-    await screen.findByText("Tus datos se guardaron correctamente.");
+    await screen.findByText("paso-actual:2");
 
     type(/Teléfono/, "");
     await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
@@ -187,7 +194,7 @@ describe("PersonalDataForm: guardado del borrador", () => {
     renderForm();
     await fillValidForm();
     await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
-    await screen.findByText("Tus datos se guardaron correctamente.");
+    await screen.findByText("paso-actual:2");
 
     await user.click(screen.getByRole("button", { name: SUBMIT_NAME }));
     await screen.findByText("La solicitud ya no existe");
