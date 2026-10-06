@@ -12,7 +12,7 @@ import type {
   AnalyzeExperienceParamsDto,
 } from '../requests/analyze-experience.schema.js';
 import type { AnalyzeExperienceResponse } from '../types/matching.types.js';
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { RequestValidationPipe } from '../../../common/pipes/request-validation.pipe.js';
 
 @Controller('work-experiences')
 @UseGuards(JwtAuthGuard)
@@ -24,8 +24,8 @@ export class MatchingController {
   @HttpCode(HttpStatus.OK)
   analyzeExperience(
     @CurrentUserId() userId: string,
-    @Param(new ZodValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
-    @Body(new ZodValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
+    @Param(new RequestValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
+    @Body(new RequestValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
   ): Promise<AnalyzeExperienceResponse> {
     return this.matchingService.analyze(userId, {
       experienceId: params.id,
