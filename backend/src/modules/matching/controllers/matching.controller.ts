@@ -1,15 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { MatchingService } from '../services/matching.service.js';
-import {
-  analyzeExperienceBodySchema,
-  analyzeExperienceParamsSchema,
-} from '../requests/analyze-experience.schema.js';
 import type {
   AnalyzeExperienceBodyDto,
   AnalyzeExperienceParamsDto,
 } from '../requests/analyze-experience.schema.js';
 import type { AnalyzeExperienceResponse } from '../types/matching.types.js';
-import { RequestValidationPipe } from '../../../common/pipes/request-validation.pipe.js';
 
 @Controller('work-experiences')
 export class MatchingController {
@@ -21,8 +16,8 @@ export class MatchingController {
   @Post(':id/skills/analysis')
   @HttpCode(HttpStatus.OK)
   analyzeExperience(
-    @Param(new RequestValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
-    @Body(new RequestValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
+    @Param() params: AnalyzeExperienceParamsDto,
+    @Body() body: AnalyzeExperienceBodyDto,
   ): AnalyzeExperienceResponse {
     return this.matchingService.analyzeExperience({
       experienceId: params.id,
