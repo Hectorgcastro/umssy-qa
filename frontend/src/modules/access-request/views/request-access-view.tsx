@@ -4,6 +4,7 @@ import { AccessRequestProvider, useAccessRequestForm } from "../contexts/access-
 import { DocumentStep } from "../components/document-step";
 import { PersonalDataForm } from "../components/personal-data-form";
 import { PublicHeader } from "../components/public-header";
+import { ReviewStep } from "../components/review-step";
 import { RequestStepsSidebar } from "../components/request-steps-sidebar";
 
 // Vive dentro del Provider: la barra lateral y el contenido leen el paso actual del Context
@@ -17,7 +18,7 @@ function RequestAccessLayout() {
         <PublicHeader />
         <section className="flex flex-1 flex-col justify-center px-6 py-10 lg:px-16">
           <div className="mx-auto flex w-full max-w-190 justify-center 2xl:max-w-5xl">
-            {currentStep === 1 ? <PersonalDataForm /> : <DocumentStep />}
+            {currentStep === 1 ? <PersonalDataForm /> : currentStep === 2 ? <DocumentStep /> : <ReviewStep />}
           </div>
         </section>
       </div>

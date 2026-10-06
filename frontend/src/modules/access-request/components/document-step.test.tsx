@@ -1,11 +1,13 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { cleanup, screen, within } from "@testing-library/react";
+import { act, cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { accessRequestService } from "../services/access-request.service";
+import type { ApiResult } from "../types/access-request.types";
 import { DocumentStep } from "./document-step";
 import {
+  failure,
   makeFile,
   reachStep2,
   renderWithContext,
@@ -21,6 +23,8 @@ vi.mock("../services/access-request.service", () => ({
     deleteAccessRequest: vi.fn(),
     uploadDocument: vi.fn(),
     removeDocument: vi.fn(),
+    submitAccessRequest: vi.fn(),
+    getRequestStatus: vi.fn(),
   },
 }));
 
@@ -33,6 +37,7 @@ describe("DocumentStep", () => {
     vi.mocked(accessRequestService.createAccessRequest).mockReset();
     vi.mocked(accessRequestService.uploadDocument).mockReset();
     vi.mocked(accessRequestService.removeDocument).mockReset();
+    vi.mocked(accessRequestService.submitAccessRequest).mockReset();
     stubObjectUrls();
   });
   afterEach(() => {
@@ -97,16 +102,81 @@ describe("DocumentStep", () => {
     expect(typeSelect()).toBeDisabled();
   });
 
-  it("Enviar solicitud todavía no hace nada", async () => {
-    uploadSucceeds();
-    const view = renderWithContext(<DocumentStep />);
-    await reachStep2(view.ctx, "national_title");
-    await uploadFile(view.ctx, makeFile());
+  describe("Enviar solicitud", () => {
+    const sent = {
+      ok: true,
+      data: { id: "draft-1", requestCode: "SOL-2026-0001", status: "pending", submittedAt: "2026-10-05T23:59:34.644Z" },
+    } as const;
 
-    await userEvent.setup().click(screen.getByRole("button", { name: SEND }));
+    async function withDocument() {
+      uploadSucceeds();
+      const view = renderWithContext(<DocumentStep />);
+      await reachStep2(view.ctx, "national_title");
+      await uploadFile(view.ctx, makeFile());
+      return view;
+    }
 
-    expect(view.ctx().status).toBe("idle");
-    expect(view.ctx().currentStep).toBe(2);
+    it("envía la solicitud con el borrador y pasa al paso 3", async () => {
+      vi.mocked(accessRequestService.submitAccessRequest).mockResolvedValue(sent);
+      const view = await withDocument();
+
+      await userEvent.setup().click(screen.getByRole("button", { name: SEND }));
+
+      expect(accessRequestService.submitAccessRequest).toHaveBeenCalledWith("draft-1");
+      expect(screen.getByText("paso-actual:3")).toBeInTheDocument();
+      expect(view.ctx().submission?.requestCode).toBe("SOL-2026-0001");
+    });
+
+    it("mientras envía dice Enviando... y deja todos los controles deshabilitados", async () => {
+      let finish!: (value: ApiResult<never>) => void;
+      vi.mocked(accessRequestService.submitAccessRequest).mockReturnValue(new Promise((done) => (finish = done as never)));
+      await withDocument();
+
+      await userEvent.setup().click(screen.getByRole("button", { name: SEND }));
+
+      expect(screen.getByRole("button", { name: "Enviando..." })).toBeDisabled();
+      expect(screen.getByRole("button", { name: BACK })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Quitar" })).toBeDisabled();
+      expect(typeSelect()).toBeDisabled();
+
+      await act(async () => {
+        finish(sent as never);
+      });
+    });
+
+    it("un doble clic hace una sola llamada", async () => {
+      let finish!: (value: ApiResult<never>) => void;
+      vi.mocked(accessRequestService.submitAccessRequest).mockReturnValue(new Promise((done) => (finish = done as never)));
+      await withDocument();
+      const user = userEvent.setup();
+
+      await user.dblClick(screen.getByRole("button", { name: SEND }));
+
+      expect(accessRequestService.submitAccessRequest).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        finish(sent as never);
+      });
+    });
+
+    it("un 409 muestra el aviso como alerta y conserva el botón para reintentar", async () => {
+      vi.mocked(accessRequestService.submitAccessRequest).mockResolvedValue(failure(409, "Ya tienes una solicitud activa"));
+      await withDocument();
+
+      await userEvent.setup().click(screen.getByRole("button", { name: SEND }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("Ya tienes una solicitud activa");
+      expect(screen.getByRole("button", { name: SEND })).toBeEnabled();
+      expect(screen.getByText("paso-actual:2")).toBeInTheDocument();
+    });
+
+    it("sin documento no hay aviso ni llamada", async () => {
+      const view = renderWithContext(<DocumentStep />);
+      await reachStep2(view.ctx, "national_title");
+
+      expect(screen.getByRole("button", { name: SEND })).toBeDisabled();
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(accessRequestService.submitAccessRequest).not.toHaveBeenCalled();
+    });
   });
 
   it("Quitar devuelve la zona de carga y vuelve a habilitar el selector", async () => {
