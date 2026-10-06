@@ -97,7 +97,8 @@ describe("RequestDetailView", () => {
     await screen.findByText(/Estado: En revisión/);
 
     fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
-    fireEvent.change(await screen.findByLabelText("Motivo del rechazo"), { target: { value: "Documento ilegible" } });
+    await screen.findByLabelText("Indicación para el solicitante");
+    fireEvent.click(screen.getByRole("radio", { name: "Documento ilegible" }));
     fireEvent.click(screen.getByRole("button", { name: "Rechazar y notificar" }));
 
     expect(await screen.findByText(/Estado: Rechazada/)).toBeInTheDocument();

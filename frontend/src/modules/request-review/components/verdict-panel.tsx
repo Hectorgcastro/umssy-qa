@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
@@ -14,8 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { REJECTION_MAX_LENGTH, REJECTION_REASONS } from "../constants/request-review.constants";
 import { requestReviewService } from "../services/request-review.service";
 import type { ReviewDetail, ReviewStatus } from "../types/request-review.types";
+import { buildRejectionReason } from "../utils/build-rejection-reason";
 
 interface VerdictPanelProps {
   detail: ReviewDetail;
@@ -24,7 +28,6 @@ interface VerdictPanelProps {
 }
 
 const APPROVED_MESSAGE = "Solicitud aprobada. Se envió el código de activación al correo del titulado.";
-const REJECT_MAX_LENGTH = 500;
 const REJECTED_MESSAGE = "Solicitud rechazada. Se notificó al titulado con el motivo.";
 const REJECTED_NO_MAIL_MESSAGE = "Solicitud rechazada, pero no se pudo enviar el correo al titulado.";
 const APPROVED_NO_CODE_MESSAGE = "Solicitud aprobada, pero no se pudo enviar el código de activación al correo del titulado.";
@@ -33,7 +36,8 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
-  const [reason, setReason] = useState("");
+  const [choice, setChoice] = useState<string | null>(null);
+  const [hint, setHint] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectError, setRejectError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -53,10 +57,12 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
     }
   }
 
+  const rejection = buildRejectionReason(choice, hint);
+
   async function handleReject() {
     setIsRejecting(true);
     setRejectError(null);
-    const result = await requestReviewService.rejectRequest(detail.id, reason.trim());
+    const result = await requestReviewService.rejectRequest(detail.id, rejection.reason);
     setIsRejecting(false);
     if (result.ok) {
       setRejectOpen(false);
@@ -71,7 +77,8 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
     if (isRejecting) return;
     setRejectOpen(open);
     if (!open) {
-      setReason("");
+      setChoice(null);
+      setHint("");
       setRejectError(null);
     }
   }
@@ -85,9 +92,11 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
           <p className="text-sm text-text-secondary">Revisa el documento y el contraste de datos antes de emitir el dictamen.</p>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => setConfirmOpen(true)} disabled={isApproving}>
+              <Check aria-hidden="true" />
               Aprobar solicitud
             </Button>
             <Button variant="outline" onClick={() => setRejectOpen(true)} disabled={isApproving}>
+              <X aria-hidden="true" />
               Rechazar
             </Button>
           </div>
@@ -138,23 +147,43 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
           <AlertDialogHeader>
             <AlertDialogTitle>Rechazar solicitud</AlertDialogTitle>
             <AlertDialogDescription>
-              Indica el motivo. Se enviará al titulado ({detail.email}) para que sepa qué corregir.
+              {detail.firstName} {detail.lastName} ({detail.email}) recibirá este motivo por correo para saber qué corregir.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="reject-reason">Motivo del rechazo</Label>
-            <Textarea
-              id="reject-reason"
-              value={reason}
-              maxLength={REJECT_MAX_LENGTH}
-              onChange={(event) => setReason(event.target.value)}
-              placeholder="Explica qué debe corregir la persona"
-            />
-            {rejectError && (
-              <p role="alert" className="text-sm text-ink">
-                {rejectError}
+          <div className="flex flex-col gap-4">
+            <fieldset className="flex flex-col gap-2">
+              <legend className="pb-1 text-sm font-medium text-ink">Motivo</legend>
+              <RadioGroup value={choice ?? ""} onValueChange={(value) => setChoice(value)} aria-label="Motivo">
+                {REJECTION_REASONS.map((option, index) => (
+                  <div key={option} className="flex items-center gap-2">
+                    <RadioGroupItem id={`reject-reason-${index}`} value={option} />
+                    <Label htmlFor={`reject-reason-${index}`}>{option}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </fieldset>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="reject-hint">Indicación para el solicitante</Label>
+              <Textarea
+                id="reject-hint"
+                value={hint}
+                onChange={(event) => setHint(event.target.value)}
+                placeholder="Explica qué debe corregir la persona"
+              />
+              <p className="text-xs text-text-secondary" aria-live="polite">
+                {rejection.length}/{REJECTION_MAX_LENGTH}
               </p>
-            )}
+              {rejection.error && (
+                <p role="alert" className="text-sm text-ink">
+                  {rejection.error}
+                </p>
+              )}
+              {rejectError && (
+                <p role="alert" className="text-sm text-ink">
+                  {rejectError}
+                </p>
+              )}
+            </div>
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel type="button" disabled={isRejecting}>
@@ -162,7 +191,7 @@ export function VerdictPanel({ detail, status, onStatusChange }: VerdictPanelPro
             </AlertDialogCancel>
             <AlertDialogAction
               type="button"
-              disabled={reason.trim().length === 0 || isRejecting}
+              disabled={!rejection.isValid || isRejecting}
               onClick={(event) => {
                 event.preventDefault();
                 void handleReject();
