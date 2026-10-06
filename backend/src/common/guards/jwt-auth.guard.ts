@@ -1,0 +1,88 @@
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  AUTHORIZATION_HEADER,
+  BEARER_PREFIX,
+} from '../constants/auth.constants.js';
+import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
+import type { AuthenticatedRequest } from '../types/authenticated-request.types.js';
+import type { LoginJwtPayload } from '../types/login-jwt-payload.types.js';
+
+@Injectable()
+export class JwtAuthGuard implements CanActivate {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const authorization = request.headers[AUTHORIZATION_HEADER];
+
+    if (
+      typeof authorization !== 'string' ||
+      !authorization.startsWith(BEARER_PREFIX)
+    ) {
+      throw new UnauthorizedSessionException();
+    }
+
+    const token = authorization.slice(BEARER_PREFIX.length).trim();
+    if (!token) {
+      throw new UnauthorizedSessionException();
+    }
+
+    let payload: LoginJwtPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<LoginJwtPayload>(token);
+    } catch {
+      throw new UnauthorizedSessionException();
+    }
+
+    if (
+      !payload ||
+      typeof payload.sub !== 'string' ||
+      !payload.sub.trim() ||
+      typeof payload.roleTag !== 'string' ||
+      !payload.roleTag.trim()
+    ) {
+      throw new UnauthorizedSessionException();
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { id: payload.sub, isActive: true },
+      select: {
+        id: true,
+        email: true,
+        roles: {
+          where: {
+            deletedAt: null,
+            startAt: { lte: new Date() },
+            role: { name: payload.roleTag },
+          },
+          select: { role: { select: { name: true } } },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedSessionException(
+        'Usuario no encontrado o inactivo',
+      );
+    }
+
+    if (user.roles.length === 0) {
+      throw new UnauthorizedSessionException(
+        'El rol de la sesión ya no está vigente',
+      );
+    }
+
+    request.user = {
+      id: user.id,
+      email: user.email,
+      roles: user.roles.map(({ role }) => role.name),
+    };
+
+    return true;
+  }
+}
