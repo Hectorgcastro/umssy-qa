@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/services/api-client";
 import { REVIEW_PAGE_SIZE } from "../constants/request-review.constants";
-import type { ReviewApiResult, ReviewListResult, ReviewStatus } from "../types/request-review.types";
+import type { ReviewApiResult, ReviewDetail, ReviewListResult, ReviewStatus } from "../types/request-review.types";
 import { getSessionToken } from "../utils/session";
 
 const NETWORK_ERROR_MESSAGE = "No se pudo conectar con el servidor. Inténtalo de nuevo.";
@@ -58,4 +58,42 @@ async function listRequests(
   }
 }
 
-export const requestReviewService = { listRequests };
+const NOT_FOUND_MESSAGE = "La solicitud no existe.";
+const NO_DOCUMENT_MESSAGE = "La solicitud no tiene un documento adjunto.";
+
+// Abrir el detalle pasa una solicitud pendiente a en revisión (lo hace el backend)
+async function getRequestDetail(id: string): Promise<ReviewApiResult<ReviewDetail>> {
+  try {
+    const response = await apiClient.get(`/access-requests/${id}`, { headers: authHeaders(), validateStatus: () => true });
+    if (response.status === 404) return { ok: false, status: 404, message: NOT_FOUND_MESSAGE };
+    if (response.status < 200 || response.status >= 300) return failureOf(response.status, response.data);
+
+    const body: unknown = response.data;
+    const detail = isRecord(body) && isRecord(body.data) && "history" in body.data ? body.data : body;
+    if (!isRecord(detail) || typeof detail.id !== "string" || !isRecord(detail.history)) {
+      return { ok: false, status: 0, message: GENERIC_ERROR_MESSAGE };
+    }
+    return { ok: true, data: detail as unknown as ReviewDetail };
+  } catch {
+    return { ok: false, status: 0, message: NETWORK_ERROR_MESSAGE };
+  }
+}
+
+// Los bytes se piden con el token y se devuelven como Blob para mostrarlos sin exponer el token en la URL
+async function getDocumentBlob(id: string): Promise<ReviewApiResult<Blob>> {
+  try {
+    const response = await apiClient.get(`/access-requests/${id}/document`, {
+      headers: authHeaders(),
+      responseType: "blob",
+      validateStatus: () => true,
+    });
+    if (response.status === 404) return { ok: false, status: 404, message: NO_DOCUMENT_MESSAGE };
+    if (response.status < 200 || response.status >= 300) return failureOf(response.status, null);
+    if (!(response.data instanceof Blob)) return { ok: false, status: 0, message: GENERIC_ERROR_MESSAGE };
+    return { ok: true, data: response.data };
+  } catch {
+    return { ok: false, status: 0, message: NETWORK_ERROR_MESSAGE };
+  }
+}
+
+export const requestReviewService = { listRequests, getRequestDetail, getDocumentBlob };

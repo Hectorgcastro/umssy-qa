@@ -21,3 +21,34 @@ export interface ReviewListResult {
 export type ReviewApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; message: string };
+
+export interface ReviewDocument {
+  type: string;
+  name: string;
+  extension: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface ReviewDetail {
+  id: string;
+  requestCode: string | null;
+  status: ReviewStatus;
+  firstName: string;
+  lastName: string;
+  idCardNumber: string;
+  idCardIssuedIn: string;
+  sisCode: string;
+  email: string;
+  phone: string | null;
+  birthDate: string;
+  graduationYear: number;
+  career: string;
+  document: ReviewDocument | null;
+  history: {
+    submittedAt: string | null;
+    reviewedAt: string | null;
+    reviewedBy: string | null;
+    rejectionReason: string | null;
+  };
+}
