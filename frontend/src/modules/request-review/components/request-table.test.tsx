@@ -69,4 +69,15 @@ describe("RequestTable", () => {
     expect(consoleError.mock.calls.flat().join(" ")).not.toContain("nativeButton");
     consoleError.mockRestore();
   });
+
+  it("muestra las iniciales en un círculo decorativo y el estado como pastilla legible por su texto", () => {
+    const { container } = render(<RequestTable items={[item, { ...item, id: "2", fullName: "María Quispe Mamani", status: "approved" }]} />);
+
+    expect(screen.getByText("AP")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("MQ")).toBeInTheDocument();
+    expect(screen.getByText("En revisión").className).toContain("rounded-full");
+    expect(screen.getByText("Aprobada")).toBeInTheDocument();
+    expect(container.querySelectorAll("svg[aria-hidden='true']").length).toBeGreaterThanOrEqual(4);
+    expect(container.innerHTML).not.toMatch(/(green|amber|red|yellow)-\d/);
+  });
 });

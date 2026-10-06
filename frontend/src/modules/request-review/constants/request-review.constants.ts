@@ -25,3 +25,13 @@ export const BACKOFFICE_ROLE = "administrativo";
 export const SESSION_TOKEN_KEY = "accessToken";
 export const LOGIN_PATH = "/login";
 export const INBOX_PATH = "/backoffice/solicitudes";
+
+export const REJECTION_MAX_LENGTH = 500;
+export const OTHER_REJECTION_REASON = "Otro motivo";
+export const REJECTION_REASONS = [
+  "Documento ilegible",
+  "El nombre no coincide con los datos declarados",
+  "Documento incompleto o recortado",
+  "El documento no corresponde a la carrera",
+  OTHER_REJECTION_REASON,
+] as const;
