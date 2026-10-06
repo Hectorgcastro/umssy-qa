@@ -98,7 +98,19 @@ Then create a `.env.test` file by copying `.env.test.example`. Use the same cred
    pnpm migrate:test:apply
 ```
 
-   ## Resources
+## Authentication
+
+Login is provisional and works by role. The user sends email, password,
+and the role they want to log in as (`roleTag`). The backend validates
+the password and confirms the user has that role assigned before
+returning a token.
+
+Required environment variables in `.env`:
+
+- `JWT_SECRET` — secret used to sign tokens. You can generate with `openssl rand -base64 32` and paste in `JWT_SECRET` in `.env`.
+
+
+## Resources
 - [NestJS Documentation](https://docs.nestjs.com?utm_source=gemini) — Learn more about the framework.
 - [NestJS Courses](https://courses.nestjs.com/?utm_source=gemini) — Official video courses for hands-on experience.
 - [Prisma v7 Documentation](https://www.prisma.io/docs/orm/v7?utm_source=gemini) — Official ORM documentation.
