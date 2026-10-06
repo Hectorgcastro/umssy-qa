@@ -1,7 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
+import { BackofficeGuard } from '../guards/backoffice.guard.js';
+import { listAccessRequestsQuerySchema, type ListAccessRequestsQuery } from '../requests/list-access-requests.schema.js';
 import { DocumentUploadInterceptor } from '../interceptors/document-upload.interceptor.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import { createAccessRequestSchema, type CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
@@ -22,6 +24,12 @@ const uuidPipe = new ParseUUIDPipe({
 @Controller('access-requests')
 export class AccessRequestsController {
   constructor(private readonly accessRequestsService: AccessRequestsService) {}
+
+  @Get()
+  @UseGuards(BackofficeGuard)
+  list(@Query(new ZodValidationPipe(listAccessRequestsQuerySchema)) query: ListAccessRequestsQuery) {
+    return this.accessRequestsService.list(query);
+  }
 
   // Se declara antes que cualquier ruta con :id para que "status" no se tome como identificador
   // TODO: reemplazar el correo en la URL cuando Pablo defina la autenticación (los parámetros de consulta quedan en los logs)

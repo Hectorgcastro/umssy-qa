@@ -14,6 +14,8 @@ import {
   MissingDocumentFileException,
 } from '../exceptions/index.js';
 import { toAccessRequestResponse } from '../mappers/access-request.mapper.js';
+import { toAccessRequestListItem } from '../mappers/access-request-list.mapper.js';
+import type { ListAccessRequestsQuery } from '../requests/list-access-requests.schema.js';
 import { toRequestStatusResponse } from '../mappers/request-status.mapper.js';
 import { isGraduationYearCoherent } from '../requests/access-request-fields.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
@@ -160,6 +162,16 @@ export class AccessRequestsService {
       requestCode: submitted.requestCode,
       status: submitted.status.title,
       submittedAt: submitted.submittedAt?.toISOString() ?? null,
+    };
+  }
+
+  // Forma { data, page, offset } del contrato paginado; el total viaja dentro de data
+  async list(query: ListAccessRequestsQuery) {
+    const { rows, total } = await this.accessRequestsRepository.findPage(query);
+    return {
+      data: { items: rows.map(toAccessRequestListItem), total },
+      page: query.page,
+      offset: (query.page - 1) * query.limit,
     };
   }
 

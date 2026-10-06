@@ -54,6 +54,26 @@ const ACTIVE_STATUSES: string[] = [
   ACCESS_REQUEST_STATUS.APPROVED,
 ];
 
+// Solo lo que muestra la bandeja: nunca content ni C.I. ni teléfono
+const LIST_SELECT = {
+  id: true,
+  requestCode: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  sisCode: true,
+  submittedAt: true,
+  status: { select: { title: true } },
+  documentType: { select: { title: true } },
+} satisfies Prisma.AccessRequestSelect;
+
+const LISTED_STATUSES: string[] = [
+  ACCESS_REQUEST_STATUS.PENDING,
+  ACCESS_REQUEST_STATUS.IN_REVIEW,
+  ACCESS_REQUEST_STATUS.APPROVED,
+  ACCESS_REQUEST_STATUS.REJECTED,
+];
+
 @Injectable()
 export class AccessRequestsRepository {
   // Pausa entre intentos de asignar código; se reemplaza en las pruebas para no esperar
@@ -79,6 +99,24 @@ export class AccessRequestsRepository {
       }
       throw error;
     }
+  }
+
+  // Los borradores nunca se listan; orden de la más reciente a la más antigua por fecha de envío
+  async findPage(params: { status?: string; page: number; limit: number }) {
+    const where: Prisma.AccessRequestWhereInput = {
+      status: { title: params.status ?? { in: LISTED_STATUSES } },
+    };
+    const [rows, total] = await Promise.all([
+      this.prisma.accessRequest.findMany({
+        where,
+        orderBy: [{ submittedAt: 'desc' }, { id: 'asc' }],
+        skip: (params.page - 1) * params.limit,
+        take: params.limit,
+        select: LIST_SELECT,
+      }),
+      this.prisma.accessRequest.count({ where }),
+    ]);
+    return { rows, total };
   }
 
   findById(id: string) {
