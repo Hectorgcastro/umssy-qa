@@ -5,6 +5,7 @@ import {
   AUTHORIZATION_HEADER,
   BEARER_PREFIX,
 } from '../constants/auth.constants.js';
+import { MissingUserException } from '../exceptions/missing-user.exception.js';
 import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
 import type { AuthenticatedRequest } from '../types/authenticated-request.types.js';
 import type { LoginJwtPayload } from '../types/login-jwt-payload.types.js';
@@ -26,12 +27,12 @@ export class JwtAuthGuard implements CanActivate {
       typeof authorization !== 'string' ||
       !authorization.startsWith(BEARER_PREFIX)
     ) {
-      throw new UnauthorizedSessionException();
+      throw new MissingUserException();
     }
 
     const token = authorization.slice(BEARER_PREFIX.length).trim();
     if (!token) {
-      throw new UnauthorizedSessionException();
+      throw new MissingUserException();
     }
 
     let payload: LoginJwtPayload;

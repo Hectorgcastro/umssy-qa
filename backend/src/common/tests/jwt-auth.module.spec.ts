@@ -34,6 +34,6 @@ describe('JwtAuthModule', () => {
     } as unknown as ExecutionContext;
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
-    expect(request.user).toEqual({ userId, roleTag: 'titulado' });
+    expect(request.user).toEqual({ id: userId, email: '', roles: ['titulado'] });
   });
 });

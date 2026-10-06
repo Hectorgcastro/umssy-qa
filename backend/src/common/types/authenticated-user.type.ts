@@ -1,4 +1,7 @@
 export interface AuthenticatedUser {
-  userId: string;
-  roleTag: string;
+  id: string;
+  userId?: string;
+  email: string;
+  roles: string[];
+  roleTag?: string;
 }

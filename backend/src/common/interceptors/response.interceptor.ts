@@ -39,7 +39,10 @@ export class ResponseInterceptor<T = unknown> implements NestInterceptor<T> {
     const http = context.switchToHttp();
     const response = http.getResponse<{ statusCode?: number }>();
     const statusCode = response?.statusCode ?? 200;
-    const request = http.getRequest<{ url?: string }>();
+    const request =
+      typeof http.getRequest === 'function'
+        ? http.getRequest<{ url?: string }>()
+        : undefined;
 
     const isEpic2Route =
       typeof request?.url === 'string' &&
