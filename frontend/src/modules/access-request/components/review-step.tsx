@@ -56,8 +56,11 @@ export function ReviewStep() {
     <div className="flex w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-ink 2xl:text-4xl">Revisión de la carrera</h1>
+        {/* TODO: indicar qué hacer tras un rechazo cuando se defina el reenvío (el issue #495 no lo define) */}
         <p className="max-w-155 text-[15px] text-text-secondary 2xl:text-lg">
-          {`Estamos revisando tu solicitud. Te avisaremos a ${values.email.trim()} cuando tengamos novedades.`}
+          {isRejected
+            ? "Tu solicitud fue rechazada."
+            : `Estamos revisando tu solicitud. Te avisaremos a ${values.email.trim()} cuando tengamos novedades.`}
         </p>
       </div>
 

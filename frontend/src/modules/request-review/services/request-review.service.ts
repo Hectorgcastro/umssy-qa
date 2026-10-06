@@ -112,7 +112,9 @@ async function rejectRequest(id: string, reason: string): Promise<ReviewApiResul
     if (response.status === 404) return { ok: false, status: 404, message: NOT_FOUND_MESSAGE };
     if (response.status < 200 || response.status >= 300) {
       const body: unknown = response.data;
-      const first = isRecord(body) && Array.isArray(body.message) ? body.message[0] : null;
+      // Zod llega como body.message [{ path, message }] (Nest) o como body.errors [{ field, message }] (formato estándar)
+      const issues = isRecord(body) ? (Array.isArray(body.message) ? body.message : Array.isArray(body.errors) ? body.errors : []) : [];
+      const first = issues[0];
       if (response.status === 400 && isRecord(first) && typeof first.message === "string") {
         return { ok: false, status: 400, message: first.message };
       }

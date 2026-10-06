@@ -204,6 +204,18 @@ describe("requestReviewService.rejectRequest", () => {
     expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ status: 403 });
   });
 
+  it("también lee el mensaje de validación del formato estándar (body.errors)", async () => {
+    replyPatch(400, { statusCode: 400, ok: false, detail: "Los datos de la solicitud no son válidos.", data: null, errors: [{ field: "reason", message: "El motivo del rechazo es obligatorio" }] });
+    expect(await requestReviewService.rejectRequest("1", "")).toEqual({ ok: false, status: 400, message: "El motivo del rechazo es obligatorio" });
+  });
+
+  it("sin mensajes de validación usa el detalle del servidor o el texto genérico", async () => {
+    replyPatch(400, { detail: "Los datos de la solicitud no son válidos.", errors: [] });
+    expect(await requestReviewService.rejectRequest("1", "")).toMatchObject({ status: 400, message: "Los datos de la solicitud no son válidos." });
+    replyPatch(400, { message: [], errors: "x" });
+    expect(await requestReviewService.rejectRequest("1", "")).toMatchObject({ status: 400, message: "No se pudo completar la operación. Inténtalo de nuevo." });
+  });
+
   it("un 400 sin forma de Zod usa el texto genérico; un 200 sin estado rechazado y una red caída dan error", async () => {
     replyPatch(400, "x");
     expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ ok: false, status: 400, message: "No se pudo completar la operación. Inténtalo de nuevo." });
