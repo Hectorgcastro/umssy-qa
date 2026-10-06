@@ -26,6 +26,7 @@ describe('RegisterVacancyView', () => {
 
   const mockConditions: VacancyConditions = {
     title: "",
+    description: "",
     modality: null,
     mapsLink: "",
     contractType: "",

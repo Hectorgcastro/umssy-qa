@@ -6,6 +6,7 @@ export type Modality = "Presencial" | "Remoto" | "Hibrido";
 
 export interface VacancyConditions {
     title: string;
+    description: string;
     modality: Modality | null;
     mapsLink: string;
     contractType: string;
@@ -17,6 +18,7 @@ export interface VacancyConditions {
 
 const initialConditions: VacancyConditions = {
     title: "",
+    description: "",
     modality: null,
     mapsLink: "",
     contractType: "",
@@ -27,7 +29,7 @@ const initialConditions: VacancyConditions = {
 };
 
 export function useJobOfferForm() {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(3);
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
     function updateField(field: keyof VacancyConditions, value: string) {
