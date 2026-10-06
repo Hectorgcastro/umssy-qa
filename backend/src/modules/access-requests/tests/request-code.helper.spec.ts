@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { nextRequestCode, requestCodePrefix, REQUEST_CODE_REGEX } from '../helpers/request-code.js';
+import { describe, expect, it, vi } from 'vitest';
+import { nextRequestCode, randomRetryDelayMs, requestCodePrefix, REQUEST_CODE_REGEX, sleep } from '../helpers/request-code.js';
 
 describe('nextRequestCode', () => {
   it('el primer código del año es el 0001', () => {
@@ -21,5 +21,26 @@ describe('nextRequestCode', () => {
   it('expone el prefijo y un patrón que acepta los códigos generados', () => {
     expect(requestCodePrefix(2026)).toBe('SOL-2026-');
     expect(REQUEST_CODE_REGEX.test(nextRequestCode(2026, 'SOL-2026-0009'))).toBe(true);
+  });
+});
+
+describe('pausa entre intentos', () => {
+  it('randomRetryDelayMs cubre de 5 a 40 ms', () => {
+    expect(randomRetryDelayMs(() => 0)).toBe(5);
+    expect(randomRetryDelayMs(() => 0.999999)).toBe(40);
+    expect(randomRetryDelayMs(() => 0.5)).toBeGreaterThanOrEqual(5);
+  });
+
+  it('sleep espera el tiempo indicado', async () => {
+    vi.useFakeTimers();
+    const done = vi.fn();
+    const pending = sleep(20).then(done);
+
+    await vi.advanceTimersByTimeAsync(19);
+    expect(done).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await pending;
+    expect(done).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
   });
 });

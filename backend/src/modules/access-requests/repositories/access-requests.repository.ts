@@ -1,10 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { Prisma } from '../../../prisma/client.js';
-import { AccessRequestCatalogMissingException, AccessRequestNotFoundException } from '../exceptions/index.js';
+import {
+  AccessRequestCatalogMissingException,
+  AccessRequestNotFoundException,
+  RequestCodeGenerationException,
+} from '../exceptions/index.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
-import { nextRequestCode, requestCodePrefix } from '../helpers/request-code.js';
+import {
+  MAX_REQUEST_CODE_ATTEMPTS,
+  nextRequestCode,
+  randomRetryDelayMs,
+  requestCodePrefix,
+  sleep,
+} from '../helpers/request-code.js';
 import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
 
 // Nunca se selecciona el archivo adjunto: solo la referencia documentFileId
@@ -38,8 +48,6 @@ const REQUEST_STATUS_SELECT = {
   documentFile: { select: { size: true, mimeType: true } },
 } satisfies Prisma.AccessRequestSelect;
 
-const MAX_CODE_ATTEMPTS = 3;
-
 const ACTIVE_STATUSES: string[] = [
   ACCESS_REQUEST_STATUS.PENDING,
   ACCESS_REQUEST_STATUS.IN_REVIEW,
@@ -48,6 +56,9 @@ const ACTIVE_STATUSES: string[] = [
 
 @Injectable()
 export class AccessRequestsRepository {
+  // Pausa entre intentos de asignar código; se reemplaza en las pruebas para no esperar
+  retryPause: (ms: number) => Promise<void> = sleep;
+
   constructor(private readonly prisma: PrismaService) {}
 
   // En el create, P2025 solo puede venir de un connect: la carrera o el estado no existen (seed sin correr)
@@ -192,17 +203,21 @@ export class AccessRequestsRepository {
     }
   }
 
-  // Si dos envíos toman el mismo código, el unique de requestCode da P2002: se recalcula y se reintenta
+  // Una ráfaga de envíos simultáneos calcula el mismo siguiente número; el unique de requestCode da P2002 a los perdedores.
+  // Se recalcula con una pausa aleatoria breve y se reintenta; cualquier otro error se relanza de inmediato.
+  // TODO: unicidad definitiva en base (requiere schema)
   async submitWithGeneratedCode(id: string) {
-    for (let attempt = 1; ; attempt++) {
+    for (let attempt = 1; attempt <= MAX_REQUEST_CODE_ATTEMPTS; attempt++) {
       const requestCode = await this.generateRequestCode();
       try {
         return await this.submit(id, requestCode);
       } catch (error) {
         const isCollision = error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
-        if (!isCollision || attempt >= MAX_CODE_ATTEMPTS) throw error;
+        if (!isCollision) throw error;
       }
+      if (attempt < MAX_REQUEST_CODE_ATTEMPTS) await this.retryPause(randomRetryDelayMs());
     }
+    throw new RequestCodeGenerationException();
   }
 
   // El correo va en el where (sin distinguir mayúsculas) para no seleccionarlo ni distinguir "código inexistente" de "correo distinto"

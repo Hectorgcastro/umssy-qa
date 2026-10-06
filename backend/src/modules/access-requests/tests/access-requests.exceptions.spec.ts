@@ -10,6 +10,7 @@ import {
   InvalidDocumentTypeException,
   InvalidGraduationYearException,
   MissingDocumentFileException,
+  RequestCodeGenerationException,
 } from '../exceptions/index.js';
 
 describe('excepciones de access-requests', () => {
@@ -24,6 +25,7 @@ describe('excepciones de access-requests', () => {
     [DuplicateAccessRequestDataException, 409, 'Ya existe una cuenta o solicitud con estos datos'],
     [DocumentRequiredToSubmitException, 400, 'Debes adjuntar tu documento de respaldo antes de enviar la solicitud'],
     [ActiveAccessRequestExistsException, 409, 'Ya tienes una solicitud activa'],
+    [RequestCodeGenerationException, 503, 'No se pudo generar el código de la solicitud. Inténtalo de nuevo.'],
     [InvalidDocumentTypeException, 400, 'El tipo de documento no es válido'],
     [MissingDocumentFileException, 400, 'Debes adjuntar un archivo'],
     [InvalidGraduationYearException, 400, 'El año de titulación no puede ser anterior a los 18 años de edad'],
