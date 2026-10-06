@@ -1,20 +1,32 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Conversation, Message } from '../types/conversation.types';
+import {
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
+import {
+  Conversation,
+  Message,
+} from '../types/conversation.types';
 import { MessageInputBar } from './message-input-bar';
 import { getInitials } from '../utils/date-formatter';
 import { isContentValidForSend } from '../utils/unicode-counter';
+import { sanitizeMessageContent } from '../utils/message-sanitizer';
 
 interface ChatRoomProps {
   conversation: Conversation;
   messages: Message[];
   currentUserId: string;
   onBack: () => void;
-  onSendMessage: (content: string) => Promise<boolean>;
+  onSendMessage: (
+    content: string,
+  ) => Promise<boolean>;
   isLoadingMessages?: boolean;
   isSending?: boolean;
+  sendError?: string | null;
+  onClearSendError?: () => void;
 }
 
 export function ChatRoom({
@@ -25,14 +37,19 @@ export function ChatRoom({
   onSendMessage,
   isLoadingMessages = false,
   isSending = false,
+  sendError = null,
+  onClearSendError,
 }: ChatRoomProps) {
-  const [inputText, setInputText] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [inputText, setInputText] =
+    useState('');
+
+  const messagesEndRef =
+    useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (
-      typeof messagesEndRef.current?.scrollIntoView ===
-      'function'
+      typeof messagesEndRef.current
+        ?.scrollIntoView === 'function'
     ) {
       messagesEndRef.current.scrollIntoView({
         behavior: 'smooth',
@@ -40,15 +57,40 @@ export function ChatRoom({
     }
   }, [messages.length]);
 
+  const handleInputChange = (
+    value: string,
+  ) => {
+    setInputText(value);
+
+    if (sendError && onClearSendError) {
+      onClearSendError();
+    }
+  };
+
   const handleSend = async () => {
-    if (!isContentValidForSend(inputText) || isSending) {
+    if (
+      !isContentValidForSend(inputText) ||
+      isSending
+    ) {
       return;
     }
 
-    const contentToSend = inputText.trim();
+    const contentToSend =
+      inputText.trim();
 
-    const wasSent = await onSendMessage(contentToSend);
+    const wasSent =
+      await onSendMessage(
+        contentToSend,
+      );
 
+    /*
+     * Solo se limpia el textarea cuando
+     * el servicio confirma el envio.
+     *
+     * Si existe error o desconexion,
+     * el contenido permanece intacto
+     * para permitir reintentar.
+     */
     if (wasSent) {
       setInputText('');
     }
@@ -65,7 +107,9 @@ export function ChatRoom({
       return;
     }
 
-    if (event.nativeEvent.isComposing) {
+    if (
+      event.nativeEvent.isComposing
+    ) {
       return;
     }
 
@@ -75,8 +119,11 @@ export function ChatRoom({
     }
 
     const isTouchDevice =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(pointer: coarse)').matches;
+      typeof window !==
+        'undefined' &&
+      window.matchMedia(
+        '(pointer: coarse)',
+      ).matches;
 
     if (isTouchDevice) {
       return;
@@ -96,18 +143,24 @@ export function ChatRoom({
       return '';
     }
 
-    const date = new Date(isoString);
+    const date =
+      new Date(isoString);
 
-    if (isNaN(date.getTime())) {
+    if (
+      isNaN(date.getTime())
+    ) {
       return '';
     }
 
     return date
-      .toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
+      .toLocaleTimeString(
+        'en-US',
+        {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        },
+      )
       .toUpperCase();
   };
 
@@ -144,21 +197,33 @@ export function ChatRoom({
           </button>
 
           <div className="relative shrink-0">
-            {conversation.contact.avatarUrl ? (
+            {conversation.contact
+              .avatarUrl ? (
               <img
-                src={conversation.contact.avatarUrl}
-                alt={conversation.contact.fullName}
+                src={
+                  conversation
+                    .contact
+                    .avatarUrl
+                }
+                alt={
+                  conversation
+                    .contact
+                    .fullName
+                }
                 className="w-10 h-10 rounded-full object-cover border border-[#E3E7EC]"
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-slate-200 text-[#0B1F2E] flex items-center justify-center font-bold text-xs border border-[#E3E7EC]">
                 {getInitials(
-                  conversation.contact.fullName,
+                  conversation
+                    .contact
+                    .fullName,
                 )}
               </div>
             )}
 
-            {conversation.contact.isOnline && (
+            {conversation.contact
+              .isOnline && (
               <span
                 data-testid="online-indicator"
                 className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full shadow-xs"
@@ -172,11 +237,17 @@ export function ChatRoom({
               data-testid="chat-contact-name"
               className="text-sm md:text-base font-bold text-[#0B1F2E] leading-tight"
             >
-              {conversation.contact.fullName}
+              {
+                conversation
+                  .contact
+                  .fullName
+              }
             </h3>
 
             <span className="text-xs font-medium text-emerald-600">
-              {conversation.contact.isOnline
+              {conversation
+                .contact
+                .isOnline
                 ? 'En linea'
                 : 'Desconectado'}
             </span>
@@ -188,7 +259,8 @@ export function ChatRoom({
         data-testid="messages-container"
         className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-3 bg-[#F6F7F9]"
       >
-        {messages.length === 0 ? (
+        {messages.length ===
+        0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-6 text-[#5B6470]">
             <div className="w-12 h-12 rounded-full bg-blue-50 text-[#0B1F2E] flex items-center justify-center mx-auto mb-3">
               <svg
@@ -208,7 +280,11 @@ export function ChatRoom({
 
             <p className="text-sm font-medium text-slate-600">
               Sala de chat con{' '}
-              {conversation.contact.fullName}
+              {
+                conversation
+                  .contact
+                  .fullName
+              }
             </p>
 
             <p className="text-xs text-slate-400 mt-1">
@@ -218,66 +294,80 @@ export function ChatRoom({
             </p>
           </div>
         ) : (
-          messages.map((message) => {
-            const isOwn =
-              message.senderId === currentUserId;
+          messages.map(
+            (message) => {
+              const isOwn =
+                message.senderId ===
+                currentUserId;
 
-            return (
-              <div
-                key={message.id}
-                data-testid={`message-item-${message.id}`}
-                className={`flex w-full min-w-0 ${
-                  isOwn
-                    ? 'justify-end'
-                    : 'justify-start'
-                }`}
-              >
+              const safeContent =
+                sanitizeMessageContent(
+                  message.content,
+                );
+
+              return (
                 <div
-                  className={`max-w-[85%] md:max-w-[70%] min-w-0 rounded-2xl px-4 py-2.5 text-sm shadow-xs break-words ${
+                  key={
+                    message.id
+                  }
+                  data-testid={`message-item-${message.id}`}
+                  className={`flex w-full min-w-0 ${
                     isOwn
-                      ? 'bg-blue-600 text-white rounded-tr-xs'
-                      : 'bg-white text-[#0B1F2E] border border-[#E3E7EC] rounded-tl-xs'
+                      ? 'justify-end'
+                      : 'justify-start'
                   }`}
                 >
-                  <p className="leading-relaxed break-words whitespace-pre-wrap">
-                    {message.content}
-                  </p>
-
                   <div
-                    className={`flex items-center justify-end gap-2 mt-1 text-[10px] ${
+                    className={`max-w-[85%] md:max-w-[70%] min-w-0 rounded-2xl px-4 py-2.5 text-sm shadow-xs break-words ${
                       isOwn
-                        ? 'text-blue-100'
-                        : 'text-[#5B6470]'
+                        ? 'bg-blue-600 text-white rounded-tr-xs'
+                        : 'bg-white text-[#0B1F2E] border border-[#E3E7EC] rounded-tl-xs'
                     }`}
                   >
-                    <span>
-                      {formatMessageTime(
-                        message.timestamp ||
-                          message.createdAt,
-                      )}
-                    </span>
+                    <p className="leading-relaxed break-words whitespace-pre-wrap">
+                      {
+                        safeContent
+                      }
+                    </p>
 
-                    {isOwn &&
-                      message.status === 'sending' && (
-                        <span
-                          data-testid="sending-status"
-                          className="font-medium"
-                        >
-                          Enviando...
-                        </span>
-                      )}
+                    <div
+                      className={`flex items-center justify-end gap-2 mt-1 text-[10px] ${
+                        isOwn
+                          ? 'text-blue-100'
+                          : 'text-[#5B6470]'
+                      }`}
+                    >
+                      <span>
+                        {formatMessageTime(
+                          message.timestamp ||
+                            message.createdAt,
+                        )}
+                      </span>
 
-                    {isOwn &&
-                      message.status === 'error' && (
-                        <span className="font-medium text-red-200">
-                          Error
-                        </span>
-                      )}
+                      {isOwn &&
+                        message.status ===
+                          'sending' && (
+                          <span
+                            data-testid="sending-status"
+                            className="font-medium"
+                          >
+                            Enviando...
+                          </span>
+                        )}
+
+                      {isOwn &&
+                        message.status ===
+                          'error' && (
+                          <span className="font-medium text-red-200">
+                            Error
+                          </span>
+                        )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            },
+          )
         )}
 
         <div
@@ -286,13 +376,27 @@ export function ChatRoom({
         />
       </div>
 
+      {sendError && (
+        <div
+          role="alert"
+          data-testid="send-error-alert"
+          className="mx-3 md:mx-4 mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {sendError}
+        </div>
+      )}
+
       <MessageInputBar
         value={inputText}
-        onChange={setInputText}
+        onChange={
+          handleInputChange
+        }
         onSend={() => {
           void handleSend();
         }}
-        onKeyDown={handleKeyDown}
+        onKeyDown={
+          handleKeyDown
+        }
         isSending={isSending}
       />
     </div>

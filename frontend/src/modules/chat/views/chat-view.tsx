@@ -24,17 +24,23 @@ import { CURRENT_USER_ID } from '../mocks/mock-users';
 function sortMessagesChronologically(
   messages: Message[],
 ): Message[] {
-  return [...messages].sort((a, b) => {
-    const timeA = new Date(
-      a.timestamp || a.createdAt,
-    ).getTime();
+  return [...messages].sort(
+    (a, b) => {
+      const timeA =
+        new Date(
+          a.timestamp ||
+            a.createdAt,
+        ).getTime();
 
-    const timeB = new Date(
-      b.timestamp || b.createdAt,
-    ).getTime();
+      const timeB =
+        new Date(
+          b.timestamp ||
+            b.createdAt,
+        ).getTime();
 
-    return timeA - timeB;
-  });
+      return timeA - timeB;
+    },
+  );
 }
 
 export function ChatView() {
@@ -43,7 +49,10 @@ export function ChatView() {
     setIsSearchModalOpen,
   ] = useState(false);
 
-  const [messages, setMessages] =
+  const [
+    messages,
+    setMessages,
+  ] =
     useState<Message[]>([]);
 
   const [
@@ -51,10 +60,21 @@ export function ChatView() {
     setIsLoadingMessages,
   ] = useState(false);
 
-  const [isSending, setIsSending] =
-    useState(false);
+  const [
+    isSending,
+    setIsSending,
+  ] = useState(false);
 
-  const sendingLockRef = useRef(false);
+  const [
+    sendError,
+    setSendError,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const sendingLockRef =
+    useRef(false);
 
   const {
     conversations,
@@ -83,15 +103,21 @@ export function ChatView() {
       .then((data) => {
         if (isMounted) {
           setMessages(
-            sortMessagesChronologically(data),
+            sortMessagesChronologically(
+              data,
+            ),
           );
 
-          setIsLoadingMessages(false);
+          setIsLoadingMessages(
+            false,
+          );
         }
       })
       .catch(() => {
         if (isMounted) {
-          setIsLoadingMessages(false);
+          setIsLoadingMessages(
+            false,
+          );
         }
       });
 
@@ -100,124 +126,198 @@ export function ChatView() {
     };
   }, [selectedId]);
 
-  const handleBackToList = () => {
-    clearSelectedConversation();
-  };
+  const handleBackToList =
+    () => {
+      setSendError(null);
+      clearSelectedConversation();
+    };
 
   const handleSelectChat = (
     conversation: Conversation,
   ) => {
+    setSendError(null);
     setIsLoadingMessages(true);
-    handleSelectConversation(conversation);
-  };
-
-  const handleStartNewChat = () => {
-    if (activeFilter !== 'all') {
-      setActiveFilter('all');
-    }
-
-    setIsSearchModalOpen(true);
-  };
-
-  const handleStartChatWithContact = async (
-    contactUser: User,
-  ) => {
-    if (activeFilter !== 'all') {
-      setActiveFilter('all');
-    }
-
-    setIsLoadingMessages(true);
-
-    await startConversationWithContact(
-      contactUser,
+    handleSelectConversation(
+      conversation,
     );
   };
 
-  const handleSendMessage = async (
-    content: string,
-  ): Promise<boolean> => {
-    if (
-      !selectedId ||
-      isSending ||
-      sendingLockRef.current
-    ) {
-      return false;
-    }
+  const handleStartNewChat =
+    () => {
+      if (
+        activeFilter !== 'all'
+      ) {
+        setActiveFilter('all');
+      }
 
-    sendingLockRef.current = true;
-    setIsSending(true);
-
-    const nowIso = new Date().toISOString();
-
-    const temporaryMessage: Message = {
-      id: `temp-${Date.now()}`,
-      conversationId: selectedId,
-      senderId: CURRENT_USER_ID,
-      content,
-      timestamp: nowIso,
-      createdAt: nowIso,
-      status: 'sending',
-      isAttachment: false,
+      setIsSearchModalOpen(
+        true,
+      );
     };
 
-    /*
-     * El mensaje aparece inmediatamente en pantalla,
-     * sin esperar la respuesta del servicio.
-     */
-    setMessages((previousMessages) =>
-      sortMessagesChronologically([
-        ...previousMessages,
-        temporaryMessage,
-      ]),
-    );
+  const handleStartChatWithContact =
+    async (
+      contactUser: User,
+    ) => {
+      if (
+        activeFilter !== 'all'
+      ) {
+        setActiveFilter('all');
+      }
 
-    try {
-      const response = await sendMessage({
-        conversationId: selectedId,
-        content,
-        senderId: CURRENT_USER_ID,
-      });
+      setSendError(null);
+      setIsLoadingMessages(true);
+
+      await startConversationWithContact(
+        contactUser,
+      );
+    };
+
+  const handleSendMessage =
+    async (
+      content: string,
+    ): Promise<boolean> => {
+      if (
+        !selectedId ||
+        isSending ||
+        sendingLockRef.current
+      ) {
+        return false;
+      }
 
       /*
-       * Reemplazamos el mensaje temporal
-       * por el mensaje confirmado.
+       * Comprobacion inmediata de
+       * conectividad antes de intentar
+       * registrar el mensaje temporal.
        */
-      setMessages((previousMessages) => {
-        const updatedMessages =
-          previousMessages.map((message) =>
-            message.id === temporaryMessage.id
-              ? response.data
-              : message,
-          );
-
-        return sortMessagesChronologically(
-          updatedMessages,
+      if (
+        typeof navigator !==
+          'undefined' &&
+        navigator.onLine === false
+      ) {
+        setSendError(
+          'Sin conexión a internet. Verifica tu conexión e intenta nuevamente.',
         );
-      });
 
-      return true;
-    } catch {
-      /*
-       * Si falla, mantenemos el mensaje visible
-       * pero marcado con estado de error.
-       */
-      setMessages((previousMessages) =>
-        previousMessages.map((message) =>
-          message.id === temporaryMessage.id
-            ? {
-                ...message,
-                status: 'error',
-              }
-            : message,
-        ),
+        return false;
+      }
+
+      sendingLockRef.current =
+        true;
+
+      setIsSending(true);
+      setSendError(null);
+
+      const nowIso =
+        new Date().toISOString();
+
+      const temporaryMessage: Message =
+        {
+          id: `temp-${Date.now()}`,
+          conversationId:
+            selectedId,
+          senderId:
+            CURRENT_USER_ID,
+          content,
+          timestamp: nowIso,
+          createdAt: nowIso,
+          status: 'sending',
+          isAttachment: false,
+        };
+
+      setMessages(
+        (
+          previousMessages,
+        ) =>
+          sortMessagesChronologically(
+            [
+              ...previousMessages,
+              temporaryMessage,
+            ],
+          ),
       );
 
-      return false;
-    } finally {
-      sendingLockRef.current = false;
-      setIsSending(false);
-    }
-  };
+      try {
+        const response =
+          await sendMessage({
+            conversationId:
+              selectedId,
+            content,
+            senderId:
+              CURRENT_USER_ID,
+          });
+
+        setMessages(
+          (
+            previousMessages,
+          ) => {
+            const updatedMessages =
+              previousMessages.map(
+                (message) =>
+                  message.id ===
+                  temporaryMessage.id
+                    ? response.data
+                    : message,
+              );
+
+            return sortMessagesChronologically(
+              updatedMessages,
+            );
+          },
+        );
+
+        return true;
+      } catch (error) {
+        /*
+         * Si falla el envio se elimina
+         * el mensaje temporal.
+         *
+         * El textarea NO se limpia,
+         * permitiendo reintentar.
+         */
+        setMessages(
+          (
+            previousMessages,
+          ) =>
+            previousMessages.filter(
+              (message) =>
+                message.id !==
+                temporaryMessage.id,
+            ),
+        );
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '';
+
+        if (
+          errorMessage
+            .toLowerCase()
+            .includes(
+              'conexion',
+            ) ||
+          errorMessage
+            .toLowerCase()
+            .includes('red')
+        ) {
+          setSendError(
+            'Sin conexión a internet. Verifica tu conexión e intenta nuevamente.',
+          );
+        } else {
+          setSendError(
+            'No se pudo enviar el mensaje. Intenta nuevamente.',
+          );
+        }
+
+        return false;
+      } finally {
+        sendingLockRef.current =
+          false;
+
+        setIsSending(false);
+      }
+    };
 
   return (
     <div className="flex h-screen h-[100dvh] w-full max-w-full bg-slate-50 overflow-hidden font-sans">
@@ -229,12 +329,20 @@ export function ChatView() {
         }`}
       >
         <ConversationList
-          conversations={conversations}
-          selectedId={selectedId}
+          conversations={
+            conversations
+          }
+          selectedId={
+            selectedId
+          }
           isLoading={isLoading}
           hasMore={hasMore}
-          activeFilter={activeFilter}
-          searchQuery={searchQuery}
+          activeFilter={
+            activeFilter
+          }
+          searchQuery={
+            searchQuery
+          }
           onSelectConversation={
             handleSelectChat
           }
@@ -263,7 +371,9 @@ export function ChatView() {
             conversation={
               selectedConversation
             }
-            messages={messages}
+            messages={
+              messages
+            }
             currentUserId={
               CURRENT_USER_ID
             }
@@ -276,7 +386,15 @@ export function ChatView() {
             isLoadingMessages={
               isLoadingMessages
             }
-            isSending={isSending}
+            isSending={
+              isSending
+            }
+            sendError={
+              sendError
+            }
+            onClearSendError={() =>
+              setSendError(null)
+            }
           />
         ) : (
           <EmptyChatState
@@ -290,9 +408,13 @@ export function ChatView() {
       </main>
 
       <ContactSearchModal
-        isOpen={isSearchModalOpen}
+        isOpen={
+          isSearchModalOpen
+        }
         onClose={() =>
-          setIsSearchModalOpen(false)
+          setIsSearchModalOpen(
+            false,
+          )
         }
         onSelectContact={
           handleStartChatWithContact
