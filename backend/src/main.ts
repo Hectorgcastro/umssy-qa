@@ -2,8 +2,11 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import { validateEnv } from './common/utils/validate-env.js';
 
 async function bootstrap(): Promise<void> {
+  validateEnv();
+
   const app = await NestFactory.create(AppModule);
 
   const corsOrigins = (process.env.CORS_ORIGIN ?? '')
@@ -11,7 +14,7 @@ async function bootstrap(): Promise<void> {
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
 
-  app.enableCors(corsOrigins.length > 0 ? { origin: corsOrigins } : {});
+  app.enableCors({ origin: corsOrigins });
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
