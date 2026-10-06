@@ -1,16 +1,19 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { ConfigModule } from '@nestjs/config';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter.js';
-import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
-import { ProfileModule } from './modules/profile/profile.module.js';
+import { AvailabilityModule } from './modules/availability/availability.module.js';
+import { CertificationDocumentsModule } from './modules/certification-documents/certification-documents.module.js';
 import { CertificationsModule } from './modules/certifications/certifications.module.js';
+import { CvModule } from './modules/cv/cv.module.js';
 import { EducationsModule } from './modules/educations/educations.module.js';
+import { ProfileModule } from './modules/profile/profile.module.js';
+import { SkillsModule } from './modules/skills/skills.module.js';
 import { WorkExperienceModule } from './modules/work-experience/work-experience.module.js';
 
 @Module({
@@ -22,9 +25,12 @@ import { WorkExperienceModule } from './modules/work-experience/work-experience.
     AvailabilityModule,
     AuthModule,
     ProfileModule,
+    CvModule,
+    SkillsModule,
     EducationsModule,
     WorkExperienceModule,
     CertificationsModule,
+    CertificationDocumentsModule,
   ],
   controllers: [AppController],
   providers: [

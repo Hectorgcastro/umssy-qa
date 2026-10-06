@@ -2,25 +2,15 @@ import type { ArgumentsHost } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { DomainException } from '../../../common/exceptions/domain.exception.js';
 import { DomainExceptionFilter } from '../../../common/filters/domain-exception.filter.js';
-import { CorruptedFileException } from '../exceptions/corrupted-file.exception.js';
-import { CvNotFoundException } from '../exceptions/cv-not-found.exception.js';
-import { EmptyFileException } from '../exceptions/empty-file.exception.js';
-import { FileTooLargeException } from '../exceptions/file-too-large.exception.js';
-import { InvalidFileTypeException } from '../exceptions/invalid-file-type.exception.js';
+import { CityNotFoundException } from '../exceptions/city-not-found.exception.js';
+import { PhotoNotFoundException } from '../exceptions/photo-not-found.exception.js';
 import { ProfileNotFoundException } from '../exceptions/profile-not-found.exception.js';
 
-describe('profile file exceptions', () => {
+describe('profile exceptions', () => {
   it.each([
-    [new EmptyFileException(), 400, 'File is required and cannot be empty'],
-    [new FileTooLargeException(), 413, 'File exceeds the maximum allowed size'],
-    [new InvalidFileTypeException(), 415, 'File type is not allowed'],
-    [
-      new CorruptedFileException(),
-      422,
-      'File content is incomplete or corrupted',
-    ],
-    [new CvNotFoundException(), 404, 'CV not found'],
     [new ProfileNotFoundException(), 404, 'User profile not found'],
+    [new PhotoNotFoundException(), 404, 'Profile photo not found'],
+    [new CityNotFoundException(), 404, 'City not found'],
   ])(
     '%o uses the expected status and English message',
     (exception, statusCode, message) => {
@@ -37,13 +27,13 @@ describe('profile file exceptions', () => {
       switchToHttp: () => ({ getResponse: () => ({ status }) }),
     } as unknown as ArgumentsHost;
 
-    new DomainExceptionFilter().catch(new FileTooLargeException(), host);
+    new DomainExceptionFilter().catch(new ProfileNotFoundException(), host);
 
-    expect(status).toHaveBeenCalledWith(413);
+    expect(status).toHaveBeenCalledWith(404);
     expect(json).toHaveBeenCalledWith({
-      statusCode: 413,
+      statusCode: 404,
       data: null,
-      detail: 'File exceeds the maximum allowed size',
+      detail: 'User profile not found',
       ok: false,
     });
   });
