@@ -12,8 +12,11 @@ import { CertificationDocumentsModule } from './modules/certification-documents/
 import { CertificationsModule } from './modules/certifications/certifications.module.js';
 import { CvModule } from './modules/cv/cv.module.js';
 import { EducationsModule } from './modules/educations/educations.module.js';
+import { MentorsModule } from './modules/mentors/mentors.module.js';
+import { OrientationTypesModule } from './modules/orientation-types/orientation-types.module.js';
 import { ProfileModule } from './modules/profile/profile.module.js';
 import { SkillsModule } from './modules/skills/skills.module.js';
+import { TechnicalAreasModule } from './modules/technical-areas/technical-areas.module.js';
 import { WorkExperienceModule } from './modules/work-experience/work-experience.module.js';
 
 @Module({
@@ -31,6 +34,9 @@ import { WorkExperienceModule } from './modules/work-experience/work-experience.
     WorkExperienceModule,
     CertificationsModule,
     CertificationDocumentsModule,
+    TechnicalAreasModule,
+    OrientationTypesModule,
+    MentorsModule,
   ],
   controllers: [AppController],
   providers: [

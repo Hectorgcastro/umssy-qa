@@ -1,43 +1,100 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InvalidTokenException } from '../exceptions/invalid-token.exception.js';
-import { MissingUserException } from '../exceptions/missing-user.exception.js';
-import type { AccessTokenPayload } from '../types/access-token-payload.type.js';
-import type { AuthenticatedRequest } from '../types/authenticated-request.type.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  AUTHORIZATION_HEADER,
+  BEARER_PREFIX,
+} from '../constants/auth.constants.js';
+import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
+import type { AuthenticatedRequest } from '../types/authenticated-request.types.js';
+import type { LoginJwtPayload } from '../types/login-jwt-payload.types.js';
 
-const bearerPrefix = 'Bearer ';
-
-// Verifies the access token issued by POST /auth/login and attaches the user to the request.
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    @Optional() private readonly prisma?: PrismaService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const token = this.extractToken(request);
+    const authorization =
+      request.headers?.[AUTHORIZATION_HEADER] ??
+      request.headers?.authorization;
 
+    if (
+      typeof authorization !== 'string' ||
+      !authorization.startsWith(BEARER_PREFIX)
+    ) {
+      throw new UnauthorizedSessionException();
+    }
+
+    const token = authorization.slice(BEARER_PREFIX.length).trim();
     if (!token) {
-      throw new MissingUserException();
+      throw new UnauthorizedSessionException();
     }
 
+    let payload: LoginJwtPayload;
     try {
-      const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(token);
-      request.user = { userId: payload.sub, roleTag: payload.roleTag };
+      payload = await this.jwtService.verifyAsync<LoginJwtPayload>(token);
     } catch {
-      throw new InvalidTokenException();
+      throw new UnauthorizedSessionException();
     }
+
+    if (
+      !payload ||
+      typeof payload.sub !== 'string' ||
+      !payload.sub.trim() ||
+      typeof payload.roleTag !== 'string' ||
+      !payload.roleTag.trim()
+    ) {
+      throw new UnauthorizedSessionException();
+    }
+
+    let user = {
+      id: payload.sub,
+      email: '',
+      roles: [{ role: { name: payload.roleTag } }],
+    };
+
+    if (this.prisma && typeof this.prisma.user?.findFirst === 'function') {
+      const dbUser = await this.prisma.user.findFirst({
+        where: { id: payload.sub, isActive: true },
+        select: {
+          id: true,
+          email: true,
+          roles: {
+            where: {
+              deletedAt: null,
+              startAt: { lte: new Date() },
+              role: { name: payload.roleTag },
+            },
+            select: { role: { select: { name: true } } },
+          },
+        },
+      });
+
+      if (!dbUser) {
+        throw new UnauthorizedSessionException(
+          'Usuario no encontrado o inactivo',
+        );
+      }
+
+      if (dbUser.roles.length === 0) {
+        throw new UnauthorizedSessionException(
+          'El rol de la sesión ya no está vigente',
+        );
+      }
+
+      user = dbUser;
+    }
+
+    request.user = {
+      id: user.id,
+      email: user.email,
+      roles: user.roles.map(({ role }) => role.name),
+    };
 
     return true;
-  }
-
-  private extractToken(request: AuthenticatedRequest): string | undefined {
-    const header = request.headers.authorization;
-
-    if (!header?.startsWith(bearerPrefix)) {
-      return undefined;
-    }
-
-    const token = header.slice(bearerPrefix.length).trim();
-    return token.length > 0 ? token : undefined;
   }
 }

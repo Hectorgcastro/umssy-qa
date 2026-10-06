@@ -6,7 +6,7 @@ import type { AuthenticatedRequest } from '../types/authenticated-request.type.j
 export const CurrentUserId = createParamDecorator(
   (_data: unknown, context: ExecutionContext): string => {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const userId = request.user?.userId;
+    const userId = request.user?.userId ?? request.user?.id;
 
     if (!userId) {
       throw new MissingUserException();
