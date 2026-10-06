@@ -98,11 +98,6 @@ Then create a `.env.test` file by copying `.env.test.example`. Use the same cred
    pnpm migrate:test:apply
 ```
 
-   ## Resources
-- [NestJS Documentation](https://docs.nestjs.com?utm_source=gemini) — Learn more about the framework.
-- [NestJS Courses](https://courses.nestjs.com/?utm_source=gemini) — Official video courses for hands-on experience.
-- [Prisma v7 Documentation](https://www.prisma.io/docs/orm/v7?utm_source=gemini) — Official ORM documentation.
-
 ## Authentication
 
 Login is provisional and works by role. The user sends email, password,
@@ -112,9 +107,10 @@ returning a token.
 
 Required environment variables in `.env`:
 
-- `JWT_SECRET` — secret used to sign tokens. Genera el valor con `openssl rand -base64 32` y pégalo en `JWT_SECRET` del `.env`.
-- `JWT_EXPIRES_IN` — token lifetime, e.g. `8h`.
-- `JWT_ALGORITHM` — signing algorithm, e.g. `HS256`.
-- `CORS_ORIGIN` — allowed origin, use `http://localhost:3000` in development.
+- `JWT_SECRET` — secret used to sign tokens. You can generate with `openssl rand -base64 32` and paste in `JWT_SECRET` in `.env`.
 
-The backend won't start if any of these four variables is missing.
+
+## Resources
+- [NestJS Documentation](https://docs.nestjs.com?utm_source=gemini) — Learn more about the framework.
+- [NestJS Courses](https://courses.nestjs.com/?utm_source=gemini) — Official video courses for hands-on experience.
+- [Prisma v7 Documentation](https://www.prisma.io/docs/orm/v7?utm_source=gemini) — Official ORM documentation.
