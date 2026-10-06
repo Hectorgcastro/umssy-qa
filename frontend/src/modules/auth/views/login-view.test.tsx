@@ -51,4 +51,42 @@ describe("LoginView", () => {
       expect(push).toHaveBeenCalledWith("/");
     });
   });
+
+  async function submitLogin(login: unknown) {
+    vi.mocked(useLogin).mockReturnValue({ login: login as ReturnType<typeof useLogin>["login"], isLoading: false, error: null });
+    render(<LoginView />);
+    fireEvent.change(screen.getByPlaceholderText("nombre@ejemplo.com"), { target: { value: "person@example.com" } });
+    fireEvent.change(screen.getByPlaceholderText("********"), { target: { value: "secret" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Iniciar sesión" }).closest("form")!);
+  }
+
+  it("el administrativo va a la bandeja del backoffice", async () => {
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: "t-admin", roleTag: "administrativo" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/backoffice/solicitudes"));
+    expect(push).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["titulado", "estudiante", "mentor", "empresa", "", "desconocido"])("el rol %j va a la ruta actual", async (roleTag) => {
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: "t", roleTag }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
+    expect(push).toHaveBeenCalledTimes(1);
+  });
+
+  it("un login fallido no guarda el token ni redirige", async () => {
+    await submitLogin(vi.fn().mockResolvedValue(null));
+
+    await waitFor(() => expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeInTheDocument());
+    expect(saveAccessToken).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("el token queda guardado antes de navegar", async () => {
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: "t-admin", roleTag: "administrativo" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    expect(vi.mocked(saveAccessToken).mock.invocationCallOrder[0]).toBeLessThan(push.mock.invocationCallOrder[0]);
+    expect(saveAccessToken).toHaveBeenCalledWith("t-admin");
+  });
 });

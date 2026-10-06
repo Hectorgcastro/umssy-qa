@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { saveAccessToken } from "@/shared/services/storage/access-token-storage";
 import { useLogin } from "../hooks/use-login";
 import type { RoleTag } from "../types/auth-types";
+import { getPostLoginPath } from "../utils/get-post-login-path";
 
 const ROLE_OPTIONS: { value: RoleTag; label: string }[] = [
   { value: "titulado", label: "Titulado" },
@@ -31,7 +32,7 @@ export function LoginView() {
     const result = await login({ email, password, roleTag });
     if (result) {
       saveAccessToken(result.accessToken);
-      router.push("/");
+      router.push(getPostLoginPath(result.roleTag));
     }
   }
 
