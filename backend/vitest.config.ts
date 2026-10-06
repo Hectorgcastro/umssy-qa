@@ -20,6 +20,9 @@ export default defineConfig({
         'src/**/*.dto.ts',
         'src/**/*.entity.ts',
         'src/prisma/*',
+        // Los seeds se validan contra la base real (ver PR), no con pruebas unitarias.
+        'src/**/*seed*.ts',
+        'src/common/database/**',
       ],
       thresholds: {
         lines: 80,
