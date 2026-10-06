@@ -23,10 +23,6 @@ export function HomeView() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          
-
-
-
           <Button>Botón de ejemplo</Button>
         </CardContent>
       </Card>

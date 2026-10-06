@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/Vacancy.js'
 export type * from './models/AppointmentStatus.js'
 export type * from './models/ProposalStatus.js'
 export type * from './models/EventModality.js'

@@ -708,10 +708,6 @@ export type UserUncheckedUpdateManyWithoutCityNestedInput = {
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type NullableBytesFieldUpdateOperationsInput = {
   set?: runtime.Bytes | null
 }

@@ -1,1 +1,3 @@
-export interface MatchScoreProps { value: number; }
+export interface MatchScoreProps {
+  value: number;
+}

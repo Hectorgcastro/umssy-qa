@@ -8,7 +8,10 @@ export class VacanciesRepository {
 
   findActive() {
     return this.prisma.vacancy.findMany({
-      where: { isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      where: {
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
       select: VACANCY_SELECT,
       orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
     });
@@ -16,7 +19,11 @@ export class VacanciesRepository {
 
   findActiveById(id: string) {
     return this.prisma.vacancy.findFirst({
-      where: { id, isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      where: {
+        id,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
       select: VACANCY_SELECT,
     });
   }
@@ -27,7 +34,14 @@ export class VacanciesRepository {
       select: {
         userSkills: { select: { skill: { select: { name: true } } } },
         educations: { select: { degree: true } },
-        workExperiences: { select: { startDate: true, endDate: true, isCurrent: true, detectedSkills: true } },
+        workExperiences: {
+          select: {
+            startDate: true,
+            endDate: true,
+            isCurrent: true,
+            detectedSkills: true,
+          },
+        },
       },
     });
   }

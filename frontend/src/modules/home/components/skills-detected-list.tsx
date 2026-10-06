@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
+import React from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface SkillsDetectedProps {
   skills: string[];
-  processingTime: number; 
+  processingTime: number;
 }
 
-export const SkillsDetectedList: React.FC<SkillsDetectedProps> = ({ 
-  skills, 
-  processingTime 
+export const SkillsDetectedList: React.FC<SkillsDetectedProps> = ({
+  skills,
+  processingTime,
 }) => {
   if (!skills || skills.length === 0) return null;
 
@@ -19,12 +19,12 @@ export const SkillsDetectedList: React.FC<SkillsDetectedProps> = ({
       <h3 className="text-[17px] font-bold text-[#0B1F2E]">
         Habilidades detectadas automáticamente
       </h3>
-      
+
       <div className="flex items-center gap-2 flex-wrap">
         {[...new Set(skills)].map((skill) => {
           const isMethodology = skill.toLowerCase() === "scrum";
-          const badgeClass = isMethodology 
-            ? "bg-[#C9A227] hover:bg-[#C9A227]/90 text-white" 
+          const badgeClass = isMethodology
+            ? "bg-[#C9A227] hover:bg-[#C9A227]/90 text-white"
             : "bg-[#E30613] hover:bg-[#E30613]/90 text-white";
 
           return (
@@ -39,5 +39,5 @@ export const SkillsDetectedList: React.FC<SkillsDetectedProps> = ({
         Análisis completado en {processingTime} s
       </span>
     </div>
-  )
-}
+  );
+};

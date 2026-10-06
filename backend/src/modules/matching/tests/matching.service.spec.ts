@@ -23,14 +23,20 @@ describe('MatchingService', () => {
   it.each([[''], ['   '], [null], [undefined]])(
     'responde sin habilidades y sin error con texto vacio (%o)',
     (text) => {
-      const result = service.analyzeExperience({ experienceId: EXPERIENCE_ID, text });
+      const result = service.analyzeExperience({
+        experienceId: EXPERIENCE_ID,
+        text,
+      });
 
       expect(result.skills).toEqual([]);
     },
   );
 
   it('informa el tiempo de procesamiento como un numero entero no negativo', () => {
-    const result = service.analyzeExperience({ experienceId: EXPERIENCE_ID, text: 'Scrum' });
+    const result = service.analyzeExperience({
+      experienceId: EXPERIENCE_ID,
+      text: 'Scrum',
+    });
 
     expect(Number.isInteger(result.processingTimeMs)).toBe(true);
     expect(result.processingTimeMs).toBeGreaterThanOrEqual(0);

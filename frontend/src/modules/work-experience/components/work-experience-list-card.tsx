@@ -3,6 +3,7 @@ import type { WorkExperienceListCardProps } from "../types/work-experience-list-
 import { formatWorkPeriod } from "../utils/format-work-period";
 import { sortWorkExperiences } from "../utils/sort-work-experiences";
 import { SectionCard } from "@/modules/profile/components/section-card";
+import { SkillsDetectedList } from "@/modules/home/components/skills-detected-list";
 
 export function WorkExperienceListCard({
   experiences = [],
@@ -15,23 +16,44 @@ export function WorkExperienceListCard({
 
   const renderContent = () => {
     if (isLoading) {
-      return <p className="text-[14px] text-text-secondary">Cargando experiencia laboral...</p>;
+      return (
+        <p className="text-[14px] text-text-secondary">
+          Cargando experiencia laboral...
+        </p>
+      );
     }
 
     if (sortedExperiences.length === 0) {
-      return <p className="text-[14px] text-text-secondary">Aún no registraste experiencia laboral.</p>;
+      return (
+        <p className="text-[14px] text-text-secondary">
+          Aún no registraste experiencia laboral.
+        </p>
+      );
     }
 
     return (
       <ul className="divide-y divide-border">
         {sortedExperiences.map((experience) => (
-          <li key={experience.id} className="flex items-center justify-between gap-4 py-4 first:pt-0">
+          <li
+            key={experience.id}
+            className="flex items-center justify-between gap-4 py-4 first:pt-0"
+          >
             <div>
-              <h3 className="text-[15px] font-bold text-ink">{experience.position}</h3>
+              <h3 className="text-[15px] font-bold text-ink">
+                {experience.position}
+              </h3>
               <p className="mt-0.5 text-[13px] text-text-secondary">
                 {experience.companyName} ·{" "}
-                {formatWorkPeriod(experience.startDate, experience.endDate, experience.isCurrent)}
+                {formatWorkPeriod(
+                  experience.startDate,
+                  experience.endDate,
+                  experience.isCurrent,
+                )}
               </p>
+              <SkillsDetectedList
+                skills={experience.detectedSkills ?? []}
+                processingTime={(experience.processingTimeMs ?? 0) / 1000}
+              />
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <Button
@@ -62,7 +84,10 @@ export function WorkExperienceListCard({
   };
 
   return (
-    <SectionCard title="Tu experiencia" description="Ordenada de la más reciente a la más antigua.">
+    <SectionCard
+      title="Tu experiencia"
+      description="Ordenada de la más reciente a la más antigua."
+    >
       {renderContent()}
       <p className="mt-4 border-t border-border pt-4 text-[13px] text-text-secondary">
         Agrega todos los trabajos relevantes para tu trayectoria.

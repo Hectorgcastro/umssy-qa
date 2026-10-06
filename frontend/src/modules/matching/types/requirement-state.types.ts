@@ -1,1 +1,4 @@
-export interface RequirementState { name: string; status: "Cumple" | "Pendiente"; }
+export interface RequirementState {
+  name: string;
+  status: "Cumple" | "Pendiente";
+}

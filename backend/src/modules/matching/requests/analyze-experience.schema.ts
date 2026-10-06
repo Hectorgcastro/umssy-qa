@@ -18,5 +18,9 @@ export const analyzeExperienceBodySchema = z.object({
     .nullish(),
 });
 
-export type AnalyzeExperienceParamsDto = z.infer<typeof analyzeExperienceParamsSchema>;
-export type AnalyzeExperienceBodyDto = z.infer<typeof analyzeExperienceBodySchema>;
+export type AnalyzeExperienceParamsDto = z.infer<
+  typeof analyzeExperienceParamsSchema
+>;
+export type AnalyzeExperienceBodyDto = z.infer<
+  typeof analyzeExperienceBodySchema
+>;

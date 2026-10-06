@@ -19,8 +19,11 @@ import { toWorkExperiencePayload } from "../utils/to-work-experience-payload";
 
 export function WorkExperienceView() {
   const { experiences, isLoading, error, reload } = useWorkExperiences();
-  const [editingExperience, setEditingExperience] = useState<WorkExperienceItem | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<WorkExperienceItem | null>(null);
+  const [editingExperience, setEditingExperience] =
+    useState<WorkExperienceItem | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<WorkExperienceItem | null>(
+    null,
+  );
   const [formVersion, setFormVersion] = useState(0);
 
   const resetForm = () => {
@@ -43,7 +46,8 @@ export function WorkExperienceView() {
   const isBusy = saveMutation.isSaving || deleteMutation.isDeleting;
 
   const listFeedback: Feedback | null =
-    deleteMutation.feedback ?? (error ? { type: "error", message: error } : null);
+    deleteMutation.feedback ??
+    (error ? { type: "error", message: error } : null);
 
   const handleEdit = (experience: WorkExperienceItem) => {
     if (isBusy) {
@@ -75,7 +79,10 @@ export function WorkExperienceView() {
       return;
     }
     deleteMutation.clearFeedback();
-    await saveMutation.save(toWorkExperiencePayload(values), editingExperience?.id);
+    await saveMutation.save(
+      toWorkExperiencePayload(values),
+      editingExperience?.id,
+    );
   };
 
   return (
@@ -86,7 +93,12 @@ export function WorkExperienceView() {
     >
       <TrajectorySteps activeStep="experience" />
       <FeedbackMessage feedback={listFeedback} />
-      {saveMutation.analysis ? <SkillsDetectedList skills={saveMutation.analysis.skills} processingTime={saveMutation.analysis.processingTimeMs / 1000} /> : null}
+      {saveMutation.analysis ? (
+        <SkillsDetectedList
+          skills={saveMutation.analysis.skills}
+          processingTime={saveMutation.analysis.processingTimeMs / 1000}
+        />
+      ) : null}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <WorkExperienceListCard
           experiences={experiences}
@@ -98,10 +110,14 @@ export function WorkExperienceView() {
         <WorkExperienceForm
           key={editingExperience ? editingExperience.id : `new-${formVersion}`}
           initialValues={
-            editingExperience ? toWorkExperienceFormValues(editingExperience) : undefined
+            editingExperience
+              ? toWorkExperienceFormValues(editingExperience)
+              : undefined
           }
           isPending={saveMutation.isSaving}
           feedback={saveMutation.feedback}
+          detectedSkills={editingExperience?.detectedSkills}
+          processingTimeMs={editingExperience?.processingTimeMs}
           onSubmit={handleSubmit}
           onCancel={resetForm}
         />

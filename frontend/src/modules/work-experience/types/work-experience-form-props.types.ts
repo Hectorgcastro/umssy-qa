@@ -5,6 +5,8 @@ export interface WorkExperienceFormProps {
   initialValues?: WorkExperienceFormValues;
   isPending?: boolean;
   feedback?: Feedback | null;
+  detectedSkills?: string[];
+  processingTimeMs?: number;
   onSubmit: (values: WorkExperienceFormValues) => void | Promise<void>;
   onCancel: () => void;
 }

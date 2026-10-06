@@ -19,9 +19,18 @@ export class MatchingService {
 
     const text = this.dictionary.normalizeTerm(input.text ?? '');
     const tokens = this.nlp.tokenizeAndFilter(this.nlp.normalizeText(text));
-    const candidates = new Set([...tokens, ...this.nlp.generateNGrams(tokens), ...this.dictionary.protectedTokens(text)]);
-    const skills: DetectedSkillResponse[] = SKILL_DICTIONARY.filter(({ aliases }) =>
-      aliases.some((alias) => candidates.has(alias.replaceAll(' ', '_')) || this.dictionary.contains(text, alias)),
+    const candidates = new Set([
+      ...tokens,
+      ...this.nlp.generateNGrams(tokens),
+      ...this.dictionary.protectedTokens(text),
+    ]);
+    const skills: DetectedSkillResponse[] = SKILL_DICTIONARY.filter(
+      ({ aliases }) =>
+        aliases.some(
+          (alias) =>
+            candidates.has(alias.replaceAll(' ', '_')) ||
+            this.dictionary.contains(text, alias),
+        ),
     ).map(({ name }) => ({ id: this.dictionary.canonicalize(name), name }));
 
     return {

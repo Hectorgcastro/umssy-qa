@@ -16,7 +16,17 @@ import { ExperienceAnalysisService } from './services/experience-analysis.servic
 @Module({
   imports: [PrismaModule, JwtAuthModule],
   controllers: [MatchingController, VacanciesController],
-  providers: [MatchingService, NlpService, SkillDictionaryService, VacanciesRepository, VacanciesService, VacancyMatchingService, GapAnalysisService, MatchScoreService, ExperienceAnalysisService],
+  providers: [
+    MatchingService,
+    NlpService,
+    SkillDictionaryService,
+    VacanciesRepository,
+    VacanciesService,
+    VacancyMatchingService,
+    GapAnalysisService,
+    MatchScoreService,
+    ExperienceAnalysisService,
+  ],
   exports: [MatchingService, NlpService, SkillDictionaryService],
 })
 export class MatchingModule {}

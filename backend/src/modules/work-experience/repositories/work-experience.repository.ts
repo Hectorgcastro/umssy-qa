@@ -22,7 +22,10 @@ const workExperienceSelect = {
 
 @Injectable()
 export class WorkExperienceRepository {
-  constructor(private readonly prisma: PrismaService, private readonly matching: MatchingService = new MatchingService()) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly matching: MatchingService = new MatchingService(),
+  ) {}
 
   findManyByUserId(userId: string): Promise<WorkExperienceRecord[]> {
     return this.prisma.workExperience.findMany({
@@ -50,7 +53,9 @@ export class WorkExperienceRepository {
     return this.prisma.workExperience.create({
       data: {
         ...fields,
-        detectedSkills: this.matching.analyzeExperience({ experienceId: '', text: fields.description }).skills.map(({ name }) => name),
+        detectedSkills: this.matching
+          .analyzeExperience({ experienceId: '', text: fields.description })
+          .skills.map(({ name }) => name),
         user: { connect: { id: userId } },
         company: this.connectOrCreateCompany(companyName),
       },
@@ -76,7 +81,16 @@ export class WorkExperienceRepository {
         },
         data: {
           ...fields,
-          ...(fields.description === undefined ? {} : { detectedSkills: this.matching.analyzeExperience({ experienceId: id, text: fields.description }).skills.map(({ name }) => name) }),
+          ...(fields.description === undefined
+            ? {}
+            : {
+                detectedSkills: this.matching
+                  .analyzeExperience({
+                    experienceId: id,
+                    text: fields.description,
+                  })
+                  .skills.map(({ name }) => name),
+              }),
           ...(companyName === undefined
             ? {}
             : { company: this.connectOrCreateCompany(companyName) }),

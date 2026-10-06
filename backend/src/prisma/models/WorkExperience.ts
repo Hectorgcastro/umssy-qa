@@ -59,6 +59,7 @@ export type WorkExperienceCountAggregateOutputType = {
   endDate: number
   isCurrent: number
   description: number
+  detectedSkills: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -100,6 +101,7 @@ export type WorkExperienceCountAggregateInputType = {
   endDate?: true
   isCurrent?: true
   description?: true
+  detectedSkills?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -186,6 +188,7 @@ export type WorkExperienceGroupByOutputType = {
   endDate: Date | null
   isCurrent: boolean
   description: string | null
+  detectedSkills: string[]
   createdAt: Date
   updatedAt: Date
   _count: WorkExperienceCountAggregateOutputType | null
@@ -220,6 +223,7 @@ export type WorkExperienceWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"WorkExperience"> | Date | string | null
   isCurrent?: Prisma.BoolFilter<"WorkExperience"> | boolean
   description?: Prisma.StringNullableFilter<"WorkExperience"> | string | null
+  detectedSkills?: Prisma.StringNullableListFilter<"WorkExperience">
   createdAt?: Prisma.DateTimeFilter<"WorkExperience"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkExperience"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -235,6 +239,7 @@ export type WorkExperienceOrderByWithRelationInput = {
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   isCurrent?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  detectedSkills?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -253,6 +258,7 @@ export type WorkExperienceWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeNullableFilter<"WorkExperience"> | Date | string | null
   isCurrent?: Prisma.BoolFilter<"WorkExperience"> | boolean
   description?: Prisma.StringNullableFilter<"WorkExperience"> | string | null
+  detectedSkills?: Prisma.StringNullableListFilter<"WorkExperience">
   createdAt?: Prisma.DateTimeFilter<"WorkExperience"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkExperience"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -268,6 +274,7 @@ export type WorkExperienceOrderByWithAggregationInput = {
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   isCurrent?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  detectedSkills?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.WorkExperienceCountOrderByAggregateInput
@@ -287,6 +294,7 @@ export type WorkExperienceScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkExperience"> | Date | string | null
   isCurrent?: Prisma.BoolWithAggregatesFilter<"WorkExperience"> | boolean
   description?: Prisma.StringNullableWithAggregatesFilter<"WorkExperience"> | string | null
+  detectedSkills?: Prisma.StringNullableListFilter<"WorkExperience">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkExperience"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"WorkExperience"> | Date | string
 }
@@ -298,6 +306,7 @@ export type WorkExperienceCreateInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWorkExperiencesInput
@@ -313,6 +322,7 @@ export type WorkExperienceUncheckedCreateInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -324,6 +334,7 @@ export type WorkExperienceUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWorkExperiencesNestedInput
@@ -339,6 +350,7 @@ export type WorkExperienceUncheckedUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -352,6 +364,7 @@ export type WorkExperienceCreateManyInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -363,6 +376,7 @@ export type WorkExperienceUpdateManyMutationInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -376,6 +390,7 @@ export type WorkExperienceUncheckedUpdateManyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -399,6 +414,7 @@ export type WorkExperienceCountOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   isCurrent?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  detectedSkills?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -513,6 +529,15 @@ export type WorkExperienceUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.WorkExperienceScalarWhereInput | Prisma.WorkExperienceScalarWhereInput[]
 }
 
+export type WorkExperienceCreatedetectedSkillsInput = {
+  set: string[]
+}
+
+export type WorkExperienceUpdatedetectedSkillsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
 export type WorkExperienceCreateWithoutCompanyInput = {
   id?: string
   position: string
@@ -520,6 +545,7 @@ export type WorkExperienceCreateWithoutCompanyInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWorkExperiencesInput
@@ -533,6 +559,7 @@ export type WorkExperienceUncheckedCreateWithoutCompanyInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -575,6 +602,7 @@ export type WorkExperienceScalarWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"WorkExperience"> | Date | string | null
   isCurrent?: Prisma.BoolFilter<"WorkExperience"> | boolean
   description?: Prisma.StringNullableFilter<"WorkExperience"> | string | null
+  detectedSkills?: Prisma.StringNullableListFilter<"WorkExperience">
   createdAt?: Prisma.DateTimeFilter<"WorkExperience"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkExperience"> | Date | string
 }
@@ -586,6 +614,7 @@ export type WorkExperienceCreateWithoutUserInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutWorkExperiencesInput
@@ -599,6 +628,7 @@ export type WorkExperienceUncheckedCreateWithoutUserInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -637,6 +667,7 @@ export type WorkExperienceCreateManyCompanyInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -648,6 +679,7 @@ export type WorkExperienceUpdateWithoutCompanyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWorkExperiencesNestedInput
@@ -661,6 +693,7 @@ export type WorkExperienceUncheckedUpdateWithoutCompanyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -673,6 +706,7 @@ export type WorkExperienceUncheckedUpdateManyWithoutCompanyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -685,6 +719,7 @@ export type WorkExperienceCreateManyUserInput = {
   endDate?: Date | string | null
   isCurrent?: boolean
   description?: string | null
+  detectedSkills?: Prisma.WorkExperienceCreatedetectedSkillsInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -696,6 +731,7 @@ export type WorkExperienceUpdateWithoutUserInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutWorkExperiencesNestedInput
@@ -709,6 +745,7 @@ export type WorkExperienceUncheckedUpdateWithoutUserInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -721,6 +758,7 @@ export type WorkExperienceUncheckedUpdateManyWithoutUserInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isCurrent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedSkills?: Prisma.WorkExperienceUpdatedetectedSkillsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -736,6 +774,7 @@ export type WorkExperienceSelect<ExtArgs extends runtime.Types.Extensions.Intern
   endDate?: boolean
   isCurrent?: boolean
   description?: boolean
+  detectedSkills?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -751,6 +790,7 @@ export type WorkExperienceSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   endDate?: boolean
   isCurrent?: boolean
   description?: boolean
+  detectedSkills?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -766,6 +806,7 @@ export type WorkExperienceSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   endDate?: boolean
   isCurrent?: boolean
   description?: boolean
+  detectedSkills?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -781,11 +822,12 @@ export type WorkExperienceSelectScalar = {
   endDate?: boolean
   isCurrent?: boolean
   description?: boolean
+  detectedSkills?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WorkExperienceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "companyId" | "position" | "startDate" | "endDate" | "isCurrent" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["workExperience"]>
+export type WorkExperienceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "companyId" | "position" | "startDate" | "endDate" | "isCurrent" | "description" | "detectedSkills" | "createdAt" | "updatedAt", ExtArgs["result"]["workExperience"]>
 export type WorkExperienceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -814,6 +856,7 @@ export type $WorkExperiencePayload<ExtArgs extends runtime.Types.Extensions.Inte
     endDate: Date | null
     isCurrent: boolean
     description: string | null
+    detectedSkills: string[]
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["workExperience"]>
@@ -1249,6 +1292,7 @@ export interface WorkExperienceFieldRefs {
   readonly endDate: Prisma.FieldRef<"WorkExperience", 'DateTime'>
   readonly isCurrent: Prisma.FieldRef<"WorkExperience", 'Boolean'>
   readonly description: Prisma.FieldRef<"WorkExperience", 'String'>
+  readonly detectedSkills: Prisma.FieldRef<"WorkExperience", 'String[]'>
   readonly createdAt: Prisma.FieldRef<"WorkExperience", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"WorkExperience", 'DateTime'>
 }

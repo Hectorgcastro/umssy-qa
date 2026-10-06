@@ -7,20 +7,38 @@ import { experienceYears } from '../utils/experience-years.js';
 
 @Injectable()
 export class VacanciesService {
-  constructor(private readonly repository: VacanciesRepository, private readonly matching: VacancyMatchingService) {}
+  constructor(
+    private readonly repository: VacanciesRepository,
+    private readonly matching: VacancyMatchingService,
+  ) {}
 
   async findRecommended(userId: string, page: number, limit: number) {
-    const [vacancies, profile] = await Promise.all([this.repository.findActive(), this.profile(userId)]);
-    const ranked = vacancies.map((vacancy) => this.matching.match(vacancy, profile)).sort((left, right) =>
-      Number(right.careerMatch) - Number(left.careerMatch) ||
-      Number(right.experienceMatch) - Number(left.experienceMatch) ||
-      right.matchingSkills - left.matchingSkills || left.id.localeCompare(right.id),
-    );
-    return { items: ranked.slice((page - 1) * limit, page * limit), total: ranked.length, page, limit };
+    const [vacancies, profile] = await Promise.all([
+      this.repository.findActive(),
+      this.profile(userId),
+    ]);
+    const ranked = vacancies
+      .map((vacancy) => this.matching.match(vacancy, profile))
+      .sort(
+        (left, right) =>
+          Number(right.careerMatch) - Number(left.careerMatch) ||
+          Number(right.experienceMatch) - Number(left.experienceMatch) ||
+          right.matchingSkills - left.matchingSkills ||
+          left.id.localeCompare(right.id),
+      );
+    return {
+      items: ranked.slice((page - 1) * limit, page * limit),
+      total: ranked.length,
+      page,
+      limit,
+    };
   }
 
   async findDetail(userId: string, id: string) {
-    const [vacancy, profile] = await Promise.all([this.repository.findActiveById(id), this.profile(userId)]);
+    const [vacancy, profile] = await Promise.all([
+      this.repository.findActiveById(id),
+      this.profile(userId),
+    ]);
     if (!vacancy) throw new VacancyNotFoundException();
     return this.matching.match(vacancy, profile);
   }
@@ -29,7 +47,12 @@ export class VacanciesService {
     const record = await this.repository.findProfile(userId);
     if (!record) throw new MissingUserException();
     return {
-      skills: [...record.userSkills.map(({ skill }) => skill.name), ...record.workExperiences.flatMap(({ detectedSkills }) => detectedSkills)],
+      skills: [
+        ...record.userSkills.map(({ skill }) => skill.name),
+        ...record.workExperiences.flatMap(
+          ({ detectedSkills }) => detectedSkills,
+        ),
+      ],
       academicQualifications: record.educations.map(({ degree }) => degree),
       submittedRequirements: [],
       experienceYears: experienceYears(record.workExperiences),

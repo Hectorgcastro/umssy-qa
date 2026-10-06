@@ -397,6 +397,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  Vacancy: 'Vacancy',
   AppointmentStatus: 'AppointmentStatus',
   ProposalStatus: 'ProposalStatus',
   EventModality: 'EventModality',
@@ -441,10 +442,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "appointmentStatus" | "proposalStatus" | "eventModality" | "eventOrigin" | "eventStatus" | "registrationStatus" | "city" | "company" | "user" | "role" | "userRole" | "education" | "workExperience" | "skill" | "userSkill" | "certification" | "technicalArea" | "orientationType" | "mentorTechnicalArea" | "mentorOrientationType" | "availabilityBlock" | "blockedDate" | "appointment" | "timeProposal" | "appointmentHistory" | "eventCategory" | "event" | "eventRegistration" | "eventAttendance"
+    modelProps: "vacancy" | "appointmentStatus" | "proposalStatus" | "eventModality" | "eventOrigin" | "eventStatus" | "registrationStatus" | "city" | "company" | "user" | "role" | "userRole" | "education" | "workExperience" | "skill" | "userSkill" | "certification" | "technicalArea" | "orientationType" | "mentorTechnicalArea" | "mentorOrientationType" | "availabilityBlock" | "blockedDate" | "appointment" | "timeProposal" | "appointmentHistory" | "eventCategory" | "event" | "eventRegistration" | "eventAttendance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    Vacancy: {
+      payload: Prisma.$VacancyPayload<ExtArgs>
+      fields: Prisma.VacancyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VacancyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VacancyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>
+        }
+        findFirst: {
+          args: Prisma.VacancyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VacancyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>
+        }
+        findMany: {
+          args: Prisma.VacancyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>[]
+        }
+        create: {
+          args: Prisma.VacancyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>
+        }
+        createMany: {
+          args: Prisma.VacancyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VacancyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>[]
+        }
+        delete: {
+          args: Prisma.VacancyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>
+        }
+        update: {
+          args: Prisma.VacancyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>
+        }
+        deleteMany: {
+          args: Prisma.VacancyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VacancyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VacancyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>[]
+        }
+        upsert: {
+          args: Prisma.VacancyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VacancyPayload>
+        }
+        aggregate: {
+          args: Prisma.VacancyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVacancy>
+        }
+        groupBy: {
+          args: Prisma.VacancyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VacancyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VacancyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VacancyCountAggregateOutputType> | number
+        }
+      }
+    }
     AppointmentStatus: {
       payload: Prisma.$AppointmentStatusPayload<ExtArgs>
       fields: Prisma.AppointmentStatusFieldRefs
@@ -2630,6 +2705,26 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const VacancyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  companyName: 'companyName',
+  description: 'description',
+  location: 'location',
+  modality: 'modality',
+  requiredSkills: 'requiredSkills',
+  academicRequirements: 'academicRequirements',
+  otherRequirements: 'otherRequirements',
+  minExperienceYears: 'minExperienceYears',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VacancyScalarFieldEnum = (typeof VacancyScalarFieldEnum)[keyof typeof VacancyScalarFieldEnum]
+
+
 export const AppointmentStatusScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -2786,6 +2881,7 @@ export const WorkExperienceScalarFieldEnum = {
   endDate: 'endDate',
   isCurrent: 'isCurrent',
   description: 'description',
+  detectedSkills: 'detectedSkills',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3061,6 +3157,27 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -3071,13 +3188,6 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -3106,20 +3216,6 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -3273,6 +3369,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
+  vacancy?: Prisma.VacancyOmit
   appointmentStatus?: Prisma.AppointmentStatusOmit
   proposalStatus?: Prisma.ProposalStatusOmit
   eventModality?: Prisma.EventModalityOmit

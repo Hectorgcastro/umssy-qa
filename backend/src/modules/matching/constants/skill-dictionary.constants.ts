@@ -12,10 +12,15 @@ export const SKILL_DICTIONARY = [
   { name: 'SQL', aliases: ['sql'] },
   { name: 'PostgreSQL', aliases: ['postgresql', 'postgres'] },
   { name: 'Scrum', aliases: ['scrum'] },
-  { name: 'Machine Learning', aliases: ['machine learning', 'aprendizaje automatico'] },
+  {
+    name: 'Machine Learning',
+    aliases: ['machine learning', 'aprendizaje automatico'],
+  },
   { name: 'Desarrollador Web', aliases: ['desarrollador web'] },
 ] as const;
 
 export const INSTITUTIONAL_TERMS = [
-  'universidad mayor de san simon', 'san simon', 'umss',
+  'universidad mayor de san simon',
+  'san simon',
+  'umss',
 ] as const;

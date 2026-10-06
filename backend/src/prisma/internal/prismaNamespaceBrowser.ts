@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  Vacancy: 'Vacancy',
   AppointmentStatus: 'AppointmentStatus',
   ProposalStatus: 'ProposalStatus',
   EventModality: 'EventModality',
@@ -96,6 +97,26 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const VacancyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  companyName: 'companyName',
+  description: 'description',
+  location: 'location',
+  modality: 'modality',
+  requiredSkills: 'requiredSkills',
+  academicRequirements: 'academicRequirements',
+  otherRequirements: 'otherRequirements',
+  minExperienceYears: 'minExperienceYears',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VacancyScalarFieldEnum = (typeof VacancyScalarFieldEnum)[keyof typeof VacancyScalarFieldEnum]
 
 
 export const AppointmentStatusScalarFieldEnum = {
@@ -254,6 +275,7 @@ export const WorkExperienceScalarFieldEnum = {
   endDate: 'endDate',
   isCurrent: 'isCurrent',
   description: 'description',
+  detectedSkills: 'detectedSkills',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

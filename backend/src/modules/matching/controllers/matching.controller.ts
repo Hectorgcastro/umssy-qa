@@ -1,4 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ExperienceAnalysisService } from '../services/experience-analysis.service.js';
 import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
@@ -24,8 +33,10 @@ export class MatchingController {
   @HttpCode(HttpStatus.OK)
   analyzeExperience(
     @CurrentUserId() userId: string,
-    @Param(new RequestValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
-    @Body(new RequestValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
+    @Param(new RequestValidationPipe(analyzeExperienceParamsSchema))
+    params: AnalyzeExperienceParamsDto,
+    @Body(new RequestValidationPipe(analyzeExperienceBodySchema))
+    body: AnalyzeExperienceBodyDto,
   ): Promise<AnalyzeExperienceResponse> {
     return this.matchingService.analyze(userId, {
       experienceId: params.id,

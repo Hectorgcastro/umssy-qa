@@ -12,10 +12,16 @@ describe('MatchingModule', () => {
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [MatchingModule],
-    }).overrideProvider(PrismaService).useValue({}).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue({})
+      .compile();
   });
 
-  it.each([MatchingController, MatchingService, NlpService])('resuelve %o', (provider) => {
-    expect(moduleRef.get(provider)).toBeInstanceOf(provider);
-  });
+  it.each([MatchingController, MatchingService, NlpService])(
+    'resuelve %o',
+    (provider) => {
+      expect(moduleRef.get(provider)).toBeInstanceOf(provider);
+    },
+  );
 });

@@ -38,6 +38,7 @@ const expectedSelect = {
   endDate: true,
   isCurrent: true,
   description: true,
+  detectedSkills: true,
   createdAt: true,
   updatedAt: true,
   company: { select: { id: true, title: true } },
@@ -120,9 +121,7 @@ describe('WorkExperienceRepository', () => {
   it('creates the record for the owner and links the company by its name', async () => {
     workExperience.create.mockResolvedValue(record);
 
-    await expect(repository.create(userId, writeData)).resolves.toEqual(
-      record,
-    );
+    await expect(repository.create(userId, writeData)).resolves.toEqual(record);
     expect(workExperience.create).toHaveBeenCalledWith({
       data: {
         position: 'Junior web developer',
@@ -130,6 +129,7 @@ describe('WorkExperienceRepository', () => {
         endDate: null,
         isCurrent: true,
         description: null,
+        detectedSkills: [],
         user: { connect: { id: userId } },
         company: expectedCompanyWrite,
       },
