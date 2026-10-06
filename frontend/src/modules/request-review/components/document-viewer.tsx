@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Download, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "cn";
 
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 3;
@@ -38,10 +39,16 @@ export function DocumentViewer({ url, mimeType, fileName }: DocumentViewerProps)
             </span>
           </>
         )}
-        <Button variant="outline" size="sm" className="ml-auto" render={<a href={url} download={fileName} />}>
+        {/* Button con render={<a />} no es un botón nativo; por eso se usa <a> con las clases de buttonVariants */}
+        <a
+          href={url}
+          download={fileName}
+          rel="noopener noreferrer"
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-auto")}
+        >
           <Download aria-hidden="true" />
           Descargar
-        </Button>
+        </a>
       </div>
       <div className="flex h-[32rem] items-center justify-center overflow-auto p-2">
         {isPdf ? (

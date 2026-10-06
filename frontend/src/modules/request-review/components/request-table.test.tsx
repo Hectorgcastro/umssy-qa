@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReviewListItem } from "../types/request-review.types";
 import { RequestTable } from "./request-table";
 
@@ -56,5 +56,17 @@ describe("RequestTable", () => {
   it("sin datos renderiza solo los encabezados", () => {
     render(<RequestTable />);
     expect(screen.queryByRole("link", { name: "Revisar" })).toBeNull();
+  });
+
+  it("Revisar es un enlace real (no un botón) y no emite el aviso de Base UI", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    render(<RequestTable items={[item]} />);
+
+    const link = screen.getByRole("link", { name: "Revisar" });
+    expect(link.tagName).toBe("A");
+    expect(link).toHaveAttribute("href", "/backoffice/solicitudes/id-1");
+    expect(screen.queryByRole("button", { name: "Revisar" })).toBeNull();
+    expect(consoleError.mock.calls.flat().join(" ")).not.toContain("nativeButton");
+    consoleError.mockRestore();
   });
 });
