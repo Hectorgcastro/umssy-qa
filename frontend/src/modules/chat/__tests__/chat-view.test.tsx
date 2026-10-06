@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import {
   render,
   screen,
@@ -14,10 +15,20 @@ import {
 import { ChatView } from '../views/chat-view';
 import ChatPage from '../../../app/chat/page';
 import * as chatApi from '../services/chat-api';
+import { stubMatchMedia } from '@/shared/testing/stub-match-media';
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/chat',
+}));
+
+beforeEach(() => {
+  stubMatchMedia();
+});
 
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals(); // ← agregar
 });
 
 const mockList = [
@@ -164,5 +175,8 @@ describe('ChatView & ChatPage', () => {
     renderWithQueryClient(<ChatPage />);
 
     expect(screen.getByText('Chats')).toBeDefined();
+    expect(
+      screen.getByRole('link', { name: 'Mensajes' }).getAttribute('aria-current'),
+    ).toBe('page');
   });
 });
