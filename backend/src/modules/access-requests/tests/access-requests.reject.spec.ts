@@ -107,7 +107,7 @@ describe('AccessRequestsService.reject', () => {
     const service = { reject: vi.fn().mockResolvedValue({ id: 'id-1' }) };
     const controller = new AccessRequestsController(service as any);
 
-    await controller.reject('id-1', { reason: 'Motivo' }, { headers: {}, user: { id: 'admin-1', email: 'a@b.co', roles: ['administrativo'] } });
+    await controller.reject('id-1', { reason: 'Motivo' }, { id: 'admin-1', email: 'a@b.co', roles: ['administrativo'] });
 
     expect(service.reject).toHaveBeenCalledWith('id-1', 'admin-1', 'Motivo');
   });

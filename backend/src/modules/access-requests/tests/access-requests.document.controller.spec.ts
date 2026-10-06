@@ -3,7 +3,8 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DomainExceptionFilter } from '../../../common/filters/domain-exception.filter.js';
-import { BackofficeGuard } from '../guards/backoffice.guard.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { AccessRequestsController } from '../controllers/access-requests.controller.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
@@ -20,7 +21,9 @@ describe('AccessRequestsController (documento de respaldo)', () => {
       controllers: [AccessRequestsController],
       providers: [{ provide: AccessRequestsService, useValue: service }],
     })
-      .overrideGuard(BackofficeGuard)
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
       .compile();
     app = moduleRef.createNestApplication();
