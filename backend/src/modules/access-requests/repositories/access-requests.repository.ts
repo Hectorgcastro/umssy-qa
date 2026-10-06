@@ -171,6 +171,28 @@ export class AccessRequestsRepository {
     }
   }
 
+  // Dictamen atómico: solo desde in_review. Devuelve false si cambió de estado (P2025) para que el service responda 409
+  async setVerdict(id: string, reviewerId: string, verdict: { status: string; rejectionReason?: string }): Promise<boolean> {
+    try {
+      await this.prisma.accessRequest.update({
+        where: { id, status: { title: ACCESS_REQUEST_STATUS.IN_REVIEW } },
+        data: {
+          status: { connect: { title: verdict.status } },
+          reviewedBy: { connect: { id: reviewerId } },
+          reviewedAt: new Date(),
+          ...(verdict.rejectionReason !== undefined && { rejectionReason: verdict.rejectionReason }),
+        },
+        select: { id: true },
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   findById(id: string) {
     return this.prisma.accessRequest.findUnique({ where: { id }, select: ACCESS_REQUEST_SELECT });
   }
