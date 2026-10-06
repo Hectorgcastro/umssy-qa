@@ -112,7 +112,7 @@ export function BlockForm({
 
       <form onSubmit={handleSubmit} noValidate className="contents">
         <CardContent className="flex flex-col gap-6">
-          <div className={cn("grid gap-6", mode !== "edit" && "md:grid-cols-2")}>
+          <div className="grid gap-6">
             <Field data-invalid={errors.date ? true : undefined}>
               <FieldLabel htmlFor="date" className="font-semibold">
                 {text.dateLabel}
@@ -184,7 +184,7 @@ export function BlockForm({
             </Field>
 
             <FieldGroup
-              className={cn("gap-4", mode === "edit" && "md:grid md:grid-cols-2")}
+              className="grid grid-cols-2 gap-4"
             >
               <Field data-invalid={errors.startAt ? true : undefined}>
                 <FieldLabel htmlFor="startAt" className="font-semibold">
@@ -235,7 +235,7 @@ export function BlockForm({
               </Field>
 
               {mode !== "edit" && (
-                <FieldDescription className="text-xs">
+                <FieldDescription className="col-span-2 text-xs">
                   La hora de fin debe ser posterior a la de inicio. Horario en hora de Bolivia (GMT-4).
                 </FieldDescription>
               )}
@@ -269,9 +269,8 @@ export function BlockForm({
             type="submit"
             size="lg"
             className={cn(
-              "w-full",
+              "w-full bg-accent text-surface hover:bg-danger",
               mode !== "edit" && "sm:w-auto",
-              mode === "edit" && "bg-danger text-surface hover:bg-danger/90",
             )}
             disabled={isSubmitting}
           >

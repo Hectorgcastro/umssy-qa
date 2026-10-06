@@ -40,6 +40,26 @@ describe("WeekGrid", () => {
     expect(screen.getByText("Cita confirmada")).toBeInTheDocument();
   });
 
+  it("muestra el número del día en la cabecera de cada columna", () => {
+    render(<WeekGrid blocks={[]} weekRange={WEEK_RANGE} variant="owner" />);
+    expect(screen.getByRole("heading", { name: "LUN 5" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "DOM 11" })).toBeInTheDocument();
+  });
+
+  it("muestra Pendiente y Confirmada en los bloques con cita", () => {
+    render(<WeekGrid blocks={blocks} weekRange={WEEK_RANGE} variant="owner" />);
+    expect(screen.getByRole("button", { name: /^pendiente,/ })).toHaveTextContent("Pendiente");
+    expect(screen.getByRole("button", { name: /^confirmada,/ })).toHaveTextContent("Confirmada");
+  });
+
+  it("en variant selectable, muestra la hora en los bloques libres y solo la leyenda del titulado", () => {
+    render(<WeekGrid blocks={[blocks[0]]} weekRange={WEEK_RANGE} variant="selectable" />);
+    expect(screen.getByRole("button", { name: "libre, 18:00 a 19:00" })).toHaveTextContent("18:00");
+    expect(screen.getByText("Horario libre")).toBeInTheDocument();
+    expect(screen.queryByText("Solicitud pendiente")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cita confirmada")).not.toBeInTheDocument();
+  });
+
   it("muestra Tu selección en la leyenda solo en variant selectable", () => {
     render(<WeekGrid blocks={[]} weekRange={WEEK_RANGE} variant="selectable" />);
     expect(screen.getByText("Tu selección")).toBeInTheDocument();
@@ -82,9 +102,9 @@ describe("WeekGrid", () => {
     const selected = screen.getByRole("button", { name: "libre, 18:00 a 19:00" });
     const other = screen.getByRole("button", { name: "libre, 10:00 a 11:00" });
     expect(selected).toHaveAttribute("aria-pressed", "true");
-    expect(selected).toHaveClass("ring-primary");
+    expect(selected).toHaveClass("ring-accent");
     expect(other).not.toHaveAttribute("aria-pressed");
-    expect(other).not.toHaveClass("ring-primary");
+    expect(other).not.toHaveClass("ring-accent");
   });
 
   it("en variant selectable, un bloque pendiente o confirmado está deshabilitado y no dispara el callback", () => {
@@ -175,7 +195,7 @@ describe("WeekGrid", () => {
   it("muestra la grilla desde md y la lista por día en pantallas chicas", () => {
     render(<WeekGrid blocks={blocks} weekRange={WEEK_RANGE} variant="owner" />);
 
-    const grid = screen.getByRole("heading", { name: "LUN" }).closest("section")?.parentElement;
+    const grid = screen.getByRole("heading", { name: "LUN 5" }).closest("section")?.parentElement;
     expect(grid).toHaveClass("hidden", "md:grid");
     expect(screen.getByRole("heading", { name: "Lunes 5 de octubre" }).closest("ol")).toHaveClass(
       "md:hidden"

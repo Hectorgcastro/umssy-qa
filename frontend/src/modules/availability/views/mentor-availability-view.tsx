@@ -4,9 +4,13 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, CircleCheckIcon } from "lucide-react";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { BOLIVIA_TIME_LABEL } from "@/shared/constants/date-time.constants";
 import { addWeeks, getWeekRange } from "@/shared/utils/date-time";
 import { cn } from "cn";
-import { MY_AVAILABILITY_TEXT } from "../constants/my-availability.constants";
+import {
+  MY_AVAILABILITY_EYEBROW,
+  MY_AVAILABILITY_TEXT,
+} from "../constants/my-availability.constants";
 import { AvailabilityLoading } from "../components/availability-loading";
 import { BlockForm } from "../components/block-form";
 import { EditBlockPanel } from "../components/edit-block-panel";
@@ -73,6 +77,7 @@ export function MentorAvailabilityView({ initialWeekStart }: MentorAvailabilityV
   return (
     <div className="space-y-4 p-6">
       <header>
+        <p className="text-xs font-semibold text-muted-foreground">{MY_AVAILABILITY_EYEBROW}</p>
         <h1 className="text-2xl font-bold">{MY_AVAILABILITY_TEXT.title}</h1>
       </header>
 
@@ -108,6 +113,7 @@ export function MentorAvailabilityView({ initialWeekStart }: MentorAvailabilityV
             >
               {MY_AVAILABILITY_TEXT.today}
             </Button>
+            <p className="ml-auto text-sm text-muted-foreground">{BOLIVIA_TIME_LABEL}</p>
           </nav>
 
           {isLoading ? (

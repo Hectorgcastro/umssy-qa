@@ -48,7 +48,7 @@ export function BlockSelectionPanel({
             <Skeleton className="h-4 w-1/2" />
           </div>
         ) : selectedBlock ? (
-          <Card size="sm" className="bg-primary/5 ring-primary">
+          <Card size="sm" className="bg-accent/5 ring-accent">
             <CardContent className="flex flex-col gap-1">
               <CardTitle className="font-bold">{formatBlockDate(selectedBlock.startAt)}</CardTitle>
               <CardDescription>
@@ -65,7 +65,7 @@ export function BlockSelectionPanel({
       </CardContent>
 
       <CardFooter className="bg-transparent">
-        <Button type="button" className="w-full" disabled>
+        <Button type="button" className="w-full bg-accent text-surface hover:bg-danger" disabled>
           {BLOCK_SELECTION_TEXT.requestAppointment}
         </Button>
       </CardFooter>
