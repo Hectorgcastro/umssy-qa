@@ -174,3 +174,42 @@ describe("requestReviewService.approveRequest", () => {
     expect(await requestReviewService.approveRequest("1")).toMatchObject({ ok: false, status: 0, message: "No se pudo conectar con el servidor. Inténtalo de nuevo." });
   });
 });
+
+describe("requestReviewService.rejectRequest", () => {
+  const patch = vi.spyOn(apiClient, "patch");
+  const replyPatch = (status: number, data: unknown) => patch.mockResolvedValue({ status, data } as never);
+  beforeEach(() => {
+    patch.mockReset();
+    sessionStorage.setItem("accessToken", "token-de-prueba");
+  });
+  afterEach(() => sessionStorage.clear());
+
+  it("envía el motivo con el token y acepta el cuerpo plano o envuelto", async () => {
+    replyPatch(200, { id: "1", status: "rejected", notificationSent: true });
+    expect(await requestReviewService.rejectRequest("1", "Motivo")).toEqual({ ok: true, data: { id: "1", status: "rejected", notificationSent: true } });
+    expect(patch).toHaveBeenCalledWith("/access-requests/1/reject", { reason: "Motivo" }, expect.objectContaining({ headers: { Authorization: "Bearer token-de-prueba" } }));
+
+    replyPatch(200, { statusCode: 200, ok: true, detail: "ok", data: { id: "1", status: "rejected", notificationSent: false } });
+    expect(await requestReviewService.rejectRequest("1", "Motivo")).toEqual({ ok: true, data: { id: "1", status: "rejected", notificationSent: false } });
+  });
+
+  it("muestra el mensaje en español del 400 de Zod y traduce 404, 409 y 403", async () => {
+    replyPatch(400, { message: [{ message: "El motivo del rechazo es obligatorio" }], statusCode: 400 });
+    expect(await requestReviewService.rejectRequest("1", "")).toEqual({ ok: false, status: 400, message: "El motivo del rechazo es obligatorio" });
+    replyPatch(404, {});
+    expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ status: 404, message: "La solicitud no existe." });
+    replyPatch(409, { detail: "La solicitud no está en revisión" });
+    expect(await requestReviewService.rejectRequest("1", "m")).toEqual({ ok: false, status: 409, message: "La solicitud no está en revisión" });
+    replyPatch(403, {});
+    expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ status: 403 });
+  });
+
+  it("un 400 sin forma de Zod usa el texto genérico; un 200 sin estado rechazado y una red caída dan error", async () => {
+    replyPatch(400, "x");
+    expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ ok: false, status: 400, message: "No se pudo completar la operación. Inténtalo de nuevo." });
+    replyPatch(200, { status: "approved" });
+    expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ ok: false, status: 0 });
+    patch.mockRejectedValueOnce(new Error("red"));
+    expect(await requestReviewService.rejectRequest("1", "m")).toMatchObject({ ok: false, status: 0, message: "No se pudo conectar con el servidor. Inténtalo de nuevo." });
+  });
+});

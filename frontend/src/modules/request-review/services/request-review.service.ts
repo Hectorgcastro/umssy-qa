@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/services/api-client";
 import { REVIEW_PAGE_SIZE } from "../constants/request-review.constants";
-import type { ApproveResult, ReviewApiResult, ReviewDetail, ReviewListResult, ReviewStatus } from "../types/request-review.types";
+import type { ApproveResult, RejectResult, ReviewApiResult, ReviewDetail, ReviewListResult, ReviewStatus } from "../types/request-review.types";
 import { getSessionToken } from "../utils/session";
 
 const NETWORK_ERROR_MESSAGE = "No se pudo conectar con el servidor. Inténtalo de nuevo.";
@@ -101,6 +101,33 @@ async function approveRequest(id: string): Promise<ReviewApiResult<ApproveResult
   }
 }
 
+// El motivo es obligatorio; el backend responde 400 en español si falta y 409 si la solicitud ya no está en revisión
+async function rejectRequest(id: string, reason: string): Promise<ReviewApiResult<RejectResult>> {
+  try {
+    const response = await apiClient.patch(
+      `/access-requests/${id}/reject`,
+      { reason },
+      { headers: authHeaders(), validateStatus: () => true },
+    );
+    if (response.status === 404) return { ok: false, status: 404, message: NOT_FOUND_MESSAGE };
+    if (response.status < 200 || response.status >= 300) {
+      const body: unknown = response.data;
+      const first = isRecord(body) && Array.isArray(body.message) ? body.message[0] : null;
+      if (response.status === 400 && isRecord(first) && typeof first.message === "string") {
+        return { ok: false, status: 400, message: first.message };
+      }
+      return failureOf(response.status, body);
+    }
+
+    const body: unknown = response.data;
+    const result = isRecord(body) && isRecord(body.data) && "status" in body.data ? body.data : body;
+    if (!isRecord(result) || result.status !== "rejected") return { ok: false, status: 0, message: GENERIC_ERROR_MESSAGE };
+    return { ok: true, data: { id, status: "rejected", notificationSent: result.notificationSent === true } };
+  } catch {
+    return { ok: false, status: 0, message: NETWORK_ERROR_MESSAGE };
+  }
+}
+
 // Los bytes se piden con el token y se devuelven como Blob para mostrarlos sin exponer el token en la URL
 async function getDocumentBlob(id: string): Promise<ReviewApiResult<Blob>> {
   try {
@@ -118,4 +145,4 @@ async function getDocumentBlob(id: string): Promise<ReviewApiResult<Blob>> {
   }
 }
 
-export const requestReviewService = { listRequests, getRequestDetail, getDocumentBlob, approveRequest };
+export const requestReviewService = { listRequests, getRequestDetail, getDocumentBlob, approveRequest, rejectRequest };

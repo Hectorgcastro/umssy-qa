@@ -72,7 +72,7 @@ export function ReviewStep() {
         </p>
         {isRejected && submission.rejectionReason ? (
           <p role="status" className="text-[13.5px] text-danger 2xl:text-base">
-            {submission.rejectionReason}
+            {`Motivo del rechazo: ${submission.rejectionReason}`}
           </p>
         ) : null}
       </div>

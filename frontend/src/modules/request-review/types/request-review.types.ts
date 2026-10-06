@@ -58,3 +58,9 @@ export interface ApproveResult {
   status: ReviewStatus;
   activationCodeSent: boolean;
 }
+
+export interface RejectResult {
+  id: string;
+  status: ReviewStatus;
+  notificationSent: boolean;
+}
