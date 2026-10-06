@@ -1,9 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { INTERCEPTORS_METADATA } from '@nestjs/common/constants.js';
+import { ResponseInterceptor } from '../../../common/interceptors/index.js';
 import { OrientationTypesController } from '../controllers/orientation-types.controller.js';
 import type { OrientationTypesService } from '../services/orientation-types.service.js';
 import type { OrientationTypeResponse } from '../types/orientation-type-response.types.js';
 
 describe('OrientationTypesController', () => {
+  it('aplica Standard Response a todos sus endpoints', () => {
+    expect(
+      Reflect.getMetadata(INTERCEPTORS_METADATA, OrientationTypesController),
+    ).toEqual([ResponseInterceptor]);
+  });
+
   const findAll = vi.fn<() => Promise<OrientationTypeResponse[]>>();
   const service = { findAll } as unknown as OrientationTypesService;
   let controller: OrientationTypesController;

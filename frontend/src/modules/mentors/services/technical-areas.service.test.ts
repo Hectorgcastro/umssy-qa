@@ -22,7 +22,14 @@ describe("technical areas service", () => {
     const signal = new AbortController().signal;
     const request = vi
       .spyOn(apiClient, "get")
-      .mockResolvedValue({ data: areas });
+      .mockResolvedValue({
+        data: {
+          statusCode: 200,
+          ok: true,
+          detail: "Operación exitosa",
+          data: areas,
+        },
+      });
 
     await expect(getMentorTechnicalAreas(signal)).resolves.toBe(areas);
     expect(request).toHaveBeenCalledWith("/mentors/me/technical-areas", {
@@ -31,12 +38,21 @@ describe("technical areas service", () => {
   });
 
   it("persiste exclusivamente los UUID seleccionados", async () => {
+    const technicalAreaIds = areas.map((area) => area.id);
     const request = vi
       .spyOn(apiClient, "patch")
-      .mockResolvedValue({ data: {} });
-    const technicalAreaIds = areas.map((area) => area.id);
+      .mockResolvedValue({
+        data: {
+          statusCode: 200,
+          ok: true,
+          detail: "Operación exitosa",
+          data: { technicalAreaIds },
+        },
+      });
 
-    await updateMentorTechnicalAreas(technicalAreaIds);
+    await expect(
+      updateMentorTechnicalAreas(technicalAreaIds),
+    ).resolves.toBeUndefined();
 
     expect(request).toHaveBeenCalledWith("/mentors/me/technical-areas", {
       technicalAreaIds,
