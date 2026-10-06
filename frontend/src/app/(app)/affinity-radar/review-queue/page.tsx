@@ -13,6 +13,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Epic3Shell } from "@/modules/radar-chart";
 
 type EstadoPerfil = "Completado" | "Procesando" | "Pendiente";
 type Filtro = "Todos" | EstadoPerfil;
@@ -296,7 +297,7 @@ function AreaBreakdownPanel({
   );
 }
 
-export default function ColaRevisionPage() {
+function ColaRevision() {
   const [filtroActivo, setFiltroActivo] = useState<Filtro>("Todos");
 
   const [perfilSeleccionado, setPerfilSeleccionado] =
@@ -575,5 +576,13 @@ export default function ColaRevisionPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ColaRevisionPage() {
+  return (
+    <Epic3Shell>
+      <ColaRevision />
+    </Epic3Shell>
   );
 }

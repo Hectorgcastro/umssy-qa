@@ -32,3 +32,4 @@ export { KpiCards } from "./components/kpi-cards";
 export { AffinityRadarChart } from "./components/affinity-radar-chart";
 export { AreaBreakdownPanel } from "./components/area-breakdown-panel";
 export { RadarProfileView } from "./components/radar-profile-view";
+export { Epic3Shell } from "./components/epic3-shell";
