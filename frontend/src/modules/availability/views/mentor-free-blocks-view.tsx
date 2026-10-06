@@ -1,53 +1,85 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { addWeeks, getWeekRange, toBoliviaTime } from "@/shared/utils/date-time";
+import { BOLIVIA_TIME_LABEL } from "@/shared/constants/date-time.constants";
+import { addWeeks, getWeekRange } from "@/shared/utils/date-time";
+import { cn } from "cn";
 import { AvailabilityLoading } from "../components/availability-loading";
 import { BlockSelection } from "../components/block-selection/block-selection";
 import { MENTOR_FREE_BLOCKS_TEXT } from "../constants/mentor-free-blocks.constants";
 import { useMentorFreeBlocks } from "../hooks/use-mentor-free-blocks";
 import { availabilityApi } from "../services/availability.api";
 import type { MentorFreeBlocksViewProps } from "../types/mentor-free-blocks-view-props.types";
+import { formatWeekLabel } from "../utils/format-week-label";
 
 export function MentorFreeBlocksView({ mentorId }: MentorFreeBlocksViewProps) {
-  const [referenceDate, setReferenceDate] = useState(() => new Date().toISOString());
-  const weekRange = getWeekRange(referenceDate);
+  const [weekStart, setWeekStart] = useState(() => getWeekRange(new Date()).startAt);
+  const weekRange = getWeekRange(weekStart);
+  const currentWeekStart = getWeekRange(new Date()).startAt;
   const { blocks, isLoading, error } = useMentorFreeBlocks(mentorId, weekRange);
 
-  const goToPreviousWeek = () => setReferenceDate((current) => addWeeks(current, -1));
-  const goToNextWeek = () => setReferenceDate((current) => addWeeks(current, 1));
-
-  const start = toBoliviaTime(weekRange.startAt);
-  const end = toBoliviaTime(weekRange.endAt);
+  const goToNextWeek = () => setWeekStart(addWeeks(weekStart, 1));
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">{MENTOR_FREE_BLOCKS_TEXT.heading}</h1>
+    <div className="space-y-4 p-6">
+      <header>
+        <p className="text-xs font-semibold text-muted-foreground">
+          {MENTOR_FREE_BLOCKS_TEXT.eyebrow}
+        </p>
+        <h1 className="text-2xl font-bold">{MENTOR_FREE_BLOCKS_TEXT.heading}</h1>
+      </header>
 
-      <div className="flex items-center justify-between mb-4">
-        <Button type="button" variant="outline" size="sm" onClick={goToPreviousWeek}>
-          {MENTOR_FREE_BLOCKS_TEXT.previousWeek}
+      <nav
+        aria-label={MENTOR_FREE_BLOCKS_TEXT.weekNavigation}
+        className="flex flex-wrap items-center gap-2"
+      >
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label={MENTOR_FREE_BLOCKS_TEXT.previousWeek}
+          onClick={() => setWeekStart(addWeeks(weekStart, -1))}
+        >
+          <ChevronLeft aria-hidden="true" />
         </Button>
-        <span className="text-sm font-medium">
-          {start.day}/{start.month} - {end.day}/{end.month}
-        </span>
-        <Button type="button" variant="outline" size="sm" onClick={goToNextWeek}>
-          {MENTOR_FREE_BLOCKS_TEXT.nextWeek}
+        <p className="min-w-44 text-center text-sm font-medium" aria-live="polite">
+          {formatWeekLabel(weekRange)}
+        </p>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label={MENTOR_FREE_BLOCKS_TEXT.nextWeek}
+          onClick={goToNextWeek}
+        >
+          <ChevronRight aria-hidden="true" />
         </Button>
-      </div>
+        <Button
+          variant="outline"
+          disabled={weekStart === currentWeekStart}
+          onClick={() => setWeekStart(currentWeekStart)}
+        >
+          {MENTOR_FREE_BLOCKS_TEXT.today}
+        </Button>
+        <p className="ml-auto text-sm text-muted-foreground">{BOLIVIA_TIME_LABEL}</p>
+      </nav>
 
       {isLoading ? (
         <AvailabilityLoading />
       ) : error ? (
         <p className="text-center text-destructive">{error}</p>
       ) : blocks.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-8">
+        <section
+          className={cn(
+            "flex flex-col items-center gap-3 rounded-lg",
+            "border border-dashed border-border p-8 text-center",
+          )}
+        >
           <p className="text-muted-foreground">{MENTOR_FREE_BLOCKS_TEXT.empty}</p>
-          <Button type="button" onClick={goToNextWeek}>
+          <Button type="button" variant="outline" onClick={goToNextWeek}>
             {MENTOR_FREE_BLOCKS_TEXT.nextWeekFromEmpty}
           </Button>
-        </div>
+        </section>
       ) : (
         <BlockSelection
           blocks={blocks}

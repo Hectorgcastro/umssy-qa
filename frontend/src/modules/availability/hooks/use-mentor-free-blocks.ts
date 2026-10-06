@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  FREE_BLOCKS_STALE_TIME_MS,
+  MENTOR_FREE_BLOCKS_TEXT,
+} from "../constants/mentor-free-blocks.constants";
 import { availabilityApi } from "../services/availability.api";
 import type { AvailabilityBlock } from "../types/availability-block.types";
 import type { CacheEntry } from "../types/availability-cache.types";
 import type { WeekRange } from "@/shared/types/week-range.types";
-
-const STALE_TIME_MS = 30_000;
 
 export function useMentorFreeBlocks(mentorId: string, weekRange: WeekRange) {
   const { startAt, endAt } = weekRange;
@@ -35,7 +37,7 @@ export function useMentorFreeBlocks(mentorId: string, weekRange: WeekRange) {
     forceRefreshRef.current = false;
 
     const cached = cacheRef.current.get(requestKey);
-    const isFresh = cached && Date.now() - cached.fetchedAt < STALE_TIME_MS;
+    const isFresh = cached && Date.now() - cached.fetchedAt < FREE_BLOCKS_STALE_TIME_MS;
 
     if (!forceRefresh && isFresh) {
       setBlocks(cached.blocks);
@@ -56,7 +58,7 @@ export function useMentorFreeBlocks(mentorId: string, weekRange: WeekRange) {
         }
       })
       .catch(() => {
-        if (!cancelled) setError("Error al obtener los bloques de disponibilidad");
+        if (!cancelled) setError(MENTOR_FREE_BLOCKS_TEXT.loadError);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
