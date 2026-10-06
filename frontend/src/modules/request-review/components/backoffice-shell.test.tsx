@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { stubMatchMedia } from "@/shared/testing/stub-match-media";
+import { requestReviewService } from "../services/request-review.service";
 import { BackofficeShell } from "./backoffice-shell";
 
 const replace = vi.fn();
@@ -71,5 +72,66 @@ describe("BackofficeShell", () => {
 
     expect(sessionStorage.getItem("accessToken")).toBeNull();
     expect(replace).toHaveBeenCalledWith("/login");
+  });
+
+  describe("barra lateral y conteo de pendientes", () => {
+    const listRequests = vi.spyOn(requestReviewService, "listRequests");
+    beforeEach(() => listRequests.mockReset());
+
+    it("muestra la insignia de pendientes con el total que devuelve el listado (limit=1)", async () => {
+      sessionStorage.setItem("accessToken", tokenFor("administrativo"));
+      listRequests.mockResolvedValue({ ok: true, data: { items: [], total: 18, page: 1, offset: 0 } });
+      render(
+        <BackofficeShell>
+          <p>Contenido</p>
+        </BackofficeShell>,
+      );
+
+      expect(await screen.findByLabelText("18 pendientes")).toHaveTextContent("18");
+      expect(listRequests).toHaveBeenCalledWith("pending", 1, 1);
+    });
+
+    it("si el conteo falla no hay insignia ni error", async () => {
+      sessionStorage.setItem("accessToken", tokenFor("administrativo"));
+      listRequests.mockResolvedValue({ ok: false, status: 0, message: "sin red" });
+      render(
+        <BackofficeShell>
+          <p>Contenido</p>
+        </BackofficeShell>,
+      );
+
+      await waitFor(() => expect(listRequests).toHaveBeenCalled());
+      expect(screen.queryByLabelText(/pendientes/)).toBeNull();
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+
+    it("sin sesión no pide el conteo", () => {
+      render(
+        <BackofficeShell>
+          <p>Contenido</p>
+        </BackofficeShell>,
+      );
+      expect(listRequests).not.toHaveBeenCalled();
+    });
+
+    it("la barra tiene la marca de texto, el pie con iniciales y no menciona egresados ni el lema", async () => {
+      sessionStorage.setItem("accessToken", tokenFor("administrativo"));
+      listRequests.mockResolvedValue({ ok: false, status: 0, message: "x" });
+      render(
+        <BackofficeShell>
+          <p>Contenido</p>
+        </BackofficeShell>,
+      );
+
+      expect(screen.getByText("UMSSY")).toBeInTheDocument();
+      expect(screen.getByText("Backoffice de verificación")).toBeInTheDocument();
+      expect(screen.getByText("PA")).toBeInTheDocument();
+      expect(screen.queryByText("Registro de auditoría")).toBeNull();
+      const text = document.body.textContent?.toLowerCase() ?? "";
+      expect(text).not.toContain("egres");
+      expect(text).not.toContain("certificado de egreso");
+      expect(text).not.toContain("universidad para el futuro");
+      await waitFor(() => expect(listRequests).toHaveBeenCalled());
+    });
   });
 });
