@@ -1,0 +1,52 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { DocumentViewer } from "./document-viewer";
+
+describe("DocumentViewer", () => {
+  afterEach(() => cleanup());
+
+  it("muestra una imagen con zoom y rotación por CSS", () => {
+    render(<DocumentViewer url="blob:img" mimeType="image/png" fileName="titulo.png" />);
+    const image = screen.getByAltText("Documento de respaldo");
+
+    expect(image).toHaveStyle({ transform: "scale(1) rotate(0deg)" });
+    fireEvent.click(screen.getByRole("button", { name: "Acercar" }));
+    expect(image).toHaveStyle({ transform: "scale(1.25) rotate(0deg)" });
+    expect(screen.getByText("125 %")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Alejar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Alejar" }));
+    expect(image).toHaveStyle({ transform: "scale(0.75) rotate(0deg)" });
+    fireEvent.click(screen.getByRole("button", { name: "Rotar" }));
+    expect(image).toHaveStyle({ transform: "scale(0.75) rotate(90deg)" });
+  });
+
+  it("limita el zoom entre 50 % y 300 %", () => {
+    render(<DocumentViewer url="blob:img" mimeType="image/jpeg" fileName="a.jpg" />);
+    for (let i = 0; i < 10; i++) fireEvent.click(screen.getByRole("button", { name: "Acercar" }));
+    expect(screen.getByText("300 %")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Acercar" })).toBeDisabled();
+    for (let i = 0; i < 12; i++) fireEvent.click(screen.getByRole("button", { name: "Alejar" }));
+    expect(screen.getByText("50 %")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Alejar" })).toBeDisabled();
+  });
+
+  it("rota de 90 en 90 y vuelve a 0 tras cuatro giros", () => {
+    render(<DocumentViewer url="blob:img" mimeType="image/png" fileName="a.png" />);
+    for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole("button", { name: "Rotar" }));
+    expect(screen.getByAltText("Documento de respaldo")).toHaveStyle({ transform: "scale(1) rotate(0deg)" });
+  });
+
+  it("un PDF se muestra en el visor del navegador, sin herramientas de imagen", () => {
+    render(<DocumentViewer url="blob:pdf" mimeType="application/pdf" fileName="titulo.pdf" />);
+
+    expect(screen.getByTitle("Documento de respaldo")).toHaveAttribute("src", "blob:pdf");
+    expect(screen.queryByRole("button", { name: "Acercar" })).toBeNull();
+  });
+
+  it("permite descargar el documento con su nombre", () => {
+    render(<DocumentViewer url="blob:pdf" mimeType="application/pdf" fileName="titulo.pdf" />);
+    const link = screen.getByRole("link", { name: /Descargar/ });
+    expect(link).toHaveAttribute("href", "blob:pdf");
+    expect(link).toHaveAttribute("download", "titulo.pdf");
+  });
+});

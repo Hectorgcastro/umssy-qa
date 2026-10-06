@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
@@ -8,6 +8,7 @@ import { DocumentUploadInterceptor } from '../interceptors/document-upload.inter
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import { createAccessRequestSchema, type CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
 import { attachDocumentSchema, type AttachDocumentDto } from '../requests/attach-document.schema.js';
+import type { BackofficeRequest } from '../types/authenticated-request.types.js';
 import type { UploadedDocumentFile } from '../types/uploaded-file.types.js';
 import {
   requestStatusParamsSchema,
@@ -16,6 +17,11 @@ import {
   type RequestStatusQuery,
 } from '../requests/request-status.schema.js';
 import { updateAccessRequestSchema, type UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
+
+interface DocumentResponse {
+  set: (headers: Record<string, string>) => unknown;
+  end: (body: Buffer) => unknown;
+}
 
 const uuidPipe = new ParseUUIDPipe({
   exceptionFactory: () => new BadRequestException('El identificador de la solicitud no es válido'),
@@ -39,6 +45,26 @@ export class AccessRequestsController {
     @Query(new ZodValidationPipe(requestStatusQuerySchema)) query: RequestStatusQuery,
   ) {
     return this.accessRequestsService.getStatus(params.code, query.email);
+  }
+
+  // El documento se entrega como binario con su tipo de contenido; el cuerpo nunca pasa por el formato JSON
+  @Get(':id/document')
+  @UseGuards(BackofficeGuard)
+  async getDocument(@Param('id', uuidPipe) id: string, @Res() response: DocumentResponse): Promise<void> {
+    const file = await this.accessRequestsService.getDocument(id);
+    response.set({
+      'Content-Type': file.mimeType,
+      'Content-Length': String(file.content.length),
+      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(`${file.name}.${file.extension}`)}`,
+    });
+    response.end(file.content);
+  }
+
+  // Abrir una solicitud pendiente la pasa a en revisión y registra a la persona que la abrió
+  @Get(':id')
+  @UseGuards(BackofficeGuard)
+  getDetail(@Param('id', uuidPipe) id: string, @Req() request: BackofficeRequest) {
+    return this.accessRequestsService.getDetail(id, request.user!.id);
   }
 
   @Post()

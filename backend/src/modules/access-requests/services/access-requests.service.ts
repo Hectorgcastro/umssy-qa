@@ -12,8 +12,10 @@ import {
   InvalidDocumentTypeException,
   InvalidGraduationYearException,
   MissingDocumentFileException,
+  RequestDocumentNotFoundException,
 } from '../exceptions/index.js';
 import { toAccessRequestResponse } from '../mappers/access-request.mapper.js';
+import { toAccessRequestDetail } from '../mappers/access-request-detail.mapper.js';
 import { toAccessRequestListItem } from '../mappers/access-request-list.mapper.js';
 import type { ListAccessRequestsQuery } from '../requests/list-access-requests.schema.js';
 import { toRequestStatusResponse } from '../mappers/request-status.mapper.js';
@@ -163,6 +165,35 @@ export class AccessRequestsService {
       status: submitted.status.title,
       submittedAt: submitted.submittedAt?.toISOString() ?? null,
     };
+  }
+
+  // Abre la solicitud para revisión: una pendiente pasa a en revisión. Los borradores no existen para el backoffice
+  async getDetail(id: string, reviewerId: string) {
+    const current = await this.accessRequestsRepository.findDetailById(id);
+    if (!current || current.status.title === ACCESS_REQUEST_STATUS.DRAFT) {
+      throw new AccessRequestNotFoundException();
+    }
+    if (current.status.title !== ACCESS_REQUEST_STATUS.PENDING) {
+      return toAccessRequestDetail(current);
+    }
+
+    await this.accessRequestsRepository.markInReview(id, reviewerId);
+    const updated = await this.accessRequestsRepository.findDetailById(id);
+    if (!updated) {
+      throw new AccessRequestNotFoundException();
+    }
+    return toAccessRequestDetail(updated);
+  }
+
+  async getDocument(id: string) {
+    const current = await this.accessRequestsRepository.findDetailById(id);
+    if (!current || current.status.title === ACCESS_REQUEST_STATUS.DRAFT) {
+      throw new AccessRequestNotFoundException();
+    }
+    if (!current.documentFileId) {
+      throw new RequestDocumentNotFoundException();
+    }
+    return this.filesService.getContent(current.documentFileId);
   }
 
   // Forma { data, page, offset } del contrato paginado; el total viaja dentro de data

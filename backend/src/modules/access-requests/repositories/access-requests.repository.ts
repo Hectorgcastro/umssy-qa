@@ -76,6 +76,30 @@ const LISTED_STATUSES: string[] = [
   ACCESS_REQUEST_STATUS.REJECTED,
 ];
 
+// Detalle para el backoffice: datos declarados y solo metadatos del archivo (nunca content)
+const DETAIL_SELECT = {
+  id: true,
+  requestCode: true,
+  firstName: true,
+  lastName: true,
+  idCardNumber: true,
+  idCardIssuedIn: true,
+  sisCode: true,
+  email: true,
+  phone: true,
+  birthDate: true,
+  graduationYear: true,
+  documentFileId: true,
+  submittedAt: true,
+  reviewedAt: true,
+  rejectionReason: true,
+  status: { select: { title: true } },
+  career: { select: { title: true } },
+  documentType: { select: { title: true } },
+  documentFile: { select: { name: true, extension: true, mimeType: true, size: true } },
+  reviewedBy: { select: { firstName: true, lastName: true } },
+} satisfies Prisma.AccessRequestSelect;
+
 @Injectable()
 export class AccessRequestsRepository {
   // Pausa entre intentos de asignar código; se reemplaza en las pruebas para no esperar
@@ -119,6 +143,32 @@ export class AccessRequestsRepository {
       this.prisma.accessRequest.count({ where }),
     ]);
     return { rows, total };
+  }
+
+  findDetailById(id: string) {
+    return this.prisma.accessRequest.findUnique({ where: { id }, select: DETAIL_SELECT });
+  }
+
+  // Pasa de pending a in_review de forma atómica y registra quién la abrió y cuándo.
+  // Devuelve false si la solicitud ya no estaba pendiente (P2025): no es un error, otra persona la abrió antes.
+  async markInReview(id: string, reviewerId: string): Promise<boolean> {
+    try {
+      await this.prisma.accessRequest.update({
+        where: { id, status: { title: ACCESS_REQUEST_STATUS.PENDING } },
+        data: {
+          status: { connect: { title: ACCESS_REQUEST_STATUS.IN_REVIEW } },
+          reviewedBy: { connect: { id: reviewerId } },
+          reviewedAt: new Date(),
+        },
+        select: { id: true },
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return false;
+      }
+      throw error;
+    }
   }
 
   findById(id: string) {

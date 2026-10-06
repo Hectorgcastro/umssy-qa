@@ -9,6 +9,7 @@ const item = { id: "1", fullName: "Ana Pérez" };
 describe("requestReviewService.listRequests", () => {
   beforeEach(() => {
     get.mockReset();
+    get.mockResolvedValue({ status: 500, data: {} } as never);
     sessionStorage.setItem("accessToken", "token-de-prueba");
   });
   afterEach(() => sessionStorage.clear());
@@ -63,11 +64,78 @@ describe("requestReviewService.listRequests", () => {
   });
 
   it("devuelve error de conexión si la petición falla", async () => {
-    get.mockRejectedValue(new Error("red"));
+    get.mockImplementation(async () => {
+      throw new Error("red");
+    });
     expect(await requestReviewService.listRequests("pending", 1)).toEqual({
       ok: false,
       status: 0,
       message: "No se pudo conectar con el servidor. Inténtalo de nuevo.",
     });
+  });
+});
+
+describe("requestReviewService.getRequestDetail", () => {
+  const detailBody = { id: "1", history: { submittedAt: null, reviewedAt: null, reviewedBy: null, rejectionReason: null } };
+  beforeEach(() => {
+    get.mockReset();
+    get.mockResolvedValue({ status: 500, data: {} } as never);
+    sessionStorage.setItem("accessToken", "token-de-prueba");
+  });
+  afterEach(() => sessionStorage.clear());
+
+  it("pide el detalle con el token y acepta el cuerpo plano o envuelto", async () => {
+    reply(200, detailBody);
+    expect(await requestReviewService.getRequestDetail("1")).toEqual({ ok: true, data: detailBody });
+    expect(get).toHaveBeenCalledWith("/access-requests/1", expect.objectContaining({ headers: { Authorization: "Bearer token-de-prueba" } }));
+
+    reply(200, { statusCode: 200, ok: true, detail: "ok", data: detailBody });
+    expect(await requestReviewService.getRequestDetail("1")).toEqual({ ok: true, data: detailBody });
+  });
+
+  it("traduce 404, 401 y 403", async () => {
+    reply(404, { detail: "x" });
+    expect(await requestReviewService.getRequestDetail("1")).toEqual({ ok: false, status: 404, message: "La solicitud no existe." });
+    reply(401, {});
+    expect(await requestReviewService.getRequestDetail("1")).toMatchObject({ status: 401, message: "Tu sesión expiró. Inicia sesión de nuevo." });
+    reply(403, {});
+    expect(await requestReviewService.getRequestDetail("1")).toMatchObject({ status: 403 });
+  });
+
+  it.each([["texto"], [{}], [{ id: 5, history: {} }]])("un 200 inválido %j da error", async (body) => {
+    reply(200, body);
+    expect(await requestReviewService.getRequestDetail("1")).toMatchObject({ ok: false, status: 0 });
+  });
+
+  it("devuelve error de conexión si falla la red", async () => {
+    get.mockImplementation(async () => {
+      throw new Error("red");
+    });
+    expect(await requestReviewService.getRequestDetail("1")).toMatchObject({ ok: false, status: 0, message: "No se pudo conectar con el servidor. Inténtalo de nuevo." });
+  });
+});
+
+describe("requestReviewService.getDocumentBlob", () => {
+  beforeEach(() => get.mockReset());
+
+  it("pide los bytes como blob y los devuelve", async () => {
+    const blob = new Blob(["%PDF"]);
+    reply(200, blob);
+    expect(await requestReviewService.getDocumentBlob("1")).toEqual({ ok: true, data: blob });
+    expect(get).toHaveBeenCalledWith("/access-requests/1/document", expect.objectContaining({ responseType: "blob" }));
+  });
+
+  it("traduce 404 a 'no tiene documento' y otros errores a mensajes en español", async () => {
+    reply(404, new Blob(["x"]));
+    expect(await requestReviewService.getDocumentBlob("1")).toEqual({ ok: false, status: 404, message: "La solicitud no tiene un documento adjunto." });
+    reply(403, new Blob(["x"]));
+    expect(await requestReviewService.getDocumentBlob("1")).toMatchObject({ status: 403 });
+    reply(500, new Blob(["x"]));
+    expect(await requestReviewService.getDocumentBlob("1")).toMatchObject({ status: 500, message: "No se pudo completar la operación. Inténtalo de nuevo." });
+  });
+
+  it("un 200 que no es un Blob da error", async () => {
+    reply(200, "texto");
+    expect(await requestReviewService.getDocumentBlob("1")).toMatchObject({ ok: false, status: 0 });
   });
 });
