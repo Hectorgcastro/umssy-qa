@@ -89,4 +89,44 @@ describe("LoginView", () => {
     expect(vi.mocked(saveAccessToken).mock.invocationCallOrder[0]).toBeLessThan(push.mock.invocationCallOrder[0]);
     expect(saveAccessToken).toHaveBeenCalledWith("t-admin");
   });
+
+  it("muestra los campos con su etiqueta y el autocompletado correcto", () => {
+    vi.mocked(useLogin).mockReturnValue({ login: vi.fn(), isLoading: false, error: null });
+    render(<LoginView />);
+
+    expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute("autocomplete", "username");
+    expect(screen.getByLabelText("Contraseña")).toHaveAttribute("autocomplete", "current-password");
+    expect(screen.getByRole("combobox", { name: "Rol" })).toHaveTextContent("Titulado");
+    expect(screen.getByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
+    expect(screen.getByText("Universidad para el futuro")).toBeInTheDocument();
+  });
+
+  it("enlaza a la solicitud de acceso", () => {
+    vi.mocked(useLogin).mockReturnValue({ login: vi.fn(), isLoading: false, error: null });
+    render(<LoginView />);
+
+    expect(screen.getByRole("link", { name: "Solicita acceso" })).toHaveAttribute("href", "/request-access");
+  });
+
+  it("muestra el error en una alerta accesible", () => {
+    vi.mocked(useLogin).mockReturnValue({ login: vi.fn(), isLoading: false, error: "Correo o contraseña incorrectos" });
+    render(<LoginView />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Correo o contraseña incorrectos");
+  });
+
+  it("no muestra alerta sin error", () => {
+    vi.mocked(useLogin).mockReturnValue({ login: vi.fn(), isLoading: false, error: null });
+    render(<LoginView />);
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("deshabilita el botón y muestra el estado de carga", () => {
+    vi.mocked(useLogin).mockReturnValue({ login: vi.fn(), isLoading: true, error: null });
+    render(<LoginView />);
+
+    const button = screen.getByRole("button", { name: "Ingresando..." });
+    expect(button).toBeDisabled();
+  });
 });
