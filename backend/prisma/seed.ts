@@ -4,6 +4,7 @@ import { PrismaClient } from '../src/prisma/client.js';
 import bcrypt from 'bcrypt';
 import { buildDatabaseConnectionString } from '../src/common/prisma/build-connection-string.js';
 import { ROLE_NAMES } from '../src/common/enums/roles.enum.js';
+import { seedAccessRequests } from '../src/modules/access-requests/seeds/access-requests.seed.js';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: buildDatabaseConnectionString() }),
@@ -13,6 +14,8 @@ async function main() {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, update: {}, create: { name } });
   }
+
+  await seedAccessRequests(prisma);
 
   const tituladoRole = await prisma.role.findUniqueOrThrow({ where: { name: 'titulado' } });
   const password = await bcrypt.hash('Prueba123', 10);
