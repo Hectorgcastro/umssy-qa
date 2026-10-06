@@ -139,3 +139,38 @@ describe("requestReviewService.getDocumentBlob", () => {
     expect(await requestReviewService.getDocumentBlob("1")).toMatchObject({ ok: false, status: 0 });
   });
 });
+
+describe("requestReviewService.approveRequest", () => {
+  const patch = vi.spyOn(apiClient, "patch");
+  const replyPatch = (status: number, data: unknown) => patch.mockResolvedValue({ status, data } as never);
+  beforeEach(() => {
+    patch.mockReset();
+    sessionStorage.setItem("accessToken", "token-de-prueba");
+  });
+  afterEach(() => sessionStorage.clear());
+
+  it("aprueba con el token y acepta el cuerpo plano o envuelto", async () => {
+    replyPatch(200, { id: "1", status: "approved", activationCodeSent: true });
+    expect(await requestReviewService.approveRequest("1")).toEqual({ ok: true, data: { id: "1", status: "approved", activationCodeSent: true } });
+    expect(patch).toHaveBeenCalledWith("/access-requests/1/approve", undefined, expect.objectContaining({ headers: { Authorization: "Bearer token-de-prueba" } }));
+
+    replyPatch(200, { statusCode: 200, ok: true, detail: "ok", data: { id: "1", status: "approved", activationCodeSent: false } });
+    expect(await requestReviewService.approveRequest("1")).toEqual({ ok: true, data: { id: "1", status: "approved", activationCodeSent: false } });
+  });
+
+  it("traduce 404, 409 y 403", async () => {
+    replyPatch(404, {});
+    expect(await requestReviewService.approveRequest("1")).toEqual({ ok: false, status: 404, message: "La solicitud no existe." });
+    replyPatch(409, { detail: "La solicitud no está en revisión" });
+    expect(await requestReviewService.approveRequest("1")).toEqual({ ok: false, status: 409, message: "La solicitud no está en revisión" });
+    replyPatch(403, {});
+    expect(await requestReviewService.approveRequest("1")).toMatchObject({ status: 403 });
+  });
+
+  it("un 200 sin estado aprobado da error y una red caída da error de conexión", async () => {
+    replyPatch(200, { status: "pending" });
+    expect(await requestReviewService.approveRequest("1")).toMatchObject({ ok: false, status: 0 });
+    patch.mockRejectedValueOnce(new Error("red"));
+    expect(await requestReviewService.approveRequest("1")).toMatchObject({ ok: false, status: 0, message: "No se pudo conectar con el servidor. Inténtalo de nuevo." });
+  });
+});

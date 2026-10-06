@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { detail } from "../components/data-contrast-panel.test";
 import { requestReviewService } from "../services/request-review.service";
@@ -67,5 +67,22 @@ describe("RequestDetailView", () => {
     view.unmount();
 
     expect(revoke).toHaveBeenCalledWith("blob:documento");
+  });
+
+  it("al aprobar, el estado en pantalla pasa de En revisión a Aprobada", async () => {
+    getRequestDetail.mockResolvedValue({ ok: true, data: detail });
+    getDocumentBlob.mockResolvedValue({ ok: true, data: new Blob(["%PDF"]) });
+    vi.spyOn(requestReviewService, "approveRequest").mockResolvedValue({
+      ok: true,
+      data: { id: "id-1", status: "approved", activationCodeSent: true },
+    });
+    render(<RequestDetailView id="id-1" />);
+    expect(await screen.findByText(/Estado: En revisión/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Aprobar solicitud" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Aprobar y enviar código" }));
+
+    expect(await screen.findByText(/Estado: Aprobada/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Aprobar solicitud" })).toBeNull();
   });
 });

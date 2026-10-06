@@ -52,3 +52,9 @@ export interface ReviewDetail {
     rejectionReason: string | null;
   };
 }
+
+export interface ApproveResult {
+  id: string;
+  status: ReviewStatus;
+  activationCodeSent: boolean;
+}

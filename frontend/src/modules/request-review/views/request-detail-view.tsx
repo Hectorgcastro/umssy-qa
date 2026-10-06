@@ -1,17 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DataContrastPanel } from "../components/data-contrast-panel";
 import { DocumentViewer } from "../components/document-viewer";
+import { VerdictPanel } from "../components/verdict-panel";
 import { INBOX_PATH, REVIEW_STATUS_LABELS } from "../constants/request-review.constants";
 import { useDocumentUrl } from "../hooks/use-document-url";
 import { useRequestDetail } from "../hooks/use-request-detail";
+import type { ReviewStatus } from "../types/request-review.types";
 
 export function RequestDetailView({ id }: { id: string }) {
   const { detail, error, isLoading } = useRequestDetail(id);
   const document = useDocumentUrl(id, Boolean(detail?.document));
+  // Estado mostrado tras un dictamen en esta pantalla; se descarta si cambia la solicitud
+  const [verdict, setVerdict] = useState<{ id: string; status: ReviewStatus } | null>(null);
+  const currentStatus = detail ? (verdict?.id === detail.id ? verdict.status : detail.status) : null;
 
   return (
     <section className="flex flex-col gap-6">
@@ -40,7 +46,7 @@ export function RequestDetailView({ id }: { id: string }) {
               Solicitud {detail.requestCode ?? ""} · {detail.firstName} {detail.lastName}
             </h1>
             <p className="text-sm text-text-secondary">
-              {detail.email} · Estado: {REVIEW_STATUS_LABELS[detail.status] ?? detail.status}
+              {detail.email} · Estado: {REVIEW_STATUS_LABELS[currentStatus ?? detail.status] ?? detail.status}
             </p>
           </header>
 
@@ -65,7 +71,14 @@ export function RequestDetailView({ id }: { id: string }) {
                 />
               )}
             </div>
-            <DataContrastPanel detail={detail} />
+            <div className="flex flex-col gap-6">
+              <DataContrastPanel detail={detail} />
+              <VerdictPanel
+                detail={detail}
+                status={currentStatus ?? detail.status}
+                onStatusChange={(status) => setVerdict({ id: detail.id, status })}
+              />
+            </div>
           </div>
         </>
       )}

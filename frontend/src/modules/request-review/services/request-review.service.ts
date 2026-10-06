@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/services/api-client";
 import { REVIEW_PAGE_SIZE } from "../constants/request-review.constants";
-import type { ReviewApiResult, ReviewDetail, ReviewListResult, ReviewStatus } from "../types/request-review.types";
+import type { ApproveResult, ReviewApiResult, ReviewDetail, ReviewListResult, ReviewStatus } from "../types/request-review.types";
 import { getSessionToken } from "../utils/session";
 
 const NETWORK_ERROR_MESSAGE = "No se pudo conectar con el servidor. Inténtalo de nuevo.";
@@ -79,6 +79,28 @@ async function getRequestDetail(id: string): Promise<ReviewApiResult<ReviewDetai
   }
 }
 
+// El dictamen solo se puede emitir desde en revisión: el backend responde 409 si ya cambió de estado
+async function approveRequest(id: string): Promise<ReviewApiResult<ApproveResult>> {
+  try {
+    const response = await apiClient.patch(`/access-requests/${id}/approve`, undefined, {
+      headers: authHeaders(),
+      validateStatus: () => true,
+    });
+    if (response.status === 404) return { ok: false, status: 404, message: NOT_FOUND_MESSAGE };
+    if (response.status < 200 || response.status >= 300) return failureOf(response.status, response.data);
+
+    const body: unknown = response.data;
+    const result = isRecord(body) && isRecord(body.data) && "status" in body.data ? body.data : body;
+    if (!isRecord(result) || result.status !== "approved") return { ok: false, status: 0, message: GENERIC_ERROR_MESSAGE };
+    return {
+      ok: true,
+      data: { id, status: "approved", activationCodeSent: result.activationCodeSent === true },
+    };
+  } catch {
+    return { ok: false, status: 0, message: NETWORK_ERROR_MESSAGE };
+  }
+}
+
 // Los bytes se piden con el token y se devuelven como Blob para mostrarlos sin exponer el token en la URL
 async function getDocumentBlob(id: string): Promise<ReviewApiResult<Blob>> {
   try {
@@ -96,4 +118,4 @@ async function getDocumentBlob(id: string): Promise<ReviewApiResult<Blob>> {
   }
 }
 
-export const requestReviewService = { listRequests, getRequestDetail, getDocumentBlob };
+export const requestReviewService = { listRequests, getRequestDetail, getDocumentBlob, approveRequest };
