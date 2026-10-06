@@ -22,7 +22,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { ResponseInterceptor } from '../../../common/interceptors/response.interceptor.js';
 import type { ProfilePhotoResponse } from '../responses/profile-photo.response.js';
 import { ProfilePhotoService } from '../services/profile-photo.service.js';
-import type { MulterFile } from '../types/multer-file.type.js';
+import type { MulterFile } from '../../../common/types/multer-file.type.js';
 
 const uploadFieldName = 'file';
 

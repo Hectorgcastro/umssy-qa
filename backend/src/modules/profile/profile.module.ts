@@ -1,46 +1,21 @@
 import { Module } from '@nestjs/common';
 import { JwtAuthModule } from '../../common/guards/jwt-auth.module.js';
 import { PrismaModule } from '../../common/prisma/prisma.module.js';
-import { CvFileController } from './controllers/cv-file.controller.js';
-import { CvController } from './controllers/cv.controller.js';
+import { FileValidationService } from '../../common/services/file-validation.service.js';
 import { ProfilePhotoController } from './controllers/profile-photo.controller.js';
 import { ProfileController } from './controllers/profile.controller.js';
-import { SkillController } from './controllers/skill.controller.js';
-import { UserSkillController } from './controllers/user-skill.controller.js';
-import { CvMapper } from './mappers/cv.mapper.js';
 import { ProfilePhotoMapper } from './mappers/profile-photo.mapper.js';
 import { ProfileMapper } from './mappers/profile.mapper.js';
-import { SkillMapper } from './mappers/skill.mapper.js';
 import { CityRepository } from './repositories/city.repository.js';
-import { CvFileRepository } from './repositories/cv-file.repository.js';
-import { CvMetadataRepository } from './repositories/cv-metadata.repository.js';
 import { PhotoFileRepository } from './repositories/photo-file.repository.js';
 import { ProfileRepository } from './repositories/profile.repository.js';
-import { SkillRepository } from './repositories/skill.repository.js';
-import { UserSkillRepository } from './repositories/user-skill.repository.js';
-import { CvService } from './services/cv.service.js';
-import { FileValidationService } from './services/file-validation.service.js';
 import { ProfilePhotoService } from './services/profile-photo.service.js';
 import { ProfileService } from './services/profile.service.js';
-import { SkillService } from './services/skill.service.js';
-import { FileStorage } from './types/file-storage.type.js';
 
 @Module({
   imports: [PrismaModule, JwtAuthModule],
-  controllers: [
-    ProfileController,
-    ProfilePhotoController,
-    CvController,
-    CvFileController,
-    SkillController,
-    UserSkillController,
-  ],
+  controllers: [ProfileController, ProfilePhotoController],
   providers: [
-    CvService,
-    CvMetadataRepository,
-    CvMapper,
-    FileValidationService,
-    { provide: FileStorage, useClass: CvFileRepository },
     ProfileService,
     ProfileRepository,
     CityRepository,
@@ -48,11 +23,8 @@ import { FileStorage } from './types/file-storage.type.js';
     ProfilePhotoService,
     PhotoFileRepository,
     ProfilePhotoMapper,
-    SkillRepository,
-    UserSkillRepository,
-    SkillMapper,
-    SkillService,
+    FileValidationService,
   ],
-  exports: [FileValidationService],
+  exports: [ProfileRepository],
 })
 export class ProfileModule {}

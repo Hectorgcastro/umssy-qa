@@ -5,10 +5,10 @@ import { ProfilePhotoMapper } from '../mappers/profile-photo.mapper.js';
 import { PhotoFileRepository } from '../repositories/photo-file.repository.js';
 import { ProfileRepository } from '../repositories/profile.repository.js';
 import type { ProfilePhotoResponse } from '../responses/profile-photo.response.js';
-import type { FileValidationRules } from '../types/file-validation-rules.type.js';
-import type { MulterFile } from '../types/multer-file.type.js';
+import type { FileValidationRules } from '../../../common/types/file-validation-rules.type.js';
+import type { MulterFile } from '../../../common/types/multer-file.type.js';
 import type { PhotoFileDownload } from '../types/photo-file-download.type.js';
-import { FileValidationService } from './file-validation.service.js';
+import { FileValidationService } from '../../../common/services/file-validation.service.js';
 
 const photoValidationRules: FileValidationRules = {
   allowedTypes: ['jpg', 'png'],

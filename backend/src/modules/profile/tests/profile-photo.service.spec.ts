@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FileTooLargeException } from '../exceptions/file-too-large.exception.js';
-import { InvalidFileTypeException } from '../exceptions/invalid-file-type.exception.js';
+import { FileTooLargeException } from '../../../common/exceptions/file-too-large.exception.js';
+import { InvalidFileTypeException } from '../../../common/exceptions/invalid-file-type.exception.js';
 import { PhotoNotFoundException } from '../exceptions/photo-not-found.exception.js';
 import { ProfileNotFoundException } from '../exceptions/profile-not-found.exception.js';
 import { ProfilePhotoMapper } from '../mappers/profile-photo.mapper.js';
 import type { PhotoFileRepository } from '../repositories/photo-file.repository.js';
 import type { ProfileRepository } from '../repositories/profile.repository.js';
-import { FileValidationService } from '../services/file-validation.service.js';
+import { FileValidationService } from '../../../common/services/file-validation.service.js';
 import { ProfilePhotoService } from '../services/profile-photo.service.js';
-import type { MulterFile } from '../types/multer-file.type.js';
+import type { MulterFile } from '../../../common/types/multer-file.type.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
 const jpgBytes = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(50), Buffer.from([0xff, 0xd9])]);

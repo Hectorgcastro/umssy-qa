@@ -9,7 +9,7 @@ import { ProfilePhotoController } from '../controllers/profile-photo.controller.
 import { ProfilePhotoMapper } from '../mappers/profile-photo.mapper.js';
 import { PhotoFileRepository } from '../repositories/photo-file.repository.js';
 import { ProfileRepository } from '../repositories/profile.repository.js';
-import { FileValidationService } from '../services/file-validation.service.js';
+import { FileValidationService } from '../../../common/services/file-validation.service.js';
 import { ProfilePhotoService } from '../services/profile-photo.service.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';

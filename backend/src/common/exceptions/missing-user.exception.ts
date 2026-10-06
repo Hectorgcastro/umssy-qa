@@ -1,7 +1,7 @@
-import { DomainException } from './domain.exception.js';
+import { UnauthorizedSessionException } from './unauthorized-session.exception.js';
 
-export class MissingUserException extends DomainException {
+export class MissingUserException extends UnauthorizedSessionException {
   constructor(message = 'Authenticated user is required') {
-    super(message, 401);
+    super(message);
   }
 }
