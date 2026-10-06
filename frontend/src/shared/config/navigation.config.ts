@@ -4,6 +4,7 @@ import { CalendarDays, House, ListChecks, User, UserRound } from "lucide-react";
 export const SIDEBAR_NAVIGATION: NavigationItem[] = [
   { label: "Inicio", icon: House, href: "/" },
   { label: "Mi perfil", icon: User, href: "/profile" },
+  { label: "Vacantes", icon: ListChecks, href: "/vacantes" },
   {
     label: "Mentorías",
     icon: CalendarDays,
