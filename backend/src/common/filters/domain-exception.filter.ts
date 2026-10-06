@@ -9,7 +9,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
 
     response.status(exception.statusCode).json({
       statusCode: exception.statusCode,
-      data: null,
+      data: exception.data,
       detail: exception.message,
       ok: false,
     });
