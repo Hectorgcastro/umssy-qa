@@ -102,9 +102,9 @@ describe("WeekGrid", () => {
     const selected = screen.getByRole("button", { name: "libre, 18:00 a 19:00" });
     const other = screen.getByRole("button", { name: "libre, 10:00 a 11:00" });
     expect(selected).toHaveAttribute("aria-pressed", "true");
-    expect(selected).toHaveClass("ring-primary");
+    expect(selected).toHaveClass("ring-accent");
     expect(other).not.toHaveAttribute("aria-pressed");
-    expect(other).not.toHaveClass("ring-primary");
+    expect(other).not.toHaveClass("ring-accent");
   });
 
   it("en variant selectable, un bloque pendiente o confirmado está deshabilitado y no dispara el callback", () => {

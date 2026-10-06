@@ -269,9 +269,8 @@ export function BlockForm({
             type="submit"
             size="lg"
             className={cn(
-              "w-full",
+              "w-full bg-accent text-surface hover:bg-danger",
               mode !== "edit" && "sm:w-auto",
-              mode === "edit" && "bg-danger text-surface hover:bg-danger/90",
             )}
             disabled={isSubmitting}
           >

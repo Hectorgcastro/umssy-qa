@@ -23,7 +23,7 @@ export const STATE_LABELS_ES: Record<AvailabilityBlockState, string> = {
   confirmed: "confirmada",
 };
 
-export const SELECTED_BLOCK_CLASSES = "border-primary bg-primary/10 ring-2 ring-primary";
+export const SELECTED_BLOCK_CLASSES = "border-accent bg-accent/10 text-ink ring-2 ring-accent";
 
 export const SELECTED_LEGEND_LABEL = "Tu selección";
 

@@ -183,7 +183,7 @@ describe("BlockForm", () => {
     ).not.toBeInTheDocument()
 
     const submit = screen.getByRole("button", { name: "Guardar cambios" })
-    expect(submit).toHaveClass("bg-danger", "text-surface")
+    expect(submit).toHaveClass("bg-accent", "text-surface")
   })
 
   it("deshabilita el envío mientras se guarda y muestra el error del servidor", () => {
