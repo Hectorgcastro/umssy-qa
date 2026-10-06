@@ -9,7 +9,7 @@ import type {
   AnalyzeExperienceParamsDto,
 } from '../requests/analyze-experience.schema.js';
 import type { AnalyzeExperienceResponse } from '../types/matching.types.js';
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { RequestValidationPipe } from '../../../common/pipes/request-validation.pipe.js';
 
 @Controller('work-experiences')
 export class MatchingController {
@@ -21,8 +21,8 @@ export class MatchingController {
   @Post(':id/skills/analysis')
   @HttpCode(HttpStatus.OK)
   analyzeExperience(
-    @Param(new ZodValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
-    @Body(new ZodValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
+    @Param(new RequestValidationPipe(analyzeExperienceParamsSchema)) params: AnalyzeExperienceParamsDto,
+    @Body(new RequestValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
   ): AnalyzeExperienceResponse {
     return this.matchingService.analyzeExperience({
       experienceId: params.id,
