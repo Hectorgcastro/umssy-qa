@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
-import type { Prisma } from '../../../prisma/client.js';
 import type { SkillResponse } from '../types/skills.types.js';
 
 // Tope de resultados para no sobrecargar el popup de búsqueda del frontend
@@ -24,5 +23,20 @@ export class SkillsService {
       orderBy: { name: 'asc' },
       take: SKILLS_SEARCH_LIMIT,
     });
+  }
+
+  async findExistingSkillIds(skillIds: string[]): Promise<string[]> {
+    const skills = await this.prisma.skill.findMany({
+      where: {
+        id: {
+          in: skillIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return skills.map((skill) => skill.id);
   }
 }
