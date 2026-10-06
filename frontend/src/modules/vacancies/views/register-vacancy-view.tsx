@@ -8,7 +8,17 @@ import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
-    const { currentStep, conditions, updateField, selectModality } = useJobOfferForm();
+    // Extraemos todos los estados y funciones necesarios del hook
+    const { 
+        currentStep, 
+        conditions, 
+        isLoading, 
+        error, 
+        updateField, 
+        selectModality, 
+        goBack, 
+        submitJobOffer 
+    } = useJobOfferForm();
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-8">
@@ -24,14 +34,19 @@ export function RegisterVacancyView() {
 
             <VacancyStepper currentStep={currentStep} />
             
-            {/* Oculta la vista 1 si no estamos en el paso 1 */}
             {currentStep === 1 && (
                 <InformationStep conditions={conditions} updateField={updateField} selectModality={selectModality} />
             )}
 
-            {/* Inyecta tu vista 3 exclusivamente cuando el stepper llegue al 3 */}
+            {/* Conectamos los estados y funciones a la Vista Previa */}
             {currentStep === 3 && (
-                <PreviewStep conditions={conditions} />
+                <PreviewStep 
+                    conditions={conditions}
+                    isLoading={isLoading}
+                    error={error}
+                    onBack={goBack}
+                    onSubmit={() => submitJobOffer("1")} 
+                />
             )}
         </div>
     );

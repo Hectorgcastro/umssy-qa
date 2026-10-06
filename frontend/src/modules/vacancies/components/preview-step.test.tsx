@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { PreviewStep } from './preview-step';
 import type { VacancyConditions } from '../hooks/use-job-offer-form';
 
@@ -15,8 +15,20 @@ describe('PreviewStep', () => {
     languages: 'Inglés'
   };
 
+  // Funciones simuladas para satisfacer las propiedades requeridas
+  const mockOnSubmit = vi.fn();
+  const mockOnBack = vi.fn();
+
   it('renderiza correctamente con los datos ingresados', () => {
-    render(<PreviewStep conditions={mockConditions} />);
+    render(
+        <PreviewStep 
+            conditions={mockConditions} 
+            isLoading={false}
+            error={null}
+            onSubmit={mockOnSubmit}
+            onBack={mockOnBack}
+        />
+    );
     expect(screen.getByText('Ingeniero de Software')).toBeInTheDocument();
     expect(screen.getByText('Remoto')).toBeInTheDocument();
     expect(screen.getByText('IT')).toBeInTheDocument();
@@ -30,7 +42,15 @@ describe('PreviewStep', () => {
       title: '', modality: null, mapsLink: '', contractType: '',
       category: '', vacancyCount: '', salary: '', languages: ''
     };
-    render(<PreviewStep conditions={emptyConditions} />);
+    render(
+        <PreviewStep 
+            conditions={emptyConditions} 
+            isLoading={false}
+            error={null}
+            onSubmit={mockOnSubmit}
+            onBack={mockOnBack}
+        />
+    );
     
     expect(screen.getByText('Desarrollador Backend')).toBeInTheDocument();
     expect(screen.getByText('Híbrido')).toBeInTheDocument();

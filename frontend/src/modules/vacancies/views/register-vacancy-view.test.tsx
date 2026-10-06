@@ -1,65 +1,60 @@
-import { render, screen, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { RegisterVacancyView } from './register-vacancy-view';
-import * as useJobOfferFormHook from '../hooks/use-job-offer-form';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { PreviewStep } from '../components/preview-step';
 import type { VacancyConditions } from '../hooks/use-job-offer-form';
 
-vi.mock('../hooks/use-job-offer-form', () => ({
-  useJobOfferForm: vi.fn(),
-}));
-
-vi.mock('../components/vacancy-stepper', () => ({
-  VacancyStepper: () => <div data-testid="vacancy-stepper">Stepper</div>
-}));
-vi.mock('../components/information-step', () => ({
-  InformationStep: () => <div data-testid="information-step">Paso 1</div>
-}));
-vi.mock('../components/preview-step', () => ({
-  PreviewStep: () => <div data-testid="preview-step">Paso 3</div>
-}));
-
-describe('RegisterVacancyView', () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
+describe('PreviewStep', () => {
   const mockConditions: VacancyConditions = {
-    title: "",
-    modality: null,
-    mapsLink: "",
-    contractType: "",
-    category: "",
-    vacancyCount: "",
-    salary: "",
-    languages: "",
+    title: 'Ingeniero de Software',
+    modality: 'Remoto',
+    mapsLink: 'https://maps.test',
+    contractType: 'Medio tiempo',
+    category: 'IT',
+    vacancyCount: '5',
+    salary: 'Bs 10.000',
+    languages: 'Inglés'
   };
 
-  it('renderiza el paso 1 cuando currentStep es 1', () => {
-    vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
-      currentStep: 1,
-      conditions: mockConditions,
-      updateField: vi.fn(),
-      selectModality: vi.fn(),
-      goNext: vi.fn()
-    });
+  // Funciones simuladas para satisfacer las propiedades requeridas
+  const mockOnSubmit = vi.fn();
+  const mockOnBack = vi.fn();
 
-    render(<RegisterVacancyView />);
-    expect(screen.getByTestId('information-step')).toBeInTheDocument();
-    expect(screen.queryByTestId('preview-step')).not.toBeInTheDocument();
+  it('renderiza correctamente con los datos ingresados', () => {
+    render(
+        <PreviewStep 
+            conditions={mockConditions} 
+            isLoading={false}
+            error={null}
+            onSubmit={mockOnSubmit}
+            onBack={mockOnBack}
+        />
+    );
+    expect(screen.getByText('Ingeniero de Software')).toBeInTheDocument();
+    expect(screen.getByText('Remoto')).toBeInTheDocument();
+    expect(screen.getByText('IT')).toBeInTheDocument();
+    expect(screen.getByText('5 vacantes')).toBeInTheDocument();
+    expect(screen.getByText('Bs 10.000')).toBeInTheDocument();
+    expect(screen.getByText('Inglés')).toBeInTheDocument();
   });
 
-  it('renderiza el paso 3 cuando currentStep es 3', () => {
-    vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
-      currentStep: 3,
-      conditions: mockConditions,
-      updateField: vi.fn(),
-      selectModality: vi.fn(),
-      goNext: vi.fn()
-    });
-
-    render(<RegisterVacancyView />);
-    expect(screen.getByTestId('preview-step')).toBeInTheDocument();
-    expect(screen.queryByTestId('information-step')).not.toBeInTheDocument();
+  it('renderiza valores por defecto si los datos están vacíos', () => {
+    const emptyConditions: VacancyConditions = {
+      title: '', modality: null, mapsLink: '', contractType: '',
+      category: '', vacancyCount: '', salary: '', languages: ''
+    };
+    render(
+        <PreviewStep 
+            conditions={emptyConditions} 
+            isLoading={false}
+            error={null}
+            onSubmit={mockOnSubmit}
+            onBack={mockOnBack}
+        />
+    );
+    
+    expect(screen.getByText('Desarrollador Backend')).toBeInTheDocument();
+    expect(screen.getByText('Híbrido')).toBeInTheDocument();
+    expect(screen.getByText('Tecnología')).toBeInTheDocument();
+    expect(screen.getByText('Bs 6.500 - 8.000')).toBeInTheDocument();
   });
 });
