@@ -6,6 +6,7 @@ import {
   getWeekDayDates,
   isBlockClickable,
 } from "./week-grid.utils";
+import { HOUR_HEIGHT_PX } from "../constants/week-grid.constants";
 
 const WEEK_RANGE = {
   startAt: "2026-10-05T04:00:00.000Z",
@@ -34,8 +35,8 @@ describe("getBlockVerticalPosition", () => {
       7,
       22
     );
-    expect(topPx).toBe(11 * 25);
-    expect(heightPx).toBe(25);
+    expect(topPx).toBe(11 * HOUR_HEIGHT_PX);
+    expect(heightPx).toBe(HOUR_HEIGHT_PX);
   });
 
   it("recorta un bloque que se pasa del final de la grilla", () => {
@@ -45,7 +46,7 @@ describe("getBlockVerticalPosition", () => {
       7,
       22
     );
-    expect(heightPx).toBeCloseTo(150 * (25 / 60), 1);
+    expect(heightPx).toBeCloseTo(150 * (HOUR_HEIGHT_PX / 60), 1);
   });
 });
 
