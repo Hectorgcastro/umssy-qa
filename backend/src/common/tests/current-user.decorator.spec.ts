@@ -1,30 +1,26 @@
-import type { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 import { getCurrentUser } from '../decorators/current-user.decorator.js';
-import { UnauthorizedSessionException } from '../exceptions/unauthorized-session.exception.js';
-import type { AuthenticatedRequest } from '../types/authenticated-request.types.js';
 import type { AuthenticatedUser } from '../types/authenticated-user.types.js';
 
-function createContext(user?: AuthenticatedUser): ExecutionContext {
-  const request = { headers: {}, user } as AuthenticatedRequest;
-
+function createContext(user?: AuthenticatedUser) {
   return {
-    switchToHttp: () => ({ getRequest: () => request }),
+    switchToHttp: () => ({ getRequest: () => ({ user }) }),
   } as unknown as ExecutionContext;
 }
 
 describe('getCurrentUser', () => {
-  it('devuelve el usuario autenticado de request.user', () => {
+  it('devuelve el request.user que dejó el guard de sesión', () => {
     const user: AuthenticatedUser = {
       id: '11111111-1111-4111-8111-111111111111',
+      email: 'mentor@test.com',
+      roles: ['mentor'],
     };
 
-    expect(getCurrentUser(undefined, createContext(user))).toBe(user);
+    expect(getCurrentUser(undefined, createContext(user))).toEqual(user);
   });
 
-  it('falla si request.user no existe', () => {
-    expect(() => getCurrentUser(undefined, createContext())).toThrow(
-      UnauthorizedSessionException,
-    );
+  it('devuelve undefined si no hay usuario en el request', () => {
+    expect(getCurrentUser(undefined, createContext(undefined))).toBeUndefined();
   });
 });
