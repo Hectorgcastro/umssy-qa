@@ -112,7 +112,7 @@ returning a token.
 
 Required environment variables in `.env`:
 
-- `JWT_SECRET` — secret used to sign tokens (ask the team).
+- `JWT_SECRET` — secret used to sign tokens. Genera el valor con `openssl rand -base64 32` y pégalo en `JWT_SECRET` del `.env`.
 - `JWT_EXPIRES_IN` — token lifetime, e.g. `8h`.
 - `JWT_ALGORITHM` — signing algorithm, e.g. `HS256`.
 - `CORS_ORIGIN` — allowed origin, use `http://localhost:3000` in development.
