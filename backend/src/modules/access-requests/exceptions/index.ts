@@ -10,3 +10,4 @@ export * from './active-access-request-exists.exception.js';
 export * from './request-code-generation.exception.js';
 export * from './unauthorized-session.exception.js';
 export * from './forbidden-role.exception.js';
+export * from './request-document-not-found.exception.js';
