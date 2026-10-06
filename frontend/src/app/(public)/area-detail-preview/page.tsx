@@ -7,6 +7,7 @@ import {
   AREA_ORDER,
   AreaDetailPanel,
   CANDIDATE,
+  Epic3Shell,
   GLOBAL_AVERAGE,
   formatDecimal,
   type AreaId,
@@ -20,7 +21,7 @@ function getTabId(id: AreaId): string {
   return `area-detail-tab-${id}`;
 }
 
-export default function AreaDetailPreviewPage() {
+function AreaDetailPreview() {
   const [selectedAreaId, setSelectedAreaId] = useState<AreaId | null>("desarrollo");
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const focusableAreaId = selectedAreaId ?? AREA_ORDER[0];
@@ -135,5 +136,13 @@ export default function AreaDetailPreviewPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function AreaDetailPreviewPage() {
+  return (
+    <Epic3Shell>
+      <AreaDetailPreview />
+    </Epic3Shell>
   );
 }

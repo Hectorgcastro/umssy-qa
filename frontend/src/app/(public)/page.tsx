@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { Epic3Shell } from "@/modules/radar-chart";
 
 type Screen = {
   href: string;
@@ -16,17 +17,23 @@ type Story = {
 const STORIES: Story[] = [
   {
     id: "HU-1",
-    name: "Pendiente de integración",
-    screens: [],
+    name: "Radar de afinidad del egresado",
+    screens: [
+      {
+        href: "/perfil/radar",
+        title: "Radar de afinidad",
+        criteria: "H1-01 a H1-05",
+      },
+    ],
   },
   {
     id: "HU-2",
     name: "Cola de revisión",
     screens: [
       {
-        href: "/radar-afinidad/cola-revision",
+        href: "/affinity-radar/review-queue",
         title: "Cola de revisión",
-        criteria: "H2-01",
+        criteria: "H2-01 a H2-05",
       },
     ],
   },
@@ -55,7 +62,7 @@ const STORIES: Story[] = [
 
 const CARD_CLASS = "rounded-2xl border border-border bg-surface p-5";
 
-export default function HomePage() {
+function Epic3Index() {
   return (
     <main className="min-h-screen bg-background font-sans">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-4 py-10 sm:px-8 sm:py-16">
@@ -123,5 +130,13 @@ export default function HomePage() {
         })}
       </div>
     </main>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Epic3Shell>
+      <Epic3Index />
+    </Epic3Shell>
   );
 }

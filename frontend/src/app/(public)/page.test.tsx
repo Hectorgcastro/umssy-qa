@@ -1,6 +1,11 @@
+import type { ReactNode } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import HomePage from "./page";
+
+vi.mock("@/modules/radar-chart/components/epic3-shell", () => ({
+  Epic3Shell: ({ children }: { children: ReactNode }) => children,
+}));
 
 function getLinkHref(name: RegExp): string | null {
   return screen.getByRole("link", { name }).getAttribute("href");
@@ -32,22 +37,27 @@ describe("Home Page", () => {
     render(<HomePage />);
 
     expect(screen.getByRole("heading", { level: 2, name: "HU-2 · Cola de revisión" })).toBeDefined();
-    expect(getLinkHref(/Cola de revisión.*H2-01/)).toBe("/radar-afinidad/cola-revision");
+    expect(getLinkHref(/Cola de revisión.*H2-01 a H2-05/)).toBe("/affinity-radar/review-queue");
   });
 
-  it("muestra la HU-1 y la HU-3 deshabilitadas y sin enlace", () => {
+  it("enlaza la pantalla de la HU-1", () => {
     render(<HomePage />);
 
-    expect(screen.getByRole("heading", { level: 2, name: "HU-1" })).toBeDefined();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "HU-1 · Radar de afinidad del egresado" }),
+    ).toBeDefined();
+    expect(getLinkHref(/Radar de afinidad.*H1-01 a H1-05/)).toBe("/perfil/radar");
+  });
+
+  it("muestra la HU-3 deshabilitada y sin enlace", () => {
+    render(<HomePage />);
+
     expect(screen.getByRole("heading", { level: 2, name: "HU-3" })).toBeDefined();
 
-    const pending = screen.getAllByText("Pendiente de integración");
+    const pending = screen.getByText("Pendiente de integración");
 
-    expect(pending).toHaveLength(2);
-    pending.forEach((card) => {
-      expect(card.getAttribute("aria-disabled")).toBe("true");
-      expect(card.closest("a")).toBeNull();
-    });
-    expect(screen.getAllByRole("link")).toHaveLength(3);
+    expect(pending.getAttribute("aria-disabled")).toBe("true");
+    expect(pending.closest("a")).toBeNull();
+    expect(screen.getAllByRole("link")).toHaveLength(4);
   });
 });
