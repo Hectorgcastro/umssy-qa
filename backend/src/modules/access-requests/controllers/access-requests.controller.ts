@@ -3,6 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
 import { BackofficeGuard } from '../guards/backoffice.guard.js';
+import { rejectAccessRequestSchema, type RejectAccessRequestDto } from '../requests/reject-access-request.schema.js';
 import { listAccessRequestsQuerySchema, type ListAccessRequestsQuery } from '../requests/list-access-requests.schema.js';
 import { DocumentUploadInterceptor } from '../interceptors/document-upload.interceptor.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
@@ -71,6 +72,16 @@ export class AccessRequestsController {
   @UseGuards(BackofficeGuard)
   approve(@Param('id', uuidPipe) id: string, @Req() request: BackofficeRequest) {
     return this.accessRequestsService.approve(id, request.user!.id);
+  }
+
+  @Patch(':id/reject')
+  @UseGuards(BackofficeGuard)
+  reject(
+    @Param('id', uuidPipe) id: string,
+    @Body(new ZodValidationPipe(rejectAccessRequestSchema)) body: RejectAccessRequestDto,
+    @Req() request: BackofficeRequest,
+  ) {
+    return this.accessRequestsService.reject(id, request.user!.id, body.reason);
   }
 
   @Post()

@@ -4,6 +4,7 @@ import { FileNotFoundException } from '../../files/exceptions/index.js';
 import { AuthService } from '../../auth/services/auth.service.js';
 import { AccessRequestsRepository } from '../repositories/access-requests.repository.js';
 import { ActivationOtpService } from './activation-otp.service.js';
+import { RejectionNotificationService } from './rejection-notification.service.js';
 import {
   AccessRequestNotEditableException,
   ActiveAccessRequestExistsException,
@@ -42,6 +43,7 @@ export class AccessRequestsService {
     private readonly authService: AuthService,
     private readonly filesService: FilesService,
     private readonly activationOtpService: ActivationOtpService,
+    private readonly rejectionNotificationService: RejectionNotificationService,
   ) {}
 
   async create(dto: CreateAccessRequestDto) {
@@ -205,6 +207,28 @@ export class AccessRequestsService {
 
     const activationCodeSent = await this.activationOtpService.issueFor(id, current.email);
     return { id, status: ACCESS_REQUEST_STATUS.APPROVED, activationCodeSent };
+  }
+
+  // Solo se rechaza desde in_review y con motivo; el aviso por correo se envía después y su fallo no revierte el rechazo
+  async reject(id: string, reviewerId: string, reason: string) {
+    const current = await this.accessRequestsRepository.findDetailById(id);
+    if (!current || current.status.title === ACCESS_REQUEST_STATUS.DRAFT) {
+      throw new AccessRequestNotFoundException();
+    }
+    if (current.status.title !== ACCESS_REQUEST_STATUS.IN_REVIEW) {
+      throw new RequestNotInReviewException();
+    }
+
+    const updated = await this.accessRequestsRepository.setVerdict(id, reviewerId, {
+      status: ACCESS_REQUEST_STATUS.REJECTED,
+      rejectionReason: reason,
+    });
+    if (!updated) {
+      throw new RequestNotInReviewException();
+    }
+
+    const notificationSent = await this.rejectionNotificationService.notify(current.email, reason, id);
+    return { id, status: ACCESS_REQUEST_STATUS.REJECTED, rejectionReason: reason, notificationSent };
   }
 
   async getDocument(id: string) {
