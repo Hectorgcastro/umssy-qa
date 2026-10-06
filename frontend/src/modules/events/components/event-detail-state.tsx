@@ -1,5 +1,4 @@
 import { Info } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { RequestFeedback } from './request-feedback';
 import type { EventDetailStateProps } from '../types/event-detail-state-props.types';
 export function EventDetailState({
@@ -14,7 +13,7 @@ export function EventDetailState({
       aria-label="Detalle del taller seleccionado"
       className="flex min-h-80 w-full shrink-0 items-center justify-center border-t border-border bg-surface p-8 text-center lg:min-h-svh lg:w-[340px] lg:self-stretch lg:border-l lg:border-t-0 xl:w-[360px]"
     >
-      <Card className="mx-auto flex max-w-xs flex-col items-center gap-3 border-0 bg-transparent shadow-none">
+      <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
         {isLoading ? (
           <RequestFeedback message="Cargando detalle del taller..." />
         ) : error ? (
@@ -36,7 +35,7 @@ export function EventDetailState({
         <div className="mt-2 flex size-12 items-center justify-center rounded-2xl border border-border bg-surface-soft text-text-secondary">
           <Info aria-hidden="true" className="size-5" />
         </div>
-      </Card>
+      </div>
     </aside>
   );
 }
