@@ -1,32 +1,67 @@
 "use client";
 
+import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { ClipboardList, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Inbox } from "lucide-react";
 import { AppShell } from "@/shared/components/layout";
+import { SidebarToggleButton } from "@/shared/components/layout/sidebar-toggle-button";
 import type { NavigationItem } from "@/shared/types/navigation-item.types";
 import type { SidebarUser } from "@/shared/types/sidebar-user.types";
 import { INBOX_PATH } from "../constants/request-review.constants";
 import { useBackofficeSession } from "../hooks/use-backoffice-session";
+import { useStatusCounts } from "../hooks/use-status-counts";
+import type { ReviewStatus } from "../types/request-review.types";
+import { BackofficeBrand } from "./backoffice-brand";
+import { BackofficeUserFooter } from "./backoffice-user-footer";
 
-const BACKOFFICE_NAVIGATION: NavigationItem[] = [{ label: "Solicitudes", icon: ClipboardList, href: INBOX_PATH }];
+const BACKOFFICE_NAVIGATION: NavigationItem[] = [{ label: "Solicitudes", icon: Inbox, href: INBOX_PATH }];
+const PENDING_ONLY: readonly ReviewStatus[] = ["pending"];
+const NONE: readonly ReviewStatus[] = [];
 
-// TODO: mostrar el nombre real de la persona cuando el login lo devuelva
+// TODO: mostrar el nombre y el cargo reales cuando el login los devuelva
 const BACKOFFICE_USER: SidebarUser = { fullName: "Personal administrativo", role: "Administrativo" };
+
+// Ítem activo con fondo tenue y barra roja en el borde izquierdo (sin el fondo rojo por defecto)
+const ITEM_CLASS =
+  "data-active:bg-surface/10 data-active:before:-left-3 data-active:before:w-1 data-active:before:bg-accent";
 
 export function BackofficeShell({ children }: { children: ReactNode }) {
   const { state, logout } = useBackofficeSession();
+  // El conteo de pendientes solo se pide con sesión de administrativo
+  const counts = useStatusCounts(state === "allowed" ? PENDING_ONLY : NONE);
+
+  const badges = useMemo(() => {
+    const pending = counts.pending;
+    if (typeof pending !== "number") return undefined;
+    return {
+      Solicitudes: (
+        <span
+          aria-label={`${pending} pendientes`}
+          className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-surface"
+        >
+          {pending}
+        </span>
+      ),
+    };
+  }, [counts.pending]);
 
   if (state !== "allowed") return null;
 
   return (
-    <AppShell items={BACKOFFICE_NAVIGATION} user={BACKOFFICE_USER}>
-      <div className="flex justify-end pb-4">
-        <Button variant="outline" size="sm" onClick={logout}>
-          <LogOut aria-hidden="true" />
-          Cerrar sesión
-        </Button>
-      </div>
+    <AppShell
+      items={BACKOFFICE_NAVIGATION}
+      brand={<BackofficeBrand />}
+      sidebarFooter={<BackofficeUserFooter user={BACKOFFICE_USER} onLogout={logout} />}
+      sidebarItemClassName={ITEM_CLASS}
+      sidebarItemBadges={badges}
+      sidebarWidth="15.5rem"
+      header={
+        <div className="px-4 py-2 md:hidden">
+          <SidebarToggleButton />
+        </div>
+      }
+      contentClassName=""
+    >
       {children}
     </AppShell>
   );

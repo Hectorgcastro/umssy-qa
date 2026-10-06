@@ -190,4 +190,46 @@ describe("VerdictPanel", () => {
       expect(onStatusChange).not.toHaveBeenCalled();
     });
   });
+
+  describe("diseño del dictamen y del diálogo", () => {
+    it("Aprobar es el botón primario de tinta y Rechazar el de contorno rojo, lado a lado", () => {
+      setup();
+      expect(screen.getByRole("button", { name: "Aprobar solicitud" })).toHaveClass("bg-ink", "text-surface");
+      expect(screen.getByRole("button", { name: "Rechazar" })).toHaveClass("border-accent", "text-accent");
+    });
+
+    it("el diálogo muestra el nombre, el botón de cerrar y las tarjetas de motivo; la elegida va en rojo tenue", async () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
+      await screen.findByLabelText("Indicación para el solicitante");
+
+      expect(screen.getByText(/José Luis Pérez recibirá este motivo por correo/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Cerrar" })).toBeInTheDocument();
+      const card = screen.getByText("Documento ilegible").closest("label");
+      expect(card).toHaveClass("border-border");
+      fireEvent.click(screen.getByRole("radio", { name: "Documento ilegible" }));
+      expect(screen.getByText("Documento ilegible").closest("label")).toHaveClass("bg-interaction", "border-accent");
+    });
+
+    it("Rechazar y notificar es rojo y queda gris deshabilitado sin motivo válido", async () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
+      await screen.findByLabelText("Indicación para el solicitante");
+      const confirmButton = screen.getByRole("button", { name: "Rechazar y notificar" });
+
+      expect(confirmButton).toBeDisabled();
+      expect(confirmButton).toHaveClass("bg-accent", "text-surface", "disabled:bg-border");
+    });
+
+    it("el botón Cerrar cierra el diálogo sin rechazar", async () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
+      await screen.findByLabelText("Indicación para el solicitante");
+
+      fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+
+      await waitFor(() => expect(screen.queryByLabelText("Indicación para el solicitante")).toBeNull());
+      expect(rejectRequest).not.toHaveBeenCalled();
+    });
+  });
 });

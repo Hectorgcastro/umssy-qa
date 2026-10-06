@@ -32,7 +32,8 @@ describe("DataContrastPanel", () => {
     }
     expect(screen.getByText("José Luis")).toBeInTheDocument();
     expect(screen.getAllByText("Por verificar")).toHaveLength(6);
-    expect(screen.getByText("0 campos coinciden, 6 por verificar")).toBeInTheDocument();
+    expect(screen.getByText("0 coinciden")).toBeInTheDocument();
+    expect(screen.getByText("6 por verificar")).toBeInTheDocument();
   });
 
   it("marca Coincide cuando el valor del documento coincide y actualiza el resumen", () => {
@@ -40,10 +41,12 @@ describe("DataContrastPanel", () => {
 
     fireEvent.change(screen.getByLabelText("Nombres"), { target: { value: "jose luis" } });
     expect(screen.getAllByText("Coincide")).toHaveLength(1);
-    expect(screen.getByText("1 campo coincide, 5 por verificar")).toBeInTheDocument();
+    expect(screen.getByText("1 coinciden")).toBeInTheDocument();
+    expect(screen.getByText("5 por verificar")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Código SIS"), { target: { value: "2018001" } });
-    expect(screen.getByText("2 campos coinciden, 4 por verificar")).toBeInTheDocument();
+    expect(screen.getByText("2 coinciden")).toBeInTheDocument();
+    expect(screen.getByText("4 por verificar")).toBeInTheDocument();
   });
 
   it("un valor distinto sigue por verificar", () => {

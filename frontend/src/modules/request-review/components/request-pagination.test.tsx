@@ -10,7 +10,7 @@ describe("RequestPagination", () => {
     const onNext = vi.fn();
     render(<RequestPagination from={11} to={20} total={25} hasPrevious hasNext onPrevious={onPrevious} onNext={onNext} />);
 
-    expect(screen.getByText("Mostrando 11 a 20 de 25 solicitudes")).toBeInTheDocument();
+    expect(screen.getByText("Mostrando 11 a 20 de 25 solicitudes, de la más reciente a la más antigua")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
     fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
     expect(onPrevious).toHaveBeenCalledOnce();
