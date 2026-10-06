@@ -1,11 +1,11 @@
 "use client";
 
 import { AccessRequestProvider, useAccessRequestForm } from "../contexts/access-request-context";
-import { DocumentStep } from "../components/document-step";
-import { PersonalDataForm } from "../components/personal-data-form";
-import { PublicHeader } from "../components/public-header";
-import { ReviewStep } from "../components/review-step";
-import { RequestStepsSidebar } from "../components/request-steps-sidebar";
+import { DocumentStep } from "../components/document/document-step";
+import { PersonalDataForm } from "../components/personal-data/personal-data-form";
+import { PublicHeader } from "../components/request-steps/public-header";
+import { ReviewStep } from "../components/request-steps/review-step";
+import { RequestStepsSidebar } from "../components/request-steps/request-steps-sidebar";
 
 // Vive dentro del Provider: la barra lateral y el contenido leen el paso actual del Context
 function RequestAccessLayout() {

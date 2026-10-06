@@ -10,6 +10,7 @@ import type {
 } from "../types/access-request.types";
 import type { DocumentType } from "../constants/document-types.constants";
 import { FILE_TOO_LARGE_MESSAGE } from "../utils/validate-document-file";
+import type { SendOptions } from "../types/access-request-send-options.types";
 
 const NETWORK_ERROR_MESSAGE = "No se pudo conectar con el servidor. Inténtalo de nuevo.";
 const GENERIC_ERROR_MESSAGE = "No se pudo completar la solicitud. Inténtalo de nuevo.";
@@ -90,12 +91,6 @@ function parseError(status: number, body: unknown, notFoundMessage = NOT_FOUND_M
   if (typeof body.detail === "string") return fromDomainError(status, body.detail);
   if (typeof body.message === "string") return failure(status, body.message);
   return failure(status, GENERIC_ERROR_MESSAGE);
-}
-
-interface SendOptions {
-  params?: Record<string, string>;
-  notFoundMessage?: string;
-  onUploadProgress?: (event: { loaded: number; total?: number }) => void;
 }
 
 // FormData: axios arma el Content-Type multipart con su boundary; no se fuerza ninguna cabecera

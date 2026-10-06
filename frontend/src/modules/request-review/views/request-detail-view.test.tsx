@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { detail } from "../components/data-contrast-panel.test";
+import { detail } from "../components/detail/data-contrast-panel.test";
 import { requestReviewService } from "../services/request-review.service";
 import { RequestDetailView } from "./request-detail-view";
 
@@ -29,7 +29,7 @@ describe("RequestDetailView", () => {
     expect(await screen.findByRole("heading", { name: "José Luis Pérez" })).toBeInTheDocument();
     expect(screen.getByText("SOL-2026-0001")).toBeInTheDocument();
     expect(screen.getByText("En revisión")).toBeInTheDocument();
-    expect(await screen.findByTitle("Documento de respaldo")).toHaveAttribute("src", "blob:documento");
+    expect(await screen.findByTitle("Documento de respaldo")).toHaveAttribute("src", "blob:documento#toolbar=0&navpanes=0&view=FitH");
     expect(screen.getByRole("region", { name: "Contraste de datos" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Volver a la bandeja/ })).toHaveAttribute("href", "/backoffice/solicitudes");
     expect(getDocumentBlob).toHaveBeenCalledWith("id-1");
@@ -133,5 +133,18 @@ describe("RequestDetailView", () => {
     await screen.findByRole("heading", { name: "José Luis Pérez" });
     expect(screen.queryByText("Historial de esta solicitud")).toBeNull();
     expect(screen.getByText("Licenciatura en Ingeniería de Sistemas.")).toBeInTheDocument();
+  });
+
+  it("estructura: raíz de ancho completo, relleno de 32 px, cuadrícula de dos columnas y contraste con tabla fija", async () => {
+    getRequestDetail.mockResolvedValue({ ok: true, data: detail });
+    getDocumentBlob.mockResolvedValue({ ok: true, data: new Blob(["%PDF"]) });
+    const { container } = render(<RequestDetailView id="id-1" />);
+    await screen.findByRole("heading", { name: "José Luis Pérez" });
+
+    expect(container.firstElementChild).toHaveClass("w-full", "min-w-0");
+    expect(container.querySelector("section")).toHaveClass("p-8", "w-full", "min-w-0");
+    expect(container.querySelector(".grid")?.className).toContain("lg:grid-cols-[minmax(0,1.37fr)_minmax(0,1fr)]");
+    expect(container.querySelector("table")).toHaveClass("table-fixed");
+    expect(screen.getByText("En el documento")).toBeInTheDocument();
   });
 });

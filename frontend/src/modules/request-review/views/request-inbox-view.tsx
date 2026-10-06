@@ -1,9 +1,9 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InboxHeader } from "../components/backoffice-page-header";
-import { RequestPagination } from "../components/request-pagination";
-import { RequestTable } from "../components/request-table";
+import { InboxHeader } from "../components/layout/backoffice-page-header";
+import { RequestPagination } from "../components/inbox/request-pagination";
+import { RequestTable } from "../components/inbox/request-table";
 import { REVIEW_TABS } from "../constants/request-review.constants";
 import { useRequestList } from "../hooks/use-request-list";
 import { useStatusCounts } from "../hooks/use-status-counts";
@@ -16,11 +16,11 @@ export function RequestInboxView() {
   const counts = useStatusCounts(ALL_STATUSES);
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <InboxHeader />
 
-      <section className="flex flex-col gap-6 px-10 py-8">
-        <div className="overflow-hidden rounded-[10px] border border-border bg-surface">
+      <section className="flex w-full min-w-0 flex-col gap-6 p-8">
+        <div className="w-full min-w-0 overflow-hidden rounded-[10px] border border-border bg-surface">
           <Tabs value={list.status} onValueChange={(value) => list.changeStatus(value as ReviewStatus)} className="px-3">
             <TabsList variant="line" className="h-12 gap-2 p-0">
               {REVIEW_TABS.map((tab) => (

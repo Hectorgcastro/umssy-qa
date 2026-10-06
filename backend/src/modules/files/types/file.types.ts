@@ -1,4 +1,3 @@
-// Ninguno de estos tipos incluye el contenido, salvo FileContent
 export interface FileMetadata {
   id: string;
   name: string;

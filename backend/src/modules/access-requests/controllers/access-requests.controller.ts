@@ -1,10 +1,9 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
-import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
+import { MAX_FILE_SIZE_BYTES } from '../../files/constants/file-rules.constants.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { Roles } from '../../../common/decorators/roles.decorator.js';
-import type { RoleName } from '../../../common/enums/roles.enum.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import type { AuthenticatedUser } from '../../../common/types/authenticated-user.types.js';
@@ -22,14 +21,12 @@ import {
   type RequestStatusQuery,
 } from '../requests/request-status.schema.js';
 import { updateAccessRequestSchema, type UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
+import { BACKOFFICE_ROLE } from '../constants/backoffice.constants.js';
 
 interface DocumentResponse {
   set: (headers: Record<string, string>) => unknown;
   end: (body: Buffer) => unknown;
 }
-
-// Rol que atiende el backoffice (uno de ROLE_NAMES); las rutas públicas de la solicitud no llevan guard
-const BACKOFFICE_ROLE: RoleName = 'administrativo';
 
 const uuidPipe = new ParseUUIDPipe({
   exceptionFactory: () => new BadRequestException('El identificador de la solicitud no es válido'),
@@ -70,7 +67,6 @@ export class AccessRequestsController {
     response.end(file.content);
   }
 
-  // Abrir una solicitud pendiente la pasa a en revisión y registra a la persona que la abrió
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(BACKOFFICE_ROLE)

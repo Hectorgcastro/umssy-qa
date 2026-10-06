@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { requestReviewService } from "../services/request-review.service";
 import type { ReviewStatus } from "../types/request-review.types";
-
-export type StatusCounts = Partial<Record<ReviewStatus, number>>;
+import type { StatusCounts } from "../types/status-counts.types";
 
 // Un conteo por estado con el endpoint de listado existente (limit=1, se lee el total).
 // Si una llamada falla, solo falta ese conteo: no hay error visible.

@@ -7,7 +7,7 @@ import {
   ActiveAccessRequestExistsException,
   RequestCodeGenerationException,
 } from '../exceptions/index.js';
-import { MAX_REQUEST_CODE_ATTEMPTS } from '../helpers/request-code.js';
+import { MAX_REQUEST_CODE_ATTEMPTS } from '../constants/request-code.constants.js';
 
 function build() {
   const accessRequest = { findFirst: vi.fn(), update: vi.fn() };

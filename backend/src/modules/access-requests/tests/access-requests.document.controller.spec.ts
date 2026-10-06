@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { AccessRequestsController } from '../controllers/access-requests.controller.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
-import { MAX_FILE_SIZE_BYTES } from '../../files/types/file-rules.js';
+import { MAX_FILE_SIZE_BYTES } from '../../files/constants/file-rules.constants.js';
 
 const ID = '3f2b8a54-6d2e-4c7e-9a41-0b1d5f6c7e88';
 

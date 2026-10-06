@@ -7,7 +7,6 @@ export class RejectionNotificationService {
 
   constructor(@Inject(MAIL_SENDER) private readonly mailSender: MailSender) {}
 
-  // Avisa al titulado con el motivo. Si el envío falla se registra y devuelve false: el rechazo se mantiene
   async notify(email: string, reason: string, accessRequestId: string): Promise<boolean> {
     try {
       await this.mailSender.sendRejection(email, reason);

@@ -1,9 +1,4 @@
-// Índices únicos parciales de solicitudes enviadas (migración add_partial_unique_indexes_submitted_requests)
-export const SUBMITTED_UNIQUE_INDEXES = [
-  'uq_access_requests_email_submitted',
-  'uq_access_requests_id_card_submitted',
-  'uq_access_requests_sis_code_submitted',
-] as const;
+import { SUBMITTED_UNIQUE_INDEXES } from '../constants/unique-indexes.constants.js';
 
 // Nombre del índice o restricción violada en un P2002. Con el adaptador pg viene en
 // meta.driverAdapterError.cause.constraint.index; con el motor clásico, en meta.target.

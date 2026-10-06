@@ -27,12 +27,7 @@ import type { CreateAccessRequestDto } from '../requests/create-access-request.s
 import type { UpdateAccessRequestDto } from '../requests/update-access-request.schema.js';
 import { ACCESS_REQUEST_DOCUMENT_TYPE, ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
 import type { AttachDocumentInput } from '../types/uploaded-file.types.js';
-
-const DUPLICATE_LABELS = {
-  email: 'el correo',
-  idCardNumber: 'el carnet de identidad',
-  sisCode: 'el código SIS',
-} as const;
+import { DUPLICATE_LABELS } from '../constants/duplicate-labels.constants.js';
 
 type DuplicateField = keyof typeof DUPLICATE_LABELS;
 
@@ -134,7 +129,6 @@ export class AccessRequestsService {
       return { id, documentFileId: null };
     }
 
-    // Primero se limpia la referencia (condicional por estado draft) y después se borra el archivo
     const previousFileId = await this.accessRequestsRepository.clearDocument(id);
     if (previousFileId) {
       await this.discardFile(previousFileId);
@@ -149,7 +143,6 @@ export class AccessRequestsService {
       throw new DocumentRequiredToSubmitException();
     }
 
-    // Unicidad definitiva: cuenta existente con el correo y luego solicitudes activas (el borrador y las rechazadas no cuentan)
     if (await this.authService.existsByEmail(current.email)) {
       throw new DuplicateAccessRequestDataException('El correo ya está registrado');
     }
@@ -172,7 +165,6 @@ export class AccessRequestsService {
     };
   }
 
-  // Abre la solicitud para revisión: una pendiente pasa a en revisión. Los borradores no existen para el backoffice
   async getDetail(id: string, reviewerId: string) {
     const current = await this.accessRequestsRepository.findDetailById(id);
     if (!current || current.status.title === ACCESS_REQUEST_STATUS.DRAFT) {
@@ -286,7 +278,6 @@ export class AccessRequestsService {
     }
   }
 
-  // En el PATCH solo se revisan los campos enviados; excludeId deja editar el propio borrador
   private async assertNoDuplicates(
     dto: { email?: string; idCardNumber?: string; sisCode?: string },
     excludeId?: string,

@@ -3,7 +3,6 @@ import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { Prisma } from '../../../prisma/client.js';
 import { FileNotFoundException } from '../exceptions/index.js';
 
-// Nunca se selecciona content salvo en findContentById
 const FILE_METADATA_SELECT = {
   id: true,
   name: true,

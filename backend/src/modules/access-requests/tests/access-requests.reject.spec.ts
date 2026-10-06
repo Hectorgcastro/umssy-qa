@@ -2,7 +2,8 @@ import { Logger } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AccessRequestsController } from '../controllers/access-requests.controller.js';
 import { AccessRequestNotFoundException, RequestNotInReviewException } from '../exceptions/index.js';
-import { MAX_REJECTION_REASON_LENGTH, rejectAccessRequestSchema } from '../requests/reject-access-request.schema.js';
+import { rejectAccessRequestSchema } from '../requests/reject-access-request.schema.js';
+import { MAX_REJECTION_REASON_LENGTH } from '../constants/reject-access-request.constants.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
 import { RejectionNotificationService } from '../services/rejection-notification.service.js';
 

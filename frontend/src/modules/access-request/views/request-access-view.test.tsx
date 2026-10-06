@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { accessRequestService } from "../services/access-request.service";
-import { stubObjectUrls } from "../components/document-step-test-utils";
+import { stubObjectUrls } from "../components/document/document-step-test-utils";
 import { RequestAccessView } from "./request-access-view";
 
 vi.mock("../services/access-request.service", () => ({
