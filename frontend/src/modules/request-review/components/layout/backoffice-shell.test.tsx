@@ -134,4 +134,39 @@ describe("BackofficeShell", () => {
       await waitFor(() => expect(listRequests).toHaveBeenCalled());
     });
   });
+
+  describe("estructura del layout", () => {
+    const listRequests = vi.spyOn(requestReviewService, "listRequests");
+    beforeEach(() => listRequests.mockResolvedValue({ ok: false, status: 0, message: "x" }));
+
+    it("usa un solo AppShell: una barra lateral de 248 px y el botón de menú solo en móvil", () => {
+      sessionStorage.setItem("accessToken", tokenFor("administrativo"));
+      const { container } = render(
+        <BackofficeShell>
+          <p>Contenido</p>
+        </BackofficeShell>,
+      );
+
+      expect(container.querySelectorAll("[data-slot='sidebar']").length).toBeLessThanOrEqual(1);
+      expect(container.querySelector("[style*='--sidebar-width: 15.5rem']")).not.toBeNull();
+      const toggle = screen.getByRole("button", { name: /menú/i });
+      expect(toggle.parentElement).toHaveClass("md:hidden");
+      expect(screen.getByText("Contenido").parentElement).not.toHaveClass("px-8");
+    });
+
+    it("la barra lateral no muestra un chevron junto a la marca y el ítem activo permite la barra roja en el borde", () => {
+      sessionStorage.setItem("accessToken", tokenFor("administrativo"));
+      render(
+        <BackofficeShell>
+          <p>Contenido</p>
+        </BackofficeShell>,
+      );
+
+      const brand = screen.getByText("UMSSY").parentElement as HTMLElement;
+      expect(brand.querySelector("svg")).toBeNull();
+      expect(screen.queryByText("›")).toBeNull();
+      expect(screen.getByRole("link", { name: /Solicitudes/ }).className).toContain("overflow-visible");
+      expect(screen.getByRole("link", { name: /Solicitudes/ }).className).toContain("data-active:before:-left-3");
+    });
+  });
 });

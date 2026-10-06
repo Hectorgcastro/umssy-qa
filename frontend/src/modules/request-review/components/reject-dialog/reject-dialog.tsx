@@ -125,7 +125,11 @@ export function RejectDialog({ detail, open, onOpenChange, onRejected }: RejectD
         </div>
       </div>
       <AlertDialogFooter className="flex-row justify-end gap-3 bg-transparent p-0">
-        <AlertDialogCancel type="button" disabled={isRejecting} className="h-[42px] rounded-lg px-5 text-[14.5px] font-semibold">
+        <AlertDialogCancel
+            type="button"
+            disabled={isRejecting}
+            className="h-[42px] rounded-lg border border-border bg-surface px-5 text-[14.5px] font-semibold text-ink hover:bg-surface-soft"
+          >
           Cancelar
         </AlertDialogCancel>
         <AlertDialogAction

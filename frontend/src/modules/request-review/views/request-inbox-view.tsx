@@ -16,11 +16,11 @@ export function RequestInboxView() {
   const counts = useStatusCounts(ALL_STATUSES);
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <InboxHeader />
 
-      <section className="flex flex-col gap-6 px-10 py-8">
-        <div className="overflow-hidden rounded-[10px] border border-border bg-surface">
+      <section className="flex w-full min-w-0 flex-col gap-6 p-8">
+        <div className="w-full min-w-0 overflow-hidden rounded-[10px] border border-border bg-surface">
           <Tabs value={list.status} onValueChange={(value) => list.changeStatus(value as ReviewStatus)} className="px-3">
             <TabsList variant="line" className="h-12 gap-2 p-0">
               {REVIEW_TABS.map((tab) => (

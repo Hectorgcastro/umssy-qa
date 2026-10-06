@@ -24,10 +24,10 @@ export function RequestDetailView({ id }: RequestDetailViewProps) {
   const sentAt = formatLongDate(detail?.history?.submittedAt);
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <DetailHeader requestCode={detail?.requestCode} />
 
-      <section className="flex flex-col gap-6 px-10 py-8">
+      <section className="flex w-full min-w-0 flex-col gap-6 p-8">
         {isLoading && (
           <div className="flex flex-col gap-4" data-testid="detail-skeleton">
             <Skeleton className="h-8 w-1/3" />
@@ -56,8 +56,8 @@ export function RequestDetailView({ id }: RequestDetailViewProps) {
               </p>
             </div>
 
-            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-              <div>
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.37fr)_minmax(0,1fr)]">
+              <div className="min-w-0">
                 {!detail.document && (
                   <p className="rounded-[10px] border border-border bg-surface p-4 text-sm text-text-secondary">
                     Esta solicitud no tiene un documento adjunto.
@@ -78,7 +78,7 @@ export function RequestDetailView({ id }: RequestDetailViewProps) {
                   />
                 )}
               </div>
-              <div className="flex flex-col gap-6">
+              <div className="flex min-w-0 flex-col gap-6">
                 <DataContrastPanel detail={detail} />
                 <VerdictPanel
                   detail={detail}

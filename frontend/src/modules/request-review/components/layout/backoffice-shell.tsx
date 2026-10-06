@@ -23,7 +23,7 @@ const BACKOFFICE_USER: SidebarUser = { fullName: "Personal administrativo", role
 
 // Ítem activo con fondo tenue y barra roja en el borde izquierdo (sin el fondo rojo por defecto)
 const ITEM_CLASS =
-  "data-active:bg-surface/10 data-active:before:-left-3 data-active:before:w-1 data-active:before:bg-accent";
+  "overflow-visible data-active:bg-surface/10 data-active:before:-left-3 data-active:before:w-1 data-active:before:bg-accent";
 
 export function BackofficeShell({ children }: BackofficeShellProps) {
   const { state, logout } = useBackofficeSession();

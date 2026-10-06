@@ -9,6 +9,8 @@ import type { DocumentViewerProps } from "../../types/document-viewer-props.type
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.25;
+// Oculta la barra y el panel del visor integrado del navegador
+const PDF_VIEWER_FRAGMENT = "#toolbar=0&navpanes=0&view=FitH";
 const TOOL_CLASS = "bg-surface/10 text-surface hover:bg-surface/20 hover:text-surface";
 
 export function DocumentViewer({ url, mimeType, fileName, caption }: DocumentViewerProps) {
@@ -48,15 +50,15 @@ export function DocumentViewer({ url, mimeType, fileName, caption }: DocumentVie
           <Download strokeWidth={1.75} aria-hidden="true" />
         </a>
       </div>
-      <div className="flex h-[32rem] items-center justify-center overflow-auto p-6">
+      <div className={isPdf ? "flex h-[36rem] items-center justify-center p-4" : "flex items-center justify-center overflow-auto p-6"}>
         {isPdf ? (
-          <iframe src={url} title="Documento de respaldo" className="h-full w-full bg-surface" />
+          <iframe src={`${url}${PDF_VIEWER_FRAGMENT}`} title="Documento de respaldo" className="h-full w-full bg-surface" />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={url}
             alt="Documento de respaldo"
-            className="max-h-full max-w-full origin-center bg-surface shadow-lg transition-transform"
+            className="max-h-[32rem] max-w-full origin-center bg-surface shadow-lg transition-transform"
             style={{ transform: `scale(${scale}) rotate(${rotation}deg)` }}
           />
         )}

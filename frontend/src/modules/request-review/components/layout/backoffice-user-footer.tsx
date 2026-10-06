@@ -15,8 +15,8 @@ export function BackofficeUserFooter({ user, onLogout }: BackofficeUserFooterPro
         {getInitials(user.fullName)}
       </span>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm font-semibold text-surface">{user.fullName}</span>
-        <span className="truncate text-xs text-surface/70">{user.role}</span>
+        <span className="text-sm font-semibold break-words text-surface">{user.fullName}</span>
+        <span className="text-xs break-words text-surface/70">{user.role}</span>
       </div>
       <Button
         type="button"

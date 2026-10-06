@@ -48,13 +48,13 @@ export function DataContrastPanel({ detail }: DataContrastPanelProps) {
         </p>
       </header>
 
-      <Table>
+      <Table className="table-fixed">
         <TableHeader className="bg-surface-soft">
           <TableRow className="hover:bg-transparent">
-            <TableHead className={HEAD_CLASS}>Dato</TableHead>
-            <TableHead className={HEAD_CLASS}>Declarado</TableHead>
+            <TableHead className={`${HEAD_CLASS} w-[28%]`}>Dato</TableHead>
+            <TableHead className={`${HEAD_CLASS} w-[30%]`}>Declarado</TableHead>
             <TableHead className={HEAD_CLASS}>En el documento</TableHead>
-            <TableHead className="w-10 px-2">
+            <TableHead className="w-11 px-2">
               <span className="sr-only">Resultado</span>
             </TableHead>
           </TableRow>
@@ -66,7 +66,7 @@ export function DataContrastPanel({ detail }: DataContrastPanelProps) {
             return (
               <TableRow key={field.key} className="border-border">
                 <TableCell className="px-4 py-3 align-middle">
-                  <Label htmlFor={`contrast-${field.key}`} className="font-semibold text-ink">
+                  <Label htmlFor={`contrast-${field.key}`} className="font-semibold break-words text-ink">
                     {field.label}
                   </Label>
                 </TableCell>

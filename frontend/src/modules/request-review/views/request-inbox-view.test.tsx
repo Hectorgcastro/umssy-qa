@@ -125,4 +125,16 @@ describe("RequestInboxView", () => {
       await screen.findByText("Persona 1");
     });
   });
+
+  it("estructura: el contenedor raíz y la tarjeta ocupan todo el ancho disponible sin desbordar", async () => {
+    listRequests.mockResolvedValue(page([row(1)]));
+    const { container } = render(<RequestInboxView />);
+    await screen.findByText("Persona 1");
+
+    expect(container.firstElementChild).toHaveClass("w-full", "min-w-0");
+    const card = container.querySelector(".rounded-\\[10px\\].border");
+    expect(card).toHaveClass("w-full", "min-w-0", "overflow-hidden");
+    expect(container.querySelector("[data-slot='table-container']")).toHaveClass("w-full", "overflow-x-auto");
+    expect(container.querySelector("section")).toHaveClass("p-8");
+  });
 });

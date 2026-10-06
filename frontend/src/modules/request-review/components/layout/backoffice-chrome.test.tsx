@@ -45,4 +45,11 @@ describe("marca, cabeceras y pie del backoffice", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" }));
     expect(onLogout).toHaveBeenCalledOnce();
   });
+
+  it("el pie deja envolver el nombre y el cargo (sin truncar)", () => {
+    render(<BackofficeUserFooter user={{ fullName: "Personal administrativo", role: "Administrativo" }} onLogout={vi.fn()} />);
+    expect(screen.getByText("Personal administrativo")).not.toHaveClass("truncate");
+    expect(screen.getByText("Personal administrativo")).toHaveClass("break-words");
+    expect(screen.getByText("Administrativo")).not.toHaveClass("truncate");
+  });
 });

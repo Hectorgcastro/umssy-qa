@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { INBOX_PATH } from "../../constants/request-review.constants";
 import type { DetailHeaderProps } from "../../types/detail-header-props.types";
 
-const HEADER_CLASS = "border-b border-border bg-surface px-10 py-4";
+const HEADER_CLASS = "w-full border-b border-border bg-surface px-8 py-4";
 
 // Cabecera de la bandeja: subtítulo pequeño sobre el título en negrita
 export function InboxHeader() {

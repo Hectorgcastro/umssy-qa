@@ -39,7 +39,7 @@ describe("DocumentViewer", () => {
   it("un PDF se muestra en el visor del navegador, sin herramientas de imagen", () => {
     render(<DocumentViewer url="blob:pdf" mimeType="application/pdf" fileName="titulo.pdf" />);
 
-    expect(screen.getByTitle("Documento de respaldo")).toHaveAttribute("src", "blob:pdf");
+    expect(screen.getByTitle("Documento de respaldo")).toHaveAttribute("src", "blob:pdf#toolbar=0&navpanes=0&view=FitH");
     expect(screen.queryByRole("button", { name: "Acercar" })).toBeNull();
   });
 
