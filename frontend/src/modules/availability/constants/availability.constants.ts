@@ -45,7 +45,6 @@ export const FORM_TEXT: Record<
 
 export const EDIT_BLOCK_HINT = "Solo se puede editar si el bloque no tiene ninguna cita asociada.";
 
-export const EDIT_BLOCK_LABEL = FORM_TEXT.edit.title;
 
 export const REQUIRED_MESSAGES: Record<BlockFormField, string> = {
   date: "Selecciona una fecha",
