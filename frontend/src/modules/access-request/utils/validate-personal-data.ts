@@ -76,8 +76,8 @@ export function validatePersonalData(values: PersonalDataValues, now: Date = new
   assign("email", validateEmail(values.email));
 
   const phone = (values.phone ?? "").trim();
-  if (phone.length > 0 && !/^\d{8}$/.test(phone)) {
-    errors.phone = "El teléfono debe tener 8 dígitos";
+  if (phone.length > 0 && !/^\d{6,8}$/.test(phone)) {
+    errors.phone = "El teléfono debe tener entre 6 y 8 dígitos";
   }
 
   assign("birthDate", validateBirthDate(values.birthDate, now));
