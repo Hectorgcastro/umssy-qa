@@ -7,6 +7,7 @@ import { DomainExceptionFilter } from './common/filters/domain-exception.filter.
 import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { AccessRequestsModule } from './modules/access-requests/access-requests.module.js';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
     PrismaModule,
     AvailabilityModule,
     AuthModule,
+    AccessRequestsModule,
   ],
   controllers: [AppController],
   providers: [
