@@ -32,6 +32,7 @@ export function BlockForm({
   mode,
   initialValues,
   isSubmitting = false,
+  disabled = false,
   submitError,
   onSubmit,
   onCancel,
@@ -273,7 +274,7 @@ export function BlockForm({
               mode !== "edit" && "sm:w-auto",
               mode === "edit" && "bg-danger text-surface hover:bg-danger/90",
             )}
-            disabled={isSubmitting}
+            disabled={isSubmitting || disabled}
           >
             {isSubmitting ? "Guardando..." : text.submit}
           </Button>

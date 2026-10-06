@@ -5,6 +5,7 @@ export interface BlockFormProps {
   mode: BlockFormMode;
   initialValues?: Partial<CreateAvailabilityBlockInput>;
   isSubmitting?: boolean;
+  disabled?: boolean;
   submitError?: string | null;
   onSubmit: (values: CreateAvailabilityBlockInput) => void;
   onCancel: () => void;
