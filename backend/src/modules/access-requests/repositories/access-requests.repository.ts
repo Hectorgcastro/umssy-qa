@@ -4,6 +4,7 @@ import { Prisma } from '../../../prisma/client.js';
 import {
   AccessRequestCatalogMissingException,
   AccessRequestNotFoundException,
+  ActiveAccessRequestExistsException,
   RequestCodeGenerationException,
 } from '../exceptions/index.js';
 import type { CreateAccessRequestDto } from '../requests/create-access-request.schema.js';
@@ -15,6 +16,7 @@ import {
   requestCodePrefix,
   sleep,
 } from '../helpers/request-code.js';
+import { isSubmittedDuplicate } from '../helpers/unique-violation.js';
 import { ACCESS_REQUEST_STATUS } from '../types/access-request.enum.js';
 
 // Nunca se selecciona el archivo adjunto: solo la referencia documentFileId
@@ -178,8 +180,7 @@ export class AccessRequestsRepository {
   }
 
   // Pasa de draft a pending de forma atómica: si la solicitud cambió de estado o desapareció, lanza P2025.
-  // Sin unique en C.I., SIS y correo, dos envíos simultáneos con los mismos datos podrían pasar la validación
-  // TODO: unicidad definitiva en base (requiere schema)
+  // Los índices únicos parciales de la base (solo filas enviadas) son la defensa final contra envíos simultáneos con los mismos datos
   async submit(id: string, requestCode: string) {
     try {
       return await this.prisma.accessRequest.update({
@@ -204,8 +205,8 @@ export class AccessRequestsRepository {
   }
 
   // Una ráfaga de envíos simultáneos calcula el mismo siguiente número; el unique de requestCode da P2002 a los perdedores.
-  // Se recalcula con una pausa aleatoria breve y se reintenta; cualquier otro error se relanza de inmediato.
-  // TODO: unicidad definitiva en base (requiere schema)
+  // Se recalcula con una pausa aleatoria breve y se reintenta. Un P2002 de correo, C.I. o SIS (índices únicos parciales)
+  // significa que otra solicitud enviada ya ocupa esos datos: responde 409. Cualquier otro error se relanza de inmediato.
   async submitWithGeneratedCode(id: string) {
     for (let attempt = 1; attempt <= MAX_REQUEST_CODE_ATTEMPTS; attempt++) {
       const requestCode = await this.generateRequestCode();
@@ -214,6 +215,7 @@ export class AccessRequestsRepository {
       } catch (error) {
         const isCollision = error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
         if (!isCollision) throw error;
+        if (isSubmittedDuplicate(error.meta)) throw new ActiveAccessRequestExistsException();
       }
       if (attempt < MAX_REQUEST_CODE_ATTEMPTS) await this.retryPause(randomRetryDelayMs());
     }
