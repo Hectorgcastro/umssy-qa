@@ -1,4 +1,4 @@
-# Epic 5 — revisión e implementación local
+# Epic 5 — ramas y validación
 
 Fecha: 6 de octubre de 2026. Repositorio: [UMSSY/umssy-app](https://github.com/UMSSY/umssy-app).
 
@@ -6,13 +6,13 @@ La revisión cubre las 19 tareas de las historias de extracción NLP, recomendac
 
 ## Código listo para revisar
 
-La rama local `fix/grupo-5-epic-5-validation` contiene el conjunto integrado y validado. Incluye la sincronización de `develop` con la épica, conservando ambos conjuntos de módulos.
+La rama `fix/grupo-5-epic-5-validation` contiene el conjunto integrado y validado. Incluye la sincronización de `develop` con la épica, conservando ambos conjuntos de módulos.
 
 Las 16 ramas nuevas son una cadena de tareas: cada una parte de la anterior porque los cambios comparten dependencias. Para revisar solo una tarea, comparar con su rama precedente; el primer punto de partida es `fix/grupo-5-local-integration`. No fusionar todas contra la épica simultáneamente sin resolver estas dependencias. Los ajustes de integración y el cliente Prisma regenerado están en la rama final de validación.
 
-No se han publicado ramas ni cambiado responsables, estados o PRs en GitHub. Las ramas originales del equipo permanecen disponibles.
+Se publicaron las 16 ramas de tareas y las ramas de integración, validación y logo el 6 de octubre de 2026. No se cambiaron responsables ni estados de issues y no se crearon PRs. Las ramas originales del equipo permanecen disponibles.
 
-| Orden | Issue / tarea | Estado en GitHub | Responsable actual | Rama local |
+| Orden | Issue / tarea | Estado en GitHub | Responsable actual | Rama |
 | --- | --- | --- | --- | --- |
 | Existente | [#200 Normalización](https://github.com/UMSSY/umssy-app/issues/200) | Cerrado | juandiego-collab | `feature/grupo-5-backend-nlp-normalization` |
 | Existente | [#208 Tokenización](https://github.com/UMSSY/umssy-app/issues/208) | Abierto | juandiego-collab | `feature/grupo-5-backend-nlp-tokenization` |
