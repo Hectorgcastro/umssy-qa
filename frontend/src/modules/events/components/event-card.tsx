@@ -73,7 +73,7 @@ export function EventCard({
         className={cn(
           'h-auto w-full items-stretch whitespace-normal bg-surface border rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-2xs transition-colors cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring',
           isSelected
-            ? 'border-ink ring-1 ring-ink'
+            ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500 hover:bg-blue-50'
             : 'border-border hover:border-border-strong',
         )}
       >

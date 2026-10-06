@@ -7,10 +7,12 @@ import {
   formatTimeRange,
 } from '../utils/event-card';
 import { DetailRow } from './detail-row';
+import { hasValidEventCapacity } from '../utils/has-valid-event-capacity';
 
 import type { EventDetailPanelProps } from '../types/event-detail-panel-props.types';
 
 export function EventDetailPanel({ event }: EventDetailPanelProps) {
+  const hasValidCapacity = hasValidEventCapacity(event);
   const { enrolledCount, capacity, progressPercentage, isFull } =
     calculateEventCapacityStatus(event);
   const availableSpots = event.availableSpots;
@@ -84,36 +86,47 @@ export function EventDetailPanel({ event }: EventDetailPanelProps) {
               Cupos
             </h3>
             <span className="text-xs font-semibold text-ink">
-              {capacity === null
-                ? `${enrolledCount} inscritos`
-                : `${enrolledCount} de ${capacity}`}
+              {!hasValidCapacity
+                ? 'Por confirmar'
+                : capacity === null
+                  ? `${enrolledCount} inscritos`
+                  : `${enrolledCount} de ${capacity}`}
             </span>
           </div>
-          <div
-            aria-label={`Ocupación del taller: ${progressPercentage ?? 0}%`}
-            aria-valuemax={100}
-            aria-valuemin={0}
-            aria-valuenow={progressPercentage ?? undefined}
-            className="h-1.5 overflow-hidden rounded-full bg-muted"
-            role="progressbar"
-          >
+          {hasValidCapacity && progressPercentage !== null && (
             <div
-              className={`h-full rounded-full transition-[width] ${isFull ? 'bg-accent' : 'bg-gold'}`}
-              style={{ width: `${progressPercentage ?? 0}%` }}
-            />
-          </div>
-          <p className="text-xs text-text-secondary">
-            {capacity === null
-              ? 'Sin límite de cupos'
-              : isFull
-                ? 'Lleno · Sin cupos disponibles'
-                : `${Math.max(0, availableSpots ?? capacity - enrolledCount)} cupos disponibles`}
+              aria-label={`Ocupación del taller: ${progressPercentage}%`}
+              aria-valuemax={100}
+              aria-valuemin={0}
+              aria-valuenow={progressPercentage}
+              className="h-1.5 overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+            >
+              <div
+                className={`h-full rounded-full transition-[width] ${isFull ? 'bg-accent' : 'bg-gold'}`}
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+          )}
+          <p
+            id="event-capacity-description"
+            aria-live="polite"
+            className="text-xs text-text-secondary"
+          >
+            {!hasValidCapacity
+              ? 'Información de cupos no disponible.'
+              : capacity === null
+                ? 'Sin límite de cupos'
+                : isFull
+                  ? 'Lleno · Sin cupos disponibles'
+                  : `${availableSpots} cupos disponibles`}
           </p>
         </section>
 
         <Button
-          className="mt-2 min-h-11 w-full bg-accent text-white hover:bg-danger"
-          disabled={isFull}
+          aria-describedby="event-capacity-description"
+          className="mt-2 min-h-11 w-full bg-accent text-white hover:bg-danger disabled:bg-muted disabled:text-text-secondary disabled:opacity-100"
+          disabled={!hasValidCapacity || isFull}
           size="lg"
           type="button"
         >
