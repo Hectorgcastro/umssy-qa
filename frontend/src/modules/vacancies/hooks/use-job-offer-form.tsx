@@ -13,6 +13,9 @@ export interface VacancyConditions {
     vacancyCount: string;
     salary: string;
     languages: string;
+    // NUEVOS CAMPOS PASO 2
+    description: string;
+    skills: string[]; // Guardamos las habilidades como un array de strings
 }
 
 const initialConditions: VacancyConditions = {
@@ -24,13 +27,17 @@ const initialConditions: VacancyConditions = {
     vacancyCount: "",
     salary: "",
     languages: "",
+    // VALORES INICIALES PASO 2
+    description: "",
+    skills: [],
 };
 
 export function useJobOfferForm() {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(3); // Cambia esto a 2 temporalmente para probar tu pantalla
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
-    function updateField(field: keyof VacancyConditions, value: string) {
+    // Como skills es un array, necesitamos actualizar el tipado de updateField
+    function updateField(field: keyof VacancyConditions, value: any) {
         setConditions((prev) => ({ ...prev, [field]: value }));
     }
 
@@ -41,6 +48,11 @@ export function useJobOfferForm() {
     function goNext() {
         setCurrentStep((step) => Math.min(step + 1, 3));
     }
+    
+    // NUEVA FUNCIÓN PARA VOLVER ATRÁS
+    function goBack() {
+        setCurrentStep((step) => Math.max(step - 1, 1));
+    }
 
-    return { currentStep, conditions, updateField, selectModality, goNext };
+    return { currentStep, conditions, updateField, selectModality, goNext, goBack };
 }
