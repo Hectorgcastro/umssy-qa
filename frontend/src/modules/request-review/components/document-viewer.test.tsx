@@ -62,4 +62,18 @@ describe("DocumentViewer", () => {
     expect(consoleError.mock.calls.flat().join(" ")).not.toContain("nativeButton");
     consoleError.mockRestore();
   });
+
+  it("muestra el nombre del archivo en la barra, los iconos de herramientas y la nota al pie", () => {
+    render(<DocumentViewer url="blob:img" mimeType="image/png" fileName="diploma.png" caption="Documento: Diploma académico" />);
+
+    expect(screen.getByText("diploma.png")).toBeInTheDocument();
+    expect(screen.getByRole("toolbar", { name: "Herramientas del documento" })).toBeInTheDocument();
+    expect(screen.getByText("Documento: Diploma académico")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Descargar" })).toHaveAttribute("download", "diploma.png");
+  });
+
+  it("sin nota al pie no la muestra", () => {
+    render(<DocumentViewer url="blob:img" mimeType="image/png" fileName="diploma.png" />);
+    expect(screen.queryByText(/Documento:/)).toBeNull();
+  });
 });

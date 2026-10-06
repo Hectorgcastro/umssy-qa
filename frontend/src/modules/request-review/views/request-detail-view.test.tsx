@@ -26,8 +26,9 @@ describe("RequestDetailView", () => {
     render(<RequestDetailView id="id-1" />);
 
     expect(screen.getByTestId("detail-skeleton")).toBeInTheDocument();
-    expect(await screen.findByText(/Solicitud SOL-2026-0001/)).toBeInTheDocument();
-    expect(screen.getByText(/Estado: En revisión/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "José Luis Pérez" })).toBeInTheDocument();
+    expect(screen.getByText("SOL-2026-0001")).toBeInTheDocument();
+    expect(screen.getByText("En revisión")).toBeInTheDocument();
     expect(await screen.findByTitle("Documento de respaldo")).toHaveAttribute("src", "blob:documento");
     expect(screen.getByRole("region", { name: "Contraste de datos" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Volver a la bandeja/ })).toHaveAttribute("href", "/backoffice/solicitudes");
@@ -77,12 +78,12 @@ describe("RequestDetailView", () => {
       data: { id: "id-1", status: "approved", activationCodeSent: true },
     });
     render(<RequestDetailView id="id-1" />);
-    expect(await screen.findByText(/Estado: En revisión/)).toBeInTheDocument();
+    expect(await screen.findByText("En revisión")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Aprobar solicitud" }));
     fireEvent.click(await screen.findByRole("button", { name: "Aprobar y enviar código" }));
 
-    expect(await screen.findByText(/Estado: Aprobada/)).toBeInTheDocument();
+    expect(await screen.findByText("Aprobada")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Aprobar solicitud" })).toBeNull();
   });
 
@@ -94,13 +95,43 @@ describe("RequestDetailView", () => {
       data: { id: "id-1", status: "rejected", notificationSent: true },
     });
     render(<RequestDetailView id="id-1" />);
-    await screen.findByText(/Estado: En revisión/);
+    await screen.findByText("En revisión");
 
     fireEvent.click(screen.getByRole("button", { name: "Rechazar" }));
     await screen.findByLabelText("Indicación para el solicitante");
     fireEvent.click(screen.getByRole("radio", { name: "Documento ilegible" }));
     fireEvent.click(screen.getByRole("button", { name: "Rechazar y notificar" }));
 
-    expect(await screen.findByText(/Estado: Rechazada/)).toBeInTheDocument();
+    expect(await screen.findByText("Rechazada")).toBeInTheDocument();
+  });
+
+  it("muestra las migas, el nombre con la pastilla de estado y el subtítulo con la carrera y la fecha larga", async () => {
+    getRequestDetail.mockResolvedValue({
+      ok: true,
+      data: { ...detail, history: { submittedAt: "2026-09-22T13:14:00.000Z", reviewedAt: "2026-09-22T15:02:00.000Z", reviewedBy: "Carla Montaño", rejectionReason: null } },
+    });
+    getDocumentBlob.mockResolvedValue({ ok: true, data: new Blob(["%PDF"]) });
+    render(<RequestDetailView id="id-1" />);
+
+    expect(await screen.findByRole("heading", { name: "José Luis Pérez" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Solicitudes de acceso" })).toHaveAttribute("href", "/backoffice/solicitudes");
+    expect(screen.getByText("SOL-2026-0001")).toHaveClass("font-semibold");
+    expect(screen.getByText("En revisión")).toHaveClass("rounded-full");
+    expect(screen.getByText(/Licenciatura en Ingeniería de Sistemas\. Solicitud enviada el 22 de septiembre de 2026, 09:14\./)).toBeInTheDocument();
+    expect(screen.getByText("Historial de esta solicitud")).toBeInTheDocument();
+    expect(screen.getByText("Abierta por Carla Montaño")).toBeInTheDocument();
+    expect(await screen.findByText("Documento: Diploma académico")).toBeInTheDocument();
+    expect(screen.queryByText("Anterior")).toBeNull();
+    expect(screen.queryByText("Siguiente")).toBeNull();
+  });
+
+  it("sin historial ni fecha de envío no inventa nada", async () => {
+    getRequestDetail.mockResolvedValue({ ok: true, data: detail });
+    getDocumentBlob.mockResolvedValue({ ok: true, data: new Blob(["%PDF"]) });
+    render(<RequestDetailView id="id-1" />);
+
+    await screen.findByRole("heading", { name: "José Luis Pérez" });
+    expect(screen.queryByText("Historial de esta solicitud")).toBeNull();
+    expect(screen.getByText("Licenciatura en Ingeniería de Sistemas.")).toBeInTheDocument();
   });
 });

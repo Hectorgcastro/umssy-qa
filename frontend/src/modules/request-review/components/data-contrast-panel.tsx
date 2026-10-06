@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { CircleAlert, CircleCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ReviewDetail } from "../types/request-review.types";
 import { valuesMatch } from "../utils/compare-values";
 
@@ -23,6 +25,8 @@ function buildFields(detail: ReviewDetail): ContrastField[] {
   ];
 }
 
+const HEAD_CLASS = "h-9 px-4 text-[12.5px] font-semibold text-text-secondary";
+
 // Mientras la lectura automática del documento esté fuera de alcance, la persona revisora escribe el valor que ve en él
 // TODO: confirmar con la docente cómo se obtiene el valor del documento
 export function DataContrastPanel({ detail }: { detail: ReviewDetail }) {
@@ -30,40 +34,65 @@ export function DataContrastPanel({ detail }: { detail: ReviewDetail }) {
   const [documentValues, setDocumentValues] = useState<Record<string, string>>({});
 
   const matching = fields.filter((field) => valuesMatch(field.declared, documentValues[field.key] ?? "")).length;
+  const pending = fields.length - matching;
 
   return (
-    <section className="flex flex-col gap-4 rounded-md border border-border bg-surface p-4" aria-label="Contraste de datos">
-      <header className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold text-ink">Contraste de datos</h2>
-        <p className="text-sm text-text-secondary">Escribe el valor que ves en el documento para compararlo con lo declarado.</p>
+    <section className="overflow-hidden rounded-[10px] border border-border bg-surface" aria-label="Contraste de datos">
+      <header className="flex flex-wrap items-center justify-between gap-2 px-5 py-4">
+        <h2 className="font-tight text-[17px] font-bold text-ink">Contraste de datos</h2>
+        <p className="flex items-center gap-4 text-sm text-ink" aria-live="polite">
+          <span className="inline-flex items-center gap-1.5">
+            <CircleCheck className="size-4" strokeWidth={1.75} aria-hidden="true" />
+            {matching} coinciden
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <CircleAlert className="size-4 text-gold" strokeWidth={1.75} aria-hidden="true" />
+            {pending} por verificar
+          </span>
+        </p>
       </header>
 
-      <ul className="flex flex-col gap-4">
-        {fields.map((field) => {
-          const matches = valuesMatch(field.declared, documentValues[field.key] ?? "");
-          return (
-            <li key={field.key} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor={`contrast-${field.key}`}>{field.label}</Label>
-                <span className="text-xs font-semibold text-ink">{matches ? "Coincide" : "Por verificar"}</span>
-              </div>
-              <p className="text-sm text-text-secondary">
-                Declarado: <span className="font-medium text-ink">{field.declared}</span>
-              </p>
-              <Input
-                id={`contrast-${field.key}`}
-                value={documentValues[field.key] ?? ""}
-                onChange={(event) => setDocumentValues((current) => ({ ...current, [field.key]: event.target.value }))}
-                placeholder="Valor en el documento"
-              />
-            </li>
-          );
-        })}
-      </ul>
-
-      <p className="text-sm text-ink" aria-live="polite">
-        {matching} {matching === 1 ? "campo coincide" : "campos coinciden"}, {fields.length - matching} por verificar
-      </p>
+      <Table>
+        <TableHeader className="bg-surface-soft">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={HEAD_CLASS}>Dato</TableHead>
+            <TableHead className={HEAD_CLASS}>Declarado</TableHead>
+            <TableHead className={HEAD_CLASS}>En el documento</TableHead>
+            <TableHead className="w-10 px-2">
+              <span className="sr-only">Resultado</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {fields.map((field) => {
+            const matches = valuesMatch(field.declared, documentValues[field.key] ?? "");
+            const Icon = matches ? CircleCheck : CircleAlert;
+            return (
+              <TableRow key={field.key} className="border-border">
+                <TableCell className="px-4 py-3 align-middle">
+                  <Label htmlFor={`contrast-${field.key}`} className="font-semibold text-ink">
+                    {field.label}
+                  </Label>
+                </TableCell>
+                <TableCell className="px-4 py-3 align-middle text-sm whitespace-normal text-ink">{field.declared}</TableCell>
+                <TableCell className="px-4 py-3 align-middle">
+                  <Input
+                    id={`contrast-${field.key}`}
+                    value={documentValues[field.key] ?? ""}
+                    onChange={(event) => setDocumentValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    placeholder="Valor en el documento"
+                    className="h-[34px] rounded-lg"
+                  />
+                </TableCell>
+                <TableCell className="px-2 align-middle">
+                  <Icon className={matches ? "size-5 text-ink" : "size-5 text-gold"} strokeWidth={1.75} aria-hidden="true" />
+                  <span className="sr-only">{matches ? "Coincide" : "Por verificar"}</span>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </section>
   );
 }
