@@ -4,6 +4,7 @@ import { AccessRequestsRepository } from '../repositories/access-requests.reposi
 import {
   AccessRequestCatalogMissingException,
   AccessRequestNotFoundException,
+  ActiveAccessRequestExistsException,
   RequestCodeGenerationException,
 } from '../exceptions/index.js';
 import { MAX_REQUEST_CODE_ATTEMPTS } from '../helpers/request-code.js';
@@ -145,6 +146,39 @@ describe('AccessRequestsRepository: envío y consulta de estado', () => {
         expect(ms).toBeGreaterThanOrEqual(5);
         expect(ms).toBeLessThanOrEqual(40);
       }
+    });
+
+    it.each([
+      'uq_access_requests_email_submitted',
+      'uq_access_requests_id_card_submitted',
+      'uq_access_requests_sis_code_submitted',
+    ])('un P2002 del índice %s lanza ActiveAccessRequestExistsException (409) sin reintentar', async (index) => {
+      const { accessRequest, pause, repository } = build();
+      accessRequest.findFirst.mockResolvedValue(null);
+      accessRequest.update.mockRejectedValue(
+        prismaError('P2002', { driverAdapterError: { cause: { constraint: { index } } } }),
+      );
+
+      const error = await repository.submitWithGeneratedCode('id-1').catch((e) => e);
+
+      expect(error).toBeInstanceOf(ActiveAccessRequestExistsException);
+      expect(error.statusCode).toBe(409);
+      expect(error.message).toBe('Ya tienes una solicitud activa');
+      expect(accessRequest.update).toHaveBeenCalledTimes(1);
+      expect(pause).not.toHaveBeenCalled();
+    });
+
+    it('un P2002 de access_requests_request_code_key sí se reintenta', async () => {
+      const { accessRequest, pause, repository } = build();
+      accessRequest.findFirst.mockResolvedValue(null);
+      accessRequest.update
+        .mockRejectedValueOnce(
+          prismaError('P2002', { driverAdapterError: { cause: { constraint: { index: 'access_requests_request_code_key' } } } }),
+        )
+        .mockResolvedValueOnce({ id: 'id-1', requestCode: 'SOL-2026-0001' });
+
+      await expect(repository.submitWithGeneratedCode('id-1')).resolves.toEqual({ id: 'id-1', requestCode: 'SOL-2026-0001' });
+      expect(pause).toHaveBeenCalledTimes(1);
     });
 
     it('un error distinto de P2002 no se reintenta ni pausa', async () => {
