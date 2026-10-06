@@ -1,12 +1,11 @@
-// frontend/src/modules/vacancies/views/register-vacancy-view.tsx
 "use client";
 
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { VacancyStepper } from "../components/vacancy-stepper";
 import { InformationStep } from "../components/information-step";
-import { RequirementsStep } from "../components/requirements-step"; // IMPORTA TU COMPONENTE
-
+import { RequirementsStep } from "../components/requirements-step";
+import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
@@ -35,7 +34,7 @@ export function RegisterVacancyView() {
                 />
             )}
 
-            {/* INYECTA TU VISTA 2 CUANDO EL STEPPER LLEGUE AL 2 */}
+            {/* Inyecta la vista 2 cuando el stepper llegue al 2 */}
             {currentStep === 2 && (
                 <RequirementsStep 
                 conditions={conditions} 
@@ -43,7 +42,10 @@ export function RegisterVacancyView() {
                 />
             )}
 
-            
+            {/* Inyecta la vista 3 exclusivamente cuando el stepper llegue al 3 */}
+            {currentStep === 3 && (
+                <PreviewStep conditions={conditions} />
+            )}
         </div>
     );
 }
