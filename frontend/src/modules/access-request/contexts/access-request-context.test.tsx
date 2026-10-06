@@ -12,6 +12,8 @@ vi.mock("../services/access-request.service", () => ({
     deleteAccessRequest: vi.fn(),
     uploadDocument: vi.fn(),
     removeDocument: vi.fn(),
+    submitAccessRequest: vi.fn(),
+    getRequestStatus: vi.fn(),
   },
 }));
 
@@ -20,6 +22,8 @@ const update = vi.mocked(accessRequestService.updateAccessRequest);
 const remove = vi.mocked(accessRequestService.deleteAccessRequest);
 const upload = vi.mocked(accessRequestService.uploadDocument);
 const removeDoc = vi.mocked(accessRequestService.removeDocument);
+const submitReq = vi.mocked(accessRequestService.submitAccessRequest);
+const getStatus = vi.mocked(accessRequestService.getRequestStatus);
 
 const BUSY = "Hay una operación en curso. Espera a que termine.";
 const MB = 1024 * 1024;
@@ -893,5 +897,268 @@ describe("AccessRequestProvider: paso 2 (documento de respaldo)", () => {
 
       expect(sizes).toEqual([1, 1, 1, 0]);
     });
+  });
+});
+
+describe("AccessRequestProvider: envío de la solicitud (paso 3)", () => {
+  const sent = { ok: true, data: { id: "draft-1", requestCode: "SOL-2026-0001", status: "pending", submittedAt: "2026-10-05T23:59:34.644Z" } } as const;
+
+  beforeEach(() => {
+    for (const mock of [create, update, remove, upload, removeDoc, submitReq, getStatus]) mock.mockReset();
+    urlCounter = 0;
+    liveUrls.clear();
+    createUrl.mockClear();
+    revokeUrl.mockClear();
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: createUrl, revokeObjectURL: revokeUrl }));
+  });
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  async function readyToSend() {
+    upload.mockResolvedValue(uploadOk());
+    const hook = setup();
+    await readyForUpload(hook);
+    await uploadFile(hook);
+    return hook;
+  }
+
+  async function send(hook: Hook) {
+    await act(async () => {
+      await hook.result.current.submitRequest();
+    });
+  }
+
+  it("un envío feliz guarda la solicitud, pasa al paso 3 y vuelve a idle", async () => {
+    submitReq.mockResolvedValue(sent);
+    const hook = await readyToSend();
+
+    await send(hook);
+
+    expect(submitReq).toHaveBeenCalledWith("draft-1");
+    expect(hook.result.current.submission).toEqual({
+      requestCode: "SOL-2026-0001",
+      submittedAt: "2026-10-05T23:59:34.644Z",
+      status: "pending",
+      reviewedAt: null,
+      rejectionReason: null,
+    });
+    expect(hook.result.current.currentStep).toBe(3);
+    expect(hook.result.current.status).toBe("idle");
+    expect(hook.result.current.submitError).toBeNull();
+  });
+
+  it("sin documento no llama al servicio", async () => {
+    const hook = setup();
+    fillValid(hook);
+    await saveDraft(hook);
+
+    await send(hook);
+
+    expect(submitReq).not.toHaveBeenCalled();
+    expect(hook.result.current.currentStep).toBe(2);
+  });
+
+  it("sin borrador no llama al servicio", async () => {
+    const hook = setup();
+
+    await send(hook);
+
+    expect(submitReq).not.toHaveBeenCalled();
+  });
+
+  it("un doble clic hace una sola llamada y muestra sending", async () => {
+    let resolve!: (value: ApiResult<never>) => void;
+    submitReq.mockReturnValue(new Promise((done) => (resolve = done as never)));
+    const hook = await readyToSend();
+
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = hook.result.current.submitRequest();
+      second = hook.result.current.submitRequest();
+    });
+    await second;
+    expect(hook.result.current.status).toBe("sending");
+
+    await act(async () => {
+      resolve(sent as never);
+      await first;
+    });
+
+    expect(submitReq).toHaveBeenCalledTimes(1);
+  });
+
+  it("un 409 deja el mensaje, sin cambiar de paso", async () => {
+    submitReq.mockResolvedValue(failure(409, "Ya tienes una solicitud activa"));
+    const hook = await readyToSend();
+
+    await send(hook);
+
+    expect(hook.result.current.submitError).toBe("Ya tienes una solicitud activa");
+    expect(hook.result.current.currentStep).toBe(2);
+    expect(hook.result.current.submission).toBeNull();
+    expect(hook.result.current.status).toBe("idle");
+    expect(hook.result.current.hasDocument).toBe(true);
+  });
+
+  it("un error de red deja el mensaje y permite reintentar", async () => {
+    submitReq.mockResolvedValueOnce(failure(0, "No se pudo conectar con el servidor. Inténtalo de nuevo."));
+    submitReq.mockResolvedValueOnce(sent as never);
+    const hook = await readyToSend();
+
+    await send(hook);
+    expect(hook.result.current.submitError).toBe("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+    await send(hook);
+
+    expect(hook.result.current.submitError).toBeNull();
+    expect(hook.result.current.currentStep).toBe(3);
+  });
+
+  it("un 404 reinicia: sin borrador, paso 1, documento vacío, URL revocada y aviso", async () => {
+    submitReq.mockResolvedValue(failure(404, "La solicitud ya no existe"));
+    const hook = await readyToSend();
+
+    await send(hook);
+
+    expect(hook.result.current.draftId).toBeNull();
+    expect(hook.result.current.currentStep).toBe(1);
+    expect(hook.result.current.hasDocument).toBe(false);
+    expect(hook.result.current.document.documentType).toBeNull();
+    expect(hook.result.current.notice).toEqual({ type: "error", text: "La solicitud ya no existe" });
+    expect(liveUrls.size).toBe(0);
+  });
+
+  it("mientras envía bloquea goToStep y clear", async () => {
+    let resolve!: (value: ApiResult<never>) => void;
+    submitReq.mockReturnValue(new Promise((done) => (resolve = done as never)));
+    const hook = await readyToSend();
+
+    let pending!: Promise<void>;
+    await act(async () => {
+      pending = hook.result.current.submitRequest();
+    });
+    act(() => hook.result.current.goToStep(1));
+    let result;
+    await act(async () => {
+      result = await hook.result.current.clear();
+    });
+
+    expect(hook.result.current.currentStep).toBe(2);
+    expect(result).toEqual({ ok: false, message: BUSY });
+    expect(remove).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolve(sent as never);
+      await pending;
+    });
+  });
+
+  describe("con la solicitud ya enviada", () => {
+    async function sentHook() {
+      submitReq.mockResolvedValue(sent);
+      const hook = await readyToSend();
+      await send(hook);
+      return hook;
+    }
+
+    it("hasData es false aunque haya valores", async () => {
+      const hook = await sentHook();
+
+      expect(hook.result.current.values.firstName).toBe("Ana María");
+      expect(hook.result.current.hasData).toBe(false);
+    });
+
+    it("bloquea goToStep, clear, subir, quitar, elegir tipo y el guardado del paso 1", async () => {
+      const hook = await sentHook();
+      upload.mockClear();
+      create.mockClear();
+      update.mockClear();
+
+      act(() => hook.result.current.goToStep(1));
+      let result;
+      await act(async () => {
+        result = await hook.result.current.clear();
+      });
+      await uploadFile(hook, pdf("otro.pdf"));
+      await act(async () => {
+        await hook.result.current.removeDocument();
+        await hook.result.current.submit();
+        await hook.result.current.submitRequest();
+      });
+      act(() => hook.result.current.selectDocumentType("academic_diploma"));
+
+      expect(hook.result.current.currentStep).toBe(3);
+      expect(result).toEqual({ ok: false, message: "La solicitud ya fue enviada." });
+      expect(remove).not.toHaveBeenCalled();
+      expect(upload).not.toHaveBeenCalled();
+      expect(removeDoc).not.toHaveBeenCalled();
+      expect(create).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+      expect(submitReq).toHaveBeenCalledTimes(1);
+      expect(hook.result.current.document.documentType).toBe("national_title");
+      expect(hook.result.current.draftId).toBe("draft-1");
+    });
+
+    it("al desmontar se sigue revocando la URL de la vista previa", async () => {
+      const hook = await sentHook();
+      expect(liveUrls.size).toBe(1);
+
+      hook.unmount();
+
+      expect(liveUrls.size).toBe(0);
+    });
+
+    it("refreshSubmission actualiza estado, fecha de revisión y motivo con el correo en minúsculas", async () => {
+      getStatus.mockResolvedValue({
+        ok: true,
+        data: {
+          requestCode: "SOL-2026-0001",
+          status: "rejected",
+          submittedAt: "2026-10-05T23:59:34.644Z",
+          reviewedAt: "2026-10-06T14:00:00.000Z",
+          rejectionReason: "Documento ilegible",
+          document: null,
+        },
+      });
+      const hook = await sentHook();
+
+      await act(async () => {
+        await hook.result.current.refreshSubmission();
+      });
+
+      expect(getStatus).toHaveBeenCalledWith("SOL-2026-0001", "ana@umss.edu.bo");
+      expect(hook.result.current.submission).toMatchObject({
+        status: "rejected",
+        reviewedAt: "2026-10-06T14:00:00.000Z",
+        rejectionReason: "Documento ilegible",
+        requestCode: "SOL-2026-0001",
+      });
+    });
+
+    it("si la consulta falla no cambia nada ni muestra error", async () => {
+      getStatus.mockResolvedValue(failure(0, "sin red"));
+      const hook = await sentHook();
+      const before = hook.result.current.submission;
+
+      await act(async () => {
+        await hook.result.current.refreshSubmission();
+      });
+
+      expect(hook.result.current.submission).toEqual(before);
+      expect(hook.result.current.submitError).toBeNull();
+      expect(hook.result.current.notice).toBeNull();
+    });
+  });
+
+  it("refreshSubmission sin solicitud enviada no consulta", async () => {
+    const hook = setup();
+
+    await act(async () => {
+      await hook.result.current.refreshSubmission();
+    });
+
+    expect(getStatus).not.toHaveBeenCalled();
   });
 });
