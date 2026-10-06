@@ -12,7 +12,7 @@ import {
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { ResponseInterceptor } from '../../../common/interceptors/index.js';
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
+import { ZodValidationPipe } from 'nestjs-zod';
 import type { AuthenticatedUser } from '../../../common/types/authenticated-user.types.js';
 import {
   activateMentorSchema,

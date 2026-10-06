@@ -67,6 +67,8 @@ describe('Mentorship Standard Response HTTP', () => {
         canActivate: (context: ExecutionContext) => {
           context.switchToHttp().getRequest<AuthenticatedRequest>().user = {
             id: userId,
+            email: 'mentor@test.com',
+            roles: ['mentor'],
           };
           return true;
         },
@@ -157,6 +159,35 @@ describe('Mentorship Standard Response HTTP', () => {
         data: null,
       });
   });
+
+  it.each([
+    {
+      method: 'post' as const,
+      path: '/api/mentors/activate',
+      serviceMethod: 'activate' as const,
+    },
+    {
+      method: 'patch' as const,
+      path: '/api/mentors/me/technical-areas',
+      serviceMethod: 'updateMyTechnicalAreas' as const,
+    },
+    {
+      method: 'patch' as const,
+      path: '/api/mentors/me/orientation-types',
+      serviceMethod: 'updateMyOrientationTypes' as const,
+    },
+  ])(
+    'rechaza payloads invalidos en $method $path con el pipe compartido',
+    async ({ method, path, serviceMethod }) => {
+      const previousCalls = mentorsService[serviceMethod].mock.calls.length;
+
+      await request(server)[method](path).send({}).expect(400);
+
+      expect(mentorsService[serviceMethod]).toHaveBeenCalledTimes(
+        previousCalls,
+      );
+    },
+  );
 
   it('conserva la validacion 400 de UUID invalido', async () => {
     const response = await request(server)
