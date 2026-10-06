@@ -1,15 +1,10 @@
+import { AppModule } from '../src/app.module.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import request from 'supertest';
-import type { App } from 'supertest/types';
+import type { Server } from 'node:http';
 import { vi } from 'vitest';
-import { EventsModule } from '../src/modules/events/events.module.js';
-import { PrismaModule } from '../src/common/prisma/prisma.module.js';
 import { PrismaService } from '../src/common/prisma/prisma.service.js';
-import { ResponseInterceptor } from '../src/common/interceptors/response.interceptor.js';
-import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter.js';
-import { DomainExceptionFilter } from '../src/common/filters/domain-exception.filter.js';
 
 function buildPrismaCategoryRecord(overrides = {}) {
   return {
@@ -41,16 +36,11 @@ const prismaMock = {
 };
 
 describe('EventCategoriesController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication<Server>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [EventsModule, PrismaModule],
-      providers: [
-        { provide: APP_FILTER, useClass: HttpExceptionFilter },
-        { provide: APP_FILTER, useClass: DomainExceptionFilter },
-        { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
-      ],
+      imports: [AppModule],
     })
       .overrideProvider(PrismaService)
       .useValue(prismaMock)
