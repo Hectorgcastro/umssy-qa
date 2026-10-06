@@ -238,7 +238,7 @@ describe("PersonalDataForm: criterios de #500 en el formulario", () => {
     await submitForm();
 
     expect(screen.getByText("El correo no tiene un formato válido")).toBeInTheDocument();
-    expect(screen.getByText("El teléfono debe tener 8 dígitos")).toBeInTheDocument();
+    expect(screen.getByText("El teléfono debe tener entre 6 y 8 dígitos")).toBeInTheDocument();
     expect(create).not.toHaveBeenCalled();
   });
 

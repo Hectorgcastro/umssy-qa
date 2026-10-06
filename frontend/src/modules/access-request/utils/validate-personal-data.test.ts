@@ -69,8 +69,12 @@ describe("validatePersonalData", () => {
     expect(errorsOf({ email: `${"a".repeat(150)}@umss.edu.bo` }).email).toBe("El correo no puede superar los 150 caracteres");
   });
 
-  it.each(["1234567", "123456789", "abcdefgh"])("rechaza el teléfono %j", (phone) => {
-    expect(errorsOf({ phone }).phone).toBe("El teléfono debe tener 8 dígitos");
+  it.each(["12345", "123456789", "abcdefgh", "1234 567"])("rechaza el teléfono %j", (phone) => {
+    expect(errorsOf({ phone }).phone).toBe("El teléfono debe tener entre 6 y 8 dígitos");
+  });
+
+  it.each(["123456", "1234567", "12345678", ""])("acepta el teléfono %j", (phone) => {
+    expect(errorsOf({ phone }).phone).toBeUndefined();
   });
 
   describe("fecha de nacimiento (fecha fija 2026-10-05)", () => {

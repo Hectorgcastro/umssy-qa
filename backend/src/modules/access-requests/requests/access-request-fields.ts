@@ -64,7 +64,7 @@ export const accessRequestFields = {
   phone: z
     .string({ error: 'El teléfono no es válido' })
     .trim()
-    .regex(/^\d{8}$/, 'El teléfono debe tener 8 dígitos')
+    .regex(/^\d{6,8}$/, 'El teléfono debe tener entre 6 y 8 dígitos')
     .optional(),
   birthDate: z
     .string({ error: 'La fecha de nacimiento es obligatoria' })

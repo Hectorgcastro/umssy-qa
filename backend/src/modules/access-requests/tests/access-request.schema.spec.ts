@@ -66,8 +66,12 @@ describe('createAccessRequestSchema', () => {
     expect(messagesOf({ ...validPayload, email: `${'a'.repeat(150)}@umss.edu.bo` }).some((m) => m.startsWith('email'))).toBe(true);
   });
 
-  it.each(['1234567', '123456789', 'abcdefgh'])('rechaza el teléfono "%s"', (phone) => {
-    expect(messagesOf({ ...validPayload, phone })).toContain('phone: El teléfono debe tener 8 dígitos');
+  it.each(['12345', '123456789', 'abcdefgh', '1234 567'])('rechaza el teléfono "%s"', (phone) => {
+    expect(messagesOf({ ...validPayload, phone })).toContain('phone: El teléfono debe tener entre 6 y 8 dígitos');
+  });
+
+  it.each(['123456', '1234567', '12345678'])('acepta el teléfono "%s"', (phone) => {
+    expect(messagesOf({ ...validPayload, phone })).toEqual([]);
   });
 
   it('rechaza campos faltantes con mensajes en español', () => {
