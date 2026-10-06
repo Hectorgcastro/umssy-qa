@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { saveAccessToken } from "@/shared/services/storage/access-token-storage";
 import { useLogin } from "../hooks/use-login";
 import type { RoleTag } from "../types/auth-types";
 
@@ -29,7 +30,7 @@ export function LoginView() {
     event.preventDefault();
     const result = await login({ email, password, roleTag });
     if (result) {
-      sessionStorage.setItem("accessToken", result.accessToken);
+      saveAccessToken(result.accessToken);
       router.push("/");
     }
   }
