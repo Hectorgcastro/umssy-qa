@@ -120,7 +120,7 @@ describe("WeekGrid", () => {
     expect(screen.getByRole("button", { name: /^libre,/ })).toBeDisabled();
   });
 
-  it("en variant owner, dispara onEditBlock solo sobre un bloque libre, no sobre uno confirmado", () => {
+  it("en variant owner, dispara onEditBlock también sobre un bloque con cita", () => {
     const onEditBlock = vi.fn();
     render(
       <WeekGrid
@@ -137,7 +137,9 @@ describe("WeekGrid", () => {
     const confirmedButton = screen.getByRole("button", {
       name: /confirmada, 17:00 a 18:30/,
     });
-    expect(confirmedButton).toBeDisabled();
+    expect(confirmedButton).toBeEnabled();
+    fireEvent.click(confirmedButton);
+    expect(onEditBlock).toHaveBeenLastCalledWith(blocks[2]);
   });
 
   it("no renderiza bloques que no pertenecen a la semana mostrada", () => {
