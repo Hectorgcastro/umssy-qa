@@ -11,6 +11,7 @@ import { useBackofficeSession } from "../../hooks/use-backoffice-session";
 import { useStatusCounts } from "../../hooks/use-status-counts";
 import type { ReviewStatus } from "../../types/request-review.types";
 import { BackofficeBrand } from "./backoffice-brand";
+import { BackofficeSessionSkeleton } from "./backoffice-session-skeleton";
 import { BackofficeUserFooter } from "./backoffice-user-footer";
 import type { BackofficeShellProps } from "../../types/backoffice-shell-props.types";
 
@@ -45,8 +46,6 @@ export function BackofficeShell({ children }: BackofficeShellProps) {
     };
   }, [counts.pending]);
 
-  if (state !== "allowed") return null;
-
   return (
     <AppShell
       items={BACKOFFICE_NAVIGATION}
@@ -62,7 +61,7 @@ export function BackofficeShell({ children }: BackofficeShellProps) {
       }
       contentClassName=""
     >
-      {children}
+      {state === "allowed" ? children : <BackofficeSessionSkeleton />}
     </AppShell>
   );
 }
