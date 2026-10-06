@@ -1,6 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 import { useConversations } from '../hooks/use-conversations';
 import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
@@ -17,26 +21,39 @@ import {
 } from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 
+function sortMessagesChronologically(
+  messages: Message[],
+): Message[] {
+  return [...messages].sort((a, b) => {
+    const timeA = new Date(
+      a.timestamp || a.createdAt,
+    ).getTime();
+
+    const timeB = new Date(
+      b.timestamp || b.createdAt,
+    ).getTime();
+
+    return timeA - timeB;
+  });
+}
+
 export function ChatView() {
-  const [isSearchModalOpen, setIsSearchModalOpen] =
+  const [
+    isSearchModalOpen,
+    setIsSearchModalOpen,
+  ] = useState(false);
+
+  const [messages, setMessages] =
+    useState<Message[]>([]);
+
+  const [
+    isLoadingMessages,
+    setIsLoadingMessages,
+  ] = useState(false);
+
+  const [isSending, setIsSending] =
     useState(false);
 
-  const [messages, setMessages] = useState<Message[]>(
-    [],
-  );
-
-  const [isLoadingMessages, setIsLoadingMessages] =
-    useState(false);
-
-  const [isSending, setIsSending] = useState(false);
-
-  /**
-   * Bloqueo sincrono para evitar envios duplicados.
-   *
-   * A diferencia de useState, el valor del ref cambia
-   * inmediatamente y evita que dos acciones rapidas
-   * entren al mismo tiempo.
-   */
   const sendingLockRef = useRef(false);
 
   const {
@@ -56,14 +73,19 @@ export function ChatView() {
   } = useConversations();
 
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId) {
+      return;
+    }
 
     let isMounted = true;
 
     getMessages(selectedId)
       .then((data) => {
         if (isMounted) {
-          setMessages(data);
+          setMessages(
+            sortMessagesChronologically(data),
+          );
+
           setIsLoadingMessages(false);
         }
       })
@@ -113,24 +135,41 @@ export function ChatView() {
 
   const handleSendMessage = async (
     content: string,
-  ) => {
-    /**
-     * Proteccion contra:
-     * - doble clic rapido
-     * - varios Enter consecutivos
-     * - Enter + clic simultaneo
-     */
+  ): Promise<boolean> => {
     if (
       !selectedId ||
       isSending ||
       sendingLockRef.current
     ) {
-      return;
+      return false;
     }
 
-    // El bloqueo ocurre inmediatamente.
     sendingLockRef.current = true;
     setIsSending(true);
+
+    const nowIso = new Date().toISOString();
+
+    const temporaryMessage: Message = {
+      id: `temp-${Date.now()}`,
+      conversationId: selectedId,
+      senderId: CURRENT_USER_ID,
+      content,
+      timestamp: nowIso,
+      createdAt: nowIso,
+      status: 'sending',
+      isAttachment: false,
+    };
+
+    /*
+     * El mensaje aparece inmediatamente en pantalla,
+     * sin esperar la respuesta del servicio.
+     */
+    setMessages((previousMessages) =>
+      sortMessagesChronologically([
+        ...previousMessages,
+        temporaryMessage,
+      ]),
+    );
 
     try {
       const response = await sendMessage({
@@ -139,13 +178,41 @@ export function ChatView() {
         senderId: CURRENT_USER_ID,
       });
 
-      setMessages((prev) => [
-        ...prev,
-        response.data,
-      ]);
+      /*
+       * Reemplazamos el mensaje temporal
+       * por el mensaje confirmado.
+       */
+      setMessages((previousMessages) => {
+        const updatedMessages =
+          previousMessages.map((message) =>
+            message.id === temporaryMessage.id
+              ? response.data
+              : message,
+          );
+
+        return sortMessagesChronologically(
+          updatedMessages,
+        );
+      });
+
+      return true;
     } catch {
-      // El usuario puede intentar nuevamente
-      // cuando termine la solicitud.
+      /*
+       * Si falla, mantenemos el mensaje visible
+       * pero marcado con estado de error.
+       */
+      setMessages((previousMessages) =>
+        previousMessages.map((message) =>
+          message.id === temporaryMessage.id
+            ? {
+                ...message,
+                status: 'error',
+              }
+            : message,
+        ),
+      );
+
+      return false;
     } finally {
       sendingLockRef.current = false;
       setIsSending(false);
@@ -171,8 +238,12 @@ export function ChatView() {
           onSelectConversation={
             handleSelectChat
           }
-          onFilterChange={setActiveFilter}
-          onSearchChange={setSearchQuery}
+          onFilterChange={
+            setActiveFilter
+          }
+          onSearchChange={
+            setSearchQuery
+          }
           onLoadMore={loadMore}
           onStartNewChat={
             handleStartNewChat
@@ -193,8 +264,12 @@ export function ChatView() {
               selectedConversation
             }
             messages={messages}
-            currentUserId={CURRENT_USER_ID}
-            onBack={handleBackToList}
+            currentUserId={
+              CURRENT_USER_ID
+            }
+            onBack={
+              handleBackToList
+            }
             onSendMessage={
               handleSendMessage
             }

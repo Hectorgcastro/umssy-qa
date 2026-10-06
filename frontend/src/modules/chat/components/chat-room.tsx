@@ -1,6 +1,3 @@
-
-
-
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
@@ -15,7 +12,7 @@ interface ChatRoomProps {
   messages: Message[];
   currentUserId: string;
   onBack: () => void;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<boolean>;
   isLoadingMessages?: boolean;
   isSending?: boolean;
 }
@@ -32,34 +29,31 @@ export function ChatRoom({
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll al final cuando llega un mensaje nuevo
   useEffect(() => {
-    if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
+    if (
+      typeof messagesEndRef.current?.scrollIntoView ===
+      'function'
+    ) {
       messagesEndRef.current.scrollIntoView({
         behavior: 'smooth',
       });
     }
   }, [messages.length]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!isContentValidForSend(inputText) || isSending) {
       return;
     }
 
-    onSendMessage(inputText.trim());
-    setInputText('');
+    const contentToSend = inputText.trim();
+
+    const wasSent = await onSendMessage(contentToSend);
+
+    if (wasSent) {
+      setInputText('');
+    }
   };
 
-  /**
-   * HU-03 - Tarea 5
-   *
-   * Escritorio:
-   * Enter -> envia el mensaje.
-   * Shift + Enter -> salto de linea.
-   *
-   * Dispositivos tactiles:
-   * el envio se realiza solamente mediante el boton.
-   */
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
@@ -67,18 +61,14 @@ export function ChatRoom({
       return;
     }
 
-    // Shift + Enter conserva el comportamiento normal:
-    // insertar un salto de linea.
     if (event.shiftKey) {
       return;
     }
 
-    // Evitar envios mientras se utiliza un IME.
     if (event.nativeEvent.isComposing) {
       return;
     }
 
-    // Ignorar repeticiones producidas al mantener Enter presionado.
     if (event.repeat) {
       event.preventDefault();
       return;
@@ -88,8 +78,6 @@ export function ChatRoom({
       typeof window !== 'undefined' &&
       window.matchMedia('(pointer: coarse)').matches;
 
-    // En movil/tablet tactil no se envia mediante Enter.
-    // El usuario debe utilizar el boton Enviar.
     if (isTouchDevice) {
       return;
     }
@@ -97,14 +85,16 @@ export function ChatRoom({
     event.preventDefault();
 
     if (!isSending) {
-      handleSend();
+      void handleSend();
     }
   };
 
   const formatMessageTime = (
     isoString?: string | null,
   ): string => {
-    if (!isoString) return '';
+    if (!isoString) {
+      return '';
+    }
 
     const date = new Date(isoString);
 
@@ -113,7 +103,7 @@ export function ChatRoom({
     }
 
     return date
-      .toLocaleTimeString('es-ES', {
+      .toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
@@ -243,20 +233,20 @@ export function ChatRoom({
                 }`}
               >
                 <div
-                  className={`max-w-[85%] md:max-w-[70%] min-w-0 rounded-2xl px-4 py-2.5 text-sm shadow-xs [overflow-wrap:anywhere] break-words ${
+                  className={`max-w-[85%] md:max-w-[70%] min-w-0 rounded-2xl px-4 py-2.5 text-sm shadow-xs break-words ${
                     isOwn
-                      ? 'bg-[#0B1F2E] text-white rounded-tr-xs'
+                      ? 'bg-blue-600 text-white rounded-tr-xs'
                       : 'bg-white text-[#0B1F2E] border border-[#E3E7EC] rounded-tl-xs'
                   }`}
                 >
-                  <p className="leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+                  <p className="leading-relaxed break-words whitespace-pre-wrap">
                     {message.content}
                   </p>
 
                   <div
-                    className={`flex items-center gap-1.5 justify-end mt-1 text-[10px] ${
+                    className={`flex items-center justify-end gap-2 mt-1 text-[10px] ${
                       isOwn
-                        ? 'text-slate-300'
+                        ? 'text-blue-100'
                         : 'text-[#5B6470]'
                     }`}
                   >
@@ -267,15 +257,22 @@ export function ChatRoom({
                       )}
                     </span>
 
-                    {isOwn && (
-                      <span className="font-medium">
-                        {message.status === 'sending'
-                          ? 'Enviando...'
-                          : message.status === 'error'
-                            ? 'Error'
-                            : ''}
-                      </span>
-                    )}
+                    {isOwn &&
+                      message.status === 'sending' && (
+                        <span
+                          data-testid="sending-status"
+                          className="font-medium"
+                        >
+                          Enviando...
+                        </span>
+                      )}
+
+                    {isOwn &&
+                      message.status === 'error' && (
+                        <span className="font-medium text-red-200">
+                          Error
+                        </span>
+                      )}
                   </div>
                 </div>
               </div>
@@ -292,7 +289,9 @@ export function ChatRoom({
       <MessageInputBar
         value={inputText}
         onChange={setInputText}
-        onSend={handleSend}
+        onSend={() => {
+          void handleSend();
+        }}
         onKeyDown={handleKeyDown}
         isSending={isSending}
       />
