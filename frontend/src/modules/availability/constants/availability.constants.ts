@@ -4,8 +4,7 @@ import { pad } from "../utils/pad";
 
 export const DATE_LOCALE = "es-BO";
 
-export const MY_AVAILABILITY_PATH = "/mentor/availability";
-export const NEW_BLOCK_PATH = "/mentor/availability/new";
+export const CREATE_BLOCK_ERROR = "Error al crear el bloque de disponibilidad";
 
 export const BLOCK_MIN_HOUR = 7;
 export const BLOCK_MAX_HOUR = 22;
