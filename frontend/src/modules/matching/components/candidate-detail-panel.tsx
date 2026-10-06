@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getInitials } from "@/shared/utils/get-initials";
-import { RadarChart } from "./RadarChart";
+import { RadarChart } from "./radar-chart";
 import { GapBreakdownList } from "./gap-breakdown-list";
 import { ConfirmDiscardDialog } from "./confirm-discard-dialog";
 import type { AffinityAxis, CandidateWithMatch, Vacancy } from "../types/matching-types";
@@ -195,3 +195,4 @@ export function CandidateDetailPanel({
     </Card>
   );
 }
+
