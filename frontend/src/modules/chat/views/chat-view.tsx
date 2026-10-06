@@ -1,21 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useConversations } from '../hooks/use-conversations';
 import { ConversationList } from '../components/conversation-list';
 import { EmptyChatState } from '../components/empty-chat-state';
 import { ContactSearchModal } from '../components/contact-search-modal';
 import { ChatRoom } from '../components/chat-room';
-import { Message, Conversation } from '../types/conversation.types';
+import {
+  Message,
+  Conversation,
+} from '../types/conversation.types';
 import { User } from '../types/user.types';
-import { getMessages, sendMessage } from '../services/chat-api';
+import {
+  getMessages,
+  sendMessage,
+} from '../services/chat-api';
 import { CURRENT_USER_ID } from '../mocks/mock-users';
 
 export function ChatView() {
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] =
+    useState(false);
+
+  const [messages, setMessages] = useState<Message[]>(
+    [],
+  );
+
+  const [isLoadingMessages, setIsLoadingMessages] =
+    useState(false);
+
   const [isSending, setIsSending] = useState(false);
+
+  /**
+   * Bloqueo sincrono para evitar envios duplicados.
+   *
+   * A diferencia de useState, el valor del ref cambia
+   * inmediatamente y evita que dos acciones rapidas
+   * entren al mismo tiempo.
+   */
+  const sendingLockRef = useRef(false);
 
   const {
     conversations,
@@ -60,7 +82,9 @@ export function ChatView() {
     clearSelectedConversation();
   };
 
-  const handleSelectChat = (conversation: Conversation) => {
+  const handleSelectChat = (
+    conversation: Conversation,
+  ) => {
     setIsLoadingMessages(true);
     handleSelectConversation(conversation);
   };
@@ -69,30 +93,61 @@ export function ChatView() {
     if (activeFilter !== 'all') {
       setActiveFilter('all');
     }
+
     setIsSearchModalOpen(true);
   };
 
-  const handleStartChatWithContact = async (contactUser: User) => {
+  const handleStartChatWithContact = async (
+    contactUser: User,
+  ) => {
     if (activeFilter !== 'all') {
       setActiveFilter('all');
     }
+
     setIsLoadingMessages(true);
-    await startConversationWithContact(contactUser);
+
+    await startConversationWithContact(
+      contactUser,
+    );
   };
 
-  const handleSendMessage = async (content: string) => {
-    if (!selectedId || isSending) return;
+  const handleSendMessage = async (
+    content: string,
+  ) => {
+    /**
+     * Proteccion contra:
+     * - doble clic rapido
+     * - varios Enter consecutivos
+     * - Enter + clic simultaneo
+     */
+    if (
+      !selectedId ||
+      isSending ||
+      sendingLockRef.current
+    ) {
+      return;
+    }
+
+    // El bloqueo ocurre inmediatamente.
+    sendingLockRef.current = true;
     setIsSending(true);
+
     try {
       const response = await sendMessage({
         conversationId: selectedId,
         content,
         senderId: CURRENT_USER_ID,
       });
-      setMessages((prev) => [...prev, response.data]);
+
+      setMessages((prev) => [
+        ...prev,
+        response.data,
+      ]);
     } catch {
-      // Manejo de errores
+      // El usuario puede intentar nuevamente
+      // cuando termine la solicitud.
     } finally {
+      sendingLockRef.current = false;
       setIsSending(false);
     }
   };
@@ -101,7 +156,9 @@ export function ChatView() {
     <div className="flex h-screen h-[100dvh] w-full max-w-full bg-slate-50 overflow-hidden font-sans">
       <aside
         className={`w-full md:w-80 lg:w-96 h-full shrink-0 overflow-hidden ${
-          selectedId ? 'hidden md:block' : 'block'
+          selectedId
+            ? 'hidden md:block'
+            : 'block'
         }`}
       >
         <ConversationList
@@ -111,42 +168,60 @@ export function ChatView() {
           hasMore={hasMore}
           activeFilter={activeFilter}
           searchQuery={searchQuery}
-          onSelectConversation={handleSelectChat}
+          onSelectConversation={
+            handleSelectChat
+          }
           onFilterChange={setActiveFilter}
           onSearchChange={setSearchQuery}
           onLoadMore={loadMore}
-          onStartNewChat={handleStartNewChat}
+          onStartNewChat={
+            handleStartNewChat
+          }
         />
       </aside>
 
       <main
         className={`flex-1 h-full min-w-0 min-h-0 bg-white flex flex-col overflow-hidden ${
-          !selectedId ? 'hidden md:flex' : 'flex'
+          !selectedId
+            ? 'hidden md:flex'
+            : 'flex'
         }`}
       >
         {selectedConversation ? (
           <ChatRoom
-            conversation={selectedConversation}
+            conversation={
+              selectedConversation
+            }
             messages={messages}
             currentUserId={CURRENT_USER_ID}
             onBack={handleBackToList}
-            onSendMessage={handleSendMessage}
-            isLoadingMessages={isLoadingMessages}
+            onSendMessage={
+              handleSendMessage
+            }
+            isLoadingMessages={
+              isLoadingMessages
+            }
             isSending={isSending}
           />
         ) : (
           <EmptyChatState
             description="Selecciona una conversacion existente en el panel izquierdo o inicia una nueva para comenzar a comunicarte."
             actionLabel="Iniciar una nueva conversacion"
-            onAction={handleStartNewChat}
+            onAction={
+              handleStartNewChat
+            }
           />
         )}
       </main>
 
       <ContactSearchModal
         isOpen={isSearchModalOpen}
-        onClose={() => setIsSearchModalOpen(false)}
-        onSelectContact={handleStartChatWithContact}
+        onClose={() =>
+          setIsSearchModalOpen(false)
+        }
+        onSelectContact={
+          handleStartChatWithContact
+        }
       />
     </div>
   );
