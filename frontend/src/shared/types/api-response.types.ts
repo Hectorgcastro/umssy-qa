@@ -1,10 +1,10 @@
 export interface ApiResponse<T> {
   statusCode: number;
-  data: T;
-  offset?: number;
-  page?: number;
-  detail: string;
   ok: boolean;
+  detail: string;
+  data: T;
+  page?: number;
+  offset?: number;
 }
 
 export interface PaginatedData<T> {
