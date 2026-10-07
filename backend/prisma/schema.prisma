@@ -225,6 +225,7 @@ model Skill {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   userSkills UserSkill[]
+  jobOfferSkills JobOfferSkill[]
 
   @@map("skills")
 }
