@@ -7,6 +7,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 import { seedEvents } from '../../modules/events/seeds/events.seed.js';
 import { seedEventRegistrations } from '../../modules/event-registrations/seeds/event-registrations.seed.js';
+import { seedAccessRequests } from '../../modules/access-requests/seeds/access-requests.seed.js';
 import { seedAvailability } from '../../modules/availability/seeds/availability.seed.js';
 import { SEED_USERS } from '../../modules/users/constants/seed-users.constants.js';
 import {
@@ -24,6 +25,7 @@ import { SeedEnvSchema } from './seed-env.schema.js';
 // 1. users: roles y usuarios de prueba.
 // 2. events y event-registrations: talleres y pases del usuario de prueba.
 // 3. availability: bloques y citas de los mentores y el titulado creados en users.
+// 4. access-requests: catálogos de estados, tipos de documento y carreras.
 // Un seed nuevo se agrega después de todos los seeds de los que depende.
 
 export function loadSeedEnv(source: NodeJS.ProcessEnv = process.env): SeedEnv {
@@ -68,6 +70,8 @@ export async function runSeed(client?: PrismaClient): Promise<SeedSummary> {
         now,
       );
 
+      const accessRequestsResult = await seedAccessRequests(tx);
+
       return {
         weeks: availabilityResult.weeks,
         plan: availabilityResult.plan,
@@ -79,6 +83,7 @@ export async function runSeed(client?: PrismaClient): Promise<SeedSummary> {
         appointments: availabilityResult.appointments,
         legacyRoles: usersResult.legacyRoles,
         warnings: availabilityResult.warnings,
+        accessRequests: accessRequestsResult,
       };
     }, SEED_TRANSACTION_OPTIONS);
   } finally {
@@ -97,10 +102,9 @@ async function main(): Promise<void> {
     const summary = await runSeed(client);
     logger.log(
       `Seed completado — roles: ${summary.roles}, estados: ${summary.statuses}, usuarios: ${summary.users}, ` +
-        `roles de usuario nuevos: ${summary.userRoles}, bloques: ${summary.blocks}, citas: ${summary.appointments}` +
-        (summary.legacyRoles > 0
-          ? ` (roles en mayúscula eliminados: ${summary.legacyRoles})`
-          : ''),
+        `roles de usuario nuevos: ${summary.userRoles}, bloques: ${summary.blocks}, citas: ${summary.appointments}, ` +
+        `solicitudes (estados: ${summary.accessRequests.statuses}, tipos de documento: ${summary.accessRequests.documentTypes}, carreras: ${summary.accessRequests.careers})` +
+        (summary.legacyRoles > 0 ? ` (roles en mayúscula eliminados: ${summary.legacyRoles})` : ''),
     );
     for (const warning of summary.warnings) {
       logger.warn(warning);

@@ -29,7 +29,7 @@ describe('structured validation errors', () => {
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           ok: false,
-          data: null,
+          data: exception.errors,
           errors: exception.errors,
         }),
       );

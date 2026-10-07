@@ -8,6 +8,7 @@ import {
 import { seedEvents } from '../../modules/events/seeds/events.seed.js';
 import { seedEventRegistrations } from '../../modules/event-registrations/seeds/event-registrations.seed.js';
 import { seedAvailability } from '../../modules/availability/seeds/availability.seed.js';
+import { seedAccessRequests } from '../../modules/access-requests/seeds/access-requests.seed.js';
 
 vi.mock('../../modules/users/seeds/users.seed.js', () => ({
   hashSeedPassword: vi.fn(),
@@ -23,6 +24,9 @@ vi.mock(
 vi.mock('../../modules/availability/seeds/availability.seed.js', () => ({
   seedAvailability: vi.fn(),
 }));
+vi.mock('../../modules/access-requests/seeds/access-requests.seed.js', () => ({
+  seedAccessRequests: vi.fn(),
+}));
 
 const users = {
   mentorA: { id: 'mentor' },
@@ -37,7 +41,7 @@ beforeEach(() => {
   vi.mocked(seedUsers).mockResolvedValue({
     users,
     roles: 5,
-    userRoles: 6,
+    userRoles: 7,
     legacyRoles: 0,
   } as unknown as Awaited<ReturnType<typeof seedUsers>>);
   vi.mocked(seedAvailability).mockResolvedValue({
@@ -48,6 +52,11 @@ beforeEach(() => {
     appointments: 2,
     warnings: [],
   } as unknown as Awaited<ReturnType<typeof seedAvailability>>);
+  vi.mocked(seedAccessRequests).mockResolvedValue({
+    statuses: 5,
+    documentTypes: 2,
+    careers: 2,
+  });
 });
 
 function buildClient() {
@@ -76,6 +85,7 @@ describe('combined events and availability seed', () => {
       }),
       expect.any(Date),
     );
+    expect(seedAccessRequests).toHaveBeenCalledWith(tx);
     expect(client.$transaction).toHaveBeenCalledTimes(1);
     expect(client.$disconnect).not.toHaveBeenCalled();
   });

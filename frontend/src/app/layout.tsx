@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { RegisterServiceWorker } from "./register-service-worker";
+import { Providers } from "./providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,8 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${interTight.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-      <RegisterServiceWorker />
-        {children}
+        <Providers>
+          <RegisterServiceWorker />
+          {children}
+        </Providers>
       </body>
     </html>
   );
