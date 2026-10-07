@@ -33,11 +33,7 @@ export function HomeView() {
           />
 
           <Button>Botón de ejemplo</Button>
-<<<<<<< HEAD
-          	<Button asChild>
-    			<a href="/vacantes">Vacantes</a>
-  		</Button>
-=======
+
           <Link href="/vacantes" passHref>
             <Button className="w-full">Vacantes</Button>
           </Link>
@@ -48,10 +44,7 @@ export function HomeView() {
               { id: "2", name: "3 años de experiencia en React", status: "pendiente" },
               { id: "3", name: "Inglés B2 (Intermedio alto)", status: "cumple" },
               { id: "4", name: "Certificación en AWS o Azure", status: "pendiente" }
-            ]} 
-          />
-
->>>>>>> fa00d79ead3e5cd567d0a3e5a25948f46e1cb31e
+            ]}           />
         </CardContent>
       </Card>
     </div>
