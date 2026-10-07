@@ -19,7 +19,7 @@ services:
 
   api:
     build:
-      context: .
+      context: ./backend
       dockerfile: dockerfile
     container_name: umssy-api
     depends_on:
@@ -38,3 +38,36 @@ services:
     ports:
       - "${PORT}:${PORT}"
     restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV}
+        NEXT_PUBLIC_API_URL_LOCAL: ${NEXT_PUBLIC_API_URL_LOCAL}
+    container_name: umssy-web
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  # Solo se ejecuta a mano: docker compose run --rm seed
+  seed:
+    profiles: ["seed"]
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+      target: builder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_SCHEMA: ${DB_SCHEMA}
+      JWT_SECRET: ${JWT_SECRET}
+    command: ["pnpm", "seed:run"]

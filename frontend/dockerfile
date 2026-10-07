@@ -1,0 +1,22 @@
+FROM node:22-alpine
+
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@12.4.2 --activate
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+
+ARG NEXT_PUBLIC_APP_ENV
+ARG NEXT_PUBLIC_API_URL_LOCAL
+ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV \
+    NEXT_PUBLIC_API_URL_LOCAL=$NEXT_PUBLIC_API_URL_LOCAL
+
+RUN pnpm build
+
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["pnpm", "start"]
