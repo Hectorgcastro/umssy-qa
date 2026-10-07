@@ -27,7 +27,7 @@ const initialConditions: VacancyConditions = {
 };
 
 export function useJobOfferForm() {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(2);
     const [conditions, setConditions] = useState<VacancyConditions>(initialConditions);
 
     function updateField(field: keyof VacancyConditions, value: string) {
