@@ -9,6 +9,7 @@ import { AvailabilityModule } from './modules/availability/availability.module.j
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { MatchingModule } from './modules/matching/matching.module.js';
+import { JobConnectModule } from './modules/job-connect/job-connect.module.js';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MatchingModule } from './modules/matching/matching.module.js';
     AvailabilityModule,
     AuthModule,
     MatchingModule,
+    JobConnectModule,
   ],
   controllers: [AppController],
   providers: [
