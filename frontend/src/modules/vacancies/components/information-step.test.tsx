@@ -23,6 +23,7 @@ describe('InformationStep', () => {
   const emptyConditions: VacancyConditions = {
     title: "", description: "", modality: null, mapsLink: "", contractType: "",
     category: "", vacancyCount: "", salary: "", languages: "",
+    description: "", skills: [],
   };
 
   it('renderiza todos los campos principales (sin depender del texto exacto)', () => {
@@ -96,6 +97,7 @@ describe('InformationStep', () => {
      const fullConditions: VacancyConditions = {
        title: "Desarrollador Backend", description: "Experiencia requerida", modality: "Hibrido", mapsLink: "https://maps.google.com/?q=...", contractType: "Tiempo completo",
         category: "Tecnología", vacancyCount: "1", salary: "Bs 6.500 - 8.000", languages: "Español",
+        description: "", skills: [],
       };
       
       const { container } = render(
