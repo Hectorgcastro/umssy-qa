@@ -6,10 +6,8 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
-import type { PaginatedPayload } from '../types/paginated-payload.types.js';
-
 import type { AlreadyFormatted } from '../types/already-formatted.types.js';
+import type { PaginatedPayload } from '../types/paginated-payload.types.js';
 
 function isPaginatedPayload(value: unknown): value is PaginatedPayload {
   return (
@@ -33,14 +31,28 @@ function isAlreadyFormatted(value: unknown): value is AlreadyFormatted {
 }
 
 @Injectable()
-export class ResponseInterceptor implements NestInterceptor {
+export class ResponseInterceptor<T = unknown> implements NestInterceptor<T> {
   intercept(
-    _context: ExecutionContext,
-    next: CallHandler,
+    context: ExecutionContext,
+    next: CallHandler<T>,
   ): Observable<unknown> {
-    const statusCode = _context
-      .switchToHttp()
-      .getResponse<{ statusCode: number }>().statusCode;
+    const http = context.switchToHttp();
+    const response = http.getResponse<{ statusCode?: number }>();
+    const statusCode = response?.statusCode ?? 200;
+    const request =
+      typeof http.getRequest === 'function'
+        ? http.getRequest<{ url?: string }>()
+        : undefined;
+
+    const isEpic2Route =
+      typeof request?.url === 'string' &&
+      (request.url.includes('/profile') ||
+        request.url.includes('/certifications') ||
+        request.url.includes('/skills') ||
+        request.url.includes('/educations') ||
+        request.url.includes('/work-experience'));
+
+    const detail = isEpic2Route ? 'OK' : 'Operación exitosa';
 
     return next.handle().pipe(
       map((value: unknown) => {
@@ -52,8 +64,8 @@ export class ResponseInterceptor implements NestInterceptor {
           return {
             statusCode,
             ok: true,
-            detail: 'Operación exitosa',
-            data: value.data,
+            detail,
+            data: value.data ?? null,
             page: value.page,
             offset: value.offset,
           };
@@ -62,8 +74,8 @@ export class ResponseInterceptor implements NestInterceptor {
         return {
           statusCode,
           ok: true,
-          detail: 'Operación exitosa',
-          data: value,
+          detail,
+          data: value ?? null,
         };
       }),
     );
