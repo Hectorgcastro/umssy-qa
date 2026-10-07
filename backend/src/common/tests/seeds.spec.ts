@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const seedUsers = vi.fn();
 const seedAvailability = vi.fn();
 const seedAccessRequests = vi.fn();
+const seedTechnicalAreas = vi.fn();
+const seedOrientationTypes = vi.fn();
 
 vi.mock('../../modules/users/seeds/users.seed.js', () => ({
   hashSeedPassword: vi.fn().mockResolvedValue('hash'),
@@ -13,6 +15,12 @@ vi.mock('../../modules/availability/seeds/availability.seed.js', () => ({
 }));
 vi.mock('../../modules/access-requests/seeds/access-requests.seed.js', () => ({
   seedAccessRequests: (...args: unknown[]) => seedAccessRequests(...args),
+}));
+vi.mock('../../modules/technical-areas/seeds/technical-areas.seed.js', () => ({
+  seedTechnicalAreas: (...args: unknown[]) => seedTechnicalAreas(...args),
+}));
+vi.mock('../../modules/orientation-types/seeds/orientation-types.seed.js', () => ({
+  seedOrientationTypes: (...args: unknown[]) => seedOrientationTypes(...args),
 }));
 
 const { createSeedClient, loadSeedEnv, runSeed } = await import('../database/seeds.js');
@@ -76,6 +84,8 @@ describe('runSeed', () => {
     const summary = await runSeed(client as never);
 
     expect(client.$transaction).toHaveBeenCalledOnce();
+    expect(seedTechnicalAreas).toHaveBeenCalledWith(tx);
+    expect(seedOrientationTypes).toHaveBeenCalledWith(tx);
     expect(seedUsers).toHaveBeenCalledWith(tx, 'hash');
     expect(seedAvailability).toHaveBeenCalledWith(tx, expect.objectContaining({ mentorId: 'm1', graduateId: 'g1' }), expect.any(Date));
     expect(seedAccessRequests).toHaveBeenCalledWith(tx);
