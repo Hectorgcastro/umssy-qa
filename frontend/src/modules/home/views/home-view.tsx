@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useHome } from "../hooks/use-home";
 import { Button } from "@/components/ui/button";
+import { MissingRequirements } from "@/components/missing-requirements";
 import {
   Card,
   CardHeader,
@@ -37,6 +38,16 @@ export function HomeView() {
           	<Button asChild>
     			<Link href="/vacantes">Vacantes</Link>
   		</Button>
+          
+          <MissingRequirements 
+            requirements={[
+              { id: "1", name: "Licenciatura en Ingeniería de Sistemas", status: "cumple" },
+              { id: "2", name: "3 años de experiencia en React", status: "pendiente" },
+              { id: "3", name: "Inglés B2 (Intermedio alto)", status: "cumple" },
+              { id: "4", name: "Certificación en AWS o Azure", status: "pendiente" }
+            ]} 
+          />
+
         </CardContent>
       </Card>
     </div>
