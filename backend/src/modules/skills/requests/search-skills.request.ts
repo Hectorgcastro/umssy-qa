@@ -14,3 +14,8 @@ export const searchSkillsRequestSchema = z.object({
 });
 
 export type SearchSkillsRequest = z.infer<typeof searchSkillsRequestSchema>;
+export const searchSkillsSchema = z.object({
+  search: z.string().trim().max(100).optional(),
+});
+
+
