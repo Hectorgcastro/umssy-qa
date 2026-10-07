@@ -31,6 +31,7 @@ export type UserMinAggregateOutputType = {
   email: string | null
   password: string | null
   isActive: boolean | null
+  isAvailableForMentoring: boolean | null
   photoUrl: runtime.Bytes | null
   cityId: string | null
   phone: string | null
@@ -49,6 +50,7 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   password: string | null
   isActive: boolean | null
+  isAvailableForMentoring: boolean | null
   photoUrl: runtime.Bytes | null
   cityId: string | null
   phone: string | null
@@ -67,6 +69,7 @@ export type UserCountAggregateOutputType = {
   email: number
   password: number
   isActive: number
+  isAvailableForMentoring: number
   photoUrl: number
   cityId: number
   phone: number
@@ -87,6 +90,7 @@ export type UserMinAggregateInputType = {
   email?: true
   password?: true
   isActive?: true
+  isAvailableForMentoring?: true
   photoUrl?: true
   cityId?: true
   phone?: true
@@ -105,6 +109,7 @@ export type UserMaxAggregateInputType = {
   email?: true
   password?: true
   isActive?: true
+  isAvailableForMentoring?: true
   photoUrl?: true
   cityId?: true
   phone?: true
@@ -123,6 +128,7 @@ export type UserCountAggregateInputType = {
   email?: true
   password?: true
   isActive?: true
+  isAvailableForMentoring?: true
   photoUrl?: true
   cityId?: true
   phone?: true
@@ -214,6 +220,7 @@ export type UserGroupByOutputType = {
   email: string
   password: string | null
   isActive: boolean
+  isAvailableForMentoring: boolean
   photoUrl: runtime.Bytes | null
   cityId: string | null
   phone: string | null
@@ -253,6 +260,7 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
+  isAvailableForMentoring?: Prisma.BoolFilter<"User"> | boolean
   photoUrl?: Prisma.BytesNullableFilter<"User"> | runtime.Bytes | null
   cityId?: Prisma.UuidNullableFilter<"User"> | string | null
   phone?: Prisma.StringNullableFilter<"User"> | string | null
@@ -291,6 +299,7 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isAvailableForMentoring?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   cityId?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -332,6 +341,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   lastName?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
+  isAvailableForMentoring?: Prisma.BoolFilter<"User"> | boolean
   photoUrl?: Prisma.BytesNullableFilter<"User"> | runtime.Bytes | null
   cityId?: Prisma.UuidNullableFilter<"User"> | string | null
   phone?: Prisma.StringNullableFilter<"User"> | string | null
@@ -370,6 +380,7 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isAvailableForMentoring?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   cityId?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -394,6 +405,7 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  isAvailableForMentoring?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   photoUrl?: Prisma.BytesNullableWithAggregatesFilter<"User"> | runtime.Bytes | null
   cityId?: Prisma.UuidNullableWithAggregatesFilter<"User"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -412,6 +424,7 @@ export type UserCreateInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -449,6 +462,7 @@ export type UserUncheckedCreateInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -486,6 +500,7 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -523,6 +538,7 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -560,6 +576,7 @@ export type UserCreateManyInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -578,6 +595,7 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -595,6 +613,7 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -623,6 +642,7 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isAvailableForMentoring?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
   cityId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -641,6 +661,7 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isAvailableForMentoring?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
   cityId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -659,6 +680,7 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isAvailableForMentoring?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
   cityId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -1013,6 +1035,7 @@ export type UserCreateWithoutCityInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1049,6 +1072,7 @@ export type UserUncheckedCreateWithoutCityInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1114,6 +1138,7 @@ export type UserScalarWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
+  isAvailableForMentoring?: Prisma.BoolFilter<"User"> | boolean
   photoUrl?: Prisma.BytesNullableFilter<"User"> | runtime.Bytes | null
   cityId?: Prisma.UuidNullableFilter<"User"> | string | null
   phone?: Prisma.StringNullableFilter<"User"> | string | null
@@ -1132,6 +1157,7 @@ export type UserCreateWithoutRolesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1168,6 +1194,7 @@ export type UserUncheckedCreateWithoutRolesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -1220,6 +1247,7 @@ export type UserUpdateWithoutRolesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1256,6 +1284,7 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1292,6 +1321,7 @@ export type UserCreateWithoutEducationsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1328,6 +1358,7 @@ export type UserUncheckedCreateWithoutEducationsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -1380,6 +1411,7 @@ export type UserUpdateWithoutEducationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1416,6 +1448,7 @@ export type UserUncheckedUpdateWithoutEducationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1452,6 +1485,7 @@ export type UserCreateWithoutWorkExperiencesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1488,6 +1522,7 @@ export type UserUncheckedCreateWithoutWorkExperiencesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -1540,6 +1575,7 @@ export type UserUpdateWithoutWorkExperiencesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1576,6 +1612,7 @@ export type UserUncheckedUpdateWithoutWorkExperiencesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1612,6 +1649,7 @@ export type UserCreateWithoutUserSkillsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1648,6 +1686,7 @@ export type UserUncheckedCreateWithoutUserSkillsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -1700,6 +1739,7 @@ export type UserUpdateWithoutUserSkillsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1736,6 +1776,7 @@ export type UserUncheckedUpdateWithoutUserSkillsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1772,6 +1813,7 @@ export type UserCreateWithoutCertificationsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1808,6 +1850,7 @@ export type UserUncheckedCreateWithoutCertificationsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -1860,6 +1903,7 @@ export type UserUpdateWithoutCertificationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1896,6 +1940,7 @@ export type UserUncheckedUpdateWithoutCertificationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1932,6 +1977,7 @@ export type UserCreateWithoutMentorTechnicalAreasInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -1968,6 +2014,7 @@ export type UserUncheckedCreateWithoutMentorTechnicalAreasInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2020,6 +2067,7 @@ export type UserUpdateWithoutMentorTechnicalAreasInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2056,6 +2104,7 @@ export type UserUncheckedUpdateWithoutMentorTechnicalAreasInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2092,6 +2141,7 @@ export type UserCreateWithoutMentorOrientationTypesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -2128,6 +2178,7 @@ export type UserUncheckedCreateWithoutMentorOrientationTypesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2180,6 +2231,7 @@ export type UserUpdateWithoutMentorOrientationTypesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2216,6 +2268,7 @@ export type UserUncheckedUpdateWithoutMentorOrientationTypesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2252,6 +2305,7 @@ export type UserCreateWithoutAvailabilityBlocksInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -2288,6 +2342,7 @@ export type UserUncheckedCreateWithoutAvailabilityBlocksInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2340,6 +2395,7 @@ export type UserUpdateWithoutAvailabilityBlocksInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2376,6 +2432,7 @@ export type UserUncheckedUpdateWithoutAvailabilityBlocksInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2412,6 +2469,7 @@ export type UserCreateWithoutBlockedDatesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -2448,6 +2506,7 @@ export type UserUncheckedCreateWithoutBlockedDatesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2500,6 +2559,7 @@ export type UserUpdateWithoutBlockedDatesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2536,6 +2596,7 @@ export type UserUncheckedUpdateWithoutBlockedDatesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2572,6 +2633,7 @@ export type UserCreateWithoutMentorAppointmentsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -2608,6 +2670,7 @@ export type UserUncheckedCreateWithoutMentorAppointmentsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2649,6 +2712,7 @@ export type UserCreateWithoutStudentAppointmentsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -2685,6 +2749,7 @@ export type UserUncheckedCreateWithoutStudentAppointmentsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2726,6 +2791,7 @@ export type UserCreateWithoutCancelledAppointmentsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -2762,6 +2828,7 @@ export type UserUncheckedCreateWithoutCancelledAppointmentsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -2814,6 +2881,7 @@ export type UserUpdateWithoutMentorAppointmentsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2850,6 +2918,7 @@ export type UserUncheckedUpdateWithoutMentorAppointmentsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2897,6 +2966,7 @@ export type UserUpdateWithoutStudentAppointmentsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2933,6 +3003,7 @@ export type UserUncheckedUpdateWithoutStudentAppointmentsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2980,6 +3051,7 @@ export type UserUpdateWithoutCancelledAppointmentsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3016,6 +3088,7 @@ export type UserUncheckedUpdateWithoutCancelledAppointmentsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3052,6 +3125,7 @@ export type UserCreateWithoutAppointmentChangesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -3088,6 +3162,7 @@ export type UserUncheckedCreateWithoutAppointmentChangesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -3140,6 +3215,7 @@ export type UserUpdateWithoutAppointmentChangesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3176,6 +3252,7 @@ export type UserUncheckedUpdateWithoutAppointmentChangesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3212,6 +3289,7 @@ export type UserCreateWithoutCreatedEventsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -3248,6 +3326,7 @@ export type UserUncheckedCreateWithoutCreatedEventsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -3289,6 +3368,7 @@ export type UserCreateWithoutModeratedEventsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -3325,6 +3405,7 @@ export type UserUncheckedCreateWithoutModeratedEventsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -3377,6 +3458,7 @@ export type UserUpdateWithoutCreatedEventsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3413,6 +3495,7 @@ export type UserUncheckedUpdateWithoutCreatedEventsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3460,6 +3543,7 @@ export type UserUpdateWithoutModeratedEventsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3496,6 +3580,7 @@ export type UserUncheckedUpdateWithoutModeratedEventsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3532,6 +3617,7 @@ export type UserCreateWithoutEventRegistrationsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -3568,6 +3654,7 @@ export type UserUncheckedCreateWithoutEventRegistrationsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -3620,6 +3707,7 @@ export type UserUpdateWithoutEventRegistrationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3656,6 +3744,7 @@ export type UserUncheckedUpdateWithoutEventRegistrationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3692,6 +3781,7 @@ export type UserCreateWithoutCheckedInAttendancesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -3728,6 +3818,7 @@ export type UserUncheckedCreateWithoutCheckedInAttendancesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -3780,6 +3871,7 @@ export type UserUpdateWithoutCheckedInAttendancesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3816,6 +3908,7 @@ export type UserUncheckedUpdateWithoutCheckedInAttendancesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3852,6 +3945,7 @@ export type UserCreateWithoutExportHistoriesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -3888,6 +3982,7 @@ export type UserUncheckedCreateWithoutExportHistoriesInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -3940,6 +4035,7 @@ export type UserUpdateWithoutExportHistoriesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3976,6 +4072,7 @@ export type UserUncheckedUpdateWithoutExportHistoriesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4012,6 +4109,7 @@ export type UserCreateWithoutReviewedAccessRequestsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -4048,6 +4146,7 @@ export type UserUncheckedCreateWithoutReviewedAccessRequestsInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   cityId?: string | null
   phone?: string | null
@@ -4100,6 +4199,7 @@ export type UserUpdateWithoutReviewedAccessRequestsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4136,6 +4236,7 @@ export type UserUncheckedUpdateWithoutReviewedAccessRequestsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   cityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4172,6 +4273,7 @@ export type UserCreateManyCityInput = {
   email: string
   password?: string | null
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: runtime.Bytes | null
   phone?: string | null
   personalEmail?: string | null
@@ -4189,6 +4291,7 @@ export type UserUpdateWithoutCityInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4225,6 +4328,7 @@ export type UserUncheckedUpdateWithoutCityInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4261,6 +4365,7 @@ export type UserUncheckedUpdateManyWithoutCityInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAvailableForMentoring?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableBytesFieldUpdateOperationsInput | runtime.Bytes | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personalEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4471,6 +4576,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   password?: boolean
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: boolean
   cityId?: boolean
   phone?: boolean
@@ -4510,6 +4616,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: boolean
   cityId?: boolean
   phone?: boolean
@@ -4529,6 +4636,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: boolean
   cityId?: boolean
   phone?: boolean
@@ -4548,6 +4656,7 @@ export type UserSelectScalar = {
   email?: boolean
   password?: boolean
   isActive?: boolean
+  isAvailableForMentoring?: boolean
   photoUrl?: boolean
   cityId?: boolean
   phone?: boolean
@@ -4559,7 +4668,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "password" | "isActive" | "photoUrl" | "cityId" | "phone" | "personalEmail" | "headline" | "aboutMe" | "cvPdfUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "password" | "isActive" | "isAvailableForMentoring" | "photoUrl" | "cityId" | "phone" | "personalEmail" | "headline" | "aboutMe" | "cvPdfUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   city?: boolean | Prisma.User$cityArgs<ExtArgs>
   roles?: boolean | Prisma.User$rolesArgs<ExtArgs>
@@ -4621,6 +4730,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     password: string | null
     isActive: boolean
+    isAvailableForMentoring: boolean
     photoUrl: runtime.Bytes | null
     cityId: string | null
     phone: string | null
@@ -5079,6 +5189,7 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
+  readonly isAvailableForMentoring: Prisma.FieldRef<"User", 'Boolean'>
   readonly photoUrl: Prisma.FieldRef<"User", 'Bytes'>
   readonly cityId: Prisma.FieldRef<"User", 'String'>
   readonly phone: Prisma.FieldRef<"User", 'String'>
