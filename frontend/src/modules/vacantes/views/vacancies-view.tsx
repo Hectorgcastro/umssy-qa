@@ -1,5 +1,9 @@
 "use client";
+<<<<<<< HEAD
 
+=======
+import Link from "next/link";
+>>>>>>> fa00d79ead3e5cd567d0a3e5a25948f46e1cb31e
 import { useVacancies } from "../hooks/use-vacancies";
 
 export function VacanciesView() {
@@ -100,24 +104,40 @@ export function VacanciesView() {
                       ),
                     )}
                   </ul>
+<<<<<<< HEAD
 			<a
+=======
+			<Link
+>>>>>>> fa00d79ead3e5cd567d0a3e5a25948f46e1cb31e
 			  href={`/vacantes/${vacancy.id}`}
 			  className="mt-6 inline-block rounded-md bg-black px-4 py-2 text-white"
 			>
 			  Ver detalles
+<<<<<<< HEAD
 			</a>
+=======
+			</Link>
+>>>>>>> fa00d79ead3e5cd567d0a3e5a25948f46e1cb31e
                 </div>
               </article>
             ))}
           </div>
         )}
 
+<<<<<<< HEAD
         <a
+=======
+        <Link
+>>>>>>> fa00d79ead3e5cd567d0a3e5a25948f46e1cb31e
           href="/"
           className="mt-8 inline-block rounded-md bg-black px-4 py-2 text-white"
         >
           ← Volver al inicio
+<<<<<<< HEAD
         </a>
+=======
+        </Link>
+>>>>>>> fa00d79ead3e5cd567d0a3e5a25948f46e1cb31e
       </div>
     </main>
   );
