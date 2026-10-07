@@ -19,7 +19,7 @@ describe('PreviewStep', () => {
     vacancyCount: '5',
     salary: 'Bs 10.000',
     languages: 'Inglés',
-    description: '',
+    requirementsDescription: '',
     skills: [],
   };
 
@@ -44,6 +44,7 @@ describe('PreviewStep', () => {
       vacancyCount: '',
       salary: '',
       languages: '',
+      requirementsDescription: '',
       skills: [],
     };
 

@@ -54,7 +54,7 @@ describe('RegisterVacancyView', () => {
     vacancyCount: "",
     salary: "",
     languages: "",
-    description: "",
+    requirementsDescription: "",
     skills: [],
   };
 

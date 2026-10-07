@@ -53,11 +53,6 @@ export function useJobOfferForm() {
         setCurrentStep(prev => Math.min(prev + 1, 3));
     }
     
-    // NUEVA FUNCIÓN PARA VOLVER ATRÁS
-    function goBack() {
-        setCurrentStep((step) => Math.max(step - 1, 1));
-    }
-    
     function goBack() {
         setCurrentStep((step) => Math.max(step - 1, 1));
     }
