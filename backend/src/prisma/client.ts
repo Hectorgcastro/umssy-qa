@@ -186,3 +186,8 @@ export type EventRegistration = Prisma.EventRegistrationModel
  * 
  */
 export type EventAttendance = Prisma.EventAttendanceModel
+/**
+ * Model Vacancy
+ * 
+ */
+export type Vacancy = Prisma.VacancyModel
