@@ -4,11 +4,12 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { VacancyStepper } from "../components/vacancy-stepper";
 import { InformationStep } from "../components/information-step";
+import { RequirementsStep } from "../components/requirements-step"; // IMPORTA TU COMPONENTE
 import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
-    const { currentStep, conditions, updateField, selectModality } = useJobOfferForm();
+    const { currentStep, conditions, updateField, selectModality, goNext, goBack } = useJobOfferForm();
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-8">
@@ -26,12 +27,26 @@ export function RegisterVacancyView() {
             
             {/* Oculta la vista 1 si no estamos en el paso 1 */}
             {currentStep === 1 && (
-                <InformationStep conditions={conditions} updateField={updateField} selectModality={selectModality} />
+                <InformationStep 
+                   conditions={conditions} 
+                   updateField={updateField} 
+                   selectModality={selectModality} 
+                />
+            )}
+
+            {/* INYECTA TU VISTA 2 CUANDO EL STEPPER LLEGUE AL 2 */}
+            {currentStep === 2 && (
+                <RequirementsStep 
+                conditions={conditions} 
+                updateField={updateField} 
+                onPrevious={goBack}
+                onContinue={goNext}
+                />
             )}
 
             {/* Inyecta tu vista 3 exclusivamente cuando el stepper llegue al 3 */}
             {currentStep === 3 && (
-                <PreviewStep conditions={conditions} />
+                <PreviewStep conditions={conditions} onPrevious={goBack} />
             )}
         </div>
     );
