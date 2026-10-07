@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 // Limite de caracteres del texto de experiencia (pendiente de confirmar con el equipo)
@@ -18,5 +19,6 @@ export const analyzeExperienceBodySchema = z.object({
     .nullish(),
 });
 
-export type AnalyzeExperienceParamsDto = z.infer<typeof analyzeExperienceParamsSchema>;
-export type AnalyzeExperienceBodyDto = z.infer<typeof analyzeExperienceBodySchema>;
+// El pipe global de nestjs-zod (APP_PIPE) valida estos DTO en @Param() y @Body()
+export class AnalyzeExperienceParamsDto extends createZodDto(analyzeExperienceParamsSchema) {}
+export class AnalyzeExperienceBodyDto extends createZodDto(analyzeExperienceBodySchema) {}
