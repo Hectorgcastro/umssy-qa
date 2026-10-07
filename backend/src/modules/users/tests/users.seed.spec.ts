@@ -57,7 +57,7 @@ describe('seedUsers', () => {
     expect(tx.user.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { email: 'admin.1@umssy.test' },
-        create: { firstName: 'Admin', lastName: 'Uno', email: 'admin.1@umssy.test', password: 'hash-compartido' },
+        create: { firstName: 'Admin', lastName: 'Uno', email: 'admin.1@umssy.test', password: 'hash-compartido', isAvailableForMentoring: false },
       }),
     );
     expect(tx.userRole.create).toHaveBeenCalledWith({ data: { userId: 'user-admin.1@umssy.test', roleId: 'role-administrativo' } });
