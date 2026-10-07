@@ -1,9 +1,11 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module.js';
+import { buildSwaggerConfig } from './config/swagger.config.js';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   const corsOrigins = (process.env.CORS_ORIGIN ?? '')
@@ -14,15 +16,26 @@ async function bootstrap() {
   app.enableCors(corsOrigins.length > 0 ? { origin: corsOrigins } : {});
   app.setGlobalPrefix('api');
 
-  const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('None')
-    .setVersion('1.0')
-    .build();
+  const config = buildSwaggerConfig();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
+  const documentFactory = () => cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup('docs', app, documentFactory, {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
-  await app.listen(process.env.PORT!);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+
+  console.log(
+    `[bootstrap] listening on port ${port}; cors origins=${
+      corsOrigins.length > 0 ? corsOrigins.join(', ') : '(default: all origins)'
+    }`,
+  );
 }
-await bootstrap();
+
+try {
+  await bootstrap();
+} catch (error: unknown) {
+  console.error('[bootstrap] FAILED', error);
+  process.exit(1);
+}
