@@ -21,6 +21,18 @@ afterEach(() => {
 });
 
 describe('buildDatabaseConnectionString', () => {
+  it('preserva credenciales con caracteres reservados en runtime y migraciones', () => {
+    stubDbEnv({ DB_USER: 'qa@render', DB_PASSWORD: 'demo:/?#% value' });
+
+    for (const purpose of ['runtime', 'migrations'] as const) {
+      const url = new URL(buildDatabaseConnectionString(purpose));
+      expect(decodeURIComponent(url.username)).toBe('qa@render');
+      expect(decodeURIComponent(url.password)).toBe('demo:/?#% value');
+      expect(url.hostname).toBe('db.example.supabase.co');
+      expect(url.pathname).toBe('/app_db');
+    }
+  });
+
   it('usa sslmode=no-verify para el runtime contra un host remoto', () => {
     stubDbEnv();
 

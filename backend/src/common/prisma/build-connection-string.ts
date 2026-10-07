@@ -3,8 +3,8 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', 'postgres']);
 export function buildDatabaseConnectionString(
   purpose: 'runtime' | 'migrations' = 'runtime',
 ): string {
-  const user = process.env.DB_USER;
-  const password = process.env.DB_PASSWORD;
+  const user = encodeURIComponent(process.env.DB_USER ?? '');
+  const password = encodeURIComponent(process.env.DB_PASSWORD ?? '');
   const host = process.env.DB_HOST;
   const port = process.env.DB_PORT;
   const name = process.env.DB_NAME;
