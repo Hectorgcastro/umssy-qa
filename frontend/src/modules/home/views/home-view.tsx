@@ -28,16 +28,14 @@ export function HomeView() {
         <CardContent className="flex flex-col gap-6">
           
           <SkillsDetectedList
-          skills={["Python", "Django", "Scrum"]}
-          processingTime={1.5}
+            skills={["Python", "Django", "Scrum"]}
+            processingTime={1.5}
           />
 
-
-
           <Button>Botón de ejemplo</Button>
-          	<Button asChild>
-    			<Link href="/vacantes">Vacantes</Link>
-  		</Button>
+          <Link href="/vacantes" passHref>
+            <Button className="w-full">Vacantes</Button>
+          </Link>
           
           <MissingRequirements 
             requirements={[
