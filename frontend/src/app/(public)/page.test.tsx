@@ -49,15 +49,20 @@ describe("Home Page", () => {
     expect(getLinkHref(/Radar de afinidad.*H1-01 a H1-05/)).toBe("/perfil/radar");
   });
 
-  it("muestra la HU-3 deshabilitada y sin enlace", () => {
-    render(<HomePage />);
+  it("enlaza la pantalla de la HU-3", () => {
+  render(<HomePage />);
 
-    expect(screen.getByRole("heading", { level: 2, name: "HU-3" })).toBeDefined();
+  expect(
+    screen.getByRole("heading", {
+      level: 2,
+      name: "HU-3 · Matching de candidatos",
+    }),
+  ).toBeDefined();
 
-    const pending = screen.getByText("Pendiente de integración");
+  expect(
+    getLinkHref(/Buscar candidatos por afinidad.*HU-3/),
+  ).toBe("/matching");
 
-    expect(pending.getAttribute("aria-disabled")).toBe("true");
-    expect(pending.closest("a")).toBeNull();
-    expect(screen.getAllByRole("link")).toHaveLength(4);
+  expect(screen.getAllByRole("link")).toHaveLength(5);
   });
 });

@@ -38,10 +38,16 @@ const STORIES: Story[] = [
     ],
   },
   {
-    id: "HU-3",
-    name: "Pendiente de integración",
-    screens: [],
-  },
+  id: "HU-3",
+  name: "Matching de candidatos",
+  screens: [
+    {
+      href: "/matching",
+      title: "Buscar candidatos por afinidad",
+      criteria: "HU-3",
+    },
+  ],
+},
   {
     id: "HU-4",
     name: "Detalle por área",
