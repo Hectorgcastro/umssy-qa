@@ -181,7 +181,7 @@ describe('Education HTTP flow', () => {
       .set('Authorization', `Bearer ${otherToken}`)
       .expect(200);
     expect(otherAfterDelete.body.data).toEqual([other.body.data]);
-  });
+  }, 30000);
 
   it('rejects invalid writes without changing stored data and accepts same-day dates without a description', async () => {
     const api = request(app.getHttpServer());

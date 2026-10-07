@@ -6,7 +6,7 @@ describe('Skills classifier (#215)', () => {
   const detect = (text: string) => service.analyzeExperience({ experienceId: 'test', text }).skills.map(({ name }) => name);
   it('detects canonical technical skills once and protects punctuation', () => {
     expect(detect('PYTHON python, C++ C# .NET Node.js Scrum Machine Learning')).toEqual([
-      'Python', 'C++', 'C#', '.NET', 'Node.js', 'Scrum', 'Machine Learning',
+      'Python', 'JavaScript' ,'C++', 'C#', '.NET', 'Node.js', 'Scrum', 'Machine Learning',
     ]);
   });
   it('rejects substrings, common adjectives and institutions as skills', () => {

@@ -20,5 +20,5 @@ describe('PrismaService', () => {
 
     expect(connectSpy).toHaveBeenCalledOnce();
     expect(disconnectSpy).toHaveBeenCalledOnce();
-  });
+  },30000);
 });

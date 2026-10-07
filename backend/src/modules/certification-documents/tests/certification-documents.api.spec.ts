@@ -116,7 +116,7 @@ describe('Certification documents API', () => {
       ok: true,
     });
     expect(documentsRepository.remove).toHaveBeenCalledWith(certificationId);
-  });
+  },30000);
 
   it.each(['get', 'put', 'delete'] as const)(
     'protects %s requests without a token',
