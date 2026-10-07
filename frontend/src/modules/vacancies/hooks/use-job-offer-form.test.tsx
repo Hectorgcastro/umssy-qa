@@ -38,18 +38,21 @@ describe('useJobOfferForm', () => {
     expect(result.current.currentStep).toBe(3);
   });
 
-  it('conserva las tecnologías elegidas al volver y avanzar entre pasos', () => {
+  it('vuelve al paso 2 sin modificar los datos ingresados', () => {
     const { result } = renderHook(() => useJobOfferForm());
-    const selectedSkills = ['Python', 'React', 'TypeScript'];
 
     act(() => {
-      result.current.updateField('skills', selectedSkills);
-      result.current.goBack();
-      result.current.goBack();
       result.current.goNext();
+      result.current.goNext();
+      result.current.updateField('title', 'Desarrollador React');
+      result.current.updateField('description', 'Experiencia en React');
+      result.current.updateField('skills', ['React', 'TypeScript']);
+      result.current.goBack();
     });
 
     expect(result.current.currentStep).toBe(2);
-    expect(result.current.conditions.skills).toEqual(selectedSkills);
+    expect(result.current.conditions.title).toBe('Desarrollador React');
+    expect(result.current.conditions.description).toBe('Experiencia en React');
+    expect(result.current.conditions.skills).toEqual(['React', 'TypeScript']);
   });
 });

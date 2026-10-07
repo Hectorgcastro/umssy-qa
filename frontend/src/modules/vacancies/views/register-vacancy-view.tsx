@@ -39,12 +39,14 @@ export function RegisterVacancyView() {
                 <RequirementsStep 
                 conditions={conditions} 
                 updateField={updateField} 
+                onPrevious={goBack}
+                onContinue={goNext}
                 />
             )}
 
             {/* Inyecta tu vista 3 exclusivamente cuando el stepper llegue al 3 */}
             {currentStep === 3 && (
-                <PreviewStep conditions={conditions} />
+                <PreviewStep conditions={conditions} onPrevious={goBack} />
             )}
         </div>
     );

@@ -7,6 +7,8 @@ import { UpdateVacancyField, VacancyConditions } from "../hooks/use-job-offer-fo
 interface RequirementsStepProps {
   conditions: VacancyConditions;
   updateField: UpdateVacancyField;
+  onPrevious: () => void;
+  onContinue: () => void;
 }
 
 const AVAILABLE_SKILLS = [
@@ -18,7 +20,12 @@ const AVAILABLE_SKILLS = [
 const MAX_CHARS = 3000;
 const MAX_SKILLS = 10;
 
-export function RequirementsStep({ conditions, updateField }: RequirementsStepProps) {
+export function RequirementsStep({
+  conditions,
+  updateField,
+  onPrevious,
+  onContinue,
+}: RequirementsStepProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const hasUnsavedChanges = conditions.description !== "" || conditions.skills.length > 0;
@@ -125,6 +132,23 @@ export function RequirementsStep({ conditions, updateField }: RequirementsStepPr
               </button>
            </div>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-border px-6 py-4">
+        <button
+          type="button"
+          onClick={onPrevious}
+          className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+        >
+          Anterior
+        </button>
+        <button
+          type="button"
+          onClick={onContinue}
+          className="rounded-lg bg-[#E50000] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+        >
+          Continuar
+        </button>
       </div>
     </div>
   );
