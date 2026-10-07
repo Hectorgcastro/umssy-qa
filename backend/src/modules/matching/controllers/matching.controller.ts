@@ -7,6 +7,8 @@ import {
   analyzeExperienceBodySchema,
   analyzeExperienceParamsSchema,
 } from '../requests/analyze-experience.schema.js';
+import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { MatchingService } from '../services/matching.service.js';
 import type {
   AnalyzeExperienceBodyDto,
   AnalyzeExperienceParamsDto,
@@ -28,6 +30,10 @@ export class MatchingController {
     @Body(new RequestValidationPipe(analyzeExperienceBodySchema)) body: AnalyzeExperienceBodyDto,
   ): Promise<AnalyzeExperienceResponse> {
     return this.matchingService.analyze(userId, {
+    @Param() params: AnalyzeExperienceParamsDto,
+    @Body() body: AnalyzeExperienceBodyDto,
+  ): AnalyzeExperienceResponse {
+    return this.matchingService.analyzeExperience({
       experienceId: params.id,
       text: body.text,
     });
