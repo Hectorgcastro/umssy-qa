@@ -112,6 +112,7 @@ model User {
   email         String   @unique @db.VarChar(150)
   password      String?  @db.VarChar(255)
   isActive      Boolean  @default(true) @map("is_active")
+  isAvailableForMentoring  Boolean  @default(false) @map("is_available_for_mentoring")
   photoUrl      Bytes?   @map("photo_url")
   cityId        String?  @map("city_id") @db.Uuid
   phone         String?
