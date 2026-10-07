@@ -49,6 +49,13 @@ export const SEED_USERS: ReadonlyArray<
     email: 'estudiante.1@umssy.test',
     role: 'estudiante',
   },
+  {
+    key: 'admin',
+    firstName: 'Admin',
+    lastName: 'Uno',
+    email: 'admin.1@umssy.test',
+    role: 'administrativo',
+  },
 ];
 
 export const LEGACY_ROLES = ['MENTOR', 'TITULADO'];
