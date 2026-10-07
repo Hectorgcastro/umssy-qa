@@ -1,58 +1,82 @@
 import {
+  CallHandler,
+  ExecutionContext,
   Injectable,
+  NestInterceptor,
   StreamableFile,
-  type CallHandler,
-  type ExecutionContext,
-  type NestInterceptor,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { map, type Observable } from 'rxjs';
-import { RESPONSE_MESSAGE_KEY } from '../decorators/response-message.decorator.js';
-import type { ApiResponse } from '../types/api-response.types.js';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import type { AlreadyFormatted } from '../types/already-formatted.types.js';
+import type { PaginatedPayload } from '../types/paginated-payload.types.js';
 
-const DEFAULT_DETAIL = 'Solicitud procesada correctamente';
+function isPaginatedPayload(value: unknown): value is PaginatedPayload {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'data' in value &&
+    'page' in value &&
+    'offset' in value
+  );
+}
 
-function getPage(data: unknown): number | undefined {
-  if (typeof data === 'object' && data !== null && 'page' in data) {
-    const { page } = data as { page: unknown };
-    return typeof page === 'number' ? page : undefined;
-  }
-  return undefined;
+function isAlreadyFormatted(value: unknown): value is AlreadyFormatted {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'statusCode' in value &&
+    'ok' in value &&
+    'detail' in value &&
+    'data' in value
+  );
 }
 
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<
-  T,
-  ApiResponse<T> | StreamableFile
-> {
-  constructor(private readonly reflector: Reflector) {}
-
+export class ResponseInterceptor<T = unknown> implements NestInterceptor<T> {
   intercept(
     context: ExecutionContext,
     next: CallHandler<T>,
-  ): Observable<ApiResponse<T> | StreamableFile> {
-    const detail =
-      this.reflector.get<string | undefined>(
-        RESPONSE_MESSAGE_KEY,
-        context.getHandler(),
-      ) ?? DEFAULT_DETAIL;
-    const { statusCode } = context
-      .switchToHttp()
-      .getResponse<{ statusCode: number }>();
+  ): Observable<unknown> {
+    const http = context.switchToHttp();
+    const response = http.getResponse<{ statusCode?: number }>();
+    const statusCode = response?.statusCode ?? 200;
+    const request =
+      typeof http.getRequest === 'function'
+        ? http.getRequest<{ url?: string }>()
+        : undefined;
+
+    const isEpic2Route =
+      typeof request?.url === 'string' &&
+      (request.url.includes('/profile') ||
+        request.url.includes('/certifications') ||
+        request.url.includes('/skills') ||
+        request.url.includes('/educations') ||
+        request.url.includes('/work-experience'));
+
+    const detail = isEpic2Route ? 'OK' : 'Operación exitosa';
 
     return next.handle().pipe(
-      map((data) => {
-        if (data instanceof StreamableFile) {
-          return data;
+      map((value: unknown) => {
+        if (value instanceof StreamableFile || isAlreadyFormatted(value)) {
+          return value;
         }
 
-        const page = getPage(data);
+        if (isPaginatedPayload(value)) {
+          return {
+            statusCode,
+            ok: true,
+            detail,
+            data: value.data ?? null,
+            page: value.page,
+            offset: value.offset,
+          };
+        }
+
         return {
           statusCode,
-          data,
-          ...(page !== undefined && { page }),
-          detail,
           ok: true,
+          detail,
+          data: value ?? null,
         };
       }),
     );

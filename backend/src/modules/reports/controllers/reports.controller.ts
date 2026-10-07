@@ -1,6 +1,12 @@
-import { Controller, Get, Query, StreamableFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  StreamableFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from '../../../common/decorators/response-message.decorator.js';
+import { ResponseInterceptor } from '../../../common/interceptors/index.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import {
   registeredUsersFiltersSchema,
@@ -36,7 +42,7 @@ export class ReportsController {
   ) {}
 
   @Get('registered-users')
-  @ResponseMessage('Usuarios registrados obtenidos correctamente')
+  @UseInterceptors(ResponseInterceptor)
   getRegisteredUsers(
     @Query(new ZodValidationPipe(registeredUsersQuerySchema))
     query: RegisteredUsersQuery,
@@ -54,7 +60,7 @@ export class ReportsController {
   }
 
   @Get('rejected-users')
-  @ResponseMessage('Usuarios rechazados obtenidos correctamente')
+  @UseInterceptors(ResponseInterceptor)
   getRejectedUsers(
     @Query(new ZodValidationPipe(rejectedUsersQuerySchema))
     query: RejectedUsersQuery,
@@ -72,7 +78,7 @@ export class ReportsController {
   }
 
   @Get('history')
-  @ResponseMessage('Historial de reportes obtenido correctamente')
+  @UseInterceptors(ResponseInterceptor)
   getReportHistory(
     @Query(new ZodValidationPipe(reportHistoryQuerySchema))
     query: ReportHistoryQuery,

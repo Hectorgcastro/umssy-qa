@@ -1,80 +1,114 @@
-import {
-  StreamableFile,
-  type CallHandler,
-  type ExecutionContext,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { firstValueFrom, of } from 'rxjs';
-import { ResponseInterceptor } from '../interceptors/response.interceptor.js';
+import { describe, expect, it } from 'vitest';
+import { StreamableFile } from '@nestjs/common';
+import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import { firstValueFrom, of, throwError } from 'rxjs';
+import { ResponseInterceptor } from '../interceptors/index.js';
+import { DomainException } from '../exceptions/domain.exception.js';
+
+class TestDomainException extends DomainException {}
 
 function buildContext(statusCode = 200): ExecutionContext {
   return {
-    getHandler: () => () => undefined,
-    switchToHttp: () => ({ getResponse: () => ({ statusCode }) }),
+    switchToHttp: () => ({
+      getResponse: () => ({ statusCode }),
+    }),
   } as unknown as ExecutionContext;
 }
 
-function buildHandler(data: unknown): CallHandler {
-  return { handle: () => of(data) };
+function buildCallHandler(value: unknown): CallHandler {
+  return { handle: () => of(value) };
 }
 
 describe('ResponseInterceptor', () => {
-  it('envuelve la respuesta con el mensaje definido en el handler', async () => {
-    const reflector = new Reflector();
-    vi.spyOn(reflector, 'get').mockReturnValue('Datos obtenidos');
-    const interceptor = new ResponseInterceptor(reflector);
+  const interceptor = new ResponseInterceptor();
 
+  it.each([200, 201, 202])(
+    'envuelve los datos usando el status HTTP real %s',
+    async (statusCode) => {
+      const data = { id: 'mentor-1' };
+      const result = await firstValueFrom(
+        interceptor.intercept(buildContext(statusCode), buildCallHandler(data)),
+      );
+
+      expect(result).toEqual({
+        statusCode,
+        ok: true,
+        detail: 'Operación exitosa',
+        data,
+      });
+    },
+  );
+
+  it.each([
+    { data: 'Hola' },
+    { data: null },
+    { data: [] },
+    { data: [{ id: 'mentor-1' }] },
+  ])('conserva el payload simple $data', async ({ data }) => {
     const result = await firstValueFrom(
-      interceptor.intercept(buildContext(201), buildHandler(['a'])),
-    );
-
-    expect(result).toEqual({
-      statusCode: 201,
-      data: ['a'],
-      detail: 'Datos obtenidos',
-      ok: true,
-    });
-  });
-
-  it('usa un mensaje por defecto y expone la página de los resultados paginados', async () => {
-    const interceptor = new ResponseInterceptor(new Reflector());
-    const paginated = { items: [], total: 0, page: 3, limit: 10 };
-
-    const result = await firstValueFrom(
-      interceptor.intercept(buildContext(), buildHandler(paginated)),
+      interceptor.intercept(buildContext(), buildCallHandler(data)),
     );
 
     expect(result).toEqual({
       statusCode: 200,
-      data: paginated,
-      page: 3,
-      detail: 'Solicitud procesada correctamente',
       ok: true,
+      detail: 'Operación exitosa',
+      data,
     });
   });
 
-  it('no agrega página si no es numérica o la respuesta no es un objeto', async () => {
-    const interceptor = new ResponseInterceptor(new Reflector());
-
-    const withTextPage = await firstValueFrom(
-      interceptor.intercept(buildContext(), buildHandler({ page: 'x' })),
+  it.each([
+    { data: [{ id: '1' }], page: 2, offset: 10 },
+    {
+      data: { items: [{ id: '1' }], total: 10, limit: 5, totalPages: 2 },
+      page: 2,
+      offset: 5,
+    },
+  ])('promueve page y offset al nivel raiz: %j', async (paginated) => {
+    const result = await firstValueFrom(
+      interceptor.intercept(buildContext(), buildCallHandler(paginated)),
     );
-    const withNull = await firstValueFrom(
-      interceptor.intercept(buildContext(), buildHandler(null)),
-    );
 
-    expect(withTextPage).not.toHaveProperty('page');
-    expect(withNull).not.toHaveProperty('page');
+    expect(result).toEqual({
+      statusCode: 200,
+      ok: true,
+      detail: 'Operación exitosa',
+      ...paginated,
+    });
   });
 
-  it('deja pasar los archivos sin envolverlos en el formato JSON', async () => {
-    const interceptor = new ResponseInterceptor(new Reflector());
+  it('devuelve los archivos sin envolverlos', async () => {
     const file = new StreamableFile(Buffer.from('a,b'));
-
     const result = await firstValueFrom(
-      interceptor.intercept(buildContext(), buildHandler(file)),
+      interceptor.intercept(buildContext(), buildCallHandler(file)),
     );
 
     expect(result).toBe(file);
+  });
+
+  it('no vuelve a envolver respuestas ya formateadas', async () => {
+    const formatted = {
+      statusCode: 201,
+      ok: true,
+      detail: 'Creado',
+      data: { id: 'abc' },
+    };
+    const result = await firstValueFrom(
+      interceptor.intercept(buildContext(201), buildCallHandler(formatted)),
+    );
+
+    expect(result).toBe(formatted);
+  });
+
+  it('propaga la excepcion original para que la procese el filtro existente', async () => {
+    const exception = new TestDomainException('Conflicto de dominio', 409);
+
+    await expect(
+      firstValueFrom(
+        interceptor.intercept(buildContext(), {
+          handle: () => throwError(() => exception),
+        }),
+      ),
+    ).rejects.toBe(exception);
   });
 });
