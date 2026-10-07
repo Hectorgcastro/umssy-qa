@@ -4,7 +4,8 @@ import { MatchingModule } from '../matching.module.js';
 import { MatchingController } from '../controllers/matching.controller.js';
 import { MatchingService } from '../services/matching.service.js';
 import { NlpService } from '../services/nlp.service.js';
-import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { VacancyRankingService } from '../services/vacancy-ranking.service.js';
+import { WeightedScoreService } from '../services/weighted-score.service.js';
 
 describe('MatchingModule', () => {
   let moduleRef: TestingModule;
@@ -15,7 +16,13 @@ describe('MatchingModule', () => {
     }).overrideProvider(PrismaService).useValue({}).compile();
   });
 
-  it.each([MatchingController, MatchingService, NlpService])('resuelve %o', (provider) => {
+  it.each([
+    MatchingController,
+    MatchingService,
+    NlpService,
+    VacancyRankingService,
+    WeightedScoreService,
+  ])('resuelve %o', (provider) => {
     expect(moduleRef.get(provider)).toBeInstanceOf(provider);
   });
 });
