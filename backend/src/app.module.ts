@@ -28,6 +28,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor.
     AvailabilityModule,
     AuthModule,
     SkillsModule,
+    JobOffersModule,
   ],
   controllers: [AppController],
   providers: [
@@ -36,7 +37,6 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor.
     { provide: APP_FILTER, useClass: DomainExceptionFilter }, // ya lo tenias
     //{ provide: APP_FILTER, useClass: PrismaExceptionFilter }, // NUEVO - mapea Prisma a 500
     AppService,
-    { provide: APP_FILTER, useClass: DomainExceptionFilter },
   ],
 })
 export class AppModule {}
