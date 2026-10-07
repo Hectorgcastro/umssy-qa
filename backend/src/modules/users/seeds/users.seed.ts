@@ -47,10 +47,17 @@ async function ensureUserWithRole(
   roleId: string,
 ): Promise<{ user: User; roleAssigned: boolean }> {
   const { firstName, lastName, email } = definition;
+  const isAvailableForMentoring = definition.role === 'mentor';
   const user = await tx.user.upsert({
     where: { email },
-    update: { firstName, lastName, password },
-    create: { firstName, lastName, email, password },
+    update: { firstName, lastName, password, isAvailableForMentoring },
+    create: {
+      firstName,
+      lastName,
+      email,
+      password,
+      isAvailableForMentoring,
+    },
   });
 
   const assigned = await tx.userRole.findFirst({ where: { userId: user.id, roleId, deletedAt: null } });
