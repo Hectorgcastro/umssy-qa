@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { VacancyStepper } from "../components/vacancy-stepper";
 import { InformationStep } from "../components/information-step";
 import { RequirementsStep } from "../components/requirements-step";
@@ -9,28 +7,32 @@ import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 
 export function RegisterVacancyView() {
-    const { currentStep, conditions, updateField, selectModality, goNext, goBack } = useJobOfferForm();
+    const { 
+        currentStep, 
+        conditions, 
+        errors, 
+        updateField, 
+        selectModality, 
+        validateMapsLink, 
+        handleContinue,
+        goNext,
+        goBack,} = useJobOfferForm();
 
     return (
-        <div className="mx-auto max-w-5xl px-6 py-8">
-            <Link href="/vacancies"
-              className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-ink">
-            <ChevronLeft className="h-4 w-4" />Volver a mis vacantes
-            </Link>
+        <div className="mx-auto w-full max-w-5xl">
+            <h1 className="mb-6 font-tight text-3xl font-extrabold text-ink">Publicar vacante</h1>
 
-            <h1 className="mt-3 text-[30px] font-extrabold text-ink">Registrar nueva vacante</h1>
-            <p className="mt-1 text-[15px] font-normal text-text-secondary">
-                Completa la informacion de la oferta para publicarla en la plataforma.
-            </p>
+            <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
+                <VacancyStepper currentStep={currentStep} />
 
-            <VacancyStepper currentStep={currentStep} />
-            
             {currentStep === 1 && (
                 <InformationStep 
-                   conditions={conditions} 
-                   updateField={updateField} 
-                   selectModality={selectModality} 
-                   onContinue={goNext}
+                    conditions={conditions}
+                    errors={errors}
+                    updateField={updateField}
+                    selectModality={selectModality}
+                    validateMapsLink={validateMapsLink}
+                    onContinue={handleContinue} 
                 />
             )}
 
@@ -46,6 +48,7 @@ export function RegisterVacancyView() {
             {currentStep === 3 && (
                 <PreviewStep conditions={conditions} onPrevious={goBack} />
             )}
+        </div>
         </div>
     );
 }

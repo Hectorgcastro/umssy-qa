@@ -56,11 +56,17 @@ describe('RegisterVacancyView', () => {
     description: "",
     skills: [],
   };
+  const validationMocks = {
+    errors: {},
+    validateMapsLink: vi.fn(),
+    handleContinue: vi.fn(),
+  };
 
   it('renderiza el paso 1 cuando currentStep es 1', () => {
     vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
       currentStep: 1,
       conditions: mockConditions,
+      ...validationMocks,
       updateField: vi.fn(),
       selectModality: vi.fn(),
       goNext: vi.fn(),
@@ -77,6 +83,7 @@ describe('RegisterVacancyView', () => {
     vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
       currentStep: 3,
       conditions: mockConditions,
+      ...validationMocks,
       updateField: vi.fn(),
       selectModality: vi.fn(),
       goNext: vi.fn(),
@@ -96,6 +103,7 @@ describe('RegisterVacancyView', () => {
     vi.spyOn(useJobOfferFormHook, 'useJobOfferForm').mockReturnValue({
       currentStep: 2,
       conditions: mockConditions,
+      ...validationMocks,
       updateField: vi.fn(),
       selectModality: vi.fn(),
       goNext,
