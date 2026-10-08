@@ -6,6 +6,7 @@ import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { EmailSearchInput } from "../components/email-search-input";
 import { ExportCsvButton } from "../components/export-csv-button";
 import { ExportErrorMessage } from "../components/export-error-message";
+import { ExportSuccessToast } from "../components/export-success-toast";
 import { RejectedUsersTable } from "../components/rejected-users-table";
 import { ReportTableFooter } from "../components/report-table-footer";
 import { useExportRejectedUsersCsv } from "../hooks/use-export-rejected-users-csv";
@@ -24,7 +25,12 @@ export function RejectedUsersReportView() {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebouncedValue(searchInput.trim(), SEARCH_DEBOUNCE_MS);
   const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRejectedUsers(currentPage, search);
-  const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRejectedUsersCsv(search);
+  const {
+    exportCsv,
+    isExporting,
+    errorMessage: exportErrorMessage,
+    successMessage: exportSuccessMessage,
+  } = useExportRejectedUsersCsv(search);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -51,6 +57,7 @@ export function RejectedUsersReportView() {
       />
 
       <ExportErrorMessage message={exportErrorMessage} />
+      <ExportSuccessToast message={exportSuccessMessage} />
 
       <ReportTableFooter
         currentPage={currentPage}

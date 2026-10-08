@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PageBreadcrumb, type BreadcrumbEntry } from "@/shared/components/layout";
 import { ExportErrorMessage } from "../components/export-error-message";
+import { ExportSuccessToast } from "../components/export-success-toast";
 import { RegisteredUsersTable } from "../components/registered-users-table";
 import { ReportActions } from "../components/report-actions";
 import { ReportTableFooter } from "../components/report-table-footer";
@@ -26,7 +27,12 @@ export function RegisteredUsersReportView() {
     userType,
     period,
   );
-  const { exportCsv, isExporting, errorMessage: exportErrorMessage } = useExportRegisteredUsersCsv(userType, period);
+  const {
+    exportCsv,
+    isExporting,
+    errorMessage: exportErrorMessage,
+    successMessage: exportSuccessMessage,
+  } = useExportRegisteredUsersCsv(userType, period);
 
   // Cada filtro conserva el otro y vuelve a la página 1; elegir la opción ya activa no hace nada.
   const handleUserTypeChange = (selectedUserType?: UserType) => {
@@ -61,6 +67,7 @@ export function RegisteredUsersReportView() {
       <RegisteredUsersTable users={users} isLoading={isLoading} errorMessage={errorMessage} />
 
       <ExportErrorMessage message={exportErrorMessage} />
+      <ExportSuccessToast message={exportSuccessMessage} />
 
       <ReportTableFooter
         currentPage={currentPage}
