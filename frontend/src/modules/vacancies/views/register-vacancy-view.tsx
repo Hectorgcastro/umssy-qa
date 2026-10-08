@@ -2,7 +2,7 @@
 
 import { VacancyStepper } from "../components/vacancy-stepper";
 import { InformationStep } from "../components/information-step";
-import { RequirementsStep } from "../components/requirements-step"; // IMPORTA TU COMPONENTE
+import { RequirementsStep } from "../components/requirements-step";
 import { PreviewStep } from "../components/preview-step";
 import { useJobOfferForm } from "../hooks/use-job-offer-form";
 

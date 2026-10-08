@@ -248,7 +248,7 @@ export function InformationStep({
         <Button type="button" variant="outline" onClick={handleCancel}>
           Cancelar
         </Button>
-        <Button type="button" onClick={onContinue} className="bg-accent text-white hover:bg-danger">
+        <Button type="button" variant="default" onClick={onContinue}>
           Continuar
         </Button>
       </div>
