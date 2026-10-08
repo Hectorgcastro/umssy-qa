@@ -1,5 +1,9 @@
 import { StreamableFile } from '@nestjs/common';
+import { GUARDS_METADATA } from '@nestjs/common/constants.js';
 import { Test, type TestingModule } from '@nestjs/testing';
+import { ROLES_KEY } from '../../../common/constants/roles.constants.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { ReportsController } from '../controllers/reports.controller.js';
 import { GeneratedReportsRepository } from '../repositories/generated-reports.repository.js';
 import { ReportUsersRepository } from '../repositories/report-users.repository.js';
@@ -20,11 +24,21 @@ describe('ReportsController', () => {
         ReportHistoryService,
         GeneratedReportsRepository,
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = moduleRef.get(ReportsController);
     service = moduleRef.get(ReportsService);
     historyService = moduleRef.get(ReportHistoryService);
+  });
+
+  it('exige sesión con rol administrativo en todos los endpoints', () => {
+    expect(Reflect.getMetadata(GUARDS_METADATA, ReportsController)).toEqual([JwtAuthGuard, RolesGuard]);
+    expect(Reflect.getMetadata(ROLES_KEY, ReportsController)).toEqual(['administrativo']);
   });
 
   it('delega el reporte de registrados al service', () => {
