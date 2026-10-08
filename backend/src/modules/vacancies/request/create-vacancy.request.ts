@@ -1,19 +1,19 @@
 import { z } from 'zod';
 
-// Mensaje estándar para campos obligatorios
+
 const REQUIRED_MESSAGE = 'Este campo es obligatorio';
 
-// Los valores coinciden con los enums de Prisma (UPPER_SNAKE_CASE)
+
 export const MODALITIES = ['ON_SITE', 'REMOTE', 'HYBRID'] as const;
 export const CONTRACT_TYPES = ['FULL_TIME', 'PART_TIME', 'INTERNSHIP'] as const;
 
-// Formato: "Bs 6.500 - 8.000" o "Bs 5.000" (punto de miles, guion como separador)
+
 const SALARY_REGEX = /^Bs \d{1,3}(\.\d{3})*( - \d{1,3}(\.\d{3})*)?$/;
 
-// Convierte "6.500" en 6500
+
 const parseSalaryAmount = (amount: string): number => Number(amount.replace(/\./g, ''));
 
-// Solo acepta enlaces https de maps.google.com o goo.gl/maps
+
 function isValidGoogleMapsUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -53,7 +53,7 @@ export const createVacancySchema = z
       .min(1, REQUIRED_MESSAGE)
       .regex(SALARY_REGEX, 'Formato de salario inválido (ej. Bs 6.500 - 8.000 o Bs 5.000)')
       .refine((value) => {
-        // Si el formato es inválido, el regex ya reportó el error
+      
         if (!SALARY_REGEX.test(value)) return true;
         const [min, max] = value.replace('Bs ', '').split(' - ');
         return max === undefined || parseSalaryAmount(min) <= parseSalaryAmount(max);
@@ -71,7 +71,7 @@ export const createVacancySchema = z
       .min(1, REQUIRED_MESSAGE)
       .refine(isValidGoogleMapsUrl, 'Ingresa un enlace válido de Google Maps'),
   })
-  // Rechaza campos que no forman parte del contrato
+  
   .strict();
 
 export type CreateVacancyPayload = z.infer<typeof createVacancySchema>;
