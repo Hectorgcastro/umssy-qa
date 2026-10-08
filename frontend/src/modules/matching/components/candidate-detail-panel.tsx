@@ -58,12 +58,13 @@ export function CandidateDetailPanel({
   const isPendingDiscard = pendingDiscardId === candidate.id;
 
   function handleSubmitSchedule() {
-    if (!scheduleDate || !scheduleTime) return;
-    onConfirmSchedule(candidate!.name, scheduleDate, scheduleTime);
-    setInlineAction(null);
-    setScheduleDate("");
-    setScheduleTime("");
-  }
+  if (!candidate || !scheduleDate || !scheduleTime) return;
+
+  onConfirmSchedule(candidate.name, scheduleDate, scheduleTime);
+  setInlineAction(null);
+  setScheduleDate("");
+  setScheduleTime("");
+}
 
   return (
     <Card className="flex h-full flex-col overflow-y-auto">

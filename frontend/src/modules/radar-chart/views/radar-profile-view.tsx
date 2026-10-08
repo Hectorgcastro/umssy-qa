@@ -6,10 +6,10 @@ import type { SidebarUser } from "@/shared/types/sidebar-user.types";
 import { RADAR_PROFILE_NAVIGATION } from "../data/radar-navigation.data";
 import { RADAR_AREA_SCORES, RADAR_KPIS, RADAR_PROFILE } from "../data/radar-profile.data";
 import { calculateAverage } from "../utils/calculate-average";
-import { AffinityRadarChart } from "./affinity-radar-chart";
-import { AreaBreakdownPanel } from "./area-breakdown-panel";
-import { KpiCards } from "./kpi-cards";
-import { ProfileHeader } from "./profile-header";
+import { AffinityRadarChart } from "../components/affinity-radar-chart";
+import { AreaBreakdownPanel } from "../components/area-breakdown-panel";
+import { KpiCards } from "../components/kpi-cards";
+import { ProfileHeader } from "../components/profile-header";
 
 const SIDEBAR_USER: SidebarUser = {
   fullName: RADAR_PROFILE.name,
