@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useEvent } from "../hooks/use-event";
 import { useEvents } from "../hooks/use-events";
 import { useEventsFilters } from "../hooks/use-events-filters";
-import { useEventCategories } from "../hooks/use-event-categories";
+import { useEventCategories } from "../../event-categories/hooks/use-event-categories";
 import type { EventItem } from "../types/event.types";
 import { EventsView } from "./events-view";
 
@@ -20,7 +20,7 @@ vi.mock("../hooks/use-events", () => ({
 vi.mock("../hooks/use-events-filters", () => ({
   useEventsFilters: vi.fn(),
 }));
-vi.mock("../hooks/use-event-categories", () => ({
+vi.mock("../../event-categories/hooks/use-event-categories", () => ({
   useEventCategories: vi.fn(),
 }));
 

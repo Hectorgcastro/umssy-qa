@@ -3,11 +3,11 @@ import { z } from 'zod';
 import {
   MAX_PAGE_SIZE,
   MAX_SEARCH_LENGTH,
-} from '../constants/events.constants.js';
+} from '../constants/event-categories.constants.js';
 export {
   MAX_PAGE_SIZE,
   MAX_SEARCH_LENGTH,
-} from '../constants/events.constants.js';
+} from '../constants/event-categories.constants.js';
 
 export const GetEventCategoriesSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

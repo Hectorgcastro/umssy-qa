@@ -21,9 +21,6 @@ import type { SeedEnv } from '../types/seed-env.types.js';
 import type { SeedSummary } from '../types/seed-summary.types.js';
 import { SeedEnvSchema } from './seed-env.schema.js';
 
-// REGLA DE ORDEN: los seeds se ejecutan en secuencia porque cada uno usa datos de los anteriores.
-// 1. users: roles y usuarios de prueba.
-// 2. events y event-registrations: talleres y pases del usuario de prueba.
 // 3. availability: bloques y citas de los mentores y el titulado creados en users.
 // 4. access-requests: catálogos de estados, tipos de documento y carreras.
 // Un seed nuevo se agrega después de todos los seeds de los que depende.

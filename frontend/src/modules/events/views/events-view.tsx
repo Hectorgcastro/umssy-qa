@@ -9,9 +9,9 @@ import { EventDetailPanel } from '../components/event-detail-panel';
 import { useEvent } from '../hooks/use-event';
 import { useEvents } from '../hooks/use-events';
 import { useEventsFilters } from '../hooks/use-events-filters';
-import { useEventCategories } from '../hooks/use-event-categories';
+import { useEventCategories } from '../../event-categories/hooks/use-event-categories';
 import { EventsSearchInput } from '../components/events-search-input';
-import { CategoryFilterChips } from '../components/category-filter-chips';
+import { CategoryFilterChips } from '../../event-categories/components/category-filter-chips';
 import type { EventItem } from '../types/event.types';
 
 export function EventsView() {

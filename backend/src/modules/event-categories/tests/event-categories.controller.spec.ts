@@ -15,8 +15,9 @@ describe('EventCategoriesController', () => {
       offset: 0,
     };
 
+    const findAll = vi.fn().mockResolvedValue(expectedResult);
     const serviceMock = {
-      findAll: vi.fn().mockResolvedValue(expectedResult),
+      findAll,
     } as unknown as EventCategoriesService;
 
     const controller = new EventCategoriesController(serviceMock);
@@ -24,7 +25,7 @@ describe('EventCategoriesController', () => {
 
     const result = await controller.findAll(query);
 
-    expect(serviceMock.findAll).toHaveBeenCalledWith(query);
+    expect(findAll).toHaveBeenCalledWith(query);
     expect(result).toBe(expectedResult);
   });
 });
