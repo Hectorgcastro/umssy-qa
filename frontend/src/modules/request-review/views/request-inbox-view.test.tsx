@@ -132,6 +132,19 @@ describe("RequestInboxView", () => {
       expect(screen.queryByRole("alert")).toBeNull();
     });
 
+    it("las pestañas no generan scroll vertical: la lista oculta el desborde vertical y la línea activa queda dentro", async () => {
+      listRequests.mockResolvedValue(page([row(1)]));
+      render(<RequestInboxView />);
+      await screen.findByText("Persona 1");
+
+      const list = screen.getByRole("tablist");
+      expect(list).toHaveClass("overflow-x-auto", "overflow-y-hidden");
+      // El indicador por defecto de components/ui sale 5 px por debajo de la pestaña y desbordaría la lista
+      const tabClasses = screen.getByRole("tab", { name: /^Pendientes/ }).className;
+      expect(tabClasses).toContain("after:bottom-0");
+      expect(tabClasses).not.toContain("after:bottom-[-5px]");
+    });
+
     it("la cabecera y la pestaña activa siguen el diseño", async () => {
       listRequests.mockResolvedValue(page([row(1)]));
       render(<RequestInboxView />);

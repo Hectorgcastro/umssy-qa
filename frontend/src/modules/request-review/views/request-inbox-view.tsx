@@ -28,14 +28,14 @@ export function RequestInboxView() {
         <SummaryCards summary={summary.summary} isLoading={summary.isLoading} error={summary.error} onRetry={summary.retry} />
 
         <div className="w-full min-w-0 overflow-hidden rounded-[10px] border border-border bg-surface">
-          <div className="flex flex-col gap-3 px-3 pb-3 xl:flex-row xl:items-center xl:justify-between xl:pb-0 xl:pt-1.5">
-            <Tabs value={list.status} onValueChange={(value) => list.changeStatus(value as ReviewStatus)}>
-              <TabsList variant="line" className="h-12 max-w-full gap-2 overflow-x-auto p-0">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 pb-3 xl:pb-0 xl:pt-1.5">
+            <Tabs value={list.status} onValueChange={(value) => list.changeStatus(value as ReviewStatus)} className="max-w-full">
+              <TabsList variant="line" className="h-12 max-w-full gap-2 overflow-x-auto overflow-y-hidden p-0">
                 {REVIEW_TABS.map((tab) => (
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="h-12 flex-none px-4 text-[15px] font-semibold text-text-secondary data-active:text-ink after:bottom-0 after:bg-accent"
+                    className="h-12 flex-none px-4 text-[15px] font-semibold text-text-secondary data-active:text-ink group-data-horizontal/tabs:after:bottom-0 after:bg-accent"
                   >
                     {tab.label}
                     {typeof counts[tab.value] === "number" && (
