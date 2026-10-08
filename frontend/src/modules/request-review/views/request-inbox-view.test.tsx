@@ -5,8 +5,9 @@ import type { ReviewListItem } from "../types/request-review.types";
 import { RequestInboxView } from "./request-inbox-view";
 
 const listRequests = vi.spyOn(requestReviewService, "listRequests");
-// Las llamadas de listado llevan 2 argumentos; los conteos de las pestañas, 3 (limit=1)
-const listCalls = () => listRequests.mock.calls.filter((call) => call.length === 2);
+const getSummary = vi.spyOn(requestReviewService, "getSummary");
+// Las llamadas de listado no pasan límite; los conteos de las pestañas sí (limit=1)
+const listCalls = () => listRequests.mock.calls.filter((call) => call[2] === undefined).map((call) => [call[0], call[1]]);
 
 function row(index: number, status: ReviewListItem["status"] = "pending"): ReviewListItem {
   return {
@@ -21,10 +22,26 @@ function row(index: number, status: ReviewListItem["status"] = "pending"): Revie
   };
 }
 
+const SUMMARY = {
+  pendingCount: 18,
+  pendingOver24hCount: 5,
+  decidedTodayCount: 7,
+  approvedTodayCount: 6,
+  rejectedTodayCount: 1,
+  averageReviewHours: 21,
+  reviewTimeGoalHours: 48,
+  rejectedThisMonthCount: 5,
+  topRejectionReason: null,
+};
+
 const page = (items: ReviewListItem[], total = items.length) => ({ ok: true as const, data: { items, total, page: 1, offset: 0 } });
 
 describe("RequestInboxView", () => {
-  beforeEach(() => listRequests.mockReset());
+  beforeEach(() => {
+    listRequests.mockReset();
+    getSummary.mockReset();
+    getSummary.mockResolvedValue({ ok: true, data: SUMMARY });
+  });
   afterEach(() => cleanup());
 
   it("carga la pestaña Pendientes, muestra el esqueleto y luego las filas", async () => {
@@ -132,7 +149,7 @@ describe("RequestInboxView", () => {
     await screen.findByText("Persona 1");
 
     expect(container.firstElementChild).toHaveClass("w-full", "min-w-0");
-    const card = container.querySelector(".rounded-\\[10px\\].border");
+    const card = container.querySelector("section > div.overflow-hidden");
     expect(card).toHaveClass("w-full", "min-w-0", "overflow-hidden");
     expect(container.querySelector("[data-slot='table-container']")).toHaveClass("w-full", "overflow-x-auto");
     expect(container.querySelector("section")).toHaveClass("p-8");
