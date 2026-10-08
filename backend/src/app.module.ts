@@ -22,6 +22,7 @@ import { ProfileModule } from './modules/profile/profile.module.js';
 import { SkillsModule } from './modules/skills/skills.module.js';
 import { TechnicalAreasModule } from './modules/technical-areas/technical-areas.module.js';
 import { WorkExperienceModule } from './modules/work-experience/work-experience.module.js';
+import { ReportsModule } from './modules/reports/reports.module.js';
 import { AccessRequestsModule } from './modules/access-requests/access-requests.module.js';
 
 @Module({
@@ -44,6 +45,7 @@ import { AccessRequestsModule } from './modules/access-requests/access-requests.
     OrientationTypesModule,
     MentorsModule,
     AccessRequestsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

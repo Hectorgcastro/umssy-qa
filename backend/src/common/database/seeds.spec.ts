@@ -9,6 +9,8 @@ import { seedEvents } from '../../modules/events/seeds/events.seed.js';
 import { seedEventRegistrations } from '../../modules/event-registrations/seeds/event-registrations.seed.js';
 import { seedAvailability } from '../../modules/availability/seeds/availability.seed.js';
 import { seedAccessRequests } from '../../modules/access-requests/seeds/access-requests.seed.js';
+import { seedTechnicalAreas } from '../../modules/technical-areas/seeds/technical-areas.seed.js';
+import { seedOrientationTypes } from '../../modules/orientation-types/seeds/orientation-types.seed.js';
 
 vi.mock('../../modules/users/seeds/users.seed.js', () => ({
   hashSeedPassword: vi.fn(),
@@ -26,6 +28,13 @@ vi.mock('../../modules/availability/seeds/availability.seed.js', () => ({
 }));
 vi.mock('../../modules/access-requests/seeds/access-requests.seed.js', () => ({
   seedAccessRequests: vi.fn(),
+}));
+
+vi.mock('../../modules/technical-areas/seeds/technical-areas.seed.js', () => ({
+  seedTechnicalAreas: vi.fn(),
+}));
+vi.mock('../../modules/orientation-types/seeds/orientation-types.seed.js', () => ({
+  seedOrientationTypes: vi.fn(),
 }));
 
 const users = {
@@ -72,6 +81,11 @@ describe('combined events and availability seed', () => {
   it('seeds passes for the original event user while retaining the availability user', async () => {
     const { tx, client, prisma } = buildClient();
     await runSeed(prisma);
+    expect(seedTechnicalAreas).toHaveBeenCalledWith(tx);
+    expect(seedOrientationTypes).toHaveBeenCalledWith(tx);
+    expect(seedTechnicalAreas).toHaveBeenCalledBefore(vi.mocked(seedUsers));
+    expect(seedOrientationTypes).toHaveBeenCalledBefore(vi.mocked(seedUsers));
+    expect(seedUsers).toHaveBeenCalledBefore(vi.mocked(seedEvents));
     expect(seedEvents).toHaveBeenCalledWith(tx, 'event-graduate');
     expect(seedEventRegistrations).toHaveBeenCalledWith(tx, 'event-graduate');
     expect(seedEvents).toHaveBeenCalledBefore(

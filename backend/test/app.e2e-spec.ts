@@ -7,6 +7,8 @@ import { JwtService } from '@nestjs/jwt';
 import { AppModule } from './../src/app.module.js';
 import { PrismaService } from '../src/common/prisma/prisma.service.js';
 
+const jwtMock = { verifyAsync: vi.fn() };
+
 const prismaMock = {
   $connect: vi.fn(),
   $disconnect: vi.fn(),
@@ -22,6 +24,8 @@ describe('AppController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
+      .overrideProvider(JwtService)
+      .useValue(jwtMock)
       .overrideProvider(PrismaService)
       .useValue(prismaMock)
       .compile();
@@ -52,7 +56,7 @@ describe('AppController (e2e)', () => {
   });
 
   it('returns only the authenticated user passes with the response envelope', async () => {
-    const verify = vi.spyOn(app.get(JwtService), 'verifyAsync');
+    const verify = jwtMock.verifyAsync;
     for (const sub of ['user-with-passes', 'user-without-passes']) {
       verify.mockResolvedValueOnce({ sub });
       const response = await request(app.getHttpServer())
