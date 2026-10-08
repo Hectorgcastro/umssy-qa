@@ -1,1 +1,1 @@
-export * from './match-score.types';
+export type * from './types/match-score.types';
