@@ -4,16 +4,13 @@ import { Calendar, ListFilter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SELECT_ITEM_CONTRAST_CLASS, SELECT_POPUP_WIDE_CLASS } from "@/shared/constants/select.constants";
 import { CAREER_OPTIONS, PERIOD_OPTIONS } from "../../constants/inbox-filters.constants";
 import type { InboxFiltersProps } from "../../types/inbox-filters-props.types";
 import type { InboxPeriod } from "../../types/inbox-filters.types";
 
 const TRIGGER_CLASS =
   "w-full gap-2 rounded-lg border-border bg-surface px-3 text-[14.5px] font-medium text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] md:w-auto md:max-w-[300px]";
-// El popup crece hasta el ancho de sus opciones (mínimo, el del botón) sin salirse de la pantalla
-const CONTENT_CLASS = "w-max min-w-(--anchor-width) max-w-[calc(100vw-1rem)]";
-// El tema pone texto blanco (accent-foreground) sobre el fondo resaltado claro, también en los descendientes: se fija texto tinta en ambos
-const ITEM_CLASS = "focus:bg-surface-soft focus:text-ink not-data-[variant=destructive]:focus:**:text-ink";
 const SR_ONLY = "sr-only";
 
 export function InboxFilters({ search, career, period, onSearchChange, onCareerChange, onPeriodChange }: InboxFiltersProps) {
@@ -45,9 +42,9 @@ export function InboxFilters({ search, career, period, onSearchChange, onCareerC
             <ListFilter className="size-4 text-text-secondary" strokeWidth={1.75} aria-hidden="true" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className={CONTENT_CLASS}>
+          <SelectContent className={SELECT_POPUP_WIDE_CLASS}>
             {CAREER_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value} className={ITEM_CLASS}>
+              <SelectItem key={option.value} value={option.value} className={SELECT_ITEM_CONTRAST_CLASS}>
                 {option.label}
               </SelectItem>
             ))}
@@ -64,9 +61,9 @@ export function InboxFilters({ search, career, period, onSearchChange, onCareerC
             <Calendar className="size-4 text-text-secondary" strokeWidth={1.75} aria-hidden="true" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className={CONTENT_CLASS}>
+          <SelectContent className={SELECT_POPUP_WIDE_CLASS}>
             {PERIOD_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value} className={ITEM_CLASS}>
+              <SelectItem key={option.value} value={option.value} className={SELECT_ITEM_CONTRAST_CLASS}>
                 {option.label}
               </SelectItem>
             ))}

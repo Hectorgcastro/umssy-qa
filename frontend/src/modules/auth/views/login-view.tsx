@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SELECT_ITEM_CONTRAST_CLASS } from "@/shared/constants/select.constants";
 import { saveAccessToken } from "@/shared/services/storage/access-token-storage";
 import { useLogin } from "../hooks/use-login";
 import type { RoleTag } from "../types/auth-types";
@@ -76,7 +77,7 @@ export function LoginView() {
                 <SelectItem
                   key={option.value}
                   value={option.value}
-                  className="focus:bg-muted focus:text-foreground"
+                  className={SELECT_ITEM_CONTRAST_CLASS}
                 >
                   {option.label}
                 </SelectItem>

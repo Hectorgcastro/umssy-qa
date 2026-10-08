@@ -1,5 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { SELECT_ITEM_CONTRAST_CLASS } from "@/shared/constants/select.constants";
 import { saveAccessToken } from "@/shared/services/storage/access-token-storage";
 import { useLogin } from "../hooks/use-login";
 import { LoginView } from "./login-view";
@@ -128,5 +130,15 @@ describe("LoginView", () => {
 
     const button = screen.getByRole("button", { name: "Ingresando..." });
     expect(button).toBeDisabled();
+  });
+
+  it("las opciones del rol fijan texto tinta al resaltarse (el tema pone blanco sobre fondo claro)", async () => {
+    vi.mocked(useLogin).mockReturnValue({ login: vi.fn(), isLoading: false, error: null });
+    render(<LoginView />);
+
+    await userEvent.setup().click(screen.getByRole("combobox", { name: "Rol" }));
+    const option = await screen.findByRole("option", { name: "Mentor" });
+
+    for (const token of SELECT_ITEM_CONTRAST_CLASS.split(" ")) expect(option.className).toContain(token);
   });
 });
