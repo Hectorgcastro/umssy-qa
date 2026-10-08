@@ -4,19 +4,30 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Modality, UpdateVacancyField, VacancyConditions } from "../hooks/use-job-offer-form";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
+import { Modality, VacancyConditions, VacancyErrors, } from "../hooks/use-job-offer-form";
+
 
 interface InformationStepProps {
   conditions: VacancyConditions;
-  updateField: UpdateVacancyField;
-  selectModality: (modality: Modality) => void;
+  errors: VacancyErrors;
+  updateField: (field: keyof VacancyConditions, value:string) => void;
+  selectModality: (modality:Modality) => void;
+  validateMapsLink: () => void;
+  onContinue: () => void;
+
 }
 
 const MODALITIES = ["Presencial", "Remoto", "Hibrido"];
 const CONTRACT_TYPES = ["Tiempo completo", "Medio tiempo", "Pasantia"];
 
-export function InformationStep({ conditions, updateField, selectModality }: InformationStepProps) {
+export function InformationStep({ 
+  conditions, 
+  errors, 
+  updateField, 
+  selectModality,
+  validateMapsLink, 
+  onContinue }: InformationStepProps) {
   const hasUnsavedChanges = 
     conditions.title !== "" || 
     conditions.salary !== "" || 
@@ -62,19 +73,7 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
       e.preventDefault();
     }
   };
-
-  const handleVacancyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") {
-      updateField("vacancyCount", "");
-      return;
-    }
-    const num = parseInt(value, 10);
-    if (num <= 500) {
-      updateField("vacancyCount", num.toString());
-    }
-  };
-
+  
   const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^\d-]/g, "");
     if (!rawValue) {
@@ -127,19 +126,20 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
           </div>
           <Input 
             id="title" 
-            placeholder="Desarrollador Backend" 
-            className="mt-1.5" 
-            value={conditions.title} 
+            placeholder="Desarrollador Backend"
+            className={errors.title ? "mt-1.5 border-danger" : "mt-1.5"}
+            value={conditions.title}
             onChange={(event) => updateField("title", event.target.value)}
             onKeyDown={handleTitleKeyDown}
           />
+         {errors.title && (<p className="mt-1 text-xs font-semibold text-danger">{errors.title}</p>)}
         </div>
 
-        <div>
+        <div id="modality" tabIndex={-1}>
           <Label className="text-[12.5px] font-semibold">
             Modalidad  <span className="text-danger">*</span>
           </Label>
-          <div className="mt-1.5 grid grid-cols-3 gap-2">
+          <div className={errors.modality ? "mt-1.5 grid grid-cols-3 gap-2 rounded-md ring-2 ring-danger" : "mt-1.5 grid grid-cols-3 gap-2"}>
             {MODALITIES.map((modality) => (
               <button
                 key={modality}
@@ -152,6 +152,7 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
               </button>
             ))}
           </div>
+          {errors.modality && (<p className="mt-1 text-xs font-semibold text-danger">{errors.modality}</p>)}
         </div>
 
         <div>
@@ -159,12 +160,13 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
             Enlace de Google Maps <span className="text-danger">*</span>
           </Label>
           <Input
-            id="mapsLink"
-            placeholder="https://maps.google.com/?q=..."
-            className="mt-1.5"
+            id="mapsLink" 
+            placeholder="https://maps.google.com/?q=..." className="mt-1.5"
             value={conditions.mapsLink} 
-            onChange={(event) => updateField("mapsLink" , event.target.value)}
-          />
+            onChange={(event) => updateField("mapsLink" , event.target.value)} 
+            onBlur={validateMapsLink}
+            />
+              {errors.mapsLink && (<p className="mt-1 text-xs font-semibold text-danger">{errors.mapsLink}</p>)}
         </div>
 
         <div>
@@ -172,7 +174,7 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
             Tipo de contrato <span className="text-danger">*</span>
           </Label>
           <Select value={conditions.contractType} onValueChange={(value) => updateField("contractType", value ?? "")}>
-            <SelectTrigger id="contractType" className="mt-1.5 w-full">
+            <SelectTrigger id="contractType" className={errors.contractType ? "mt-1.5 w-full border-danger" : "mt-1.5 w-full"}>
               <SelectValue  placeholder="Selecciona una opcion" />
             </SelectTrigger>
             <SelectContent>
@@ -183,19 +185,20 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
               ))}
             </SelectContent>
           </Select>
+          {errors.contractType && (<p className="mt-1 text-xs font-semibold text-danger">{errors.contractType}</p>)}
         </div>
 
-        <div>
+         <div>
           <Label htmlFor="category" className="text-[12.5px] font-semibold">
             Categoria <span className="text-danger">*</span>
           </Label>
-          <Input 
-            id="category" 
-            placeholder="Tecnologia" 
-            className="mt-1.5" 
-            value={conditions.category} 
-            onChange={(event) => updateField("category", event.target.value)} 
+          <Input id="category" 
+          placeholder="Tecnologia" 
+          className={errors.category ? "mt-1.5 border-danger" : "mt-1.5"} 
+          value={conditions.category} 
+          onChange={(event) => updateField("category", event.target.value)} 
           />
+          {errors.category && (<p className="mt-1 text-xs font-semibold text-danger">{errors.category}</p>)}
         </div>
 
         <div>
@@ -203,16 +206,18 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
             Numero de vacantes <span className="text-danger">*</span>
           </Label>
           <Input 
-            id="vacancyCount" 
-            placeholder="1" 
-            className="mt-1.5" 
-            value={conditions.vacancyCount} 
-            onChange={handleVacancyChange}
-            onKeyDown={handleNumberKeyDown}
+          id="vacancyCount" 
+          placeholder="1" 
+          className={errors.vacancyCount ? "mt-1.5 border-danger" : "mt-1.5"} 
+          value={conditions.vacancyCount} 
+          onChange={(event) => updateField("vacancyCount", event.target.value)}
+          onKeyDown={handleNumberKeyDown}
           />
+          {errors.vacancyCount && (<p className="mt-1 text-xs font-semibold text-danger">{errors.vacancyCount}</p>)}
+
         </div>
 
-        <div>
+       <div>
           <Label htmlFor="salary" className="text-[12.5px] font-semibold">Salario</Label>
           <Input 
             id="salary" 
@@ -229,12 +234,13 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
             Idiomas <span className="text-danger">*</span>
           </Label>
           <Input 
-            id="languages" 
-            placeholder="Español, ingles intermedio" 
-            className="mt-1.5"
-            value={conditions.languages} 
-            onChange={(event) => updateField("languages", event.target.value)} 
-          />
+          id="languages" 
+          placeholder="Español, ingles intermedio" maxLength={100} 
+          className={errors.languages ? "mt-1.5 borde-danger" : "mt-1.5"}
+          value={conditions.languages} 
+          onChange={(event) => updateField("languages", event.target.value)} />
+           {errors.languages && (<p className="mt-1 text-xs font-semibold text-danger">{errors.languages}</p>)}
+
         </div>
       </div>
 
@@ -242,7 +248,7 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
         <Button type="button" variant="outline" onClick={handleCancel}>
           Cancelar
         </Button>
-        <Button type="button" className="bg-accent text-white hover:bg-danger">
+        <Button type="button" onClick={onContinue} className="bg-accent text-white hover:bg-danger">
           Continuar
         </Button>
       </div>

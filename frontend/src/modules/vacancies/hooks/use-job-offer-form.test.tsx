@@ -54,5 +54,6 @@ describe('useJobOfferForm', () => {
     expect(result.current.conditions.title).toBe('Desarrollador React');
     expect(result.current.conditions.description).toBe('Experiencia en React');
     expect(result.current.conditions.skills).toEqual(['React', 'TypeScript']);
+
   });
 });
