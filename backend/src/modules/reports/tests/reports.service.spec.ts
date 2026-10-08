@@ -104,10 +104,42 @@ describe('ReportsService', () => {
       );
     });
 
-    it('nombra el archivo con la fecha de exportación', () => {
+    it('termina el nombre del archivo en "todos" si no se filtró por gestión', () => {
       const { fileName } = buildService().exportRegisteredUsersCsv({});
 
-      expect(fileName).toBe('usuarios-registrados-2026-10-03.csv');
+      expect(fileName).toBe('usuarios-registrados-todos.csv');
+    });
+
+    it('agrega al nombre del archivo los filtros usados', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({
+          userType: 'STUDENT',
+          search: 'Ana Pérez',
+        }),
+      );
+
+      expect(fileName).toBe(
+        'usuarios-registrados-estudiante-ana-perez-todos.csv',
+      );
+    });
+
+    it('termina el nombre del archivo en la gestión en vez de la fecha', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({ period: 'II-2025' }),
+      );
+
+      expect(fileName).toBe('usuarios-registrados-II-2025.csv');
+    });
+
+    it('combina el tipo de usuario con la gestión', () => {
+      const { fileName } = buildService().exportRegisteredUsersCsv(
+        registeredUsersFiltersSchema.parse({
+          userType: 'STUDENT',
+          period: 'I-2026',
+        }),
+      );
+
+      expect(fileName).toBe('usuarios-registrados-estudiante-I-2026.csv');
     });
   });
 
@@ -163,6 +195,16 @@ describe('ReportsService', () => {
 
       expect(fileName).toBe('usuarios-rechazados-2026-10-03.csv');
     });
+
+    it('agrega al nombre del archivo lo que se buscó', () => {
+      const { fileName } = buildService().exportRejectedUsersCsv(
+        rejectedUsersFiltersSchema.parse({ search: ' Juan.Perez@gmail.com ' }),
+      );
+
+      expect(fileName).toBe(
+        'usuarios-rechazados-juan.perez@gmail.com-2026-10-03.csv',
+      );
+    });
   });
 
   describe('getRegisteredUsers', () => {
@@ -193,12 +235,35 @@ describe('ReportsService', () => {
       expect(result.items.map((user) => user.id)).toEqual([expectedId]);
     });
 
-    it('filtra por gestión', () => {
-      const result = buildService().getRegisteredUsers(
-        registeredQuery({ year: '2025' }),
-      );
+    it.each([
+      { period: 'I-2026', expectedIds: ['b', 'a'] },
+      { period: 'I-2025', expectedIds: ['c'] },
+      { period: 'II-2025', expectedIds: ['h'] },
+      { period: 'II-2026', expectedIds: [] },
+    ])('filtra por la gestión $period', ({ period, expectedIds }) => {
+      const service = buildService([
+        ...USERS,
+        buildUser({ id: 'h', registeredAt: '2025-08-10T00:00:00.000Z' }),
+      ]);
 
-      expect(result.items.map((user) => user.id)).toEqual(['c']);
+      const result = service.getRegisteredUsers(registeredQuery({ period }));
+
+      expect(result.items.map((user) => user.id)).toEqual(expectedIds);
+    });
+
+    it.each([
+      'III-2025',
+      '1-2025',
+      '2-2025',
+      'i-2025',
+      'I2025',
+      '2025',
+      'I-25',
+      'I-2019',
+    ])('rechaza la gestión inválida %s', (period) => {
+      expect(registeredUsersQuerySchema.safeParse({ period }).success).toBe(
+        false,
+      );
     });
 
     it('busca sin distinguir mayúsculas ni tildes', () => {

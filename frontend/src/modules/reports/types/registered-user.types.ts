@@ -20,13 +20,16 @@ export interface RegisteredUser {
   registeredAt: string;
 }
 
+export type AcademicPeriod = `${"I" | "II"}-${number}`;
+
 export interface RegisteredUsersParams {
   page: number;
   limit: number;
   userType?: UserType;
+  period?: AcademicPeriod;
 }
 
-export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType">;
+export type RegisteredUsersExportParams = Pick<RegisteredUsersParams, "userType" | "period">;
 
 export interface ExportedFile {
   file: Blob;

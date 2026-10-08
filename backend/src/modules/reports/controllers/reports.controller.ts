@@ -56,7 +56,12 @@ export class ReportsController {
     @Query(new ZodValidationPipe(registeredUsersFiltersSchema))
     filters: RegisteredUsersFilters,
   ): StreamableFile {
-    return toCsvFile(this.reportsService.exportRegisteredUsersCsv(filters));
+    const file = this.reportsService.exportRegisteredUsersCsv(filters);
+    this.reportHistoryService.registerGeneratedReport({
+      fileName: file.fileName,
+      reportType: 'REGISTERED_USERS',
+    });
+    return toCsvFile(file);
   }
 
   @Get('rejected-users')
@@ -74,7 +79,12 @@ export class ReportsController {
     @Query(new ZodValidationPipe(rejectedUsersFiltersSchema))
     filters: RejectedUsersFilters,
   ): StreamableFile {
-    return toCsvFile(this.reportsService.exportRejectedUsersCsv(filters));
+    const file = this.reportsService.exportRejectedUsersCsv(filters);
+    this.reportHistoryService.registerGeneratedReport({
+      fileName: file.fileName,
+      reportType: 'REJECTED_USERS',
+    });
+    return toCsvFile(file);
   }
 
   @Get('history')
