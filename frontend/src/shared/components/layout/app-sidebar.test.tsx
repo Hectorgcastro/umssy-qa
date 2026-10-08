@@ -39,7 +39,7 @@ describe("AppSidebar", () => {
     expect(document.querySelector('[data-slot="sidebar-footer"]')).toBeNull();
   });
 
-  it("renders the mentorship group with its two routes", () => {
+  it("renders the mentorship group with its routes", () => {
     renderSidebar();
 
     const navigation = screen.getByRole("navigation", { name: "Menú principal" });
