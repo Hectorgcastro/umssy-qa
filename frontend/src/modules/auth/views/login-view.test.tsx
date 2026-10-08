@@ -48,7 +48,7 @@ describe("LoginView", () => {
         roleTag: "titulado",
       });
       expect(saveAccessToken).toHaveBeenCalledWith("returned-token");
-      expect(push).toHaveBeenCalledWith("/");
+      expect(push).toHaveBeenCalledWith("/profile");
     });
   });
 
@@ -67,10 +67,10 @@ describe("LoginView", () => {
     expect(push).toHaveBeenCalledTimes(1);
   });
 
-  it.each(["titulado", "estudiante", "mentor", "empresa", "", "desconocido"])("el rol %j va a la ruta actual", async (roleTag) => {
+  it.each(["titulado", "estudiante", "mentor", "empresa", "", "desconocido"])("el rol %j va al perfil", async (roleTag) => {
     await submitLogin(vi.fn().mockResolvedValue({ accessToken: "t", roleTag }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/profile"));
     expect(push).toHaveBeenCalledTimes(1);
   });
 
