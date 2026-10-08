@@ -46,6 +46,16 @@ describe("AppSidebar", () => {
     expect(within(navigation).getByText("Mentorías")).toBeDefined();
   });
 
+  it("links Mi disponibilidad to the mentor availability page inside Mentorías", () => {
+    renderSidebar();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mentorías" }));
+
+    expect(screen.getByRole("link", { name: "Mi disponibilidad" }).getAttribute("href")).toBe(
+      "/mentor/availability",
+    );
+  });
+
   it("links Mi perfil to the profile page in the default navigation", () => {
     renderSidebar();
 
