@@ -127,7 +127,13 @@ describe('ReportHistoryService', () => {
     it('devuelve una lista vacía cuando no hay reportes', () => {
       const result = buildService([]).getReportHistory(historyQuery());
 
-      expect(result).toEqual({ items: [], totalItems: 0, page: 1, limit: 10 });
+      expect(result).toEqual({
+        items: [],
+        totalItems: 0,
+        totalPages: 0,
+        page: 1,
+        limit: 10,
+      });
     });
 
     it('el repositorio empieza sin reportes', () => {

@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import type { PaginatedResult } from '../../../common/types/api-response.types.js';
 import { buildCsv } from '../../../common/utils/csv.js';
+import { buildExportFileName } from '../../../common/utils/file-name.js';
 import { paginate } from '../../../common/utils/pagination.js';
 import {
   REGISTERED_USERS_CSV_HEADERS,
   REJECTED_USERS_CSV_HEADERS,
   toRegisteredUserCsvRow,
   toRejectedUserCsvRow,
+  USER_TYPE_LABELS,
 } from '../mappers/report-user-csv.mapper.js';
 import {
   toRegisteredUserResponse,
@@ -25,9 +27,12 @@ import type {
   ReportCsvFile,
   ReportUser,
 } from '../types/report-user.types.js';
+import { getAcademicPeriod } from '../utils/academic-period.js';
 
 const REGISTERED_USERS_CSV_PREFIX = 'usuarios-registrados';
 const REJECTED_USERS_CSV_PREFIX = 'usuarios-rechazados';
+const CSV_EXTENSION = 'csv';
+const ALL_PERIODS_FILE_NAME_SUFFIX = 'todos';
 
 function normalizeText(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -50,7 +55,8 @@ function sortByNewest(users: ReportUser[]): ReportUser[] {
   return users.sort(
     (first, second) =>
       new Date(second.registeredAt).getTime() -
-      new Date(first.registeredAt).getTime(),
+        new Date(first.registeredAt).getTime() ||
+      first.id.localeCompare(second.id),
   );
 }
 
@@ -67,8 +73,18 @@ export class ReportsService {
   exportRegisteredUsersCsv(filters: RegisteredUsersFilters): ReportCsvFile {
     const rows = this.findRegisteredUsers(filters).map(toRegisteredUserCsvRow);
 
+    const fileNameFilters = [
+      filters.userType && USER_TYPE_LABELS[filters.userType],
+      filters.search,
+    ];
+
     return {
-      fileName: `${REGISTERED_USERS_CSV_PREFIX}-${todayIsoDate()}.csv`,
+      fileName: buildExportFileName(
+        REGISTERED_USERS_CSV_PREFIX,
+        fileNameFilters,
+        filters.period ?? ALL_PERIODS_FILE_NAME_SUFFIX,
+        CSV_EXTENSION,
+      ),
       content: buildCsv(REGISTERED_USERS_CSV_HEADERS, rows),
     };
   }
@@ -83,7 +99,12 @@ export class ReportsService {
     const rows = this.findRejectedUsers(filters).map(toRejectedUserCsvRow);
 
     return {
-      fileName: `${REJECTED_USERS_CSV_PREFIX}-${todayIsoDate()}.csv`,
+      fileName: buildExportFileName(
+        REJECTED_USERS_CSV_PREFIX,
+        [filters.search],
+        todayIsoDate(),
+        CSV_EXTENSION,
+      ),
       content: buildCsv(REJECTED_USERS_CSV_HEADERS, rows),
     };
   }
@@ -100,8 +121,8 @@ export class ReportsService {
       )
       .filter(
         (user) =>
-          filters.year === undefined ||
-          new Date(user.registeredAt).getUTCFullYear() === filters.year,
+          filters.period === undefined ||
+          getAcademicPeriod(user.registeredAt) === filters.period,
       )
       .filter((user) =>
         containsSearch(

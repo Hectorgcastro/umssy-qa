@@ -1,6 +1,5 @@
 export const REPORT_USER_TYPES = [
   'STUDENT',
-  'GRADUATE',
   'DEGREE_HOLDER',
   'MENTOR',
   'COMPANY',
