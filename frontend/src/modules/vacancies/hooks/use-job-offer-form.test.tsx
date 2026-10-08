@@ -51,5 +51,6 @@ describe('useJobOfferForm', () => {
 
     expect(result.current.currentStep).toBe(2);
     expect(result.current.conditions.skills).toEqual(selectedSkills);
+
   });
 });
