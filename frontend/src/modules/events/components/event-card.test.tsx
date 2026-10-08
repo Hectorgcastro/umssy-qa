@@ -129,8 +129,6 @@ describe('EventCard y utilidades de formato', () => {
 
     fireEvent.keyDown(cardButton, { key: ' ' });
     expect(handleSelect).toHaveBeenCalledTimes(3);
-
-    // Una tecla distinta no debe disparar la seleccion
     fireEvent.keyDown(cardButton, { key: 'Escape' });
     expect(handleSelect).toHaveBeenCalledTimes(3);
   });

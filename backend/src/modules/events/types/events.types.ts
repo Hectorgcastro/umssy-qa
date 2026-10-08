@@ -1,4 +1,4 @@
-export type { EventCategoryResponse } from './event-category-response.types.js';
+export type { EventCategoryResponse } from '../../event-categories/types/event-category-response.types.js';
 export type { EventItemResponse } from './event-item-response.types.js';
 export type { EventDetailResponse } from './event-detail-response.types.js';
 export type { EventsListDataResponse } from './events-list-data-response.types.js';

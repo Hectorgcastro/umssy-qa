@@ -1,4 +1,4 @@
-import type { EventCategoryItem } from './event.types';
+import type { EventCategoryItem } from './event-category-item.types';
 
 export interface CategoryFilterChipsProps {
   categories: EventCategoryItem[];

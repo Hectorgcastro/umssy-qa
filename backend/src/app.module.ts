@@ -5,12 +5,12 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter.js';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 import { PrismaModule } from './common/prisma/prisma.module.js';
 import { AvailabilityModule } from './modules/availability/availability.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { EventRegistrationsModule } from './modules/event-registrations/event-registrations.module.js';
+import { EventCategoriesModule } from './modules/event-categories/event-categories.module.js';
 import { EventsModule } from './modules/events/events.module.js';
 import { CertificationDocumentsModule } from './modules/certification-documents/certification-documents.module.js';
 import { CertificationsModule } from './modules/certifications/certifications.module.js';
@@ -31,6 +31,7 @@ import { AccessRequestsModule } from './modules/access-requests/access-requests.
     AvailabilityModule,
     AuthModule,
     EventsModule,
+    EventCategoriesModule,
     EventRegistrationsModule,
     ProfileModule,
     CvModule,
@@ -47,7 +48,6 @@ import { AccessRequestsModule } from './modules/access-requests/access-requests.
   controllers: [AppController],
   providers: [
     AppService,
-    { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_FILTER, useClass: DomainExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     { provide: APP_PIPE, useClass: ZodValidationPipe },
