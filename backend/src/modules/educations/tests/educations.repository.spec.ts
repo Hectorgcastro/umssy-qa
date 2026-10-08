@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { EducationsRepository } from '../repositories/educations.repository.js';
 import type { EducationRecord } from '../types/education-record.type.js';
+import type { Prisma } from '../../../prisma/client.js';
+import { DuplicateEducationException } from '../exceptions/duplicate-education.exception.js';
+import { EducationWriteConflictException } from '../exceptions/education-write-conflict.exception.js';
 
 const userId = '11111111-1111-4111-8111-111111111111';
 const educationId = '33333333-3333-4333-8333-333333333333';
@@ -38,12 +41,72 @@ describe('EducationsRepository', () => {
     deleteMany: vi.fn(),
   };
   let repository: EducationsRepository;
+  const transaction = vi.fn();
 
   beforeEach(() => {
     vi.resetAllMocks();
+    education.findMany.mockResolvedValue([]);
+    education.findFirst.mockResolvedValue(record);
+    transaction.mockImplementation((operation: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+      operation({ education } as unknown as Prisma.TransactionClient));
     repository = new EducationsRepository({
       education,
+      $transaction: transaction,
     } as unknown as PrismaService);
+  });
+
+  it('rejects equivalent institution names and titles despite case, accents and extra spaces', async () => {
+    education.findMany.mockResolvedValue([{ institution: '  UNIVERSIDAD   MAYOR DE SAN SIMON ', degree: '  INGENIERIA   QUIMICA ' }]);
+    await expect(repository.create(userId, {
+      institution: 'Universidad Mayor de San Simón', degree: 'Ingeniería Química',
+      startDate: record.startDate, endDate: new Date('2024-01-01'),
+    })).rejects.toBeInstanceOf(DuplicateEducationException);
+    expect(education.create).not.toHaveBeenCalled();
+    expect(transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: 'Serializable' });
+    expect(education.findMany).toHaveBeenCalledWith({
+      where: { userId, startDate: record.startDate, endDate: new Date('2024-01-01') },
+      select: { institution: true, degree: true },
+    });
+  });
+
+  it('rejects an edit that becomes another record, excluding only the edited ID', async () => {
+    education.findMany.mockResolvedValue([{ institution: record.institution, degree: 'Engineering' }]);
+    await expect(repository.update(educationId, userId, { degree: 'Engineering' }, expectedPeriod))
+      .rejects.toBeInstanceOf(DuplicateEducationException);
+    expect(education.updateManyAndReturn).not.toHaveBeenCalled();
+    expect(education.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { userId, startDate: record.startDate, endDate: null, id: { not: educationId } },
+    }));
+  });
+
+  it('does not overwrite a newer period after retrying a transaction conflict', async () => {
+    transaction.mockRejectedValueOnce({ code: 'P2034' });
+    education.findFirst.mockResolvedValue(null);
+    await expect(repository.update(educationId, userId, { degree: 'Updated' }, expectedPeriod)).resolves.toBeNull();
+    expect(transaction).toHaveBeenCalledTimes(2);
+    expect(education.create).not.toHaveBeenCalled();
+    expect(education.updateManyAndReturn).not.toHaveBeenCalled();
+  });
+
+  it('rechecks for duplicates after a serializable conflict instead of repeating just the write', async () => {
+    transaction.mockRejectedValueOnce({ code: 'P2034' });
+    education.findMany.mockResolvedValue([{ institution: record.institution, degree: record.degree }]);
+    await expect(repository.create(userId, { ...record, endDate: new Date('2024-01-01') }))
+      .rejects.toBeInstanceOf(DuplicateEducationException);
+    expect(transaction).toHaveBeenCalledTimes(2);
+    expect(education.create).not.toHaveBeenCalled();
+  });
+
+  it('bounds transaction retries and propagates unrelated database errors', async () => {
+    transaction.mockRejectedValue({ code: 'P2034' });
+    await expect(repository.create(userId, { ...record, endDate: new Date('2024-01-01') }))
+      .rejects.toBeInstanceOf(EducationWriteConflictException);
+    expect(transaction).toHaveBeenCalledTimes(3);
+    transaction.mockClear();
+    const error = new Error('Connection unavailable');
+    transaction.mockRejectedValue(error);
+    await expect(repository.create(userId, { ...record, endDate: new Date('2024-01-01') })).rejects.toBe(error);
+    expect(transaction).toHaveBeenCalledOnce();
   });
 
   it('lists only the owner records with an explicit selection and stable ordering', async () => {

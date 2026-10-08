@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { APP_FILTER } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -70,6 +71,44 @@ describe.skipIf(!DATABASE)('Education persistence and concurrent HTTP updates', 
     createdIds.push(record.id);
     return record.id;
   }
+
+  it('persists only one of two equivalent POST requests from separate clients', async () => {
+    const degree = `Concurrent education ${randomUUID()}`;
+    const body = { institution: 'UMSS', degree, startDate: '2020-01-01', endDate: '2024-01-01' };
+    const responses = await Promise.all(apps.map((app, index) =>
+      request(app.getHttpServer()).post('/api/educations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ...body, degree: index ? degree.toUpperCase() : degree })
+        .timeout({ deadline: REQUEST_TIMEOUT }),
+    ));
+    for (const response of responses) {
+      if (response.status === 201) createdIds.push(response.body.data.id);
+    }
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+    expect(responses.find((response) => response.status === 409)?.body.data.code).toBe('EDUCATION_DUPLICATE');
+    expect(await clients[0].education.count({ where: { userId, degree: { equals: degree, mode: 'insensitive' } } })).toBe(1);
+  }, TEST_TIMEOUT);
+
+  it('does not let two different records become duplicates through concurrent PATCH requests', async () => {
+    const targetDegree = `Updated education ${randomUUID()}`;
+    const ids: string[] = [];
+    for (let index = 0; index < apps.length; index += 1) {
+      const record = await clients[0].education.create({
+        data: { userId, institution: 'UMSS', degree: `${targetDegree} ${index}`, startDate: new Date('2020-01-01'), endDate: null },
+        select: { id: true },
+      });
+      ids.push(record.id);
+      createdIds.push(record.id);
+    }
+    const responses = await Promise.all(apps.map((app, index) =>
+      request(app.getHttpServer()).patch(`/api/educations/${ids[index]}`)
+        .set('Authorization', `Bearer ${token}`).send({ degree: targetDegree })
+        .timeout({ deadline: REQUEST_TIMEOUT }),
+    ));
+    expect(responses.map((response) => response.status).sort()).toEqual([200, 409]);
+    expect(responses.find((response) => response.status === 409)?.body.data.code).toBe('EDUCATION_DUPLICATE');
+    expect(await clients[0].education.count({ where: { userId, degree: targetDegree } })).toBe(1);
+  }, TEST_TIMEOUT);
 
   it('persists a description edit without replacing a legacy null end date', async () => {
     const id = await createFixture(null);
