@@ -7,6 +7,7 @@ export { useExportReportCsv } from "./hooks/use-export-report-csv";
 export { useRegisteredUsers } from "./hooks/use-registered-users";
 export { useRejectedUsers } from "./hooks/use-rejected-users";
 export { useReportHistory } from "./hooks/use-report-history";
+export { REPORTS_NAVIGATION_ITEM } from "./constants/reports-navigation.constants";
 export { reportsService } from "./services/reports.service";
 export type { GeneratedReport, ReportType } from "./types/generated-report.types";
 export type { RegisteredUser, UserDocumentType, UserType } from "./types/registered-user.types";

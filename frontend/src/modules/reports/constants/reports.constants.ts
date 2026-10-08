@@ -1,4 +1,5 @@
 import type { BreadcrumbEntry } from "@/shared/types/breadcrumb-entry.types";
+import { REPORTS_HOME_PATH } from "./reports-navigation.constants";
 
 export const REGISTERED_USERS_PAGE_SIZE = 10;
 export const REJECTED_USERS_PAGE_SIZE = 10;
@@ -14,19 +15,19 @@ export const EXPORT_DOWNLOAD_STARTED_MESSAGE = "Descarga iniciada. Revisa las de
 export const EXPORT_SUCCESS_TOAST_DURATION_MS = 4000;
 
 export const REGISTERED_USERS_BREADCRUMB: BreadcrumbEntry[] = [
-  { label: "Inicio", href: "/dashboard" },
+  { label: "Inicio", href: REPORTS_HOME_PATH },
   { label: "Reportes Analíticos" },
   { label: "Reporte de usuarios registrados" },
 ];
 
 export const REJECTED_USERS_BREADCRUMB: BreadcrumbEntry[] = [
-  { label: "Inicio", href: "/dashboard" },
+  { label: "Inicio", href: REPORTS_HOME_PATH },
   { label: "Reportes Analíticos" },
   { label: "Reporte de usuarios rechazados" },
 ];
 
 export const REPORT_HISTORY_BREADCRUMB: BreadcrumbEntry[] = [
-  { label: "Inicio", href: "/dashboard" },
+  { label: "Inicio", href: REPORTS_HOME_PATH },
   { label: "Reportes Analíticos" },
   { label: "Historial de reportes generados" },
 ];

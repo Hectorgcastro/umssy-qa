@@ -3,9 +3,13 @@ import {
   Get,
   Query,
   StreamableFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../../common/decorators/roles.decorator.js';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../../common/guards/roles.guard.js';
 import { ResponseInterceptor } from '../../../common/interceptors/index.js';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe.js';
 import {
@@ -22,6 +26,7 @@ import {
   reportHistoryQuerySchema,
   type ReportHistoryQuery,
 } from '../requests/report-history.schema.js';
+import { REPORTS_ROLE } from '../constants/reports-access.constants.js';
 import { ReportHistoryService } from '../services/report-history.service.js';
 import { ReportsService } from '../services/reports.service.js';
 import type { ReportCsvFile } from '../types/report-user.types.js';
@@ -35,6 +40,8 @@ function toCsvFile({ fileName, content }: ReportCsvFile): StreamableFile {
 
 @ApiTags('Reportes')
 @Controller('reports')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(REPORTS_ROLE)
 export class ReportsController {
   constructor(
     private readonly reportsService: ReportsService,
