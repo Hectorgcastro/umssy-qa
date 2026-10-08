@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useHome } from "../hooks/use-home";
 import { Button } from "@/components/ui/button";
 import { MissingRequirements } from "@/components/missing-requirements";
@@ -27,13 +28,15 @@ export function HomeView() {
         <CardContent className="flex flex-col gap-6">
           
           <SkillsDetectedList
-          skills={["Python", "Django", "Scrum"]}
-          processingTime={1.5}
+            skills={["Python", "Django", "Scrum"]}
+            processingTime={1.5}
           />
 
-
-
           <Button>Botón de ejemplo</Button>
+
+          <Link href="/vacantes" passHref>
+            <Button className="w-full">Vacantes</Button>
+          </Link>
           
           <MissingRequirements 
             requirements={[
@@ -41,9 +44,7 @@ export function HomeView() {
               { id: "2", name: "3 años de experiencia en React", status: "pendiente" },
               { id: "3", name: "Inglés B2 (Intermedio alto)", status: "cumple" },
               { id: "4", name: "Certificación en AWS o Azure", status: "pendiente" }
-            ]} 
-          />
-
+            ]}           />
         </CardContent>
       </Card>
     </div>
