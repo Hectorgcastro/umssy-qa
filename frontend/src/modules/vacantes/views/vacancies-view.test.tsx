@@ -33,6 +33,7 @@ describe("VacanciesView Component", () => {
     render(<VacanciesView />);
     const titles = screen.getAllByText("Desarrollador Frontend");
     expect(titles[0]).toBeInTheDocument();
-    expect(screen.getByText("UMSS")).toBeInTheDocument();
+    const companies = screen.getAllByText("UMSS");
+    expect(companies[0]).toBeInTheDocument();
   });
 });
