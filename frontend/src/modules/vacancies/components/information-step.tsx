@@ -11,12 +11,13 @@ interface InformationStepProps {
   conditions: VacancyConditions;
   updateField: (field: keyof VacancyConditions, value: string) => void;
   selectModality: (modality: Modality) => void;
+  onContinue: () => void;
 }
 
 const MODALITIES = ["Presencial", "Remoto", "Hibrido"];
 const CONTRACT_TYPES = ["Tiempo completo", "Medio tiempo", "Pasantia"];
 
-export function InformationStep({ conditions, updateField, selectModality }: InformationStepProps) {
+export function InformationStep({ conditions, updateField, selectModality, onContinue }: InformationStepProps) {
   const hasUnsavedChanges = 
     conditions.title !== "" || 
     conditions.salary !== "" || 
@@ -242,7 +243,7 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
         <Button type="button" variant="outline" onClick={handleCancel}>
           Cancelar
         </Button>
-        <Button type="button" className="bg-accent text-white hover:bg-danger">
+        <Button type="button" variant="default" onClick={onContinue}>
           Continuar
         </Button>
       </div>
