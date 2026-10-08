@@ -48,6 +48,38 @@ describe("EducationView", () => {
     vi.resetAllMocks();
   });
 
+  it.each([false, true])("preserves free-text fields and the list when a duplicate is rejected (editing: %s)", async (editing) => {
+    const error = { isAxiosError: true, response: { status: 409, data: { data: { code: "EDUCATION_DUPLICATE" } } } };
+    vi.mocked(educationsService.createEducation).mockRejectedValue(error);
+    vi.mocked(educationsService.updateEducation).mockRejectedValue(error);
+    const user = userEvent.setup();
+    render(<EducationView />);
+    const list = await screen.findByRole("list", { name: "Formación registrada" });
+    await user.click(screen.getByRole("button", {
+      name: editing ? "Editar High School Diploma" : "Agregar información",
+    }));
+    const original = EDUCATIONS[0];
+    for (const [label, value] of [
+      [/Institución/, original.institution],
+      [/Título o carrera/, original.degree],
+      [/Desde/, original.startDate],
+      [/Hasta/, original.endDate],
+      [/Descripción/, "Different description"],
+    ] as const) {
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    }
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(EDUCATION_FEEDBACK_MESSAGES.duplicate);
+    expect(screen.getByLabelText(/Institución/)).toHaveValue(original.institution);
+    expect(screen.getByLabelText(/Título o carrera/)).toHaveValue(original.degree);
+    expect(screen.getByLabelText(/Descripción/)).toHaveValue("Different description");
+    expect(within(list).getAllByRole("listitem")).toHaveLength(2);
+    expect(educationsService.getEducations).toHaveBeenCalledTimes(1);
+    expect(editing ? educationsService.updateEducation : educationsService.createEducation).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Guardar formación" })).toBeEnabled();
+  });
+
   it("shows multiple records from the API with their institution, degree, period and description", async () => {
     render(<EducationView />);
 

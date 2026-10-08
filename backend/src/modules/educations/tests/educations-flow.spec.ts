@@ -29,11 +29,12 @@ describe('Education HTTP flow', () => {
   let otherToken: string;
   const records = new Map<string, EducationRecord>();
 
-  function matching(where: Partial<Pick<EducationRecord, 'id' | 'userId'>>) {
+  function matching(where: { id?: string | { not: string }; userId?: string; startDate?: Date; endDate?: Date | null }) {
     return [...records.values()].filter((record) =>
-      Object.entries(where).every(
-        ([key, value]) => record[key as 'id' | 'userId'] === value,
-      ),
+      (!where.userId || record.userId === where.userId)
+      && (!where.id || (typeof where.id === 'string' ? record.id === where.id : record.id !== where.id.not))
+      && (!where.startDate || record.startDate.getTime() === where.startDate.getTime())
+      && (where.endDate === undefined || record.endDate?.getTime() === where.endDate?.getTime()),
     );
   }
 
@@ -48,6 +49,7 @@ describe('Education HTTP flow', () => {
       .useValue(jwt)
       .overrideProvider(PrismaService)
       .useValue({
+        async $transaction(operation: (client: unknown) => Promise<unknown>) { return operation(this); },
         education: {
           create: ({
             data,
@@ -107,6 +109,26 @@ describe('Education HTTP flow', () => {
 
   afterEach(async () => {
     await app.close();
+  });
+
+  it('rejects duplicate creates and edits while allowing another owner, degree or period', async () => {
+    const api = request(app.getHttpServer());
+    const post = (payload: object, accessToken = token) => api.post('/api/educations')
+      .set('Authorization', `Bearer ${accessToken}`).send(payload);
+    const first = await post(body).expect(201);
+    const duplicate = await post({ ...body, institution: ' university ', degree: '  ENGINEERING ', description: 'Different text' }).expect(409);
+    expect(duplicate.body.data.code).toBe('EDUCATION_DUPLICATE');
+    expect(records.size).toBe(1);
+    await post(body, otherToken).expect(201);
+    const differentDegree = await post({ ...body, degree: 'Chemistry' }).expect(201);
+    await post({ ...body, startDate: '2019-01-01' }).expect(201);
+    const collision = await api.patch(`/api/educations/${differentDegree.body.data.id}`)
+      .set('Authorization', `Bearer ${token}`).send({ degree: 'engineering' }).expect(409);
+    expect(collision.body.data.code).toBe('EDUCATION_DUPLICATE');
+    expect(records.get(differentDegree.body.data.id)?.degree).toBe('Chemistry');
+    await api.patch(`/api/educations/${first.body.data.id}`)
+      .set('Authorization', `Bearer ${token}`).send({ degree: 'Engineering', description: 'Updated' }).expect(200);
+    expect(records.size).toBe(4);
   });
 
   it('creates multiple records, isolates owners, edits and deletes through authenticated requests', async () => {
