@@ -1,10 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiResponse, PaginatedData } from "@/shared/types/api-response.types";
 import * as downloadFileModule from "@/shared/utils/download-file";
 import { reportsService } from "../services/reports.service";
-import type { RegisteredUser, UserType } from "../types/registered-user.types";
+import type { RegisteredUser, RegisteredUsersParams } from "../types/registered-user.types";
 import { RegisteredUsersReportView } from "./registered-users-report-view";
 
 const REGISTERED_USERS: RegisteredUser[] = [
@@ -34,8 +34,12 @@ const REGISTERED_USERS: RegisteredUser[] = [
   { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "GRADUATE", identifier: "202003376", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2025-03-20T10:00:00" },
 ];
 
-function buildResponse(page: number, limit: number, userType?: UserType): ApiResponse<PaginatedData<RegisteredUser>> {
-  const filteredUsers = userType ? REGISTERED_USERS.filter((user) => user.userType === userType) : REGISTERED_USERS;
+function buildResponse({ page, limit, userType, period }: RegisteredUsersParams): ApiResponse<PaginatedData<RegisteredUser>> {
+  const filteredUsers = REGISTERED_USERS.filter((user) => {
+    const registeredAt = new Date(user.registeredAt);
+    const userPeriod = `${registeredAt.getMonth() < 6 ? "I" : "II"}-${registeredAt.getFullYear()}`;
+    return (!userType || user.userType === userType) && (!period || userPeriod === period);
+  });
   const offset = (page - 1) * limit;
 
   return {
@@ -59,16 +63,23 @@ async function selectUserType(user: UserEvent, label: string) {
   await user.click(await screen.findByRole("option", { name: label }));
 }
 
+async function selectPeriod(user: UserEvent, label: string) {
+  await user.click(screen.getByRole("button", { name: /^Gestión/ }));
+  await user.click(await screen.findByRole("menuitemradio", { name: label }));
+}
+
 describe("RegisteredUsersReportView", () => {
   beforeEach(() => {
-    vi.spyOn(reportsService, "getRegisteredUsers").mockImplementation(async ({ page, limit, userType }) =>
-      buildResponse(page, limit, userType),
-    );
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-08T12:00:00-04:00"));
+    vi.spyOn(reportsService, "getRegisteredUsers").mockImplementation(async (params) => buildResponse(params));
   });
 
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it("muestra el título, los botones y la primera página de usuarios", async () => {
@@ -188,6 +199,118 @@ describe("RegisteredUsersReportView", () => {
     });
   });
 
+  it("filtra por gestión y vuelve a la primera página", async () => {
+    const user = userEvent.setup();
+    await renderLoadedView();
+    await user.click(screen.getByRole("button", { name: "Página 3" }));
+    expect(await screen.findByText("Mostrando 21-24 de 24 usuarios")).toBeDefined();
+
+    await selectPeriod(user, "I-2026");
+
+    expect(await screen.findByText("Mostrando 1-5 de 5 usuarios")).toBeDefined();
+    expect(screen.queryByText("Camila Vargas Orellana")).toBeNull();
+    expect(screen.getByRole("button", { name: "Gestión I-2026" })).toBeDefined();
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 1, limit: 10, userType: undefined, period: "I-2026",
+    });
+  });
+
+  it("combina gestión y tipo, conserva ambos al actualizar y permite quitar cada filtro", async () => {
+    const user = userEvent.setup();
+    await renderLoadedView();
+    await selectPeriod(user, "II-2025");
+    await selectUserType(user, "Empresa");
+
+    expect(await screen.findByText("Mostrando 1-2 de 2 usuarios")).toBeDefined();
+    expect(screen.getByText("Tecnologías Andinas SRL")).toBeDefined();
+    expect(screen.queryByText("Diego Mercado Rocha")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "actualizar" }));
+    await screen.findByText("Mostrando 1-2 de 2 usuarios");
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 1, limit: 10, userType: "COMPANY", period: "II-2025",
+    });
+
+    await selectPeriod(user, "I-2025");
+    expect(await screen.findByText("Diego Mercado Rocha")).toBeDefined();
+    expect(screen.queryByText("Tecnologías Andinas SRL")).toBeNull();
+    await selectPeriod(user, "Todas");
+    expect(await screen.findByText("Mostrando 1-4 de 4 usuarios")).toBeDefined();
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 1, limit: 10, userType: "COMPANY", period: undefined,
+    });
+
+    await selectPeriod(user, "II-2025");
+    await selectUserType(user, "Todos");
+    expect(await screen.findByText("Mostrando 1-9 de 9 usuarios")).toBeDefined();
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 1, limit: 10, userType: undefined, period: "II-2025",
+    });
+  });
+
+  it("conserva la gestión al paginar y al volver a elegir la opción activa", async () => {
+    const user = userEvent.setup();
+    vi.mocked(reportsService.getRegisteredUsers).mockImplementation(async ({ page, limit }) => buildResponse({ page, limit }));
+    await renderLoadedView();
+    await selectPeriod(user, "I-2025");
+    await user.click(screen.getByRole("button", { name: "Página 2" }));
+    await screen.findByText("Mostrando 11-20 de 24 usuarios");
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 2, limit: 10, userType: undefined, period: "I-2025",
+    });
+
+    const requestCount = vi.mocked(reportsService.getRegisteredUsers).mock.calls.length;
+    await selectPeriod(user, "I-2025");
+    expect(reportsService.getRegisteredUsers).toHaveBeenCalledTimes(requestCount);
+    expect(screen.getByText("Mostrando 11-20 de 24 usuarios")).toBeDefined();
+  });
+
+  it("salta a la última página y retrocede conservando los filtros en un reporte grande", async () => {
+    const user = userEvent.setup();
+    const users: RegisteredUser[] = Array.from({ length: 200 }, (_, index) => ({
+      ...REGISTERED_USERS[0],
+      id: `company-${index + 1}`,
+      fullName: `Empresa ${index + 1}`,
+      userType: "COMPANY",
+      registeredAt: "2025-03-15T12:00:00-04:00",
+    }));
+    vi.mocked(reportsService.getRegisteredUsers).mockImplementation(async ({ page, limit }) => ({
+      statusCode: 200,
+      data: { items: users.slice((page - 1) * limit, page * limit), totalItems: users.length },
+      detail: "Usuarios registrados obtenidos correctamente",
+      ok: true,
+    }));
+    render(<RegisteredUsersReportView />);
+    await screen.findByText("Empresa 1");
+    await selectUserType(user, "Empresa");
+    await selectPeriod(user, "I-2025");
+
+    await user.click(screen.getByRole("button", { name: "Página 20" }));
+    expect(await screen.findByText("Mostrando 191-200 de 200 usuarios")).toBeDefined();
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 20, limit: 10, userType: "COMPANY", period: "I-2025",
+    });
+    expect(screen.queryByRole("button", { name: "Página 10" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Página siguiente" })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Página anterior" }));
+    expect(await screen.findByText("Mostrando 181-190 de 200 usuarios")).toBeDefined();
+    expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
+      page: 19, limit: 10, userType: "COMPANY", period: "I-2025",
+    });
+  });
+
+  it("muestra el estado vacío para una gestión sin usuarios y se recupera con Todas", async () => {
+    const user = userEvent.setup();
+    await renderLoadedView();
+    await selectPeriod(user, "II-2026");
+
+    expect(await screen.findByText("No hay usuarios registrados para este filtro.")).toBeDefined();
+    expect(screen.getByText("Mostrando 0-0 de 0 usuarios")).toBeDefined();
+
+    await selectPeriod(user, "Todas");
+    expect(await screen.findByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
+  });
+
   it("no vuelve a consultar si se elige la misma opción", async () => {
     const user = userEvent.setup();
     const getRegisteredUsersSpy = vi.spyOn(reportsService, "getRegisteredUsers");
@@ -237,12 +360,13 @@ describe("RegisteredUsersReportView", () => {
     const downloadSpy = vi.spyOn(downloadFileModule, "downloadFile").mockImplementation(() => undefined);
     await renderLoadedView();
     await selectUserType(user, "Empresa");
+    await selectPeriod(user, "II-2025");
 
     await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
 
     const exportingButton = screen.getByRole("button", { name: "Exportando..." }) as HTMLButtonElement;
     expect(exportingButton.disabled).toBe(true);
-    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY" });
+    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY", period: "II-2025" });
 
     resolveExport({ file, fileName: "usuarios-registrados-2026-10-03.csv" });
     await waitFor(() => {
@@ -250,6 +374,40 @@ describe("RegisteredUsersReportView", () => {
     });
     expect(downloadSpy).toHaveBeenCalledWith(file, "usuarios-registrados-2026-10-03.csv");
     expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByText("Descarga iniciada. Revisa las descargas de tu navegador.")).toBeDefined();
+    expect(screen.queryByText("La exportación de la tabla ha sido un éxito")).toBeNull();
+  });
+
+  it("muestra el aviso verde solo cuando termina de guardarse el CSV", async () => {
+    const user = userEvent.setup();
+    let finishSaving!: () => void;
+    const close = vi.fn(() => new Promise<void>((resolve) => { finishSaving = resolve; }));
+    const picker = vi.fn().mockResolvedValue({
+      createWritable: vi.fn().mockResolvedValue({
+        write: vi.fn().mockResolvedValue(undefined),
+        close,
+        abort: vi.fn().mockResolvedValue(undefined),
+      }),
+    });
+    vi.stubGlobal("showSaveFilePicker", picker);
+    vi.spyOn(reportsService, "exportRegisteredUsersCsv").mockResolvedValue({
+      file: new Blob(["Usuario"], { type: "text/csv" }),
+      fileName: "usuarios.csv",
+    });
+    await renderLoadedView();
+
+    await user.click(screen.getByRole("button", { name: "Exportar CSV" }));
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(screen.queryByText("La exportación de la tabla ha sido un éxito")).toBeNull();
+    expect(screen.getByRole("button", { name: "Exportando..." })).toBeDisabled();
+    expect(picker).toHaveBeenCalledWith(expect.objectContaining({ suggestedName: "usuarios-registrados.csv" }));
+
+    await act(async () => { finishSaving(); });
+
+    const message = await screen.findByText("La exportación de la tabla ha sido un éxito");
+    expect(message.parentElement).toHaveClass("bg-green-50");
+    expect(screen.queryByText("Descarga iniciada. Revisa las descargas de tu navegador.")).toBeNull();
+    expect(screen.getByRole("button", { name: "Exportar CSV" })).toBeEnabled();
   });
 
   it("muestra un mensaje si falla la exportación", async () => {
@@ -261,5 +419,6 @@ describe("RegisteredUsersReportView", () => {
 
     expect((await screen.findByRole("alert")).textContent).toBe("No se pudo exportar el reporte. Inténtalo de nuevo.");
     expect(downloadSpy).not.toHaveBeenCalled();
+    expect(screen.queryByText("La exportación de la tabla ha sido un éxito")).toBeNull();
   });
 });
