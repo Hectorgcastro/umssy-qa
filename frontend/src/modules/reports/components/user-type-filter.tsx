@@ -42,7 +42,7 @@ export function UserTypeFilter({ value, onChange }: UserTypeFilterProps) {
             <SelectItem
               key={option.value}
               value={option.value}
-              className="rounded-none px-3 py-2 text-ink-soft focus:bg-surface-soft focus:text-ink data-selected:font-semibold data-selected:text-ink"
+              className="rounded-none px-3 py-2 text-ink-soft focus:bg-surface-soft focus:text-ink not-data-[variant=destructive]:focus:**:text-ink data-selected:bg-surface-soft data-selected:font-semibold data-selected:text-ink"
             >
               {option.label}
             </SelectItem>
