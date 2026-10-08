@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,12 +10,13 @@ interface InformationStepProps {
   conditions: VacancyConditions;
   updateField: (field: keyof VacancyConditions, value: string) => void;
   selectModality: (modality: Modality) => void;
+  onContinue: () => void;
 }
 
 const MODALITIES = ["Presencial", "Remoto", "Hibrido"];
 const CONTRACT_TYPES = ["Tiempo completo", "Medio tiempo", "Pasantia"];
 
-export function InformationStep({ conditions, updateField, selectModality }: InformationStepProps) {
+export function InformationStep({ conditions, updateField, selectModality, onContinue }: InformationStepProps) {
   const hasUnsavedChanges = 
     conditions.title !== "" || 
     conditions.salary !== "" || 
@@ -238,13 +238,21 @@ export function InformationStep({ conditions, updateField, selectModality }: Inf
         </div>
       </div>
 
-      <div className="flex justify-between gap-3 px-6 pb-6">
-        <Button type="button" variant="outline" onClick={handleCancel}>
+      <div className="flex items-center justify-between border-t border-border px-6 py-4">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+        >
           Cancelar
-        </Button>
-        <Button type="button" className="bg-accent text-white hover:bg-danger">
+        </button>
+        <button
+          type="button"
+          onClick={onContinue}
+          className="rounded-lg bg-[#E50000] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+        >
           Continuar
-        </Button>
+        </button>
       </div>
     </div>
   );

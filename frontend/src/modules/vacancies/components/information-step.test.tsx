@@ -26,15 +26,18 @@ describe('InformationStep', () => {
     description: "", skills: [],
   };
 
+  const baseProps = {
+    conditions: emptyConditions,
+    errors: {},
+    updateField: mockUpdateField,
+    selectModality: mockSelectModality,
+    validateMapsLink: vi.fn(),
+    onContinue: vi.fn(),
+  };
+
   it('renderiza todos los campos principales (sin depender del texto exacto)', () => {
-    const { container } = render(
-      <InformationStep 
-        conditions={emptyConditions} 
-        updateField={mockUpdateField} 
-        selectModality={mockSelectModality} 
-      />
-    );
-    
+    const { container } = render(<InformationStep{...baseProps} />); 
+
     expect(container.querySelector('#title')).toBeInTheDocument();
     expect(container.querySelector('#mapsLink')).toBeInTheDocument();
     
@@ -43,14 +46,8 @@ describe('InformationStep', () => {
   });
 
   it('llama a selectModality al hacer clic en los botones de modalidad', () => {
-    const { container } = render(
-      <InformationStep 
-        conditions={emptyConditions} 
-        updateField={mockUpdateField} 
-        selectModality={mockSelectModality} 
-      />
-    );
-    
+    const { container } = render( <InformationStep{...baseProps} />); 
+
     const buttons = Array.from(container.querySelectorAll('button'));
     const remoteButton = buttons.find(btn => btn.textContent === 'Remoto');
     
@@ -61,14 +58,8 @@ describe('InformationStep', () => {
   });
 
   it('llama a updateField al escribir en los inputs', () => {
-    const { container } = render(
-      <InformationStep 
-        conditions={emptyConditions} 
-        updateField={mockUpdateField} 
-        selectModality={mockSelectModality} 
-      />
-    );
-    
+    const { container } = render(<InformationStep{...baseProps} />);
+
     const titleInput = container.querySelector('#title');
     if (titleInput) {
       fireEvent.change(titleInput, { target: { value: 'Nuevo Título' } });
@@ -84,12 +75,7 @@ describe('InformationStep', () => {
       };
       
       const { container } = render(
-        <InformationStep 
-          conditions={fullConditions} 
-          updateField={mockUpdateField} 
-          selectModality={mockSelectModality} 
-        />
-      );
+        <InformationStep {...baseProps} conditions={fullConditions} />);
       
       const titleInput = container.querySelector('#title') as HTMLInputElement;
       expect(titleInput?.value).toBe("Desarrollador Backend");
