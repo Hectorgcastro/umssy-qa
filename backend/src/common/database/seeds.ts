@@ -9,6 +9,8 @@ import { seedEvents } from '../../modules/events/seeds/events.seed.js';
 import { seedEventRegistrations } from '../../modules/event-registrations/seeds/event-registrations.seed.js';
 import { seedAccessRequests } from '../../modules/access-requests/seeds/access-requests.seed.js';
 import { seedAvailability } from '../../modules/availability/seeds/availability.seed.js';
+import { seedOrientationTypes } from '../../modules/orientation-types/seeds/orientation-types.seed.js';
+import { seedTechnicalAreas } from '../../modules/technical-areas/seeds/technical-areas.seed.js';
 import { SEED_USERS } from '../../modules/users/constants/seed-users.constants.js';
 import {
   hashSeedPassword,
@@ -20,10 +22,6 @@ import { buildDatabaseConnectionString } from '../prisma/build-connection-string
 import type { SeedEnv } from '../types/seed-env.types.js';
 import type { SeedSummary } from '../types/seed-summary.types.js';
 import { SeedEnvSchema } from './seed-env.schema.js';
-
-// 3. availability: bloques y citas de los mentores y el titulado creados en users.
-// 4. access-requests: catálogos de estados, tipos de documento y carreras.
-// Un seed nuevo se agrega después de todos los seeds de los que depende.
 
 export function loadSeedEnv(source: NodeJS.ProcessEnv = process.env): SeedEnv {
   const parsed = SeedEnvSchema.safeParse(source);
@@ -53,6 +51,9 @@ export async function runSeed(client?: PrismaClient): Promise<SeedSummary> {
     const password = await hashSeedPassword();
 
     return await prisma.$transaction(async (tx) => {
+      await seedTechnicalAreas(tx);
+      await seedOrientationTypes(tx);
+
       const usersResult = await seedUsers(tx, password);
       const { users } = usersResult;
       await seedEvents(tx, users.eventGraduate.id);

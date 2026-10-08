@@ -6,9 +6,13 @@ vi.mock('@/shared/services/api-client', () => ({ apiClient: { defaults: { baseUR
 const payload = { email: 'prueba@umss.edu.bo', password: 'Prueba123', roleTag: 'titulado' as const };
 beforeEach(() => { vi.clearAllMocks(); apiClient.defaults.baseURL = 'http://localhost:8080/api'; });
 describe('authService', () => {
+  it('propaga errores de red del backend', async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Network error'));
+    await expect(authService.login(payload)).rejects.toThrow('Network error');
+  });
   it('extrae el token de la respuesta real del backend', async () => {
     const session = { accessToken: 'token', roleTag: 'titulado' };
-    vi.mocked(apiClient.post).mockResolvedValue({ data: { data: session } });
+    vi.mocked(apiClient.post).mockResolvedValue({ data: { statusCode: 201, data: session, detail: 'Solicitud procesada correctamente', ok: true } });
     await expect(authService.login(payload)).resolves.toEqual(session);
     expect(apiClient.post).toHaveBeenCalledWith('/auth/login', payload);
   });
