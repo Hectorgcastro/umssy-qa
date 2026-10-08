@@ -10,7 +10,12 @@ describe('Home Page', () => {
 
   it('renderiza el título principal y muestra la respuesta GET del backend via Axios', async () => {
     vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
-      data: 'Hello World!',
+      data: {
+        statusCode: 200,
+        data: 'Hello World!',
+        detail: 'Solicitud procesada correctamente',
+        ok: true,
+      },
     })
 
     render(<Home />)
