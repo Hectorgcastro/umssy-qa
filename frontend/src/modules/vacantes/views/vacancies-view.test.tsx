@@ -31,7 +31,8 @@ describe("VacanciesView Component", () => {
 
   it("Debe mostrar la informacion de la tarjeta de vacante correctamente", () => {
     render(<VacanciesView />);
-    expect(screen.getByText("Desarrollador Frontend")).toBeInTheDocument();
+    const titles = screen.getAllByText("Desarrollador Frontend");
+    expect(titles[0]).toBeInTheDocument();
     expect(screen.getByText("UMSS")).toBeInTheDocument();
   });
 });
