@@ -31,12 +31,18 @@ export function RejectedUsersReportView() {
   } = useExportRejectedUsersCsv(search);
 
   const handleSearchChange = (value: string) => {
+    if (value.trim() !== searchInput.trim()) {
+      setCurrentPage(1);
+    }
     setSearchInput(value);
-    setCurrentPage(1);
   };
 
   const firstVisibleItem = totalItems === 0 ? 0 : (currentPage - 1) * REJECTED_USERS_PAGE_SIZE + 1;
   const lastVisibleItem = Math.min(currentPage * REJECTED_USERS_PAGE_SIZE, totalItems);
+  const hasNoSearchResults = !isLoading && !errorMessage && search !== "" && totalItems === 0;
+  const summary = isLoading
+    ? "Cargando usuarios..."
+    : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`;
 
   return (
     <section className="flex flex-col gap-6">
@@ -64,11 +70,11 @@ export function RejectedUsersReportView() {
       />
 
       <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
-        <p className="text-center text-sm text-text-secondary md:text-left">
-          {isLoading ? "Cargando usuarios..." : `Mostrando ${firstVisibleItem}-${lastVisibleItem} de ${totalItems} usuarios`}
+        <p className="text-center text-sm text-text-secondary empty:hidden md:text-left md:empty:block">
+          {!hasNoSearchResults && summary}
         </p>
         <div className="flex justify-center">
-          <RefreshButton label="Actualizar" onClick={refresh} isRefreshing={isLoading} />
+          <RefreshButton onClick={refresh} isRefreshing={isLoading} />
         </div>
         <div className="flex justify-center md:justify-end">
           <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />

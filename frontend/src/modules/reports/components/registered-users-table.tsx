@@ -5,9 +5,11 @@ import { USER_DOCUMENT_LABELS, USER_TYPE_LABELS } from "../constants/registered-
 import {
   REGISTERED_USERS_COLUMN_COUNT as COLUMN_COUNT,
   TABLE_CELL_CLASSES as CELL_CLASSES,
+  USERS_TABLE_CONTAINER_CLASSES as CONTAINER_CLASSES,
   USERS_TABLE_HEAD_CLASSES as HEAD_CLASSES,
 } from "../constants/report-table.constants";
 import type { RegisteredUsersTableProps } from "../types/registered-users-table-props.types";
+import { TableScrollHint } from "./table-scroll-hint";
 import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
 
 export function RegisteredUsersTable({ users, isLoading, errorMessage }: RegisteredUsersTableProps) {
@@ -42,20 +44,23 @@ export function RegisteredUsersTable({ users, isLoading, errorMessage }: Registe
   };
 
   return (
-    <div className="rounded-lg border border-border bg-surface">
-      <Table className="min-w-225 text-left text-base">
-        <TableHeader className="bg-surface-soft">
-          <TableRow className="border-border hover:bg-transparent">
-            <TableHead scope="col" className={HEAD_CLASSES}>Usuario</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Correo</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Tipo de Usuario</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Identificador</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Documento</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Fecha de Registro</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody aria-busy={isLoading}>{renderBody()}</TableBody>
-      </Table>
+    <div className="flex flex-col gap-2">
+      <TableScrollHint />
+      <div className={CONTAINER_CLASSES}>
+        <Table className="min-w-225 text-left text-base">
+          <TableHeader className="bg-surface-soft">
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead scope="col" className={HEAD_CLASSES}>Usuario</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Correo</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Tipo de Usuario</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Identificador</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Documento</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Fecha de Registro</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody aria-busy={isLoading}>{renderBody()}</TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

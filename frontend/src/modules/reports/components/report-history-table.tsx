@@ -6,8 +6,10 @@ import {
   REPORT_HISTORY_COLUMN_COUNT as COLUMN_COUNT,
   REPORT_HISTORY_HEAD_CLASSES as HEAD_CLASSES,
   TABLE_CELL_CLASSES as CELL_CLASSES,
+  TABLE_CONTAINER_CLASSES as CONTAINER_CLASSES,
 } from "../constants/report-table.constants";
 import type { ReportHistoryTableProps } from "../types/report-history-table-props.types";
+import { TableScrollHint } from "./table-scroll-hint";
 import { TableMessageRow, TableSkeletonRows } from "./table-state-rows";
 
 export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportHistoryTableProps) {
@@ -29,7 +31,7 @@ export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportH
         <TableCell className={`${CELL_CLASSES} whitespace-normal`}>
           <span className="flex items-center gap-3">
             <FileText className="size-5 shrink-0 text-ink" strokeWidth={1.5} aria-hidden="true" />
-            <span className="break-all">{report.fileName}</span>
+            <span className="wrap-break-word">{report.fileName}</span>
           </span>
         </TableCell>
         <TableCell className={CELL_CLASSES}>{REPORT_TYPE_LABELS[report.reportType]}</TableCell>
@@ -39,17 +41,20 @@ export function ReportHistoryTable({ reports, isLoading, errorMessage }: ReportH
   };
 
   return (
-    <div className="rounded-lg border border-border bg-surface">
-      <Table className="min-w-160 text-left text-base">
-        <TableHeader className="bg-surface-soft">
-          <TableRow className="border-border hover:bg-transparent">
-            <TableHead scope="col" className={HEAD_CLASSES}>Nombre del Archivo/Reporte</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Tipo de Reporte</TableHead>
-            <TableHead scope="col" className={HEAD_CLASSES}>Fecha y Hora de Generación</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody aria-busy={isLoading}>{renderBody()}</TableBody>
-      </Table>
+    <div className="flex flex-col gap-2">
+      <TableScrollHint />
+      <div className={CONTAINER_CLASSES}>
+        <Table className="min-w-160 text-left text-base">
+          <TableHeader className="bg-surface-soft">
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead scope="col" className={HEAD_CLASSES}>Nombre del Archivo/Reporte</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Tipo de Reporte</TableHead>
+              <TableHead scope="col" className={HEAD_CLASSES}>Fecha y Hora de Generación</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody aria-busy={isLoading}>{renderBody()}</TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
