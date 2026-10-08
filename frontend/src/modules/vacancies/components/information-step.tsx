@@ -11,6 +11,8 @@ interface InformationStepProps {
   updateField: (field: keyof VacancyConditions, value: string) => void;
   selectModality: (modality: Modality) => void;
   onContinue: () => void;
+  //05:42
+  errors?: Partial<Record<keyof VacancyConditions, string>>;
 }
 
 const MODALITIES = ["Presencial", "Remoto", "Hibrido"];
