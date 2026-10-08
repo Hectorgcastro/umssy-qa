@@ -9,8 +9,11 @@ import type { InboxFiltersProps } from "../../types/inbox-filters-props.types";
 import type { InboxPeriod } from "../../types/inbox-filters.types";
 
 const TRIGGER_CLASS =
-  "w-full gap-2 rounded-lg border-border bg-surface px-3 text-[14.5px] font-medium text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] md:w-auto";
-const ITEM_CLASS = "focus:bg-muted focus:text-foreground";
+  "w-full gap-2 rounded-lg border-border bg-surface px-3 text-[14.5px] font-medium text-ink focus-visible:border-accent focus-visible:ring-interaction data-[size=default]:h-[42px] md:w-auto md:max-w-[300px]";
+// El popup crece hasta el ancho de sus opciones (mínimo, el del botón) sin salirse de la pantalla
+const CONTENT_CLASS = "w-max min-w-(--anchor-width) max-w-[calc(100vw-1rem)]";
+// El tema pone texto blanco (accent-foreground) sobre el fondo resaltado claro, también en los descendientes: se fija texto tinta en ambos
+const ITEM_CLASS = "focus:bg-surface-soft focus:text-ink not-data-[variant=destructive]:focus:**:text-ink";
 const SR_ONLY = "sr-only";
 
 export function InboxFilters({ search, career, period, onSearchChange, onCareerChange, onPeriodChange }: InboxFiltersProps) {
@@ -38,11 +41,11 @@ export function InboxFilters({ search, career, period, onSearchChange, onCareerC
           Carrera
         </Label>
         <Select items={CAREER_OPTIONS} value={career} onValueChange={(value) => onCareerChange(value ?? "all")}>
-          <SelectTrigger id="inbox-career" className={TRIGGER_CLASS}>
+          <SelectTrigger id="inbox-career" title={CAREER_OPTIONS.find((option) => option.value === career)?.label} className={TRIGGER_CLASS}>
             <ListFilter className="size-4 text-text-secondary" strokeWidth={1.75} aria-hidden="true" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className={CONTENT_CLASS}>
             {CAREER_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value} className={ITEM_CLASS}>
                 {option.label}
@@ -57,11 +60,11 @@ export function InboxFilters({ search, career, period, onSearchChange, onCareerC
           Período
         </Label>
         <Select items={PERIOD_OPTIONS} value={period} onValueChange={(value) => onPeriodChange((value ?? "all") as InboxPeriod)}>
-          <SelectTrigger id="inbox-period" className={TRIGGER_CLASS}>
+          <SelectTrigger id="inbox-period" title={PERIOD_OPTIONS.find((option) => option.value === period)?.label} className={TRIGGER_CLASS}>
             <Calendar className="size-4 text-text-secondary" strokeWidth={1.75} aria-hidden="true" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className={CONTENT_CLASS}>
             {PERIOD_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value} className={ITEM_CLASS}>
                 {option.label}

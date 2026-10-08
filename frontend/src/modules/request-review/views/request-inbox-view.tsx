@@ -21,7 +21,7 @@ export function RequestInboxView() {
   const summary = useInboxSummary();
 
   return (
-    <div className="w-full min-w-0">
+    <div className="w-full min-w-0 [contain:inline-size]">
       <InboxHeader />
 
       <section className="flex w-full min-w-0 flex-col gap-6 p-8">
@@ -30,12 +30,12 @@ export function RequestInboxView() {
         <div className="w-full min-w-0 overflow-hidden rounded-[10px] border border-border bg-surface">
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 pb-3 xl:pb-0 xl:pt-1.5">
             <Tabs value={list.status} onValueChange={(value) => list.changeStatus(value as ReviewStatus)} className="max-w-full">
-              <TabsList variant="line" className="h-12 max-w-full gap-2 overflow-x-auto overflow-y-hidden p-0">
+              <TabsList variant="line" className="max-w-full gap-2 overflow-x-auto overflow-y-hidden p-0 group-data-horizontal/tabs:h-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {REVIEW_TABS.map((tab) => (
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="h-12 flex-none px-4 text-[15px] font-semibold text-text-secondary data-active:text-ink group-data-horizontal/tabs:after:bottom-0 after:bg-accent"
+                    className="h-full flex-none px-4 text-[15px] font-semibold text-text-secondary data-active:text-ink group-data-horizontal/tabs:after:bottom-0 after:bg-accent"
                   >
                     {tab.label}
                     {typeof counts[tab.value] === "number" && (

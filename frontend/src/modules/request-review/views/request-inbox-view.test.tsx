@@ -143,6 +143,9 @@ describe("RequestInboxView", () => {
       const tabClasses = screen.getByRole("tab", { name: /^Pendientes/ }).className;
       expect(tabClasses).toContain("after:bottom-0");
       expect(tabClasses).not.toContain("after:bottom-[-5px]");
+      // Altura de la lista igual a la de las pestañas (el h-8 por defecto las dejaba sobresalir y recortaba la línea)
+      expect(list.className).toContain("group-data-horizontal/tabs:h-12");
+      expect(tabClasses).toContain("h-full");
     });
 
     it("la cabecera y la pestaña activa siguen el diseño", async () => {

@@ -216,4 +216,38 @@ describe("RequestInboxView: filtros y resumen", () => {
     expect(await screen.findByText("Pendientes de dictamen")).toBeInTheDocument();
     expect(getSummary).toHaveBeenCalledTimes(2);
   });
+  it("cambiar de pestaña o de filtro no vuelve a pedir el resumen ni muestra su esqueleto", async () => {
+    const user = userEvent.setup();
+    render(<RequestInboxView />);
+    await screen.findByText("Pendientes de dictamen");
+
+    await user.click(screen.getByRole("tab", { name: /^Aprobadas/ }));
+    await waitFor(() => expect(lastCall()?.[0]).toBe("approved"));
+    expect(screen.queryByTestId("summary-skeleton")).toBeNull();
+    await user.click(screen.getByRole("tab", { name: /^Rechazadas/ }));
+    await user.click(screen.getByRole("combobox", { name: "Período" }));
+    await user.click(await screen.findByRole("option", { name: "7 días" }));
+    await waitFor(() => expect(lastCall()).toEqual(["rejected", 1, { ...EMPTY_FILTERS, period: "7d" }]));
+
+    expect(getSummary).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("summary-skeleton")).toBeNull();
+  });
+
+  it("el popup de Carrera crece con sus opciones y las opciones fijan texto tinta al resaltarse", async () => {
+    const user = userEvent.setup();
+    render(<RequestInboxView />);
+    await screen.findByText("Persona 1");
+
+    await user.click(screen.getByRole("combobox", { name: "Carrera" }));
+    const option = await screen.findByRole("option", { name: "Licenciatura en Ingeniería de Sistemas" });
+
+    // El tema usa texto blanco sobre el resaltado claro, también en los descendientes: se sobrescriben ambos
+    expect(option.className).toContain("focus:text-ink");
+    expect(option.className).toContain("not-data-[variant=destructive]:focus:**:text-ink");
+    expect(option.className).not.toContain("focus:text-accent-foreground");
+    const popup = screen.getByRole("listbox").closest("[data-slot='select-content']");
+    expect(popup?.className).toContain("w-max");
+    expect(popup?.className).toContain("min-w-(--anchor-width)");
+    expect(popup?.className).not.toMatch(/(^|\s)w-\(--anchor-width\)/);
+  });
 });
