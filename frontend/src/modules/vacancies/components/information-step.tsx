@@ -244,14 +244,14 @@ export function InformationStep({
         </div>
       </div>
 
-      <div className="flex justify-between gap-3 px-6 pb-6">
-        <Button type="button" variant="outline" onClick={handleCancel}>
-          Cancelar
-        </Button>
-        <Button type="button" variant="default" onClick={onContinue}>
-          Continuar
-        </Button>
-      </div>
+      <div className="flex items-center justify-between border-t border-border px-6 py-4">
+  <Button type="button" variant="outline" onClick={handleCancel}>
+    Cancelar
+  </Button>
+  <Button type="button" className="bg-accent text-white hover:bg-danger" onClick={onContinue}>
+    Continuar
+  </Button>
+</div>
     </div>
   );
 }
