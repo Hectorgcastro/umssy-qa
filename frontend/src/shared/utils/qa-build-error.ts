@@ -1,0 +1,1 @@
+export const qaBuildNumber: number = "QA deliberate type mismatch";
