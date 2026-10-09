@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EMPTY_EDUCATION_FORM_VALUES } from "../constants/education-form-defaults.constants";
 import { EDUCATION_UI_TEXTS } from "../constants/education-ui.constants";
+import { EDUCATION_DESCRIPTION_MAX_LENGTH } from "../constants/education-validation.constants";
 import type { EducationFormProps } from "../types/education-form-props.types";
 import type { EducationFormValues } from "../types/education-form-values.types";
 import { getFieldErrorProps } from "@/modules/profile/utils/get-field-error-props";
@@ -103,17 +104,25 @@ export function EducationForm({
             />
           </FormField>
         </div>
-        <FormField id="education-description" label={EDUCATION_UI_TEXTS.descriptionLabel}>
-          <Textarea
-            id="education-description"
-            name="description"
-            rows={3}
-            placeholder={EDUCATION_UI_TEXTS.descriptionPlaceholder}
-            value={values.description}
-            disabled={isPending}
-            onChange={handleChange}
-            className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y py-3 field-sizing-fixed min-h-0 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
-          />
+        <FormField id="education-description" label={EDUCATION_UI_TEXTS.descriptionLabel} error={errors.description}>
+          <div className="relative">
+            <Textarea
+              id="education-description"
+              {...getFieldErrorProps("education-description", errors.description)}
+              aria-describedby={errors.description ? "education-description-error education-description-count" : "education-description-count"}
+              name="description"
+              rows={3}
+              maxLength={EDUCATION_DESCRIPTION_MAX_LENGTH}
+              placeholder={EDUCATION_UI_TEXTS.descriptionPlaceholder}
+              value={values.description ?? ""}
+              disabled={isPending}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-border bg-surface px-4 text-[15px] text-ink placeholder:text-text-secondary/70 focus:border-ink-soft focus:ring-2 focus:ring-ink/10 focus:outline-none disabled:opacity-60 aria-invalid:border-accent aria-invalid:focus:ring-accent/15 resize-y pt-3 pb-9 field-sizing-fixed min-h-0 md:text-[15px] focus-visible:border-ink-soft focus-visible:ring-2 focus-visible:ring-ink/10 aria-invalid:ring-0"
+            />
+            <span id="education-description-count" className="pointer-events-none absolute right-6 bottom-3 text-xs text-text-secondary">
+              {(values.description ?? "").length}/{EDUCATION_DESCRIPTION_MAX_LENGTH}
+            </span>
+          </div>
         </FormField>
 
         <FeedbackMessage feedback={feedback} />

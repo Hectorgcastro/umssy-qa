@@ -11,6 +11,17 @@ const input = {
 };
 
 describe('Education requests', () => {
+  it.each([0, 400])('accepts descriptions of %i characters on creation and update', (length) => {
+    const description = 'a'.repeat(length);
+    expect(createEducationSchema.parse({ ...input, description }).description).toBe(description);
+    expect(updateEducationSchema.parse({ description }).description).toBe(description);
+  });
+
+  it.each(['a'.repeat(401), ' '.repeat(401)])('rejects oversized descriptions before trimming on creation and update', (description) => {
+    expect(createEducationSchema.safeParse({ ...input, description }).success).toBe(false);
+    expect(updateEducationSchema.safeParse({ description }).success).toBe(false);
+  });
+
   it('trims required strings and converts a valid calendar date to UTC', () => {
     expect(createEducationSchema.parse(input)).toEqual({
       institution: 'UMSS',
