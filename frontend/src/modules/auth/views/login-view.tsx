@@ -10,11 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SELECT_ITEM_CONTRAST_CLASS } from "@/shared/constants/select.constants";
-import { saveAccessToken } from "@/shared/services/storage/access-token-storage";
 import { useLogin } from "../hooks/use-login";
 import type { RoleTag } from "../types/auth-types";
-import { DEFAULT_HOME_PATH } from "../constants/login-redirect.constants";
-import { getPostLoginPath } from "../utils/get-post-login-path";
+import { NEXT_PARAM } from "../constants/session.constants";
+import { resolvePostLoginPath } from "../utils/resolve-post-login-path";
+import { startSession } from "../utils/session";
 
 const ROLE_OPTIONS: { value: RoleTag; label: string }[] = [
   { value: "titulado", label: "Titulado" },
@@ -35,10 +35,9 @@ export function LoginView() {
     event.preventDefault();
     const result = await login({ email, password, roleTag });
     if (result) {
-      saveAccessToken(result.accessToken);
-      const destination = getPostLoginPath(result.roleTag);
-      const next = new URLSearchParams(window.location.search).get('next');
-      router.push(destination === DEFAULT_HOME_PATH && next === '/events/my-passes' ? next : destination);
+      startSession(result.accessToken);
+      const next = new URLSearchParams(window.location.search).get(NEXT_PARAM);
+      router.push(resolvePostLoginPath(result.roleTag, next));
     }
   }
 

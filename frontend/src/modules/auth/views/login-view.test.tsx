@@ -82,6 +82,35 @@ describe("LoginView", () => {
     expect(saveAccessToken).toHaveBeenCalledWith('t');
   });
 
+  it.each([
+    ['/login?next=%2Freports%2Fhistory%3Fx%3D1', '/reports/history?x=1'],
+    ['/login?next=/profile/documents', '/profile/documents'],
+    ['/login?next=/backoffice/solicitudes', '/profile'],
+    ['/login?next=/%5Cevil.com', '/profile'],
+    ['/login?next=/login', '/profile'],
+  ])('vuelve a la ruta privada válida pedida desde %s hacia %s', async (url, destination) => {
+    window.history.replaceState({}, '', url);
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: 't', roleTag: 'titulado' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith(destination));
+  });
+
+  it('el administrativo vuelve a la pantalla del backoffice que pidió', async () => {
+    window.history.replaceState({}, '', '/login?next=/backoffice/solicitudes/abc');
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: 't-admin', roleTag: 'administrativo' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/backoffice/solicitudes/abc'));
+  });
+
+  it('al iniciar sesión pone la cookie marcadora sin el token', async () => {
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: 'token-secreto', roleTag: 'titulado' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    expect(document.cookie).toContain('umssy_session=1');
+    expect(document.cookie).not.toContain('token-secreto');
+    document.cookie = 'umssy_session=; Max-Age=0; Path=/';
+  });
+
   it('mantiene el backoffice para administrativos aunque exista un retorno a pases', async () => {
     window.history.replaceState({}, '', '/login?next=/events/my-passes');
     await submitLogin(vi.fn().mockResolvedValue({ accessToken: 't-admin', roleTag: 'administrativo' }));
