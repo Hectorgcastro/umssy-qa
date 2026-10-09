@@ -15,6 +15,56 @@ const VALUES: EducationFormValues = {
 describe("EducationForm", () => {
   afterEach(cleanup);
 
+  it("updates the description counter while typing, deleting and clearing before saving", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm onSubmit={onSubmit} onCancel={vi.fn()} />);
+    const description = screen.getByLabelText(/Descripción/);
+    expect(screen.getByText("0/400")).toBeInTheDocument();
+    expect(description).toHaveAccessibleDescription("0/400");
+    await user.type(description, "a".repeat(50));
+    expect(screen.getByText("50/400")).toBeInTheDocument();
+    await user.keyboard("{Backspace}");
+    expect(screen.getByText("49/400")).toBeInTheDocument();
+    await user.clear(description);
+    expect(screen.getByText("0/400")).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("limits pasted text to 400 characters and allows saving at the limit", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm initialValues={{ ...VALUES, description: "" }} onSubmit={onSubmit} onCancel={vi.fn()} />);
+    const description = screen.getByLabelText(/Descripción/);
+    expect(description).toHaveAttribute("maxlength", "400");
+    await user.click(description);
+    await user.paste("a".repeat(450));
+    expect(description).toHaveValue("a".repeat(400));
+    expect(screen.getByText("400/400")).toBeInTheDocument();
+    await user.type(description, "b");
+    expect(description).toHaveValue("a".repeat(400));
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith({ ...VALUES, description: "a".repeat(400) });
+  });
+
+  it("preserves an oversized existing description and requires correction before saving", async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
+    render(<EducationForm initialValues={{ ...VALUES, description: "a".repeat(401) }} onSubmit={onSubmit} onCancel={vi.fn()} />);
+    const description = screen.getByLabelText(/Descripción/);
+    expect(screen.getByText("401/400")).toBeInTheDocument();
+    expect(description).toHaveValue("a".repeat(401));
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(description).toHaveAttribute("aria-invalid", "true");
+    expect(description).toHaveAccessibleDescription("La descripción no puede superar los 400 caracteres. 401/400");
+    await user.clear(description);
+    expect(description).toHaveAttribute("aria-invalid", "false");
+    expect(screen.getByText("0/400")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Guardar formación" }));
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith({ ...VALUES, description: "" });
+  });
+
   it("shows accessible errors and blocks an empty submission", async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();

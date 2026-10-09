@@ -1,5 +1,6 @@
 import {
   EDUCATION_DATE_PATTERN,
+  EDUCATION_DESCRIPTION_MAX_LENGTH,
   EDUCATION_VALIDATION_MESSAGES,
 } from "../constants/education-validation.constants";
 import type { EducationFormErrors } from "../types/education-form-errors.types";
@@ -18,6 +19,9 @@ export function validateEducationForm(
   allowMissingEndDate = false,
 ): EducationFormErrors {
   const errors: EducationFormErrors = {};
+  if ((values.description ?? "").length > EDUCATION_DESCRIPTION_MAX_LENGTH) {
+    errors.description = EDUCATION_VALIDATION_MESSAGES.descriptionTooLong;
+  }
   if (!(values.institution ?? "").trim()) {
     errors.institution = EDUCATION_VALIDATION_MESSAGES.institutionRequired;
   }

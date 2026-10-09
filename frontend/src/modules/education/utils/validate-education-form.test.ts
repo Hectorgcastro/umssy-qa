@@ -11,6 +11,16 @@ const VALUES: EducationFormValues = {
 };
 
 describe("validateEducationForm", () => {
+  it.each([0, 400])("accepts a description of %i characters", (length) => {
+    expect(validateEducationForm({ ...VALUES, description: "a".repeat(length) })).toEqual({});
+  });
+
+  it.each(["a".repeat(401), " ".repeat(401)])("rejects an oversized description before trimming", (description) => {
+    expect(validateEducationForm({ ...VALUES, description }).description).toBe(
+      "La descripción no puede superar los 400 caracteres.",
+    );
+  });
+
   it("allows an empty description and equal start and end dates", () => {
     expect(validateEducationForm(VALUES)).toEqual({});
     expect(

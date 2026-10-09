@@ -176,6 +176,7 @@ describe('EducationsController', () => {
 
   it.each([
     { ...body, institution: ' ' },
+    { ...body, description: 'a'.repeat(401) },
     { ...body, degree: '' },
     { ...body, startDate: undefined },
     { ...body, endDate: undefined },
@@ -208,6 +209,7 @@ describe('EducationsController', () => {
 
   it.each([
     { institution: ' ' }, { degree: '' }, { startDate: null },
+    { description: 'a'.repeat(401) },
     { endDate: null }, { endDate: '' }, { endDate: '2023-02-29' },
     { startDate: '2025-01-01', endDate: '2024-01-01' },
     { userId: otherUserId },
