@@ -1,31 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { startOfBoliviaDay, startOfBoliviaMonth } from '../helpers/inbox-dates.js';
 import { AccessRequestsController } from '../controllers/access-requests.controller.js';
 import { AccessRequestsRepository } from '../repositories/access-requests.repository.js';
 import { AccessRequestsService } from '../services/access-requests.service.js';
-
-describe('startOfBoliviaDay y startOfBoliviaMonth', () => {
-  it('el día de Bolivia empieza a las 04:00 UTC', () => {
-    expect(startOfBoliviaDay(new Date('2026-10-08T15:00:00.000Z'))).toEqual(new Date('2026-10-08T04:00:00.000Z'));
-  });
-
-  it('a las 02:00 UTC todavía es el día anterior en Bolivia', () => {
-    expect(startOfBoliviaDay(new Date('2026-10-08T02:00:00.000Z'))).toEqual(new Date('2026-10-07T04:00:00.000Z'));
-  });
-
-  it('el instante exacto de medianoche en Bolivia abre el día nuevo', () => {
-    expect(startOfBoliviaDay(new Date('2026-10-08T04:00:00.000Z'))).toEqual(new Date('2026-10-08T04:00:00.000Z'));
-    expect(startOfBoliviaDay(new Date('2026-10-08T03:59:59.999Z'))).toEqual(new Date('2026-10-07T04:00:00.000Z'));
-  });
-
-  it('el mes de Bolivia empieza el día 1 a las 04:00 UTC', () => {
-    expect(startOfBoliviaMonth(new Date('2026-10-15T12:00:00.000Z'))).toEqual(new Date('2026-10-01T04:00:00.000Z'));
-  });
-
-  it('el 1 de noviembre a las 02:00 UTC todavía es octubre en Bolivia', () => {
-    expect(startOfBoliviaMonth(new Date('2026-11-01T02:00:00.000Z'))).toEqual(new Date('2026-10-01T04:00:00.000Z'));
-  });
-});
 
 describe('AccessRequestsService.getSummary', () => {
   const NOW = new Date('2026-10-08T15:00:00.000Z');
@@ -89,6 +65,21 @@ describe('AccessRequestsService.getSummary', () => {
     expect(repository.countByStatus).toHaveBeenCalledWith('rejected', { reviewedFrom: new Date('2026-10-01T04:00:00.000Z') });
   });
 
+  it.each([
+    ['justo antes de la medianoche de Bolivia', '2026-10-08T03:59:59.999Z', '2026-10-07T04:00:00.000Z', '2026-10-01T04:00:00.000Z'],
+    ['justo en la medianoche de Bolivia', '2026-10-08T04:00:00.000Z', '2026-10-08T04:00:00.000Z', '2026-10-01T04:00:00.000Z'],
+    ['el primer instante del mes en Bolivia', '2026-11-01T04:00:00.000Z', '2026-11-01T04:00:00.000Z', '2026-11-01T04:00:00.000Z'],
+    ['un minuto antes del primer instante del mes', '2026-11-01T03:59:00.000Z', '2026-10-31T04:00:00.000Z', '2026-10-01T04:00:00.000Z'],
+    ['el cambio de año en Bolivia', '2027-01-01T03:00:00.000Z', '2026-12-31T04:00:00.000Z', '2026-12-01T04:00:00.000Z'],
+  ])('límites de hoy y del mes %s', async (_name, nowIso, today, month) => {
+    const { repository, service } = build();
+
+    await service.getSummary(new Date(nowIso));
+
+    expect(repository.countByStatus).toHaveBeenCalledWith('approved', { reviewedFrom: new Date(today) });
+    expect(repository.countByStatus).toHaveBeenCalledWith('rejected', { reviewedFrom: new Date(month) });
+  });
+
   it('el tiempo medio promedia (dictamen menos envío) en horas y redondea a entero', async () => {
     const { service } = build({
       times: [
@@ -96,7 +87,6 @@ describe('AccessRequestsService.getSummary', () => {
         { submittedAt: new Date('2026-10-06T00:00:00.000Z'), reviewedAt: new Date('2026-10-07T07:00:00.000Z') },
       ],
     });
-    // (10 h + 31 h) / 2 = 20,5 h, que redondea a 21
     await expect(service.getSummary(NOW)).resolves.toMatchObject({ averageReviewHours: 21 });
   });
 

@@ -35,8 +35,8 @@ import {
   REVIEW_TIME_GOAL_HOURS,
   REVIEW_TIME_WINDOW_DAYS,
 } from '../constants/inbox-summary.constants.js';
-import { startOfBoliviaDay, startOfBoliviaMonth } from '../helpers/inbox-dates.js';
 import { DAY_MS } from '../../../common/constants/date-time.constants.js';
+import { toBoliviaTime, toUtcIso } from '../../../common/utils/date-time.js';
 
 type DuplicateField = keyof typeof DUPLICATE_LABELS;
 
@@ -256,11 +256,10 @@ export class AccessRequestsService {
     };
   }
 
-  // Métricas de la bandeja. "Hoy" y "este mes" en hora de Bolivia; el tiempo medio es de las dictaminadas en los últimos 30 días.
-  // topRejectionReason es null: el motivo del rechazo es texto libre y no hay categorías que contar.
   async getSummary(now: Date = new Date()) {
-    const todayStart = startOfBoliviaDay(now);
-    const monthStart = startOfBoliviaMonth(now);
+    const { date: boliviaToday } = toBoliviaTime(now);
+    const todayStart = new Date(toUtcIso(boliviaToday, '00:00'));
+    const monthStart = new Date(toUtcIso(`${boliviaToday.slice(0, 8)}01`, '00:00'));
     const windowStart = new Date(now.getTime() - REVIEW_TIME_WINDOW_DAYS * DAY_MS);
     const alertCutoff = new Date(now.getTime() - PENDING_ALERT_HOURS * HOUR_MS);
     const { PENDING, APPROVED, REJECTED } = ACCESS_REQUEST_STATUS;
