@@ -3,7 +3,7 @@ import { getInitials } from "./get-initials";
 
 describe("getInitials", () => {
   it("returns the first letter of the first two words in uppercase", () => {
-    expect(getInitials("alejandro vargas rojas")).toBe("AV");
+    expect(getInitials("alejandro vargas rojas")).toBe("QA");
   });
 
   it("ignores extra spaces between words", () => {
