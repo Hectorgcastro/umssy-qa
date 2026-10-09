@@ -153,7 +153,7 @@ export function BlockForm({
                       id="date"
                       readOnly
                       value={date ? formatLongDate(date) : ""}
-                      placeholder="Selecciona una fecha en el calendario"
+                      placeholder="Selecciona una fecha"
                       aria-invalid={errors.date ? true : undefined}
                       aria-describedby={errors.date ? "date-error" : "date-hint"}
                       className="h-10 pr-10"
@@ -174,7 +174,7 @@ export function BlockForm({
                     onSelect={handleDateSelect}
                     defaultMonth={selectedDate ?? today}
                     disabled={{ before: today }}
-                    className="w-full rounded-lg border [--cell-size:--spacing(9)]"
+                    className="w-full rounded-lg border [--cell-size:--spacing(7)] sm:[--cell-size:--spacing(9)]"
                   />
                   <FieldDescription id="date-hint" className="text-xs">
                     Los días anteriores a hoy no se pueden elegir.
