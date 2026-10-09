@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { MatchingService } from '../services/matching.service.js';
 
 interface RequirementGapResult {
   totalRequired: number;
@@ -13,7 +14,6 @@ interface CareerMatchingInput {
   candidateCareer: string;
 }
 
-// Lógica de análisis de brechas de habilidades
 function analyzeRequirementsGap(
   requiredSkills: string[],
   candidateSkills: string[]
@@ -36,22 +36,57 @@ function analyzeRequirementsGap(
   };
 }
 
-// Lógica para evaluación de coincidencias de carreras (evita falsos positivos)
 function evaluateCareerMatch(input: CareerMatchingInput): boolean {
   if (!input.requiredCareers || input.requiredCareers.length === 0) {
-    return true; // Si no exige carreras específicas, es apto
+    return true;
   }
-  
+
   if (!input.candidateCareer || input.candidateCareer.trim() === '') {
-    return false; // Si exige carrera y el candidato no especifica, no hace match
+    return false;
   }
 
   const normalizedCandidate = input.candidateCareer.trim().toLowerCase();
-  
+
   return input.requiredCareers.some(
     (career) => career.trim().toLowerCase() === normalizedCandidate
   );
 }
+
+const EXPERIENCE_ID = '5b1f0c3e-8a4d-4f0b-9a52-1d6c7e2a9b10';
+
+describe('MatchingService', () => {
+  let service: MatchingService;
+
+  beforeEach(() => {
+    service = new MatchingService();
+  });
+
+  it('devuelve el id de la experiencia y una lista de habilidades', () => {
+    const result = service.analyzeExperience({
+      experienceId: EXPERIENCE_ID,
+      text: 'Trabaje como desarrollador backend usando Python y Django',
+    });
+
+    expect(result.experienceId).toBe(EXPERIENCE_ID);
+    expect(Array.isArray(result.skills)).toBe(true);
+  });
+
+  it.each([[''], ['   '], [null], [undefined]])(
+    'responde sin habilidades y sin error con texto vacio (%o)',
+    (text) => {
+      const result = service.analyzeExperience({ experienceId: EXPERIENCE_ID, text });
+
+      expect(result.skills).toEqual([]);
+    },
+  );
+
+  it('informa el tiempo de procesamiento como un numero entero no negativo', () => {
+    const result = service.analyzeExperience({ experienceId: EXPERIENCE_ID, text: 'Scrum' });
+
+    expect(Number.isInteger(result.processingTimeMs)).toBe(true);
+    expect(result.processingTimeMs).toBeGreaterThanOrEqual(0);
+  });
+});
 
 describe('Matching Gap Analysis QA Suite - Zero Gap UI Behavior', () => {
   it('debe validar que cuando la brecha es igual a cero, se genere el mensaje explícito para la UI', () => {
