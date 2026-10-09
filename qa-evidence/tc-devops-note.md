@@ -1,1 +1,1 @@
-# QA commit fixture fix(frontend): correct qa fixture
+# QA commit fixture docs: update qa guide
