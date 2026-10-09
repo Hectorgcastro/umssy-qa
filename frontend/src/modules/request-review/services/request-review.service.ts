@@ -36,7 +36,6 @@ async function listRequests(
   try {
     const { search, career, period } = filters;
     const response = await apiClient.get("/access-requests", {
-      // El período "all" es el valor por defecto del backend y no se envía
       params: {
         status,
         page,
@@ -80,7 +79,6 @@ const SUMMARY_NUMBER_KEYS = [
   "rejectedThisMonthCount",
 ] as const;
 
-// Resumen de la bandeja; el cuerpo puede venir plano o dentro de data
 async function getSummary(): Promise<ReviewApiResult<InboxSummary>> {
   try {
     const response = await apiClient.get("/access-requests/summary", { headers: authHeaders(), validateStatus: () => true });

@@ -6,7 +6,6 @@ import { RequestInboxView } from "./request-inbox-view";
 
 const listRequests = vi.spyOn(requestReviewService, "listRequests");
 const getSummary = vi.spyOn(requestReviewService, "getSummary");
-// Las llamadas de listado no pasan límite; los conteos de las pestañas sí (limit=1)
 const listCalls = () => listRequests.mock.calls.filter((call) => call[2] === undefined).map((call) => [call[0], call[1]]);
 
 function row(index: number, status: ReviewListItem["status"] = "pending"): ReviewListItem {
@@ -139,11 +138,9 @@ describe("RequestInboxView", () => {
 
       const list = screen.getByRole("tablist");
       expect(list).toHaveClass("overflow-x-auto", "overflow-y-hidden");
-      // El indicador por defecto de components/ui sale 5 px por debajo de la pestaña y desbordaría la lista
       const tabClasses = screen.getByRole("tab", { name: /^Pendientes/ }).className;
       expect(tabClasses).toContain("after:bottom-0");
       expect(tabClasses).not.toContain("after:bottom-[-5px]");
-      // Altura de la lista igual a la de las pestañas (el h-8 por defecto las dejaba sobresalir y recortaba la línea)
       expect(list.className).toContain("group-data-horizontal/tabs:h-12");
       expect(tabClasses).toContain("h-full");
     });

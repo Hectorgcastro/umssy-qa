@@ -23,7 +23,6 @@ export function useBackofficeSession() {
 
   useEffect(() => {
     if (state === "login") {
-      // Sin token la cookie marcadora ya no vale; se vuelve al login y luego a esta misma pantalla
       endSession();
       router.replace(buildLoginUrl(pathname));
     }

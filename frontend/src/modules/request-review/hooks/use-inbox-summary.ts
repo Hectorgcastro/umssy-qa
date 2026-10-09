@@ -25,7 +25,6 @@ export function useInboxSummary() {
     };
   }, [attempt]);
 
-  // Mientras la respuesta guardada no es del intento actual se muestra la carga
   const isLoading = state?.attempt !== attempt;
 
   return {

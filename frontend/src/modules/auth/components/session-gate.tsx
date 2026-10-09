@@ -15,8 +15,6 @@ type GateState = "checking" | "open" | "login";
 const subscribe = () => () => undefined;
 const currentPath = () => `${window.location.pathname}${window.location.search}`;
 
-// Solo comodidad de navegación: la autorización real la hacen los guards del backend.
-// Si no hay token en sessionStorage (pestaña nueva, token borrado) la cookie marcadora ya no vale: se borra y se va al login.
 export function SessionGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,10 +33,8 @@ export function SessionGate({ children }: { children: ReactNode }) {
       router.replace(buildLoginUrl(currentPath()));
       return;
     }
-    // Con token vigente la cookie se mantiene alineada (por ejemplo si se borró a mano)
     if (state === "open") setSessionMarker();
 
-    // Un 401 del backend es una sesión vencida o inválida: se cierra y se vuelve al login
     const interceptorId = apiClient.interceptors.response.use(
       (response) => response,
       (error: unknown) => {

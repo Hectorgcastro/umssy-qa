@@ -10,7 +10,6 @@ export function isOfflinePath(pathname: string): boolean {
   return OFFLINE_ROUTES.some((route) => matchesRoute(pathname, route));
 }
 
-// Rutas que el proxy y la puerta de sesión dejan pasar sin pedir sesión
 export function isOpenPath(pathname: string): boolean {
   return isPublicPath(pathname) || isOfflinePath(pathname);
 }

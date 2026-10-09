@@ -14,11 +14,9 @@ export function useRequestList() {
   const [career, setCareer] = useState(ALL_CAREERS_VALUE);
   const [period, setPeriod] = useState<InboxPeriod>(DEFAULT_PERIOD);
   const debouncedSearch = useDebouncedValue(searchInput.trim(), SEARCH_DEBOUNCE_MS);
-  // Con menos de 2 caracteres no se filtra por texto
   const search = debouncedSearch.length >= MIN_SEARCH_LENGTH ? debouncedSearch : "";
   const careerFilter = career === ALL_CAREERS_VALUE ? "" : career;
 
-  // La página guardada solo vale para la combinación de pestaña y filtros con la que se eligió: al cambiar cualquiera vuelve a 1
   const filterKey = `${status}|${search}|${careerFilter}|${period}`;
   const [pageState, setPageState] = useState({ key: filterKey, page: 1 });
   const page = pageState.key === filterKey ? pageState.page : 1;
@@ -45,7 +43,6 @@ export function useRequestList() {
     };
   }, [status, page, search, careerFilter, period, key]);
 
-  // Mientras la respuesta guardada no corresponde a la pestaña, los filtros y la página actuales, se muestra la carga
   const isLoading = result?.key !== key;
   const items = result?.items ?? [];
   const total = result?.total ?? 0;

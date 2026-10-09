@@ -43,7 +43,6 @@ export class AccessRequestsController {
     return this.accessRequestsService.list(query);
   }
 
-  // Se declara antes que las rutas con :id para que "summary" no se tome como identificador
   @Get('summary')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(BACKOFFICE_ROLE)

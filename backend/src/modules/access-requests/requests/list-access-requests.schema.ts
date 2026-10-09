@@ -3,7 +3,6 @@ import { DEFAULT_INBOX_PERIOD, INBOX_PERIODS, MAX_SEARCH_LENGTH, MIN_SEARCH_LENG
 import { LIST_STATUSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '../constants/list-access-requests.constants.js';
 import { CAREER } from '../types/career.enum.js';
 
-// Un parámetro vacío (?search=) se trata como ausente
 const emptyToUndefined = (value: unknown) => (typeof value === 'string' && value.trim() === '' ? undefined : value);
 
 export const listAccessRequestsQuerySchema = z.object({

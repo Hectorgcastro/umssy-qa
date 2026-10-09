@@ -7,7 +7,6 @@ function isLoginResponse(value: unknown): value is LoginResponse {
   return typeof accessToken === "string" && accessToken !== "" && typeof roleTag === "string" && roleTag !== "";
 }
 
-// Con el interceptor de respuesta global viene dentro de data ({ statusCode, data, detail, ok }); sin él, plano ({ accessToken, roleTag })
 function extractLoginResponse(body: unknown): LoginResponse {
   const wrapped = typeof body === "object" && body !== null ? (body as { data?: unknown }).data : undefined;
   const candidate = isLoginResponse(wrapped) ? wrapped : body;

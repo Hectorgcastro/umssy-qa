@@ -34,7 +34,6 @@ function row(index: number): ReviewListItem {
 }
 
 const page = (items: ReviewListItem[], total = items.length) => ({ ok: true as const, data: { items, total, page: 1, offset: 0 } });
-// Llamadas de listado (sin límite): [estado, página, filtros]
 const listCalls = () => listRequests.mock.calls.filter((call) => call[2] === undefined).map((call) => [call[0], call[1], call[3]]);
 const lastCall = () => listCalls().at(-1);
 const EMPTY_FILTERS = { search: "", career: "", period: "all" };
@@ -76,7 +75,6 @@ describe("RequestInboxView: filtros y resumen", () => {
     expect(listCalls().length).toBe(callsBefore);
 
     await waitFor(() => expect(lastCall()).toEqual(["pending", 1, { ...EMPTY_FILTERS, search: "ana" }]));
-    // Una sola petición nueva para todo el texto escrito
     expect(listCalls().length).toBe(callsBefore + 1);
   });
 
@@ -241,7 +239,6 @@ describe("RequestInboxView: filtros y resumen", () => {
     await user.click(screen.getByRole("combobox", { name: "Carrera" }));
     const option = await screen.findByRole("option", { name: "Licenciatura en Ingeniería de Sistemas" });
 
-    // El tema usa texto blanco sobre el resaltado claro, también en los descendientes: se sobrescriben ambos
     expect(option.className).toContain("focus:text-ink");
     expect(option.className).toContain("not-data-[variant=destructive]:focus:**:text-ink");
     expect(option.className).not.toContain("focus:text-accent-foreground");

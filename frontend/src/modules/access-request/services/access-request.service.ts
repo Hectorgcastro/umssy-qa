@@ -42,7 +42,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-// Con el interceptor de respuesta global el cuerpo llega como { statusCode, ok, detail, data }; sin él, plano
 function unwrapBody(body: unknown): unknown {
   return isRecord(body) && typeof body.statusCode === "number" && "ok" in body && isRecord(body.data) ? body.data : body;
 }
@@ -93,7 +92,6 @@ function parseError(status: number, body: unknown, notFoundMessage = NOT_FOUND_M
   if (status === 413) return failure(413, FILE_TOO_LARGE_MESSAGE);
   if (!isRecord(body)) return failure(0, NETWORK_ERROR_MESSAGE);
   if (Array.isArray(body.message)) return fromZodIssues(body.message);
-  // Pipe de validación de la epic 8: errors es un arreglo de { field, message }
   if (Array.isArray(body.errors)) {
     return fromZodIssues(body.errors.map((error) => (isRecord(error) && typeof error.field === "string" ? { ...error, path: error.field.split(".") } : error)));
   }

@@ -2,7 +2,6 @@ export const INBOX_PERIODS = ['7d', '30d', 'all'] as const;
 
 export const DEFAULT_INBOX_PERIOD = 'all';
 
-// Días hacia atrás desde ahora; "all" no limita por fecha de envío
 export const INBOX_PERIOD_DAYS: Record<string, number | undefined> = { '7d': 7, '30d': 30 };
 
 export const MIN_SEARCH_LENGTH = 2;

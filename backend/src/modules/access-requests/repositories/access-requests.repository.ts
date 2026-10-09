@@ -44,7 +44,6 @@ export class AccessRequestsRepository {
     }
   }
 
-  // search: cada palabra debe aparecer en nombre, apellidos, C.I. o código SIS (sin distinguir mayúsculas)
   async findPage(params: { status?: string; search?: string; career?: string; submittedFrom?: Date; page: number; limit: number }) {
     const terms = params.search?.split(/\s+/).filter(Boolean).slice(0, MAX_SEARCH_TERMS) ?? [];
     const where: Prisma.AccessRequestWhereInput = {
@@ -75,7 +74,6 @@ export class AccessRequestsRepository {
     return { rows, total };
   }
 
-  // Conteo por estado; submittedBefore y reviewedFrom acotan por fecha de envío y de dictamen
   countByStatus(status: string, filters: { submittedBefore?: Date; reviewedFrom?: Date } = {}) {
     return this.prisma.accessRequest.count({
       where: {
@@ -86,7 +84,6 @@ export class AccessRequestsRepository {
     });
   }
 
-  // Solo las dos fechas de las dictaminadas desde `since`; en una dictaminada reviewedAt es la fecha del dictamen
   findReviewTimes(since: Date) {
     return this.prisma.accessRequest.findMany({
       where: { status: { title: { in: DECIDED_STATUSES } }, reviewedAt: { gte: since }, submittedAt: { not: null } },

@@ -1,6 +1,5 @@
 import { SESSION_COOKIE_NAME, SESSION_COOKIE_VALUE } from "../constants/session.constants";
 
-// Cookie de sesión del navegador (sin Expires): se va al cerrar el navegador. Secure solo cuando la página va por https
 function cookieAttributes(): string {
   const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
   return `; Path=/; SameSite=Lax${secure}`;

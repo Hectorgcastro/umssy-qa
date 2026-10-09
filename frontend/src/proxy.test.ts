@@ -13,7 +13,6 @@ function call(path: string, withSession = false) {
 const redirectOf = (response: Response) => response.headers.get("location");
 const passes = (response: Response) => response.headers.get("x-middleware-next") === "1" && redirectOf(response) === null;
 
-// Aproximación del matcher de Next (path-to-regexp) con una expresión regular equivalente
 const matcherRegex = new RegExp(`^${config.matcher[0]}$`);
 const matches = (path: string) => matcherRegex.test(path);
 

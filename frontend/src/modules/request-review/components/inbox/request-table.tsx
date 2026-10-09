@@ -14,7 +14,6 @@ import type { RequestTableProps } from "../../types/request-table-props.types";
 
 const HEAD_CLASS = "h-10 px-5 lg:px-4 text-[12.5px] font-semibold text-text-secondary";
 const CELL_CLASS = "px-5 lg:px-4 text-[14.5px] text-ink";
-// Desde lg el nombre y el documento pueden pasar a dos líneas para que la tabla quepa en la tarjeta sin scroll horizontal
 const WRAP_CLASS = "lg:whitespace-normal";
 
 export function RequestTable({ items = [], isLoading = false }: RequestTableProps) {
