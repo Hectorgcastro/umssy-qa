@@ -1,1 +1,1 @@
-# QA commit fixture feat: add qa fixture
+# QA commit fixture fix(frontend): correct qa fixture
