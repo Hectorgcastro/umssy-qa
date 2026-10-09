@@ -24,6 +24,7 @@ describe("LoginView", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    window.history.replaceState({}, '', '/');
   });
 
   it("stores the returned access token and redirects after a successful login", async () => {
@@ -69,7 +70,26 @@ describe("LoginView", () => {
     expect(push).toHaveBeenCalledTimes(1);
   });
 
-  it.each(["titulado", "estudiante", "mentor", "empresa", "", "desconocido"])("el rol %j va al perfil", async (roleTag) => {
+  it.each([
+    ['/login?next=/events/my-passes', '/events/my-passes'],
+    ['/login?next=https://example.com', '/profile'],
+    ['/login?next=//example.com', '/profile'],
+  ])('respeta el retorno seguro desde %s hacia %s', async (url, destination) => {
+    window.history.replaceState({}, '', url);
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: 't', roleTag: 'titulado' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith(destination));
+    expect(saveAccessToken).toHaveBeenCalledWith('t');
+  });
+
+  it('mantiene el backoffice para administrativos aunque exista un retorno a pases', async () => {
+    window.history.replaceState({}, '', '/login?next=/events/my-passes');
+    await submitLogin(vi.fn().mockResolvedValue({ accessToken: 't-admin', roleTag: 'administrativo' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/backoffice/solicitudes'));
+  });
+
+  it.each(["titulado", "estudiante", "mentor", "empresa", "", "desconocido"])("el rol %j va a la ruta actual", async (roleTag) => {
     await submitLogin(vi.fn().mockResolvedValue({ accessToken: "t", roleTag }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/profile"));

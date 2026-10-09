@@ -13,6 +13,7 @@ import { SELECT_ITEM_CONTRAST_CLASS } from "@/shared/constants/select.constants"
 import { saveAccessToken } from "@/shared/services/storage/access-token-storage";
 import { useLogin } from "../hooks/use-login";
 import type { RoleTag } from "../types/auth-types";
+import { DEFAULT_HOME_PATH } from "../constants/login-redirect.constants";
 import { getPostLoginPath } from "../utils/get-post-login-path";
 
 const ROLE_OPTIONS: { value: RoleTag; label: string }[] = [
@@ -35,7 +36,9 @@ export function LoginView() {
     const result = await login({ email, password, roleTag });
     if (result) {
       saveAccessToken(result.accessToken);
-      router.push(getPostLoginPath(result.roleTag));
+      const destination = getPostLoginPath(result.roleTag);
+      const next = new URLSearchParams(window.location.search).get('next');
+      router.push(destination === DEFAULT_HOME_PATH && next === '/events/my-passes' ? next : destination);
     }
   }
 
