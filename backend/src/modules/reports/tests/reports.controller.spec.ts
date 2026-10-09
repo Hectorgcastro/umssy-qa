@@ -37,8 +37,13 @@ describe('ReportsController', () => {
   });
 
   it('exige sesión con rol administrativo en todos los endpoints', () => {
-    expect(Reflect.getMetadata(GUARDS_METADATA, ReportsController)).toEqual([JwtAuthGuard, RolesGuard]);
-    expect(Reflect.getMetadata(ROLES_KEY, ReportsController)).toEqual(['administrativo']);
+    expect(Reflect.getMetadata(GUARDS_METADATA, ReportsController)).toEqual([
+      JwtAuthGuard,
+      RolesGuard,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, ReportsController)).toEqual([
+      'administrativo',
+    ]);
   });
 
   it('delega el reporte de registrados al service', () => {
@@ -52,7 +57,7 @@ describe('ReportsController', () => {
   });
 
   it('devuelve el CSV de registrados como archivo descargable', () => {
-    const filters = { userType: 'COMPANY' as const };
+    const filters = { userType: 'empresa' as const };
     const spy = vi.spyOn(service, 'exportRegisteredUsersCsv').mockReturnValue({
       fileName: 'usuarios-registrados-1-2026.csv',
       content: 'Usuario\r\n',

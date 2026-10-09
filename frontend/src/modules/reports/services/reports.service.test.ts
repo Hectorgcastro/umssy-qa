@@ -39,10 +39,10 @@ describe("reportsService.getRegisteredUsers", () => {
     };
     const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: response });
 
-    const result = await reportsService.getRegisteredUsers({ page: 1, limit: 10, userType: "COMPANY", period: "II-2025" });
+    const result = await reportsService.getRegisteredUsers({ page: 1, limit: 10, userType: "empresa", period: "II-2025" });
 
     expect(getSpy).toHaveBeenCalledWith("/reports/registered-users", {
-      params: { page: 1, limit: 10, userType: "COMPANY", period: "II-2025" },
+      params: { page: 1, limit: 10, userType: "empresa", period: "II-2025" },
     });
     expect(result).toEqual(response);
   });
@@ -94,10 +94,10 @@ describe("reportsService.exportRegisteredUsersCsv", () => {
       headers: { "content-disposition": 'attachment; filename="usuarios-registrados-2026-10-03.csv"' },
     });
 
-    const result = await reportsService.exportRegisteredUsersCsv({ userType: "COMPANY", period: "II-2025" });
+    const result = await reportsService.exportRegisteredUsersCsv({ userType: "empresa", period: "II-2025" });
 
     expect(getSpy).toHaveBeenCalledWith("/reports/registered-users/export", {
-      params: { userType: "COMPANY", period: "II-2025" },
+      params: { userType: "empresa", period: "II-2025" },
       responseType: "blob",
     });
     expect(result).toEqual({ file, fileName: "usuarios-registrados-2026-10-03.csv" });

@@ -5,23 +5,22 @@ import {
   registeredUsersQuerySchema,
 } from '../requests/report-users.schema.js';
 import { ReportsService } from '../services/reports.service.js';
-import {
-  REPORT_USER_TYPES,
-  type RegisteredUserResponse,
-  type ReportRegistrationStatus,
-  type ReportUser,
-  type ReportUserType,
+import { ROLE_NAMES, type RoleName } from '../../../common/enums/roles.enum.js';
+import type {
+  RegisteredUserResponse,
+  ReportRegistrationStatus,
+  ReportUser,
 } from '../types/report-user.types.js';
 
 const PAGE_SIZE = 10;
 const SAME_REGISTRATION_DATE = '2026-04-01T12:00:00.000Z';
 
-const APPROVED_COUNT_BY_TYPE: Record<ReportUserType, number> = {
-  STUDENT: 10,
-  DEGREE_HOLDER: 23,
-  MENTOR: 11,
-  COMPANY: 0,
-  ADMIN: 2,
+const APPROVED_COUNT_BY_TYPE: Record<RoleName, number> = {
+  estudiante: 10,
+  titulado: 23,
+  mentor: 11,
+  empresa: 0,
+  administrativo: 2,
 };
 
 const TOTAL_APPROVED = Object.values(APPROVED_COUNT_BY_TYPE).reduce(
@@ -39,13 +38,13 @@ const REQUIRED_FIELDS = [
 ] as const;
 
 function buildUser(
-  userType: ReportUserType,
+  userType: RoleName,
   index: number,
   registrationStatus: ReportRegistrationStatus = 'APPROVED',
 ): ReportUser {
   const id = `${userType.toLowerCase()}-${registrationStatus.toLowerCase()}-${String(index).padStart(2, '0')}`;
   const registeredAt =
-    userType === 'DEGREE_HOLDER'
+    userType === 'titulado'
       ? SAME_REGISTRATION_DATE
       : new Date(Date.UTC(2026, 0, 1 + index)).toISOString();
 
@@ -55,7 +54,7 @@ function buildUser(
     email: `${id}@example.com`,
     userType,
     identifier: `IDENT-${id}`,
-    documentType: userType === 'COMPANY' ? 'NIT' : 'ACADEMIC_DEGREE',
+    documentType: userType === 'empresa' ? null : 'academic_diploma',
     registeredAt,
     registrationStatus,
     rejectionReason: registrationStatus === 'REJECTED' ? 'Sin documento' : null,
@@ -63,13 +62,12 @@ function buildUser(
 }
 
 function buildDataset(): ReportUser[] {
-  const approved = REPORT_USER_TYPES.flatMap((userType) =>
+  const approved = ROLE_NAMES.flatMap((userType) =>
     Array.from({ length: APPROVED_COUNT_BY_TYPE[userType] }, (_, index) =>
       buildUser(userType, index),
     ),
   );
-  const notApproved = REPORT_USER_TYPES.flatMap((userType) => [
-    buildUser(userType, 0, 'PENDING'),
+  const notApproved = ROLE_NAMES.flatMap((userType) => [
     buildUser(userType, 0, 'REJECTED'),
   ]);
 
@@ -132,7 +130,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       );
 
       expect([...userTypes].sort()).toEqual(
-        REPORT_USER_TYPES.filter(
+        ROLE_NAMES.filter(
           (userType) => APPROVED_COUNT_BY_TYPE[userType] > 0,
         ).sort(),
       );
@@ -149,12 +147,12 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
   describe('CA 4 y CA 5: filtrado exacto por tipo de usuario', () => {
     it('acepta solo los 5 tipos de usuario del reporte', () => {
-      expect(REPORT_USER_TYPES).toEqual([
-        'STUDENT',
-        'DEGREE_HOLDER',
-        'MENTOR',
-        'COMPANY',
-        'ADMIN',
+      expect(ROLE_NAMES).toEqual([
+        'titulado',
+        'estudiante',
+        'mentor',
+        'empresa',
+        'administrativo',
       ]);
     });
 
@@ -168,7 +166,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       },
     );
 
-    it.each(REPORT_USER_TYPES)(
+    it.each(ROLE_NAMES)(
       'con userType=%s solo devuelve usuarios de ese tipo',
       (userType) => {
         const users = collectAllPages(service, userType).flat();
@@ -180,7 +178,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   });
 
   describe('CA 6 y CA 27: totales calculados sobre el subconjunto filtrado', () => {
-    it.each(REPORT_USER_TYPES)(
+    it.each(ROLE_NAMES)(
       'totalItems y totalPages de %s no usan el total general',
       (userType) => {
         const result = service.getRegisteredUsers(query({ userType }));
@@ -195,7 +193,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     it('los totales no cambian según la página consultada', () => {
       const totals = [1, 2, 3, 4].map((page) => {
         const result = service.getRegisteredUsers(
-          query({ userType: 'DEGREE_HOLDER', page }),
+          query({ userType: 'titulado', page }),
         );
         return [result.totalItems, result.totalPages];
       });
@@ -207,7 +205,9 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
   describe('CA 7 y CA 14: máximo 10 registros por página', () => {
     it('con exactamente 10 registros calcula una sola página', () => {
-      const result = service.getRegisteredUsers(query({ userType: 'STUDENT' }));
+      const result = service.getRegisteredUsers(
+        query({ userType: 'estudiante' }),
+      );
 
       expect(result).toMatchObject({ totalItems: 10, totalPages: 1 });
       expect(result.items).toHaveLength(10);
@@ -215,7 +215,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
     it('con exactamente 10 registros la página 2 no existe y viene vacía', () => {
       const result = service.getRegisteredUsers(
-        query({ userType: 'STUDENT', page: 2 }),
+        query({ userType: 'estudiante', page: 2 }),
       );
 
       expect(result.items).toEqual([]);
@@ -223,17 +223,17 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     });
 
     it('con 11 registros calcula 2 páginas y la segunda tiene 1 registro', () => {
-      const [firstPage, secondPage] = collectAllPages(service, 'MENTOR');
+      const [firstPage, secondPage] = collectAllPages(service, 'mentor');
 
       expect(
-        service.getRegisteredUsers(query({ userType: 'MENTOR' })).totalPages,
+        service.getRegisteredUsers(query({ userType: 'mentor' })).totalPages,
       ).toBe(2);
       expect(firstPage).toHaveLength(10);
       expect(secondPage).toHaveLength(1);
     });
 
     it('ninguna página supera los 10 registros', () => {
-      for (const userType of [undefined, ...REPORT_USER_TYPES]) {
+      for (const userType of [undefined, ...ROLE_NAMES]) {
         for (const page of collectAllPages(service, userType)) {
           expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
         }
@@ -251,7 +251,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   });
 
   describe('CA 8: el filtro se mantiene al cambiar de página', () => {
-    it.each(['DEGREE_HOLDER', 'MENTOR'] as const)(
+    it.each(['titulado', 'mentor'] as const)(
       'todas las páginas de %s conservan el tipo de usuario',
       (userType) => {
         const pages = collectAllPages(service, userType);
@@ -266,7 +266,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
   describe('CA 10: tipo de usuario sin registros', () => {
     it('devuelve una lista vacía con totales en 0', () => {
-      const result = service.getRegisteredUsers(query({ userType: 'COMPANY' }));
+      const result = service.getRegisteredUsers(query({ userType: 'empresa' }));
 
       expect(result).toEqual({
         items: [],
@@ -280,21 +280,21 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     it('no completa con usuarios de otros tipos en ninguna página', () => {
       for (const page of [1, 2, 5]) {
         expect(
-          service.getRegisteredUsers(query({ userType: 'COMPANY', page }))
+          service.getRegisteredUsers(query({ userType: 'empresa', page }))
             .items,
         ).toEqual([]);
       }
     });
 
-    it('no cuenta a las empresas pendientes o rechazadas', () => {
+    it('no cuenta a las empresas rechazadas', () => {
       const notApprovedCompanies = dataset.filter(
         (user) =>
-          user.userType === 'COMPANY' && user.registrationStatus !== 'APPROVED',
+          user.userType === 'empresa' && user.registrationStatus !== 'APPROVED',
       );
 
-      expect(notApprovedCompanies).toHaveLength(2);
+      expect(notApprovedCompanies).toHaveLength(1);
       expect(
-        service.getRegisteredUsers(query({ userType: 'COMPANY' })).totalItems,
+        service.getRegisteredUsers(query({ userType: 'empresa' })).totalItems,
       ).toBe(0);
     });
   });
@@ -322,7 +322,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     });
 
     it('ningún campo llega vacío', () => {
-      for (const user of collectAllPages(service, 'MENTOR').flat()) {
+      for (const user of collectAllPages(service, 'mentor').flat()) {
         for (const field of REQUIRED_FIELDS) {
           expect(user[field]).toBeTruthy();
         }
@@ -331,7 +331,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   });
 
   describe('CA 22 y CA 23: sin duplicados ni omisiones entre páginas', () => {
-    it.each([undefined, ...REPORT_USER_TYPES])(
+    it.each([undefined, ...ROLE_NAMES])(
       'recorrer todas las páginas de %s devuelve cada usuario una sola vez',
       (userType) => {
         const { totalItems } = service.getRegisteredUsers(query({ userType }));
@@ -345,7 +345,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     );
 
     it('con fechas idénticas desempata por id en orden ascendente', () => {
-      const ids = collectAllPages(service, 'DEGREE_HOLDER')
+      const ids = collectAllPages(service, 'titulado')
         .flat()
         .map((user) => user.id);
 
@@ -354,7 +354,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
         dataset
           .filter(
             (user) =>
-              user.userType === 'DEGREE_HOLDER' &&
+              user.userType === 'titulado' &&
               user.registrationStatus === 'APPROVED',
           )
           .map((user) => user.id)
@@ -363,7 +363,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     });
 
     it('ordena del más reciente al más antiguo', () => {
-      const dates = collectAllPages(service, 'MENTOR')
+      const dates = collectAllPages(service, 'mentor')
         .flat()
         .map((user) => new Date(user.registeredAt).getTime());
 
@@ -373,27 +373,26 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     it('el orden no depende del orden en que llegan los datos', () => {
       const reversed = buildService([...dataset].reverse());
 
-      expect(collectAllPages(reversed, 'DEGREE_HOLDER')).toEqual(
-        collectAllPages(service, 'DEGREE_HOLDER'),
+      expect(collectAllPages(reversed, 'titulado')).toEqual(
+        collectAllPages(service, 'titulado'),
       );
       expect(collectAllPages(reversed)).toEqual(collectAllPages(service));
     });
 
     it('consultas repetidas de la misma página devuelven lo mismo', () => {
       const pageTwo = () =>
-        service.getRegisteredUsers(
-          query({ userType: 'DEGREE_HOLDER', page: 2 }),
-        ).items;
+        service.getRegisteredUsers(query({ userType: 'titulado', page: 2 }))
+          .items;
 
       expect(pageTwo()).toEqual(pageTwo());
     });
 
     it('resiste un volumen alto de usuarios con la misma fecha', () => {
       const users = Array.from({ length: 1_000 }, (_, index) => ({
-        ...buildUser('MENTOR', index),
+        ...buildUser('mentor', index),
         registeredAt: SAME_REGISTRATION_DATE,
       }));
-      const ids = collectAllPages(buildService(users), 'MENTOR')
+      const ids = collectAllPages(buildService(users), 'mentor')
         .flat()
         .map((user) => user.id);
 
@@ -417,7 +416,7 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
     it('un tipo sin registros exporta solo la cabecera', () => {
       const { content } = service.exportRegisteredUsersCsv(
-        registeredUsersFiltersSchema.parse({ userType: 'COMPANY' }),
+        registeredUsersFiltersSchema.parse({ userType: 'empresa' }),
       );
 
       expect(content.trim().split('\r\n')).toHaveLength(1);

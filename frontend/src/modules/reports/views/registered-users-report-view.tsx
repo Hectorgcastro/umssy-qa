@@ -11,11 +11,12 @@ import { TablePagination } from "../components/table-pagination";
 import { UserTypeFilter } from "../components/user-type-filter";
 import { useExportRegisteredUsersCsv } from "../hooks/use-export-registered-users-csv";
 import { useRegisteredUsers } from "../hooks/use-registered-users";
-import type { AcademicPeriod, UserType } from "../types/registered-user.types";
+import type { AcademicPeriod } from "../types/registered-user.types";
+import type { RoleTag } from "@/modules/auth/types/auth-types";
 
 export function RegisteredUsersReportView() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [userType, setUserType] = useState<UserType | undefined>(undefined);
+  const [userType, setUserType] = useState<RoleTag | undefined>(undefined);
   const [period, setPeriod] = useState<AcademicPeriod | undefined>(undefined);
   const { users, totalItems, totalPages, isLoading, errorMessage, refresh } = useRegisteredUsers(currentPage, userType, period);
   const {
@@ -26,7 +27,7 @@ export function RegisteredUsersReportView() {
     downloadMessage: exportDownloadMessage,
   } = useExportRegisteredUsersCsv(userType, period);
 
-  const handleUserTypeChange = (selectedUserType?: UserType) => {
+  const handleUserTypeChange = (selectedUserType?: RoleTag) => {
     if (selectedUserType === userType) return;
     setUserType(selectedUserType);
     setCurrentPage(1);
