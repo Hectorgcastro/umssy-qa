@@ -7,7 +7,7 @@ describe("getInitials", () => {
   });
 
   it("ignores extra spaces between words", () => {
-    expect(getInitials("  Alejandro   Vargas ")).toBe("QA");
+    expect(getInitials("  Alejandro   Vargas ")).toBe("AV");
   });
 
   it("returns an empty string for an empty name", () => {
