@@ -1,3 +1,4 @@
+import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { CSV_BOM } from '../../../common/utils/csv.js';
 import { ReportUsersRepository } from '../repositories/report-users.repository.js';
 import {
@@ -76,24 +77,27 @@ function buildDataset(): ReportUser[] {
 }
 
 function buildService(users: readonly ReportUser[]): ReportsService {
-  const repository = new ReportUsersRepository();
-  vi.spyOn(repository, 'findAll').mockReturnValue(users);
+  const repository = new ReportUsersRepository({} as PrismaService);
+  vi.spyOn(repository, 'findAll').mockResolvedValue([...users]);
   return new ReportsService(repository);
 }
 
 const query = (input: Record<string, unknown> = {}) =>
   registeredUsersQuerySchema.parse(input);
 
-function collectAllPages(
+async function collectAllPages(
   service: ReportsService,
   filters: Record<string, unknown>,
-): RegisteredUserResponse[][] {
-  const { totalPages } = service.getRegisteredUsers(query(filters));
+): Promise<RegisteredUserResponse[][]> {
+  const { totalPages } = await service.getRegisteredUsers(query(filters));
 
-  return Array.from(
-    { length: totalPages },
-    (_, index) =>
-      service.getRegisteredUsers(query({ ...filters, page: index + 1 })).items,
+  return Promise.all(
+    Array.from({ length: totalPages }, async (_, index) => {
+      const result = await service.getRegisteredUsers(
+        query({ ...filters, page: index + 1 }),
+      );
+      return result.items;
+    }),
   );
 }
 
@@ -121,8 +125,8 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
   describe('filtrado exacto por gestión', () => {
     it.each(Object.keys(SEED) as SeededPeriod[])(
       '%s devuelve solo usuarios de esa gestión, de todos los tipos',
-      (period) => {
-        const users = collectAllPages(service, { period }).flat();
+      async (period) => {
+        const users = (await collectAllPages(service, { period })).flat();
 
         expect(users).toHaveLength(countFor(period));
         expect(
@@ -136,7 +140,7 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       },
     );
 
-    it('excluye los registros de gestiones vecinas en el cambio de semestre', () => {
+    it('excluye los registros de gestiones vecinas en el cambio de semestre', async () => {
       const boundaryService = buildService([
         buildUser('I-2025', 'estudiante', 1, {
           registeredAt: '2025-07-01T03:59:00.000Z',
@@ -147,28 +151,28 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       ]);
 
       expect(
-        boundaryService
-          .getRegisteredUsers(query({ period: 'I-2025' }))
-          .items.map((user) => user.id),
+        (
+          await boundaryService.getRegisteredUsers(query({ period: 'I-2025' }))
+        ).items.map((user) => user.id),
       ).toEqual(['I-2025-estudiante-01']);
       expect(
-        boundaryService
-          .getRegisteredUsers(query({ period: 'II-2025' }))
-          .items.map((user) => user.id),
+        (
+          await boundaryService.getRegisteredUsers(query({ period: 'II-2025' }))
+        ).items.map((user) => user.id),
       ).toEqual(['II-2025-estudiante-02']);
     });
 
     it.each([{}, { period: ALL_FILTER_VALUE }])(
       'sin gestión o con "ALL" no restringe por gestión (%o)',
-      (filters) => {
-        expect(service.getRegisteredUsers(query(filters)).totalItems).toBe(
-          totalApproved,
-        );
+      async (filters) => {
+        expect(
+          (await service.getRegisteredUsers(query(filters))).totalItems,
+        ).toBe(totalApproved);
       },
     );
 
-    it('nunca incluye usuarios pendientes ni rechazados de la gestión', () => {
-      const ids = collectAllPages(service, { period: 'II-2025' })
+    it('nunca incluye usuarios pendientes ni rechazados de la gestión', async () => {
+      const ids = (await collectAllPages(service, { period: 'II-2025' }))
         .flat()
         .map((user) => user.id);
 
@@ -186,8 +190,10 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       { period: 'I-2026', userType: 'administrativo' },
     ] as const)(
       '$period + $userType devuelve la intersección de ambos criterios',
-      ({ period, userType }) => {
-        const users = collectAllPages(service, { period, userType }).flat();
+      async ({ period, userType }) => {
+        const users = (
+          await collectAllPages(service, { period, userType })
+        ).flat();
 
         expect(users).toHaveLength(countFor(period, userType));
         users.forEach((user) => {
@@ -197,12 +203,12 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       },
     );
 
-    it('el orden en que se envían los filtros no cambia el resultado', () => {
-      const periodFirst = collectAllPages(service, {
+    it('el orden en que se envían los filtros no cambia el resultado', async () => {
+      const periodFirst = await collectAllPages(service, {
         period: 'II-2025',
         userType: 'estudiante',
       });
-      const userTypeFirst = collectAllPages(service, {
+      const userTypeFirst = await collectAllPages(service, {
         userType: 'estudiante',
         period: 'II-2025',
       });
@@ -210,8 +216,8 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       expect(userTypeFirst).toEqual(periodFirst);
     });
 
-    it('una combinación sin registros devuelve vacío sin mezclar otros tipos', () => {
-      const result = service.getRegisteredUsers(
+    it('una combinación sin registros devuelve vacío sin mezclar otros tipos', async () => {
+      const result = await service.getRegisteredUsers(
         query({ period: 'I-2026', userType: 'empresa' }),
       );
 
@@ -224,29 +230,36 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
   });
 
   describe('paginación sobre el subconjunto filtrado', () => {
-    it('con exactamente 10 registros en la gestión calcula una sola página', () => {
-      const result = service.getRegisteredUsers(query({ period: 'I-2025' }));
+    it('con exactamente 10 registros en la gestión calcula una sola página', async () => {
+      const result = await service.getRegisteredUsers(
+        query({ period: 'I-2025' }),
+      );
 
       expect(result).toMatchObject({ totalItems: 10, totalPages: 1 });
       expect(result.items).toHaveLength(10);
       expect(
-        service.getRegisteredUsers(query({ period: 'I-2025', page: 2 })).items,
+        (await service.getRegisteredUsers(query({ period: 'I-2025', page: 2 })))
+          .items,
       ).toEqual([]);
     });
 
-    it('con más de 10 registros calcula las páginas solo sobre la gestión', () => {
-      const result = service.getRegisteredUsers(query({ period: 'II-2025' }));
+    it('con más de 10 registros calcula las páginas solo sobre la gestión', async () => {
+      const result = await service.getRegisteredUsers(
+        query({ period: 'II-2025' }),
+      );
 
       expect(result).toMatchObject({ totalItems: 25, totalPages: 3 });
       expect(
-        collectAllPages(service, { period: 'II-2025' }).map(
+        (await collectAllPages(service, { period: 'II-2025' })).map(
           (page) => page.length,
         ),
       ).toEqual([10, 10, 5]);
     });
 
-    it('una gestión sin registros devuelve lista vacía y 0 páginas', () => {
-      expect(service.getRegisteredUsers(query({ period: 'II-2026' }))).toEqual({
+    it('una gestión sin registros devuelve lista vacía y 0 páginas', async () => {
+      expect(
+        await service.getRegisteredUsers(query({ period: 'II-2026' })),
+      ).toEqual({
         items: [],
         totalItems: 0,
         totalPages: 0,
@@ -261,9 +274,9 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       { period: 'II-2025', userType: 'titulado' },
     ])(
       'recorrer todas las páginas de %o no repite ni omite usuarios con la misma fecha',
-      (filters) => {
-        const { totalItems } = service.getRegisteredUsers(query(filters));
-        const ids = collectAllPages(service, filters)
+      async (filters) => {
+        const { totalItems } = await service.getRegisteredUsers(query(filters));
+        const ids = (await collectAllPages(service, filters))
           .flat()
           .map((user) => user.id);
 
@@ -273,24 +286,26 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       },
     );
 
-    it('el orden no depende del orden en que llegan los datos', () => {
+    it('el orden no depende del orden en que llegan los datos', async () => {
       const shuffled = buildService([...dataset].reverse());
 
-      expect(collectAllPages(shuffled, { period: 'II-2025' })).toEqual(
-        collectAllPages(service, { period: 'II-2025' }),
+      expect(await collectAllPages(shuffled, { period: 'II-2025' })).toEqual(
+        await collectAllPages(service, { period: 'II-2025' }),
       );
     });
 
     it('consultar la misma gestión varias veces devuelve lo mismo', () => {
-      const pageTwo = () =>
-        service.getRegisteredUsers(query({ period: 'II-2025', page: 2 }));
+      const pageTwo = async () =>
+        await service.getRegisteredUsers(query({ period: 'II-2025', page: 2 }));
 
       expect(pageTwo()).toEqual(pageTwo());
     });
 
-    it('cambiar entre gestiones devuelve solo los datos de la última', () => {
-      service.getRegisteredUsers(query({ period: 'II-2025' }));
-      const last = service.getRegisteredUsers(query({ period: 'I-2026' }));
+    it('cambiar entre gestiones devuelve solo los datos de la última', async () => {
+      await service.getRegisteredUsers(query({ period: 'II-2025' }));
+      const last = await service.getRegisteredUsers(
+        query({ period: 'I-2026' }),
+      );
 
       expect(
         last.items.every(
@@ -304,10 +319,12 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
   describe('integridad de los 6 campos por usuario', () => {
     const sourceById = new Map(dataset.map((user) => [user.id, user]));
 
-    it('cada fila filtrada por gestión trae los 6 campos del mismo usuario', () => {
-      for (const user of collectAllPages(service, {
-        period: 'II-2025',
-      }).flat()) {
+    it('cada fila filtrada por gestión trae los 6 campos del mismo usuario', async () => {
+      for (const user of (
+        await collectAllPages(service, {
+          period: 'II-2025',
+        })
+      ).flat()) {
         const source = sourceById.get(user.id);
 
         expect(user).toEqual({
@@ -324,20 +341,23 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
   });
 
   describe('exportación CSV con la gestión activa', () => {
-    const csvRows = (filters: Record<string, unknown>) =>
-      service
-        .exportRegisteredUsersCsv(registeredUsersFiltersSchema.parse(filters))
-        .content.replace(CSV_BOM, '')
+    const csvRows = async (filters: Record<string, unknown>) =>
+      (
+        await service.exportRegisteredUsersCsv(
+          registeredUsersFiltersSchema.parse(filters),
+        )
+      ).content
+        .replace(CSV_BOM, '')
         .trim()
         .split('\r\n')
         .slice(1);
 
-    it('exporta todos los usuarios de la gestión, no solo los 10 de una página', () => {
-      expect(csvRows({ period: 'II-2025' })).toHaveLength(25);
+    it('exporta todos los usuarios de la gestión, no solo los 10 de una página', async () => {
+      expect(await csvRows({ period: 'II-2025' })).toHaveLength(25);
     });
 
-    it('exporta la intersección de gestión y tipo de usuario completa', () => {
-      const rows = csvRows({ period: 'II-2025', userType: 'estudiante' });
+    it('exporta la intersección de gestión y tipo de usuario completa', async () => {
+      const rows = await csvRows({ period: 'II-2025', userType: 'estudiante' });
 
       expect(rows).toHaveLength(12);
       expect(rows.every((row) => row.split(',')[2] === 'Estudiante')).toBe(
@@ -345,12 +365,12 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       );
     });
 
-    it('exporta solo la cabecera si la gestión no tiene registros', () => {
-      expect(csvRows({ period: 'II-2026' })).toEqual([]);
+    it('exporta solo la cabecera si la gestión no tiene registros', async () => {
+      expect(await csvRows({ period: 'II-2026' })).toEqual([]);
     });
 
-    it('nombra el archivo con el tipo de usuario y la gestión', () => {
-      const { fileName } = service.exportRegisteredUsersCsv(
+    it('nombra el archivo con el tipo de usuario y la gestión', async () => {
+      const { fileName } = await service.exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({
           period: 'II-2025',
           userType: 'estudiante',

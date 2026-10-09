@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  type OnModuleInit,
-  Optional,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ROLE_NAMES, type RoleName } from '../../../common/enums/roles.enum.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { ACCESS_REQUEST_STATUS } from '../../access-requests/types/access-request.enum.js';
@@ -24,134 +19,93 @@ function toFullName(firstName: string, lastName: string): string {
 }
 
 @Injectable()
-export class ReportUsersRepository implements OnModuleInit {
-  private readonly logger = new Logger(ReportUsersRepository.name);
-  private cache: ReportUser[] = [];
-  private refreshPromise: Promise<void> | null = null;
+export class ReportUsersRepository {
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(@Optional() private readonly prisma?: PrismaService) {}
+  async findAll(): Promise<ReportUser[]> {
+    const [users, requests] = await Promise.all([
+      this.prisma.user.findMany({
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          createdAt: true,
+          roles: {
+            select: { role: { select: { name: true } } },
+            where: { deletedAt: null },
+            orderBy: { startAt: 'asc' },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.accessRequest.findMany({
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          idCardNumber: true,
+          rejectionReason: true,
+          submittedAt: true,
+          createdAt: true,
+          status: { select: { title: true } },
+          documentType: { select: { title: true } },
+        },
+        where: {
+          status: {
+            title: {
+              in: [
+                ACCESS_REQUEST_STATUS.APPROVED,
+                ACCESS_REQUEST_STATUS.REJECTED,
+              ],
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
-  async onModuleInit(): Promise<void> {
-    await this.refresh();
-  }
+    const approvedByEmail = new Map(
+      requests
+        .filter(({ status }) => status.title === ACCESS_REQUEST_STATUS.APPROVED)
+        .map((request) => [request.email.toLowerCase(), request]),
+    );
 
-  async refresh(): Promise<void> {
-    if (!this.prisma) {
-      return;
-    }
+    const registered = users.map((user): ReportUser => {
+      const request = approvedByEmail.get(user.email.toLowerCase());
 
-    if (this.refreshPromise) {
-      return this.refreshPromise;
-    }
-
-    this.refreshPromise = this.doRefresh().finally(() => {
-      this.refreshPromise = null;
+      return {
+        id: user.id,
+        fullName: toFullName(user.firstName, user.lastName),
+        email: user.email,
+        userType: toRoleName(user.roles[0]?.role.name),
+        identifier: request?.idCardNumber ?? '',
+        documentType:
+          (request?.documentType?.title as ReportDocumentType | undefined) ??
+          null,
+        registeredAt: user.createdAt.toISOString(),
+        registrationStatus: 'APPROVED',
+        rejectionReason: null,
+      };
     });
 
-    return this.refreshPromise;
-  }
+    const rejected = requests
+      .filter(({ status }) => status.title === ACCESS_REQUEST_STATUS.REJECTED)
+      .map((request): ReportUser => ({
+        id: request.id,
+        fullName: toFullName(request.firstName, request.lastName),
+        email: request.email,
+        userType: DEFAULT_USER_TYPE,
+        identifier: request.idCardNumber,
+        documentType:
+          (request.documentType?.title as ReportDocumentType | undefined) ??
+          null,
+        registeredAt: (request.submittedAt ?? request.createdAt).toISOString(),
+        registrationStatus: 'REJECTED',
+        rejectionReason: request.rejectionReason,
+      }));
 
-  private async doRefresh(): Promise<void> {
-    if (!this.prisma) {
-      return;
-    }
-
-    try {
-      const [users, requests] = await Promise.all([
-        this.prisma.user.findMany({
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            createdAt: true,
-            roles: {
-              select: { role: { select: { name: true } } },
-              where: { deletedAt: null },
-              orderBy: { startAt: 'asc' },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-        this.prisma.accessRequest.findMany({
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            idCardNumber: true,
-            rejectionReason: true,
-            submittedAt: true,
-            createdAt: true,
-            status: { select: { title: true } },
-            documentType: { select: { title: true } },
-          },
-          where: {
-            status: {
-              title: {
-                in: [
-                  ACCESS_REQUEST_STATUS.APPROVED,
-                  ACCESS_REQUEST_STATUS.REJECTED,
-                ],
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-      ]);
-
-      const approvedByEmail = new Map(
-        requests
-          .filter(
-            ({ status }) => status.title === ACCESS_REQUEST_STATUS.APPROVED,
-          )
-          .map((request) => [request.email.toLowerCase(), request]),
-      );
-
-      const registered = users.map((user): ReportUser => {
-        const request = approvedByEmail.get(user.email.toLowerCase());
-
-        return {
-          id: user.id,
-          fullName: toFullName(user.firstName, user.lastName),
-          email: user.email,
-          userType: toRoleName(user.roles[0]?.role.name),
-          identifier: request?.idCardNumber ?? '',
-          documentType:
-            (request?.documentType?.title as ReportDocumentType | undefined) ??
-            null,
-          registeredAt: user.createdAt.toISOString(),
-          registrationStatus: 'APPROVED',
-          rejectionReason: null,
-        };
-      });
-
-      const rejected = requests
-        .filter(({ status }) => status.title === ACCESS_REQUEST_STATUS.REJECTED)
-        .map((request): ReportUser => ({
-          id: request.id,
-          fullName: toFullName(request.firstName, request.lastName),
-          email: request.email,
-          userType: DEFAULT_USER_TYPE,
-          identifier: request.idCardNumber,
-          documentType:
-            (request.documentType?.title as ReportDocumentType | undefined) ??
-            null,
-          registeredAt: (
-            request.submittedAt ?? request.createdAt
-          ).toISOString(),
-          registrationStatus: 'REJECTED',
-          rejectionReason: request.rejectionReason,
-        }));
-
-      this.cache = [...registered, ...rejected];
-    } catch (error) {
-      this.logger.error('Error al sincronizar usuarios desde Prisma', error);
-    }
-  }
-
-  findAll(): readonly ReportUser[] {
-    void this.refresh();
-    return this.cache;
+    return [...registered, ...rejected];
   }
 }

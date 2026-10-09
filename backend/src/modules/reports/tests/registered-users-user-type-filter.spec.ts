@@ -1,3 +1,4 @@
+import type { PrismaService } from '../../../common/prisma/prisma.service.js';
 import { ReportUsersRepository } from '../repositories/report-users.repository.js';
 import {
   ALL_FILTER_VALUE,
@@ -79,24 +80,27 @@ function buildDataset(): ReportUser[] {
 }
 
 function buildService(users: readonly ReportUser[]): ReportsService {
-  const repository = new ReportUsersRepository();
-  vi.spyOn(repository, 'findAll').mockReturnValue(users);
+  const repository = new ReportUsersRepository({} as PrismaService);
+  vi.spyOn(repository, 'findAll').mockResolvedValue([...users]);
   return new ReportsService(repository);
 }
 
 const query = (input: Record<string, unknown> = {}) =>
   registeredUsersQuerySchema.parse(input);
 
-function collectAllPages(
+async function collectAllPages(
   service: ReportsService,
   userType?: string,
-): RegisteredUserResponse[][] {
-  const firstPage = service.getRegisteredUsers(query({ userType }));
+): Promise<RegisteredUserResponse[][]> {
+  const firstPage = await service.getRegisteredUsers(query({ userType }));
 
-  return Array.from(
-    { length: firstPage.totalPages },
-    (_, index) =>
-      service.getRegisteredUsers(query({ userType, page: index + 1 })).items,
+  return Promise.all(
+    Array.from({ length: firstPage.totalPages }, async (_, index) => {
+      const result = await service.getRegisteredUsers(
+        query({ userType, page: index + 1 }),
+      );
+      return result.items;
+    }),
   );
 }
 
@@ -108,25 +112,23 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
     it.each([
       { case: 'sin userType', input: {} },
       { case: 'con userType=ALL', input: { userType: ALL_FILTER_VALUE } },
-    ])('devuelve los aprobados de todos los tipos $case', ({ input }) => {
-      const result = service.getRegisteredUsers(query(input));
+    ])('devuelve los aprobados de todos los tipos $case', async ({ input }) => {
+      const result = await service.getRegisteredUsers(query(input));
 
       expect(result.totalItems).toBe(TOTAL_APPROVED);
       expect(result.totalPages).toBe(Math.ceil(TOTAL_APPROVED / PAGE_SIZE));
       expect(result.items).toHaveLength(PAGE_SIZE);
     });
 
-    it('"Todos" y omitir el parámetro devuelven exactamente lo mismo', () => {
-      expect(collectAllPages(service, ALL_FILTER_VALUE)).toEqual(
-        collectAllPages(service),
+    it('"Todos" y omitir el parámetro devuelven exactamente lo mismo', async () => {
+      expect(await collectAllPages(service, ALL_FILTER_VALUE)).toEqual(
+        await collectAllPages(service),
       );
     });
 
-    it('incluye registros de todos los tipos que tienen aprobados', () => {
+    it('incluye registros de todos los tipos que tienen aprobados', async () => {
       const userTypes = new Set(
-        collectAllPages(service)
-          .flat()
-          .map((user) => user.userType),
+        (await collectAllPages(service)).flat().map((user) => user.userType),
       );
 
       expect([...userTypes].sort()).toEqual(
@@ -136,8 +138,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       );
     });
 
-    it('nunca incluye usuarios pendientes ni rechazados', () => {
-      const ids = collectAllPages(service)
+    it('nunca incluye usuarios pendientes ni rechazados', async () => {
+      const ids = (await collectAllPages(service))
         .flat()
         .map((user) => user.id);
 
@@ -168,8 +170,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
     it.each(ROLE_NAMES)(
       'con userType=%s solo devuelve usuarios de ese tipo',
-      (userType) => {
-        const users = collectAllPages(service, userType).flat();
+      async (userType) => {
+        const users = (await collectAllPages(service, userType)).flat();
 
         expect(users).toHaveLength(APPROVED_COUNT_BY_TYPE[userType]);
         expect(users.every((user) => user.userType === userType)).toBe(true);
@@ -180,8 +182,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   describe('CA 6 y CA 27: totales calculados sobre el subconjunto filtrado', () => {
     it.each(ROLE_NAMES)(
       'totalItems y totalPages de %s no usan el total general',
-      (userType) => {
-        const result = service.getRegisteredUsers(query({ userType }));
+      async (userType) => {
+        const result = await service.getRegisteredUsers(query({ userType }));
         const expectedTotal = APPROVED_COUNT_BY_TYPE[userType];
 
         expect(result.totalItems).toBe(expectedTotal);
@@ -190,13 +192,15 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       },
     );
 
-    it('los totales no cambian según la página consultada', () => {
-      const totals = [1, 2, 3, 4].map((page) => {
-        const result = service.getRegisteredUsers(
-          query({ userType: 'titulado', page }),
-        );
-        return [result.totalItems, result.totalPages];
-      });
+    it('los totales no cambian según la página consultada', async () => {
+      const totals = await Promise.all(
+        [1, 2, 3, 4].map(async (page) => {
+          const result = await service.getRegisteredUsers(
+            query({ userType: 'titulado', page }),
+          );
+          return [result.totalItems, result.totalPages];
+        }),
+      );
 
       expect(new Set(totals.map((total) => total.join('/'))).size).toBe(1);
       expect(totals[0]).toEqual([23, 3]);
@@ -204,8 +208,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   });
 
   describe('CA 7 y CA 14: máximo 10 registros por página', () => {
-    it('con exactamente 10 registros calcula una sola página', () => {
-      const result = service.getRegisteredUsers(
+    it('con exactamente 10 registros calcula una sola página', async () => {
+      const result = await service.getRegisteredUsers(
         query({ userType: 'estudiante' }),
       );
 
@@ -213,8 +217,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       expect(result.items).toHaveLength(10);
     });
 
-    it('con exactamente 10 registros la página 2 no existe y viene vacía', () => {
-      const result = service.getRegisteredUsers(
+    it('con exactamente 10 registros la página 2 no existe y viene vacía', async () => {
+      const result = await service.getRegisteredUsers(
         query({ userType: 'estudiante', page: 2 }),
       );
 
@@ -222,19 +226,20 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       expect(result).toMatchObject({ totalItems: 10, totalPages: 1 });
     });
 
-    it('con 11 registros calcula 2 páginas y la segunda tiene 1 registro', () => {
-      const [firstPage, secondPage] = collectAllPages(service, 'mentor');
+    it('con 11 registros calcula 2 páginas y la segunda tiene 1 registro', async () => {
+      const [firstPage, secondPage] = await collectAllPages(service, 'mentor');
 
       expect(
-        service.getRegisteredUsers(query({ userType: 'mentor' })).totalPages,
+        (await service.getRegisteredUsers(query({ userType: 'mentor' })))
+          .totalPages,
       ).toBe(2);
       expect(firstPage).toHaveLength(10);
       expect(secondPage).toHaveLength(1);
     });
 
-    it('ninguna página supera los 10 registros', () => {
+    it('ninguna página supera los 10 registros', async () => {
       for (const userType of [undefined, ...ROLE_NAMES]) {
-        for (const page of collectAllPages(service, userType)) {
+        for (const page of await collectAllPages(service, userType)) {
           expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
         }
       }
@@ -253,8 +258,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   describe('CA 8: el filtro se mantiene al cambiar de página', () => {
     it.each(['titulado', 'mentor'] as const)(
       'todas las páginas de %s conservan el tipo de usuario',
-      (userType) => {
-        const pages = collectAllPages(service, userType);
+      async (userType) => {
+        const pages = await collectAllPages(service, userType);
 
         expect(pages.length).toBeGreaterThan(1);
         pages.forEach((page) => {
@@ -265,8 +270,10 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   });
 
   describe('CA 10: tipo de usuario sin registros', () => {
-    it('devuelve una lista vacía con totales en 0', () => {
-      const result = service.getRegisteredUsers(query({ userType: 'empresa' }));
+    it('devuelve una lista vacía con totales en 0', async () => {
+      const result = await service.getRegisteredUsers(
+        query({ userType: 'empresa' }),
+      );
 
       expect(result).toEqual({
         items: [],
@@ -277,16 +284,19 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       });
     });
 
-    it('no completa con usuarios de otros tipos en ninguna página', () => {
+    it('no completa con usuarios de otros tipos en ninguna página', async () => {
       for (const page of [1, 2, 5]) {
         expect(
-          service.getRegisteredUsers(query({ userType: 'empresa', page }))
-            .items,
+          (
+            await service.getRegisteredUsers(
+              query({ userType: 'empresa', page }),
+            )
+          ).items,
         ).toEqual([]);
       }
     });
 
-    it('no cuenta a las empresas rechazadas', () => {
+    it('no cuenta a las empresas rechazadas', async () => {
       const notApprovedCompanies = dataset.filter(
         (user) =>
           user.userType === 'empresa' && user.registrationStatus !== 'APPROVED',
@@ -294,7 +304,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
 
       expect(notApprovedCompanies).toHaveLength(1);
       expect(
-        service.getRegisteredUsers(query({ userType: 'empresa' })).totalItems,
+        (await service.getRegisteredUsers(query({ userType: 'empresa' })))
+          .totalItems,
       ).toBe(0);
     });
   });
@@ -302,16 +313,16 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   describe('CA 15 y CA 16: integridad de los 6 campos por usuario', () => {
     const sourceById = new Map(dataset.map((user) => [user.id, user]));
 
-    it('cada fila trae solo el id y los 6 campos del reporte', () => {
-      for (const user of collectAllPages(service).flat()) {
+    it('cada fila trae solo el id y los 6 campos del reporte', async () => {
+      for (const user of (await collectAllPages(service)).flat()) {
         expect(Object.keys(user).sort()).toEqual(
           ['id', ...REQUIRED_FIELDS].sort(),
         );
       }
     });
 
-    it('los 6 campos de cada fila pertenecen al mismo usuario', () => {
-      for (const user of collectAllPages(service).flat()) {
+    it('los 6 campos de cada fila pertenecen al mismo usuario', async () => {
+      for (const user of (await collectAllPages(service)).flat()) {
         const source = sourceById.get(user.id);
 
         expect(source).toBeDefined();
@@ -321,8 +332,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       }
     });
 
-    it('ningún campo llega vacío', () => {
-      for (const user of collectAllPages(service, 'mentor').flat()) {
+    it('ningún campo llega vacío', async () => {
+      for (const user of (await collectAllPages(service, 'mentor')).flat()) {
         for (const field of REQUIRED_FIELDS) {
           expect(user[field]).toBeTruthy();
         }
@@ -333,9 +344,11 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   describe('CA 22 y CA 23: sin duplicados ni omisiones entre páginas', () => {
     it.each([undefined, ...ROLE_NAMES])(
       'recorrer todas las páginas de %s devuelve cada usuario una sola vez',
-      (userType) => {
-        const { totalItems } = service.getRegisteredUsers(query({ userType }));
-        const ids = collectAllPages(service, userType)
+      async (userType) => {
+        const { totalItems } = await service.getRegisteredUsers(
+          query({ userType }),
+        );
+        const ids = (await collectAllPages(service, userType))
           .flat()
           .map((user) => user.id);
 
@@ -344,8 +357,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       },
     );
 
-    it('con fechas idénticas desempata por id en orden ascendente', () => {
-      const ids = collectAllPages(service, 'titulado')
+    it('con fechas idénticas desempata por id en orden ascendente', async () => {
+      const ids = (await collectAllPages(service, 'titulado'))
         .flat()
         .map((user) => user.id);
 
@@ -362,37 +375,42 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       );
     });
 
-    it('ordena del más reciente al más antiguo', () => {
-      const dates = collectAllPages(service, 'mentor')
+    it('ordena del más reciente al más antiguo', async () => {
+      const dates = (await collectAllPages(service, 'mentor'))
         .flat()
         .map((user) => new Date(user.registeredAt).getTime());
 
       expect(dates).toEqual([...dates].sort((a, b) => b - a));
     });
 
-    it('el orden no depende del orden en que llegan los datos', () => {
+    it('el orden no depende del orden en que llegan los datos', async () => {
       const reversed = buildService([...dataset].reverse());
 
-      expect(collectAllPages(reversed, 'titulado')).toEqual(
-        collectAllPages(service, 'titulado'),
+      expect(await collectAllPages(reversed, 'titulado')).toEqual(
+        await collectAllPages(service, 'titulado'),
       );
-      expect(collectAllPages(reversed)).toEqual(collectAllPages(service));
+      expect(await collectAllPages(reversed)).toEqual(
+        await collectAllPages(service),
+      );
     });
 
-    it('consultas repetidas de la misma página devuelven lo mismo', () => {
-      const pageTwo = () =>
-        service.getRegisteredUsers(query({ userType: 'titulado', page: 2 }))
-          .items;
+    it('consultas repetidas de la misma página devuelven lo mismo', async () => {
+      const pageTwo = async () =>
+        (
+          await service.getRegisteredUsers(
+            query({ userType: 'titulado', page: 2 }),
+          )
+        ).items;
 
-      expect(pageTwo()).toEqual(pageTwo());
+      expect(await pageTwo()).toEqual(await pageTwo());
     });
 
-    it('resiste un volumen alto de usuarios con la misma fecha', () => {
+    it('resiste un volumen alto de usuarios con la misma fecha', async () => {
       const users = Array.from({ length: 1_000 }, (_, index) => ({
         ...buildUser('mentor', index),
         registeredAt: SAME_REGISTRATION_DATE,
       }));
-      const ids = collectAllPages(buildService(users), 'mentor')
+      const ids = (await collectAllPages(buildService(users), 'mentor'))
         .flat()
         .map((user) => user.id);
 
@@ -402,11 +420,11 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
   });
 
   describe('Exportación CSV con el filtro de tipo de usuario', () => {
-    it('"Todos" exporta lo mismo que omitir el filtro', () => {
-      const all = service.exportRegisteredUsersCsv(
+    it('"Todos" exporta lo mismo que omitir el filtro', async () => {
+      const all = await service.exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({ userType: ALL_FILTER_VALUE }),
       );
-      const omitted = service.exportRegisteredUsersCsv(
+      const omitted = await service.exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({}),
       );
 
@@ -414,8 +432,8 @@ describe('Reporte de usuarios registrados: filtro por tipo de usuario (HU02)', (
       expect(all.content.trim().split('\r\n')).toHaveLength(TOTAL_APPROVED + 1);
     });
 
-    it('un tipo sin registros exporta solo la cabecera', () => {
-      const { content } = service.exportRegisteredUsersCsv(
+    it('un tipo sin registros exporta solo la cabecera', async () => {
+      const { content } = await service.exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({ userType: 'empresa' }),
       );
 

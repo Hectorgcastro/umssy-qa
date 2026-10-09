@@ -64,14 +64,18 @@ function sortByNewest(users: ReportUser[]): ReportUser[] {
 export class ReportsService {
   constructor(private readonly reportUsersRepository: ReportUsersRepository) {}
 
-  getRegisteredUsers(
+  async getRegisteredUsers(
     query: RegisteredUsersQuery,
-  ): PaginatedResult<RegisteredUserResponse> {
-    return paginate(this.findRegisteredUsers(query), query.page, query.limit);
+  ): Promise<PaginatedResult<RegisteredUserResponse>> {
+    const users = await this.findRegisteredUsers(query);
+    return paginate(users, query.page, query.limit);
   }
 
-  exportRegisteredUsersCsv(filters: RegisteredUsersFilters): ReportCsvFile {
-    const rows = this.findRegisteredUsers(filters).map(toRegisteredUserCsvRow);
+  async exportRegisteredUsersCsv(
+    filters: RegisteredUsersFilters,
+  ): Promise<ReportCsvFile> {
+    const users = await this.findRegisteredUsers(filters);
+    const rows = users.map(toRegisteredUserCsvRow);
 
     const fileNameFilters = [
       filters.userType && USER_TYPE_LABELS[filters.userType],
@@ -89,14 +93,18 @@ export class ReportsService {
     };
   }
 
-  getRejectedUsers(
+  async getRejectedUsers(
     query: RejectedUsersQuery,
-  ): PaginatedResult<RejectedUserResponse> {
-    return paginate(this.findRejectedUsers(query), query.page, query.limit);
+  ): Promise<PaginatedResult<RejectedUserResponse>> {
+    const users = await this.findRejectedUsers(query);
+    return paginate(users, query.page, query.limit);
   }
 
-  exportRejectedUsersCsv(filters: RejectedUsersFilters): ReportCsvFile {
-    const rows = this.findRejectedUsers(filters).map(toRejectedUserCsvRow);
+  async exportRejectedUsersCsv(
+    filters: RejectedUsersFilters,
+  ): Promise<ReportCsvFile> {
+    const users = await this.findRejectedUsers(filters);
+    const rows = users.map(toRejectedUserCsvRow);
 
     return {
       fileName: buildExportFileName(
@@ -109,11 +117,10 @@ export class ReportsService {
     };
   }
 
-  private findRegisteredUsers(
+  private async findRegisteredUsers(
     filters: RegisteredUsersFilters,
-  ): RegisteredUserResponse[] {
-    const users = this.reportUsersRepository
-      .findAll()
+  ): Promise<RegisteredUserResponse[]> {
+    const users = (await this.reportUsersRepository.findAll())
       .filter((user) => user.registrationStatus === 'APPROVED')
       .filter(
         (user) =>
@@ -134,11 +141,10 @@ export class ReportsService {
     return sortByNewest(users).map(toRegisteredUserResponse);
   }
 
-  private findRejectedUsers(
+  private async findRejectedUsers(
     filters: RejectedUsersFilters,
-  ): RejectedUserResponse[] {
-    const users = this.reportUsersRepository
-      .findAll()
+  ): Promise<RejectedUserResponse[]> {
+    const users = (await this.reportUsersRepository.findAll())
       .filter((user) => user.registrationStatus === 'REJECTED')
       .filter((user) => containsSearch([user.email], filters.search));
 
