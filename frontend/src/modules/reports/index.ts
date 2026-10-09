@@ -10,5 +10,5 @@ export { useReportHistory } from "./hooks/use-report-history";
 export { REPORTS_NAVIGATION_ITEM } from "./constants/reports-navigation.constants";
 export { reportsService } from "./services/reports.service";
 export type { GeneratedReport, ReportType } from "./types/generated-report.types";
-export type { RegisteredUser, UserDocumentType, UserType } from "./types/registered-user.types";
+export type { RegisteredUser } from "./types/registered-user.types";
 export type { RejectedUser } from "./types/rejected-user.types";

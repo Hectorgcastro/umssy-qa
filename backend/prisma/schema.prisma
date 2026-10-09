@@ -119,13 +119,9 @@ model User {
   personalEmail String?  @map("personal_email")
   headline      String?
   aboutMe       String?  @map("about_me")
-  cvPdfUrl           Bytes?   @map("cv_pdf_url")
-  identifier         String?  @map("identifier") @db.VarChar(50)
-  documentType       String?  @map("document_type") @db.VarChar(50)
-  registrationStatus String?  @default("APPROVED") @map("registration_status") @db.VarChar(30)
-  rejectionReason    String?  @map("rejection_reason") @db.VarChar(300)
-  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  cvPdfUrl      Bytes?   @map("cv_pdf_url")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   city City? @relation(fields: [cityId], references: [id], onDelete: SetNull)
 

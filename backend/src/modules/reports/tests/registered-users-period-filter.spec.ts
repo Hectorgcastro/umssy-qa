@@ -6,10 +6,10 @@ import {
   registeredUsersQuerySchema,
 } from '../requests/report-users.schema.js';
 import { ReportsService } from '../services/reports.service.js';
+import type { RoleName } from '../../../common/enums/roles.enum.js';
 import type {
   RegisteredUserResponse,
   ReportUser,
-  ReportUserType,
 } from '../types/report-user.types.js';
 import { getAcademicPeriod } from '../utils/academic-period.js';
 
@@ -23,13 +23,13 @@ const PERIOD_DATES = {
 
 type SeededPeriod = keyof typeof PERIOD_DATES;
 
-const SEED: Record<SeededPeriod, Partial<Record<ReportUserType, number>>> = {
-  'I-2025': { STUDENT: 6, MENTOR: 4 },
-  'II-2025': { STUDENT: 12, DEGREE_HOLDER: 11, COMPANY: 2 },
-  'I-2026': { ADMIN: 3, STUDENT: 1 },
+const SEED: Record<SeededPeriod, Partial<Record<RoleName, number>>> = {
+  'I-2025': { estudiante: 6, mentor: 4 },
+  'II-2025': { estudiante: 12, titulado: 11, empresa: 2 },
+  'I-2026': { administrativo: 3, estudiante: 1 },
 };
 
-function countFor(period: SeededPeriod, userType?: ReportUserType): number {
+function countFor(period: SeededPeriod, userType?: RoleName): number {
   const counts = SEED[period];
   return userType
     ? (counts[userType] ?? 0)
@@ -38,7 +38,7 @@ function countFor(period: SeededPeriod, userType?: ReportUserType): number {
 
 function buildUser(
   period: SeededPeriod,
-  userType: ReportUserType,
+  userType: RoleName,
   index: number,
   overrides: Partial<ReportUser> = {},
 ): ReportUser {
@@ -50,7 +50,7 @@ function buildUser(
     email: `${id.toLowerCase()}@example.com`,
     userType,
     identifier: `ID-${id}`,
-    documentType: 'ACADEMIC_DEGREE',
+    documentType: 'academic_diploma',
     registeredAt: PERIOD_DATES[period],
     registrationStatus: 'APPROVED',
     rejectionReason: null,
@@ -62,14 +62,13 @@ function buildDataset(): ReportUser[] {
   const approved = (Object.keys(SEED) as SeededPeriod[]).flatMap((period) =>
     Object.entries(SEED[period]).flatMap(([userType, count]) =>
       Array.from({ length: count }, (_, index) =>
-        buildUser(period, userType as ReportUserType, index),
+        buildUser(period, userType as RoleName, index),
       ),
     ),
   );
   const notApproved = (Object.keys(SEED) as SeededPeriod[]).flatMap(
     (period) => [
-      buildUser(period, 'STUDENT', 90, { registrationStatus: 'PENDING' }),
-      buildUser(period, 'STUDENT', 91, { registrationStatus: 'REJECTED' }),
+      buildUser(period, 'estudiante', 91, { registrationStatus: 'REJECTED' }),
     ],
   );
 
@@ -139,10 +138,10 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
 
     it('excluye los registros de gestiones vecinas en el cambio de semestre', () => {
       const boundaryService = buildService([
-        buildUser('I-2025', 'STUDENT', 1, {
+        buildUser('I-2025', 'estudiante', 1, {
           registeredAt: '2025-07-01T03:59:00.000Z',
         }),
-        buildUser('II-2025', 'STUDENT', 2, {
+        buildUser('II-2025', 'estudiante', 2, {
           registeredAt: '2025-07-01T04:00:00.000Z',
         }),
       ]);
@@ -151,12 +150,12 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
         boundaryService
           .getRegisteredUsers(query({ period: 'I-2025' }))
           .items.map((user) => user.id),
-      ).toEqual(['I-2025-STUDENT-01']);
+      ).toEqual(['I-2025-estudiante-01']);
       expect(
         boundaryService
           .getRegisteredUsers(query({ period: 'II-2025' }))
           .items.map((user) => user.id),
-      ).toEqual(['II-2025-STUDENT-02']);
+      ).toEqual(['II-2025-estudiante-02']);
     });
 
     it.each([{}, { period: ALL_FILTER_VALUE }])(
@@ -181,10 +180,10 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
 
   describe('filtros combinados de gestión y tipo de usuario', () => {
     it.each([
-      { period: 'II-2025', userType: 'DEGREE_HOLDER' },
-      { period: 'II-2025', userType: 'STUDENT' },
-      { period: 'I-2025', userType: 'MENTOR' },
-      { period: 'I-2026', userType: 'ADMIN' },
+      { period: 'II-2025', userType: 'titulado' },
+      { period: 'II-2025', userType: 'estudiante' },
+      { period: 'I-2025', userType: 'mentor' },
+      { period: 'I-2026', userType: 'administrativo' },
     ] as const)(
       '$period + $userType devuelve la intersección de ambos criterios',
       ({ period, userType }) => {
@@ -201,10 +200,10 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
     it('el orden en que se envían los filtros no cambia el resultado', () => {
       const periodFirst = collectAllPages(service, {
         period: 'II-2025',
-        userType: 'STUDENT',
+        userType: 'estudiante',
       });
       const userTypeFirst = collectAllPages(service, {
-        userType: 'STUDENT',
+        userType: 'estudiante',
         period: 'II-2025',
       });
 
@@ -213,7 +212,7 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
 
     it('una combinación sin registros devuelve vacío sin mezclar otros tipos', () => {
       const result = service.getRegisteredUsers(
-        query({ period: 'I-2026', userType: 'COMPANY' }),
+        query({ period: 'I-2026', userType: 'empresa' }),
       );
 
       expect(result).toMatchObject({
@@ -258,8 +257,8 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
 
     it.each([
       { period: 'II-2025' },
-      { period: 'II-2025', userType: 'STUDENT' },
-      { period: 'II-2025', userType: 'DEGREE_HOLDER' },
+      { period: 'II-2025', userType: 'estudiante' },
+      { period: 'II-2025', userType: 'titulado' },
     ])(
       'recorrer todas las páginas de %o no repite ni omite usuarios con la misma fecha',
       (filters) => {
@@ -338,7 +337,7 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
     });
 
     it('exporta la intersección de gestión y tipo de usuario completa', () => {
-      const rows = csvRows({ period: 'II-2025', userType: 'STUDENT' });
+      const rows = csvRows({ period: 'II-2025', userType: 'estudiante' });
 
       expect(rows).toHaveLength(12);
       expect(rows.every((row) => row.split(',')[2] === 'Estudiante')).toBe(
@@ -354,7 +353,7 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       const { fileName } = service.exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({
           period: 'II-2025',
-          userType: 'STUDENT',
+          userType: 'estudiante',
         }),
       );
 
@@ -383,7 +382,6 @@ describe('Reporte de usuarios registrados: filtro por gestión semestral (HU07)'
       'i-2025',
       'I_2025',
       '2025',
-      'I-2019',
       '',
       "I-2025' OR '1'='1",
     ])('rechaza la gestión %s', (period) => {

@@ -1,27 +1,15 @@
+import { toBoliviaTime } from '../../../common/utils/date-time.js';
+
 export const ACADEMIC_PERIOD_PATTERN = /^(I|II)-\d{4}$/;
 
 const FIRST_SEMESTER_LAST_MONTH = 6;
 
-const YEAR_MONTH_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/La_Paz',
-  year: 'numeric',
-  month: 'numeric',
-});
-
-export function getAcademicPeriodYear(period: string): number {
-  return Number(period.split('-')[1]);
-}
-
 export function getAcademicPeriod(isoDate: string): string | undefined {
-  const date = new Date(isoDate);
-
-  if (Number.isNaN(date.getTime())) {
+  if (Number.isNaN(new Date(isoDate).getTime())) {
     return undefined;
   }
 
-  const parts = YEAR_MONTH_FORMATTER.formatToParts(date);
-  const year = parts.find((part) => part.type === 'year')?.value;
-  const month = Number(parts.find((part) => part.type === 'month')?.value);
+  const { year, month } = toBoliviaTime(isoDate);
   const semester = month <= FIRST_SEMESTER_LAST_MONTH ? 'I' : 'II';
 
   return `${semester}-${year}`;

@@ -3,16 +3,10 @@ import {
   DEFAULT_PAGE_SIZE,
   paginationSchema,
 } from '../../../common/utils/pagination.js';
-import { REPORT_USER_TYPES } from '../types/report-user.types.js';
-import {
-  ACADEMIC_PERIOD_PATTERN,
-  getAcademicPeriodYear,
-} from '../utils/academic-period.js';
+import { ROLE_NAMES } from '../../../common/enums/roles.enum.js';
+import { ACADEMIC_PERIOD_PATTERN } from '../utils/academic-period.js';
 
-const FIRST_REPORT_YEAR = 2020;
-const MAX_SEARCH_LENGTH = 100;
-
-const searchSchema = z.string().trim().max(MAX_SEARCH_LENGTH).optional();
+const searchSchema = z.string().trim().optional();
 
 export const ALL_FILTER_VALUE = 'ALL';
 
@@ -25,7 +19,7 @@ function withAllOption<TSchema extends z.ZodType<string>>(schema: TSchema) {
     .optional();
 }
 
-const userTypeSchema = withAllOption(z.enum(REPORT_USER_TYPES));
+const userTypeSchema = withAllOption(z.enum(ROLE_NAMES));
 
 const academicPeriodSchema = withAllOption(
   z
@@ -34,10 +28,6 @@ const academicPeriodSchema = withAllOption(
     .regex(
       ACADEMIC_PERIOD_PATTERN,
       'La gestión debe tener el formato I-2025 o II-2025',
-    )
-    .refine(
-      (period) => getAcademicPeriodYear(period) >= FIRST_REPORT_YEAR,
-      `La gestión no puede ser anterior a ${FIRST_REPORT_YEAR}`,
     ),
 );
 

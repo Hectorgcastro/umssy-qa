@@ -4,21 +4,24 @@ import {
   type OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { ROLE_NAMES, type RoleName } from '../../../common/enums/roles.enum.js';
 import { PrismaService } from '../../../common/prisma/prisma.service.js';
+import { ACCESS_REQUEST_STATUS } from '../../access-requests/types/access-request.enum.js';
 import type {
   ReportDocumentType,
-  ReportRegistrationStatus,
   ReportUser,
-  ReportUserType,
 } from '../types/report-user.types.js';
 
-const ROLE_NAME_TO_USER_TYPE: Record<string, ReportUserType> = {
-  titulado: 'DEGREE_HOLDER',
-  estudiante: 'STUDENT',
-  mentor: 'MENTOR',
-  empresa: 'COMPANY',
-  administrativo: 'ADMIN',
-};
+const DEFAULT_USER_TYPE: RoleName = 'titulado';
+
+function toRoleName(name: string | undefined): RoleName {
+  const normalized = name?.toLowerCase().trim();
+  return ROLE_NAMES.find((role) => role === normalized) ?? DEFAULT_USER_TYPE;
+}
+
+function toFullName(firstName: string, lastName: string): string {
+  return `${firstName} ${lastName}`.trim();
+}
 
 @Injectable()
 export class ReportUsersRepository implements OnModuleInit {
@@ -54,60 +57,94 @@ export class ReportUsersRepository implements OnModuleInit {
     }
 
     try {
-      const users = await this.prisma.user.findMany({
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          identifier: true,
-          documentType: true,
-          registrationStatus: true,
-          rejectionReason: true,
-          isActive: true,
-          createdAt: true,
-          roles: {
-            select: {
-              role: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-            where: {
-              deletedAt: null,
-            },
-            orderBy: {
-              startAt: 'asc',
+      const [users, requests] = await Promise.all([
+        this.prisma.user.findMany({
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            createdAt: true,
+            roles: {
+              select: { role: { select: { name: true } } },
+              where: { deletedAt: null },
+              orderBy: { startAt: 'asc' },
             },
           },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.accessRequest.findMany({
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            idCardNumber: true,
+            rejectionReason: true,
+            submittedAt: true,
+            createdAt: true,
+            status: { select: { title: true } },
+            documentType: { select: { title: true } },
+          },
+          where: {
+            status: {
+              title: {
+                in: [
+                  ACCESS_REQUEST_STATUS.APPROVED,
+                  ACCESS_REQUEST_STATUS.REJECTED,
+                ],
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+      ]);
 
-      this.cache = users.map((user) => {
-        const primaryRoleName = user.roles[0]?.role?.name?.toLowerCase().trim();
-        const userType: ReportUserType =
-          (primaryRoleName && ROLE_NAME_TO_USER_TYPE[primaryRoleName]) ||
-          'STUDENT';
+      const approvedByEmail = new Map(
+        requests
+          .filter(
+            ({ status }) => status.title === ACCESS_REQUEST_STATUS.APPROVED,
+          )
+          .map((request) => [request.email.toLowerCase(), request]),
+      );
+
+      const registered = users.map((user): ReportUser => {
+        const request = approvedByEmail.get(user.email.toLowerCase());
 
         return {
           id: user.id,
-          fullName: `${user.firstName} ${user.lastName}`.trim(),
+          fullName: toFullName(user.firstName, user.lastName),
           email: user.email,
-          userType,
-          identifier: user.identifier ?? '',
+          userType: toRoleName(user.roles[0]?.role.name),
+          identifier: request?.idCardNumber ?? '',
           documentType:
-            (user.documentType as ReportDocumentType) ?? 'ACADEMIC_DEGREE',
+            (request?.documentType?.title as ReportDocumentType | undefined) ??
+            null,
           registeredAt: user.createdAt.toISOString(),
-          registrationStatus:
-            (user.registrationStatus as ReportRegistrationStatus) ||
-            (user.isActive ? 'APPROVED' : 'REJECTED'),
-          rejectionReason: user.rejectionReason,
+          registrationStatus: 'APPROVED',
+          rejectionReason: null,
         };
       });
+
+      const rejected = requests
+        .filter(({ status }) => status.title === ACCESS_REQUEST_STATUS.REJECTED)
+        .map((request): ReportUser => ({
+          id: request.id,
+          fullName: toFullName(request.firstName, request.lastName),
+          email: request.email,
+          userType: DEFAULT_USER_TYPE,
+          identifier: request.idCardNumber,
+          documentType:
+            (request.documentType?.title as ReportDocumentType | undefined) ??
+            null,
+          registeredAt: (
+            request.submittedAt ?? request.createdAt
+          ).toISOString(),
+          registrationStatus: 'REJECTED',
+          rejectionReason: request.rejectionReason,
+        }));
+
+      this.cache = [...registered, ...rejected];
     } catch (error) {
       this.logger.error('Error al sincronizar usuarios desde Prisma', error);
     }

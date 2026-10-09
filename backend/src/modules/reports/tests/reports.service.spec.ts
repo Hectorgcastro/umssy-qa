@@ -14,9 +14,9 @@ function buildUser(overrides: Partial<ReportUser>): ReportUser {
     id: 'user-1',
     fullName: 'Usuario de prueba',
     email: 'usuario@example.com',
-    userType: 'DEGREE_HOLDER',
+    userType: 'titulado',
     identifier: 'ID-1',
-    documentType: 'ACADEMIC_DEGREE',
+    documentType: 'academic_diploma',
     registeredAt: '2026-01-01T00:00:00.000Z',
     registrationStatus: 'APPROVED',
     rejectionReason: null,
@@ -33,16 +33,15 @@ const USERS: ReportUser[] = [
   buildUser({
     id: 'b',
     fullName: 'Bruno Díaz',
-    userType: 'COMPANY',
+    userType: 'empresa',
     registeredAt: '2026-05-01T00:00:00.000Z',
   }),
   buildUser({
     id: 'c',
     fullName: 'Carla Ríos',
-    userType: 'ADMIN',
+    userType: 'administrativo',
     registeredAt: '2025-02-01T00:00:00.000Z',
   }),
-  buildUser({ id: 'd', fullName: 'Dario Paz', registrationStatus: 'PENDING' }),
   buildUser({
     id: 'e',
     fullName: 'Elena Soto',
@@ -95,12 +94,12 @@ describe('ReportsService', () => {
 
     it('aplica los filtros y usa las etiquetas de la tabla', () => {
       const { content } = buildService().exportRegisteredUsersCsv(
-        registeredUsersFiltersSchema.parse({ userType: 'COMPANY' }),
+        registeredUsersFiltersSchema.parse({ userType: 'empresa' }),
       );
 
       expect(content).toBe(
         `${CSV_BOM}Usuario,Correo,Tipo de Usuario,Identificador,Documento,Fecha de Registro\r\n` +
-          'Bruno Díaz,usuario@example.com,Empresa,ID-1,Título académico,30/04/2026\r\n',
+          'Bruno Díaz,usuario@example.com,Empresa,ID-1,Diploma académico,30/04/2026\r\n',
       );
     });
 
@@ -113,7 +112,7 @@ describe('ReportsService', () => {
     it('agrega al nombre del archivo los filtros usados', () => {
       const { fileName } = buildService().exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({
-          userType: 'STUDENT',
+          userType: 'estudiante',
           search: 'Ana Pérez',
         }),
       );
@@ -134,7 +133,7 @@ describe('ReportsService', () => {
     it('combina el tipo de usuario con la gestión', () => {
       const { fileName } = buildService().exportRegisteredUsersCsv(
         registeredUsersFiltersSchema.parse({
-          userType: 'STUDENT',
+          userType: 'estudiante',
           period: 'I-2026',
         }),
       );
@@ -160,8 +159,8 @@ describe('ReportsService', () => {
 
       expect(content).toBe(
         `${CSV_BOM}Usuario,Correo,Identificador,Documento,Fecha de Registro\r\n` +
-          'Fabio León,usuario@example.com,ID-1,Título académico,31/07/2026\r\n' +
-          'Elena Soto,usuario@example.com,ID-1,Título académico,31/12/2025\r\n',
+          'Fabio León,usuario@example.com,ID-1,Diploma académico,31/07/2026\r\n' +
+          'Elena Soto,usuario@example.com,ID-1,Diploma académico,31/12/2025\r\n',
       );
     });
 
@@ -223,12 +222,12 @@ describe('ReportsService', () => {
     });
 
     it.each([
-      { userType: 'COMPANY', expectedId: 'b' },
-      { userType: 'STUDENT', expectedId: 'student-1' },
+      { userType: 'empresa', expectedId: 'b' },
+      { userType: 'estudiante', expectedId: 'student-1' },
     ])('filtra por tipo de usuario $userType', ({ userType, expectedId }) => {
       const service = buildService([
         ...USERS,
-        buildUser({ id: 'student-1', userType: 'STUDENT' }),
+        buildUser({ id: 'student-1', userType: 'estudiante' }),
       ]);
       const result = service.getRegisteredUsers(registeredQuery({ userType }));
 
@@ -259,7 +258,6 @@ describe('ReportsService', () => {
       'I2025',
       '2025',
       'I-25',
-      'I-2019',
     ])('rechaza la gestión inválida %s', (period) => {
       expect(registeredUsersQuerySchema.safeParse({ period }).success).toBe(
         false,
@@ -309,7 +307,7 @@ describe('ReportsService', () => {
 
       expect(result.items.map((user) => user.id)).toEqual(['f', 'e']);
       expect(result.items[0]).toMatchObject({
-        documentType: 'ACADEMIC_DEGREE',
+        documentType: 'academic_diploma',
         rejectionReason: 'Correo inválido',
       });
       expect(result.items[0]).not.toHaveProperty('userType');

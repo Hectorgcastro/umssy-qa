@@ -208,10 +208,6 @@ export const UserScalarFieldEnum = {
   headline: 'headline',
   aboutMe: 'aboutMe',
   cvPdfUrl: 'cvPdfUrl',
-  identifier: 'identifier',
-  documentType: 'documentType',
-  registrationStatus: 'registrationStatus',
-  rejectionReason: 'rejectionReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

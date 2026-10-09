@@ -1,7 +1,4 @@
-import {
-  getAcademicPeriod,
-  getAcademicPeriodYear,
-} from '../utils/academic-period.js';
+import { getAcademicPeriod } from '../utils/academic-period.js';
 
 describe('getAcademicPeriod', () => {
   it.each([
@@ -19,12 +16,5 @@ describe('getAcademicPeriod', () => {
 
   it('devuelve undefined si la fecha no es válida', () => {
     expect(getAcademicPeriod('no-es-fecha')).toBeUndefined();
-  });
-});
-
-describe('getAcademicPeriodYear', () => {
-  it('extrae el año de la gestión', () => {
-    expect(getAcademicPeriodYear('II-2025')).toBe(2025);
-    expect(getAcademicPeriodYear('I-2026')).toBe(2026);
   });
 });

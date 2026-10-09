@@ -11,7 +11,7 @@ const REJECTED_USERS: RejectedUser[] = Array.from({ length: 24 }, (_, index) => 
   fullName: index === 0 ? "Juan Carlos Peres Rojas" : `Usuario rechazado ${index + 1}`,
   email: index === 0 ? "juan.perez@gmail.com" : `usuario${index + 1}@gmail.com`,
   identifier: `2019${index.toString().padStart(5, "0")}`,
-  documentType: index === 1 ? "NIT" : "ACADEMIC_DEGREE",
+  documentType: index === 1 ? "national_title" : "academic_diploma",
   registeredAt: "2026-03-15T14:00:00.000Z",
 }));
 
@@ -64,8 +64,8 @@ describe("RejectedUsersReportView", () => {
     await waitFor(() => {
       expect(screen.getByText("Juan Carlos Peres Rojas")).toBeDefined();
     });
-    expect(screen.getAllByText("Título académico").length).toBeGreaterThan(0);
-    expect(screen.getByText("NIT")).toBeDefined();
+    expect(screen.getAllByText("Diploma académico").length).toBeGreaterThan(0);
+    expect(screen.getByText("Título en provisión nacional")).toBeDefined();
     expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
     expect(reportsService.getRejectedUsers).toHaveBeenCalledWith({ page: 1, limit: 10, search: "" });
   });

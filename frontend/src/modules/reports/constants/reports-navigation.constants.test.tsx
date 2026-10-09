@@ -29,13 +29,13 @@ describe("REPORTS_NAVIGATION_ITEM", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reportes Analíticos" }));
 
     expect(screen.getByRole("link", { name: "Reporte de usuarios registrados" }).getAttribute("href")).toBe(
-      "/backoffice/reportes/usuarios-registrados",
+      "/backoffice/reports/registered-users",
     );
     expect(screen.getByRole("link", { name: "Reporte de usuarios rechazados" }).getAttribute("href")).toBe(
-      "/backoffice/reportes/usuarios-rechazados",
+      "/backoffice/reports/rejected-users",
     );
     expect(screen.getByRole("link", { name: "Historial de reportes generados" }).getAttribute("href")).toBe(
-      "/backoffice/reportes/historial",
+      "/backoffice/reports/history",
     );
   });
 });

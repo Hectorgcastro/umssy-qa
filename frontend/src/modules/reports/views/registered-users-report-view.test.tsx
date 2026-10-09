@@ -8,30 +8,30 @@ import type { RegisteredUser, RegisteredUsersParams } from "../types/registered-
 import { RegisteredUsersReportView } from "./registered-users-report-view";
 
 const REGISTERED_USERS: RegisteredUser[] = [
-  { id: "1", fullName: "Juan Carlos Peres Rojas", email: "jc.peraz@gmail.com", userType: "DEGREE_HOLDER", identifier: "201942394", documentType: "ACADEMIC_DEGREE", registeredAt: "2026-03-15T10:00:00" },
-  { id: "2", fullName: "Maria Quispe Mamani", email: "maria.qui@gmail.com", userType: "DEGREE_HOLDER", identifier: "201902277", documentType: "NATIONAL_DEGREE", registeredAt: "2026-02-20T10:00:00" },
-  { id: "3", fullName: "Luis Fernando Vargaz Saliz", email: "lf.vargas.ct@gmail.com", userType: "GRADUATE", identifier: "201701190", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2025-01-10T10:00:00" },
-  { id: "4", fullName: "Andrea Camacho Torrez", email: "andrea.ct@gmail.com", userType: "GRADUATE", identifier: "201905853", documentType: "ACADEMIC_DIPLOMA", registeredAt: "2025-01-10T10:00:00" },
-  { id: "5", fullName: "Rodrigo Gutiérrez Arce", email: "r.rutiereer@outlook.com", userType: "DEGREE_HOLDER", identifier: "201603348", documentType: "NATIONAL_DEGREE", registeredAt: "2025-01-10T10:00:00" },
-  { id: "6", fullName: "Sofia Fernandez Claras", email: "sofia.fo@gmail.com", userType: "DEGREE_HOLDER", identifier: "201909731", documentType: "ACADEMIC_DIPLOMA", registeredAt: "2025-01-10T10:00:00" },
-  { id: "7", fullName: "Diego Mercado Rocha", email: "dmercado@gmail.com", userType: "COMPANY", identifier: "1029964756", documentType: "NIT", registeredAt: "2025-01-10T10:00:00" },
-  { id: "8", fullName: "Valeria Amez Lima", email: "vale.amez@gmail.com", userType: "ADMIN", identifier: "201902214", documentType: "ACADEMIC_DIPLOMA", registeredAt: "2026-03-15T10:00:00" },
-  { id: "9", fullName: "Stephanie Mamani Choque", email: "stephanie.mamani@gmail.com", userType: "DEGREE_HOLDER", identifier: "202004667", documentType: "NATIONAL_DEGREE", registeredAt: "2026-03-15T10:00:00" },
-  { id: "10", fullName: "Carlos Rivera Quispe", email: "carlos.rivera@gmail.com", userType: "GRADUATE", identifier: "201702345", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2026-03-15T10:00:00" },
-  { id: "11", fullName: "Ana Lucia Rojas Vera", email: "ana.rojas@gmail.com", userType: "STUDENT", identifier: "201801122", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-11-04T10:00:00" },
-  { id: "12", fullName: "Marco Antonio Flores Paz", email: "marco.flores@gmail.com", userType: "DEGREE_HOLDER", identifier: "201604587", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-10-22T10:00:00" },
-  { id: "13", fullName: "Tecnologías Andinas SRL", email: "rrhh@tecandinas.com", userType: "COMPANY", identifier: "3012457018", documentType: "NIT", registeredAt: "2025-10-15T10:00:00" },
-  { id: "14", fullName: "Gabriela Soliz Arnez", email: "gabriela.soliz@gmail.com", userType: "MENTOR", identifier: "201903318", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-09-30T10:00:00" },
-  { id: "15", fullName: "Jorge Luis Céspedes Ortiz", email: "jl.cespedes@outlook.com", userType: "DEGREE_HOLDER", identifier: "201505976", documentType: "NATIONAL_DEGREE", registeredAt: "2025-09-12T10:00:00" },
-  { id: "16", fullName: "Paola Andrea Guzmán Ríos", email: "paola.guzman@gmail.com", userType: "DEGREE_HOLDER", identifier: "201806641", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-08-28T10:00:00" },
-  { id: "17", fullName: "Innova Soft SA", email: "contacto@innovasoft.bo", userType: "COMPANY", identifier: "2098754013", documentType: "NIT", registeredAt: "2025-08-14T10:00:00" },
-  { id: "18", fullName: "Ricardo Montaño Vidal", email: "ricardo.montano@gmail.com", userType: "STUDENT", identifier: "202001459", documentType: "ENROLLMENT_CERTIFICATE", registeredAt: "2025-07-30T10:00:00" },
-  { id: "19", fullName: "Daniela Ugarte Salas", email: "daniela.ugarte@gmail.com", userType: "ADMIN", identifier: "201707783", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-07-02T10:00:00" },
-  { id: "20", fullName: "Fernando Aguilar Terán", email: "f.aguilar@gmail.com", userType: "DEGREE_HOLDER", identifier: "201408812", documentType: "NATIONAL_DEGREE", registeredAt: "2025-06-18T10:00:00" },
-  { id: "21", fullName: "Lucía Herrera Pinto", email: "lucia.herrera@gmail.com", userType: "MENTOR", identifier: "202102204", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-05-27T10:00:00" },
-  { id: "22", fullName: "Mauricio Zeballos Durán", email: "mauricio.z@outlook.com", userType: "DEGREE_HOLDER", identifier: "201609935", documentType: "ACADEMIC_DEGREE", registeredAt: "2025-05-06T10:00:00" },
-  { id: "23", fullName: "Datalab Bolivia SRL", email: "info@datalab.bo", userType: "COMPANY", identifier: "4015862011", documentType: "NIT", registeredAt: "2025-04-15T10:00:00" },
-  { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "GRADUATE", identifier: "202003376", documentType: "GRADUATION_CERTIFICATE", registeredAt: "2025-03-20T10:00:00" },
+  { id: "1", fullName: "Juan Carlos Peres Rojas", email: "jc.peraz@gmail.com", userType: "titulado", identifier: "201942394", documentType: "academic_diploma", registeredAt: "2026-03-15T10:00:00" },
+  { id: "2", fullName: "Maria Quispe Mamani", email: "maria.qui@gmail.com", userType: "titulado", identifier: "201902277", documentType: "national_title", registeredAt: "2026-02-20T10:00:00" },
+  { id: "3", fullName: "Luis Fernando Vargaz Saliz", email: "lf.vargas.ct@gmail.com", userType: "titulado", identifier: "201701190", documentType: "national_title", registeredAt: "2025-01-10T10:00:00" },
+  { id: "4", fullName: "Andrea Camacho Torrez", email: "andrea.ct@gmail.com", userType: "titulado", identifier: "201905853", documentType: "academic_diploma", registeredAt: "2025-01-10T10:00:00" },
+  { id: "5", fullName: "Rodrigo Gutiérrez Arce", email: "r.rutiereer@outlook.com", userType: "titulado", identifier: "201603348", documentType: "national_title", registeredAt: "2025-01-10T10:00:00" },
+  { id: "6", fullName: "Sofia Fernandez Claras", email: "sofia.fo@gmail.com", userType: "titulado", identifier: "201909731", documentType: "academic_diploma", registeredAt: "2025-01-10T10:00:00" },
+  { id: "7", fullName: "Diego Mercado Rocha", email: "dmercado@gmail.com", userType: "empresa", identifier: "1029964756", documentType: null, registeredAt: "2025-01-10T10:00:00" },
+  { id: "8", fullName: "Valeria Amez Lima", email: "vale.amez@gmail.com", userType: "administrativo", identifier: "201902214", documentType: "academic_diploma", registeredAt: "2026-03-15T10:00:00" },
+  { id: "9", fullName: "Stephanie Mamani Choque", email: "stephanie.mamani@gmail.com", userType: "titulado", identifier: "202004667", documentType: "national_title", registeredAt: "2026-03-15T10:00:00" },
+  { id: "10", fullName: "Carlos Rivera Quispe", email: "carlos.rivera@gmail.com", userType: "titulado", identifier: "201702345", documentType: "national_title", registeredAt: "2026-03-15T10:00:00" },
+  { id: "11", fullName: "Ana Lucia Rojas Vera", email: "ana.rojas@gmail.com", userType: "estudiante", identifier: "201801122", documentType: "academic_diploma", registeredAt: "2025-11-04T10:00:00" },
+  { id: "12", fullName: "Marco Antonio Flores Paz", email: "marco.flores@gmail.com", userType: "titulado", identifier: "201604587", documentType: "academic_diploma", registeredAt: "2025-10-22T10:00:00" },
+  { id: "13", fullName: "Tecnologías Andinas SRL", email: "rrhh@tecandinas.com", userType: "empresa", identifier: "3012457018", documentType: null, registeredAt: "2025-10-15T10:00:00" },
+  { id: "14", fullName: "Gabriela Soliz Arnez", email: "gabriela.soliz@gmail.com", userType: "mentor", identifier: "201903318", documentType: "academic_diploma", registeredAt: "2025-09-30T10:00:00" },
+  { id: "15", fullName: "Jorge Luis Céspedes Ortiz", email: "jl.cespedes@outlook.com", userType: "titulado", identifier: "201505976", documentType: "national_title", registeredAt: "2025-09-12T10:00:00" },
+  { id: "16", fullName: "Paola Andrea Guzmán Ríos", email: "paola.guzman@gmail.com", userType: "titulado", identifier: "201806641", documentType: "academic_diploma", registeredAt: "2025-08-28T10:00:00" },
+  { id: "17", fullName: "Innova Soft SA", email: "contacto@innovasoft.bo", userType: "empresa", identifier: "2098754013", documentType: null, registeredAt: "2025-08-14T10:00:00" },
+  { id: "18", fullName: "Ricardo Montaño Vidal", email: "ricardo.montano@gmail.com", userType: "estudiante", identifier: "202001459", documentType: "academic_diploma", registeredAt: "2025-07-30T10:00:00" },
+  { id: "19", fullName: "Daniela Ugarte Salas", email: "daniela.ugarte@gmail.com", userType: "administrativo", identifier: "201707783", documentType: "academic_diploma", registeredAt: "2025-07-02T10:00:00" },
+  { id: "20", fullName: "Fernando Aguilar Terán", email: "f.aguilar@gmail.com", userType: "titulado", identifier: "201408812", documentType: "national_title", registeredAt: "2025-06-18T10:00:00" },
+  { id: "21", fullName: "Lucía Herrera Pinto", email: "lucia.herrera@gmail.com", userType: "mentor", identifier: "202102204", documentType: "academic_diploma", registeredAt: "2025-05-27T10:00:00" },
+  { id: "22", fullName: "Mauricio Zeballos Durán", email: "mauricio.z@outlook.com", userType: "titulado", identifier: "201609935", documentType: "academic_diploma", registeredAt: "2025-05-06T10:00:00" },
+  { id: "23", fullName: "Datalab Bolivia SRL", email: "info@datalab.bo", userType: "empresa", identifier: "4015862011", documentType: null, registeredAt: "2025-04-15T10:00:00" },
+  { id: "24", fullName: "Camila Vargas Orellana", email: "camila.vargas@gmail.com", userType: "titulado", identifier: "202003376", documentType: "national_title", registeredAt: "2025-03-20T10:00:00" },
 ];
 
 function buildResponse({ page, limit, userType, period }: RegisteredUsersParams): ApiResponse<PaginatedData<RegisteredUser>> {
@@ -96,7 +96,7 @@ describe("RegisteredUsersReportView", () => {
       expect(screen.getByText("Juan Carlos Peres Rojas")).toBeDefined();
     });
     expect(screen.getByText("jc.peraz@gmail.com")).toBeDefined();
-    expect(screen.getAllByText("Título académico").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Diploma académico").length).toBeGreaterThan(0);
     expect(screen.getAllByText("15/03/2026").length).toBeGreaterThan(0);
     expect(screen.getByText("Mostrando 1-10 de 24 usuarios")).toBeDefined();
     expect(screen.getByRole("button", { name: "Página 3" })).toBeDefined();
@@ -110,7 +110,7 @@ describe("RegisteredUsersReportView", () => {
 
     await screen.findByRole("listbox");
     const options = screen.getAllByRole("option").map((option) => option.textContent);
-    expect(options).toEqual(["Todos", "Estudiante", "Titulado", "Mentor", "Empresa", "Administrador"]);
+    expect(options).toEqual(["Todos", "Estudiante", "Titulado", "Mentor", "Empresa", "Administrativo"]);
   });
 
   it("vuelve a cargar los datos al presionar actualizar", async () => {
@@ -227,7 +227,7 @@ describe("RegisteredUsersReportView", () => {
     await user.click(screen.getByRole("button", { name: "actualizar" }));
     await screen.findByText("Mostrando 1-2 de 2 usuarios");
     expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
-      page: 1, limit: 10, userType: "COMPANY", period: "II-2025",
+      page: 1, limit: 10, userType: "empresa", period: "II-2025",
     });
 
     await selectPeriod(user, "I-2025");
@@ -236,7 +236,7 @@ describe("RegisteredUsersReportView", () => {
     await selectPeriod(user, "Todas");
     expect(await screen.findByText("Mostrando 1-4 de 4 usuarios")).toBeDefined();
     expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
-      page: 1, limit: 10, userType: "COMPANY", period: undefined,
+      page: 1, limit: 10, userType: "empresa", period: undefined,
     });
 
     await selectPeriod(user, "II-2025");
@@ -270,7 +270,7 @@ describe("RegisteredUsersReportView", () => {
       ...REGISTERED_USERS[0],
       id: `company-${index + 1}`,
       fullName: `Empresa ${index + 1}`,
-      userType: "COMPANY",
+      userType: "empresa",
       registeredAt: "2025-03-15T12:00:00-04:00",
     }));
     vi.mocked(reportsService.getRegisteredUsers).mockImplementation(async ({ page, limit }) => ({
@@ -287,7 +287,7 @@ describe("RegisteredUsersReportView", () => {
     await user.click(screen.getByRole("button", { name: "Página 20" }));
     expect(await screen.findByText("Mostrando 191-200 de 200 usuarios")).toBeDefined();
     expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
-      page: 20, limit: 10, userType: "COMPANY", period: "I-2025",
+      page: 20, limit: 10, userType: "empresa", period: "I-2025",
     });
     expect(screen.queryByRole("button", { name: "Página 10" })).toBeNull();
     expect(screen.getByRole("button", { name: "Página siguiente" })).toBeDisabled();
@@ -295,7 +295,7 @@ describe("RegisteredUsersReportView", () => {
     await user.click(screen.getByRole("button", { name: "Página anterior" }));
     expect(await screen.findByText("Mostrando 181-190 de 200 usuarios")).toBeDefined();
     expect(reportsService.getRegisteredUsers).toHaveBeenLastCalledWith({
-      page: 19, limit: 10, userType: "COMPANY", period: "I-2025",
+      page: 19, limit: 10, userType: "empresa", period: "I-2025",
     });
   });
 
@@ -366,7 +366,7 @@ describe("RegisteredUsersReportView", () => {
 
     const exportingButton = screen.getByRole("button", { name: "Exportando..." }) as HTMLButtonElement;
     expect(exportingButton.disabled).toBe(true);
-    expect(exportSpy).toHaveBeenCalledWith({ userType: "COMPANY", period: "II-2025" });
+    expect(exportSpy).toHaveBeenCalledWith({ userType: "empresa", period: "II-2025" });
 
     resolveExport({ file, fileName: "usuarios-registrados-2026-10-03.csv" });
     await waitFor(() => {
