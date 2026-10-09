@@ -1,8 +1,8 @@
-/backend/prisma/ @umssy/Database
-README.md @umssy/DevOps
-.github/ @umssy/DevOps
-.husky/ @umssy/DevOps
-scripts/ @umssy/DevOps
-vitest.config.* @umssy/DevOps
-eslint.config.* @umssy/DevOps
-vitest.setup.* @umssy/DevOps
+/backend/prisma/ @maicolismael @RodrigoChalco
+README.md @maicolismael @RodrigoChalco
+.github/ @maicolismael @RodrigoChalco
+.husky/ @maicolismael @RodrigoChalco
+scripts/ @maicolismael @RodrigoChalco
+vitest.config.* @maicolismael @RodrigoChalco
+eslint.config.* @maicolismael @RodrigoChalco
+vitest.setup.* @maicolismael @RodrigoChalco
