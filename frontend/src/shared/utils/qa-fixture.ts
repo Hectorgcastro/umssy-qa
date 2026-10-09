@@ -1,0 +1,1 @@
+export const invalid_name = 1;
