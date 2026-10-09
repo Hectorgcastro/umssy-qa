@@ -44,8 +44,7 @@ async function loadUsers(users: unknown[], requests: unknown[]) {
   const repository = new ReportUsersRepository(
     prisma as unknown as PrismaService,
   );
-  await repository.refresh();
-  return { prisma, users: repository.findAll() };
+  return { prisma, users: await repository.findAll() };
 }
 
 describe('ReportUsersRepository', () => {

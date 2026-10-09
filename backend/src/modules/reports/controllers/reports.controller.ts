@@ -7,6 +7,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
+import { CurrentUserId } from '../../../common/decorators/current-user-id.decorator.js';
 import { Roles } from '../../../common/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../../common/guards/roles.guard.js';
@@ -59,12 +60,13 @@ export class ReportsController {
 
   @Get('registered-users/export')
   @ApiProduces('text/csv')
-  exportRegisteredUsersCsv(
+  async exportRegisteredUsersCsv(
     @Query(new ZodValidationPipe(registeredUsersFiltersSchema))
     filters: RegisteredUsersFilters,
-  ): StreamableFile {
-    const file = this.reportsService.exportRegisteredUsersCsv(filters);
-    this.reportHistoryService.registerGeneratedReport({
+    @CurrentUserId() userId: string,
+  ): Promise<StreamableFile> {
+    const file = await this.reportsService.exportRegisteredUsersCsv(filters);
+    await this.reportHistoryService.registerGeneratedReport(userId, {
       fileName: file.fileName,
       reportType: 'REGISTERED_USERS',
     });
@@ -82,12 +84,13 @@ export class ReportsController {
 
   @Get('rejected-users/export')
   @ApiProduces('text/csv')
-  exportRejectedUsersCsv(
+  async exportRejectedUsersCsv(
     @Query(new ZodValidationPipe(rejectedUsersFiltersSchema))
     filters: RejectedUsersFilters,
-  ): StreamableFile {
-    const file = this.reportsService.exportRejectedUsersCsv(filters);
-    this.reportHistoryService.registerGeneratedReport({
+    @CurrentUserId() userId: string,
+  ): Promise<StreamableFile> {
+    const file = await this.reportsService.exportRejectedUsersCsv(filters);
+    await this.reportHistoryService.registerGeneratedReport(userId, {
       fileName: file.fileName,
       reportType: 'REJECTED_USERS',
     });
