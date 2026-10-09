@@ -1,0 +1,1 @@
+QA fixture to trigger the unmodified frontend CI.
